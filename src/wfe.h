@@ -1,0 +1,28 @@
+/* This file was automatically generated.  Do not edit! */
+void LamdaDID2(int *len_Xtrow,int *len_Xhrow,int *Tunit_index,int *len_uniq_Tu_index,int *Hunit_index,int *len_uniq_Hu_index,double *Xtilde,int *len_Xtcol,double *utilde,double *Xhat,int *len_Xhcol,double *uhat,double *W,double *LamdaDID2);
+void LamdaDID1(int *len_Xtrow,int *len_Xhrow,int *Tunit_index,int *len_uniq_Tu_index,int *Hunit_index,int *len_uniq_Hu_index,double *Xtilde,int *len_Xtcol,double *utilde,double *Xhat,int *len_Xhcol,double *uhat,double *W,double *LamdaDID1);
+void OmegaDiDHC(int *len_data,int *n_cov,int *unit_index,int *len_uniq_u_index,double *Xtilde,double *utilde,double *W,double *Omega_DiD_HC);
+void OmegaDiDHAC(int *len_data,int *n_cov,int *unit_index,int *len_uniq_u_index,double *Xtilde,double *utilde,double *W,double *Omega_DiD_HAC);
+void LamdaHat(int *len_data,int *n_cov,int *unit_index,int *len_uniq_u_index,double *Xtilde,double *utilde,double *Xhat,double *uhat,double *Lamda_hat);
+void OmegaHatHC(int *len_data,int *n_cov,int *unit_index,int *len_uniq_u_index,double *Xtilde,double *utilde,double *Omega_hat_HC);
+void OmegaHatHAC(int *len_data,int *n_cov,int *unit_index,int *len_uniq_u_index,double *Xtilde,double *utilde,double *Omega_hat_HAC);
+void XWXiSum(int *len_data,int *n_cov,int *unit_index,int *len_uniq_u_index,double *Xtilde,double *weights,double *result);
+void XXiSum(int *len_data,int *n_cov,int *unit_index,int *len_uniq_u_index,double *Xtilde,double *result);
+void MDummy(int *index,int *len_index,int *len_data,int *dummy);
+void GenWeightsDID(int *unit_index,int *time_index,int *tr,int *C_it,int *len_data,int *len_u_index,int *len_t_index,int *ate,int *att,int *verbose,double *weightdid);
+void CalDID(int *unit_index,int *time_index,int *tr,int *C_it,double *y,int *len_data,int *len_u_index,int *len_t_index,int *ate,int *att,int *verbose,double *did);
+int t_t1_same(int *unit_index,int *time_index,int *len_u_index,int *len_t_index,int *len_data,int *tr,int **same);
+int is_t_t1_same(int *u_i,int *t_i,int i,int j,int *tr,int size);
+void GenWeightsFD(int *unit_index,int *time_index,int *tr,int *C_it,int *len_data,int *len_u_index,int *len_t_index,int *ate,int *att,int *verbose,double *weightfd);
+void GenWeightsTime(int *time_index,int *unit_index,int *tr,int *C_it,int *len_data,int *len_t_index,int *len_u_index,int *ate,int *att,int *verbose,double *weight);
+void GenWeightsUnit(int *unit_index,int *time_index,int *tr,int *C_it,int *len_data,int *len_u_index,int *len_t_index,int *ate,int *att,int *verbose,double *weight);
+int is_time_index_exist(int *u_i,int *t_i,int i,int j,int size);
+int is_index_exist(int *unit_index,int *time_index,int *len_u_index,int *len_t_index,int *len_data,int **exist);
+void TwayDemean(double *var,int *unit_index,int *time_index,int *len_u_index,int *len_t_index,int *len_data,double *TwayDemean);
+void WWDemean(double *var,double *weight,int *index,int *len_index,int *len_data,double *WWdemean);
+void WDemean(double *var,double *weight,int *index,int *len_index,int *len_data,double *Wdemean);
+void Demean(double *var,int *index,int *len_index,int *len_data,double *demean);
+void GenTime(int *unit_index,int *len_data,int *len_u_index,double *time_index);
+void Transform(double *y,int *n,int *treat,double *pscore,double *ytrans);
+void Vectorize(double *Wvec,int *nrow,int *ncol,int *time_index,int *dyad_index,int *n_obs,double *results);
+void Index(int *index,int *uniq_index,int *len_u_index,int *len_data,int *result);

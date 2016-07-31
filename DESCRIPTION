@@ -1,0 +1,24 @@
+Package: wfe
+Version: 1.1
+Date: 2012-11-14
+Title: Weighted Linear Fixed Effects Regression Models for Causal
+        Inference
+Author: In Song Kim <insong@Princeton.edu>, Kosuke Imai <kimai@Princeton.edu>
+Maintainer: In Song Kim <insong@Princeton.edu>
+Depends: R (>= 2.11.0), utils, arm (>= 1.4-6), Matrix, MASS
+Description: This R package provides a computationally efficient way
+	     of fitting weighted linear fixed effects estimators for
+	     causal inference with various weighting schemes.  Imai
+	     and Kim (2012) show that weighted linear fixed effects
+	     estimators can be used to estimate the average treatment
+	     effects under different identification strategies.  This
+	     includes stratified randomized experiments, matching and
+	     stratification for observational studies, first
+	     differencing, and difference-in-differences.  The package
+	     also provides various robust standard errors and a
+	     specification test for standard linear fixed effects
+	     estimators.
+LazyLoad: yes
+LazyData: yes
+License: GPL (>=2)
+Packaged: 2013-02-06 02:18:34 UTC; insong
