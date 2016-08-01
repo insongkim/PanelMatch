@@ -28,6 +28,9 @@ pwfe <- function (formula, treat = "treat.name", outcome, data, pscore = NULL,
   if(is.null(time.index) && !is.null(estimator) && estimator  == "fd")
     stop("First Difference cannot calculate when 'time.index' is missing")
 
+  if(is.null(time.index) && !is.null(estimator) && estimator  == "did")
+    stop("Difference-in-Differences is not compatible with pwfe")
+
   ## Warning for C.it
   if (!is.null(C.it)){
     Cit <- data[,C.it]
@@ -272,14 +275,14 @@ pwfe <- function (formula, treat = "treat.name", outcome, data, pscore = NULL,
   if ( (method=="unit" & qoi=="ate" & is.null(estimator) ) | (method=="unit" & qoi=="att" & is.null(estimator)) ) {
     W <- GenWeightsUnit(data$u.index, data$t.index, data$TR, data$C.it, tn.row, length(uniq.u), length(uniq.t), ate.n, att.n, length(uniq.u)*length(uniq.t), verbose)
     W <- matrix(W, nrow=length(uniq.t), ncol=length(uniq.u), byrow=T)
-    data$W.it <- Vectorize(as.matrix(W), data$t.index, data$u.index, tn.row)
+    data$W.it <- VectorizeC(as.matrix(W), data$t.index, data$u.index, tn.row)
   }
 
   ## Time fixed effects models
   if ( (method=="time" & qoi=="ate" & is.null(estimator) ) | (method=="time" & qoi=="att" & is.null(estimator)) ) {
     W <- GenWeightsTime(data$t.index, data$u.index, data$TR, data$C.it, tn.row, length(uniq.t), length(uniq.u), ate.n, att.n, length(uniq.t)*length(uniq.u), verbose)
     W <- matrix(W, nrow=length(uniq.t), ncol=length(uniq.u), byrow=T)
-    data$W.it <- Vectorize(as.matrix(W), data$t.index, data$u.index, tn.row)
+    data$W.it <- VectorizeC(as.matrix(W), data$t.index, data$u.index, tn.row)
   }
 
 
@@ -287,7 +290,7 @@ pwfe <- function (formula, treat = "treat.name", outcome, data, pscore = NULL,
   if(( (method=="unit") && (qoi == "ate") && (!is.null(estimator) && estimator == "fd")) | ((method == "unit") && (qoi =="att") && (!is.null(estimator) && estimator == "fd"))) {
     W <- GenWeightsFD(data$u.index, data$t.index, data$TR, data$C.it, tn.row, length(uniq.u), length(uniq.t), ate.n, att.n, verbose)
     W <- matrix(W, nrow=length(uniq.t), ncol=length(uniq.u), byrow=T)
-    data$W.it <- Vectorize(as.matrix(W), data$t.index, data$u.index, tn.row)
+    data$W.it <- VectorizeC(as.matrix(W), data$t.index, data$u.index, tn.row)
   }
   if (verbose)
     cat(" Weight calculation done \n")
@@ -519,7 +522,7 @@ pwfe <- function (formula, treat = "treat.name", outcome, data, pscore = NULL,
 
         ## White test: null hypothesis is ``no misspecification''
 
-        white.stat <- as.real(Re(nrow(X.hat) * t(coef.ols - coef.wls) %*% ginv(Phi.hat) %*% (coef.ols - coef.wls)))
+        white.stat <- as.double(Re(nrow(X.hat) * t(coef.ols - coef.wls) %*% ginv(Phi.hat) %*% (coef.ols - coef.wls)))
         test.null <- pchisq(as.numeric(white.stat), df=p, lower.tail=F) < White.alpha
         white.p <- pchisq(as.numeric(white.stat), df=p, lower.tail=F)
         flush.console()

@@ -9,9 +9,9 @@ Index <- function(index_name, uniq_index_name, len_u_index, len_data) {
 
 
 
-Vectorize <- function(W, time.index, dyad.index, n.row) {
+VectorizeC <- function(W, time.index, dyad.index, n.row) {
 
-  return(.C("Vectorize", as.double(W), as.integer(nrow(W)), as.integer(ncol(W)),
+  return(.C("VectorizeC", as.double(W), as.integer(nrow(W)), as.integer(ncol(W)),
             as.integer(time.index), as.integer(dyad.index), as.integer(n.row),
             results = double(n.row), package = "wfe")$results)
 
@@ -79,6 +79,13 @@ DemeanDID <- function(var_name, weight, unit_index, time_index, len_u_index, len
 }
 
 
+GenWeightsMDID <- function(unit_index, time_index, tr, C_it, y, maxdev.did, len_data,
+                           len_u_index, len_t_index, ate, att, verbose) {
+    return(.C("GenWeightsMDID", as.integer(unit_index), as.integer(time_index), as.integer(tr), as.integer(C_it),
+              as.double(y), as.double(maxdev.did), as.integer(len_data), as.integer(len_u_index), as.integer(len_t_index),
+              as.integer(ate), as.integer(att), as.integer(verbose),
+              weightmdid = double(len_u_index*len_t_index), package = "wfe")$weightmdid)
+}
 
 
 

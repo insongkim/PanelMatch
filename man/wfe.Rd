@@ -12,11 +12,11 @@
 \usage{
 wfe(formula, data, treat = "treat.name",
     unit.index, time.index = NULL, method = "unit",
-    qoi = c("ate", "att") , estimator = NULL, C.it = NULL,
+    qoi = "ate", estimator = NULL, C.it = NULL,
     hetero.se = TRUE, auto.se = TRUE,
     White = TRUE, White.alpha = 0.05,
     verbose = TRUE, unbiased.se = FALSE, unweighted = FALSE,
-    store.wdm = FALSE,
+    store.wdm = FALSE, maxdev.did = NULL,
     tol = sqrt(.Machine$double.eps))
 }
 
@@ -41,23 +41,32 @@ wfe(formula, data, treat = "treat.name",
   \item{time.index}{a character string indicating the name of time
     variable used in the models. The index of time should be factor.
   }
+  
   \item{method}{method for weighted fixed effects regression, either
     \code{unit} for unit fixed effects; \code{time} for time fixed
-    effects. The default is \code{unit}. 
-  }
+    effects. The default is \code{unit}. For two-way weighted fixed
+    effects regression models, set method to the default value
+    \code{unit}.}
 
   \item{qoi}{one of \code{"ate"} or \code{"att"}. The default is
-    \code{"ate"}.
-  }
+    \code{"ate"}. If set to \code{"att"} in implementing \code{"fd"}
+    and \code{"did"} estimators, the comparison of the treated
+    observation is restricted to the control observation from the
+    previous time period but not with the control observation from the
+    next time period.}
 
   \item{estimator}{an optional character string indicating the
-  estimating method. One of \code{"fd"} or \code{"did"}. The default is
-  \code{NULL}.
-  }
+  estimating method. One of \code{"fd"}, \code{"did"}, or
+  \code{"Mdid"}. \code{"fd"} is for First-Difference
+  Design. \code{"did"} is for multi-period Difference-in-Differences
+  design. The default is \code{NULL}. Setting estimator to be
+  \code{"Mdid"} implements the Difference-in-Differences design with
+  Matching on the pretreatment outcome variables.}
   
   \item{C.it}{an optional non-negative numeric vector specifying
-    relative weights for each unit of analysis.
-  }
+    relative weights for each unit of analysis. If not specified, the
+    weights will be calculated based on the estimator and quantity of
+    interest. }
   
   \item{hetero.se}{a logical value indicating whether heteroskedasticity
     across units is allowed in calculating standard errors. The default
@@ -74,7 +83,7 @@ wfe(formula, data, treat = "treat.name",
   }
   
   \item{White.alpha}{level of functional specification test. See White
-    (1980) and Imai and Kim (2012). The default is \code{0.05}.
+    (1980) and Imai and Kim (2016). The default is \code{0.05}.
   }
 
   \item{verbose}{logical. If \code{TRUE}, helpful messages along with
@@ -89,11 +98,19 @@ wfe(formula, data, treat = "treat.name",
   }
   
   \item{unweighted}{logical. If \code{TRUE}, standard unweighted fixed
-    effects model is estimated. The default is \code{FALSE}. Note: users
-    do not need to specify \code{qoi} when unweighted=\code{TRUE}.}
+    effects model is estimated. The default is \code{FALSE}. Note:
+    users do not need to specify \code{qoi} when
+    unweighted=\code{TRUE}. For standard two-way fixed effects model
+    (unit and time), set estimator=\code{"did"} and
+    unweighted=\code{"TRUE"}.}
 
   \item{store.wdm}{logical. If \code{TRUE}, weighted demeaned
     dataframe will be stored. The default is \code{FALSE}.}
+
+  \item{maxdev.did}{an optional positive numeric value specifying the
+  maximum deviation in pre-treatment outcome when \code{"Mdid"} is
+  implemented. The default is \code{NULL}, which implements
+  nearest-neighbor matching.}
 
   \item{tol}{a relative tolerance to detect zero singular values for
     generalized inverse. The default is sqrt(.Machine$double.eps)
@@ -116,8 +133,10 @@ wfe(formula, data, treat = "treat.name",
  \item{coefficients}{a named vector of coefficients}
  \item{residuals}{the residuals, that is respons minus fitted values}
  \item{df}{the degree of freedom}
- \item{W}{weight matrix calculated from the model. Row and column
- indices can be found from \code{units}, \code{times}.}
+ \item{W}{a dataframe containing unit and time indices along with the
+ weights used for the observation. If method=\code{unit}, integer numbers
+ corresponding to the order of input data will be used for generating time index.}
+ \item{Num.nonzero}{Number of observations with non-zero weights}
  \item{call}{the matched call}
  \item{causal}{causal quantity of interest}
  \item{estimator}{the estimating method}
@@ -132,7 +151,7 @@ wfe(formula, data, treat = "treat.name",
  \item{Y}{the response vector}
  \item{X.wdm}{the demeaned design matrix}
  \item{Y.wdm}{the demeaned response vector}
- \item{mf}{the model frame}
+ \item{mf}{the model frame where the last column is the weights used for the analysis}
 }
 
 \details{
@@ -161,10 +180,10 @@ wfe(formula, data, treat = "treat.name",
 
 }
 
-\references{
-  Imai, Kosuke and In Song Kim. (2012) ``On the Use of Linear Fixed
-  Effects Regression Models for Causal Inference.'' Technical Report,
-  Department of Politics, Princeton University.  available at
+\references{Imai, Kosuke and In Song Kim. (2016) ``When Should We Use
+  Linear Fixed Effects Regression Models for Causal Inference with
+  Longitudinal Data?'' Technical Report, Department of Politics,
+  Princeton University.  available at
   \url{http://imai.princeton.edu/research/FEmatch.html}
 
   Stock, James and Mark Watson. (2008) ``Heteroskedasticity-Robust
@@ -292,10 +311,40 @@ summary(mod.did)
 ## extracting weigths
 summary(mod.did)$W
 
+#########################################################################
+# Example 4: DID with Matching on Pre-treatment Outcomes
+#########################################################################
+
+## implements matching on pre-treatment outcomes where the maximum
+## deviation is specified as 0.5 
+
+mod.Mdid <- wfe(y~ tr+x1+x2, data = Data.obs, treat = "tr",
+               unit.index = "unit", time.index = "time", method = "unit",
+               qoi = "ate", estimator ="Mdid", hetero.se=TRUE, auto.se=TRUE,
+               White = TRUE, White.alpha = 0.05, maxdev.did = 0.5, verbose = TRUE)
+
+## summarize the results
+summary(mod.Mdid)
+
+## Note: setting the maximum deviation to infinity (or any value
+## bigger than the maximum pair-wise difference in the outcome) will
+## return the same result as Example 3.
+
+dev <- 1000+max(Data.obs$y)-min(Data.obs$y)
+mod.did2 <- wfe(y~ tr+x1+x2, data = Data.obs, treat = "tr",
+               unit.index = "unit", time.index = "time", method = "unit",
+               qoi = "ate", estimator ="Mdid", hetero.se=TRUE, auto.se=TRUE,
+               White = TRUE, White.alpha = 0.05, maxdev.did = dev, verbose = TRUE)
+
+## summarize the results
+summary(mod.did2)
+mod.did2$coef[1] ==  mod.did$coef[1]
+
+
 }
 
 
-\author{Kosuke Imai, Princeton University, \email{kimai@princeton.edu}
-  and In Song Kim, Princeton University, \email{insong@princeton.edu}}
+\author{In Song Kim, Massachusetts Institute of Technology, \email{insong@mit.edu}		
+	and Kosuke Imai, Princeton University, \email{kimai@princeton.edu}	}
 
 \keyword{regression}
