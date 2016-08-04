@@ -1,6 +1,8 @@
+
 wfe.heatmap <- function(unit.id, time.id, treatment, data, color.of.treated = "red",
                         color.of.untreated = "blue", title = "Treatment Distribution \n Across Units and Time",
-                        add.legend = FALSE) 
+                        add.legend = FALSE,
+                        x.size = 5) 
   # unit.id is the variable name, in character string, of the unit identifier in the dataframe. The user is recommended to 
   # supply a variable of names for the units in her data, because these names will label the ticks
   # of the x-axis so the user will be able to easily tell which unit receives what kind of distribution.
@@ -17,6 +19,8 @@ wfe.heatmap <- function(unit.id, time.id, treatment, data, color.of.treated = "r
   
   # by default this function will not display legend, but the user can set it to TRUE so it will display it
   
+  # by default the font size of the unit names on the x-axis is set to 5, but the user can supply her own 
+
   {
   # load the dataframe that the user specifies
   data <- na.omit(data[c(unit.id, time.id, treatment)])
@@ -59,7 +63,7 @@ labs(list(title = title, x = unit.id, y = time.id, fill = "")) +
 theme(axis.ticks.x=element_blank(), 
 panel.grid.major = element_blank(), panel.border = element_blank(), 
 panel.background = element_blank(), axis.text.x = element_text(angle=90, 
-size = sqrt(sqrt(174/length(unique(data$unit.id))))*10, vjust=0.5)) + 
+size = x.size, vjust=0.5)) + 
 scale_x_discrete(expand = c(0, 0)) + 
 scale_y_continuous(limits = c(min(data$time.id),max(data$time.id)), expand = c(0,0)) 
     }
@@ -98,7 +102,7 @@ scale_y_continuous(limits = c(min(data$time.id),max(data$time.id)), expand = c(0
         theme(legend.position = "none", axis.ticks.x=element_blank(), 
               panel.grid.major = element_blank(), panel.border = element_blank(), 
               panel.background = element_blank(), axis.text.x = element_text(angle=90, 
-                                                                             size = sqrt(sqrt(174/length(unique(data$unit.id))))*10, vjust=0.5)) + 
+                                                                             size = x.size, vjust=0.5)) + 
         scale_x_discrete(expand = c(0, 0)) + 
         scale_y_continuous(limits = c(min(data$time.id),max(data$time.id)), expand = c(0,0)) 
     }
