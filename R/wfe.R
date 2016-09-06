@@ -5,7 +5,8 @@ wfe <- function (formula, data, treat = "treat.name",
                  White = TRUE, White.alpha = 0.05,
                  verbose = TRUE, unbiased.se = FALSE, unweighted = FALSE,
                  store.wdm = FALSE, maxdev.did= NULL,
-                 tol = sqrt(.Machine$double.eps)){
+                 tol = sqrt(.Machine$double.eps), covariate = "covariate.name", unit.name = "unit.name",
+                 dependent = "dependent.name"){
 
 
     wfe.call <- match.call()
@@ -262,7 +263,7 @@ wfe <- function (formula, data, treat = "treat.name",
             if ( (method=="time" & qoi=="ate" & is.null(estimator) ) | (method=="time" & qoi=="att" & is.null(estimator)) ) {
                 W <- GenWeightsTime(data$t.index, data$u.index, data$TR, data$C.it, tn.row, length(uniq.t), length(uniq.u), ate.n, att.n, length(uniq.t)*length(uniq.u), verbose)
                 W <- matrix(W, nrow=length(uniq.t), ncol=length(uniq.u), byrow=T)
-                new.W <- findMatched2("wbcode2", "year", "event_ps1", "lngdp1", "country", "growth1", d)
+                new.W <- findMatched2(unit.index, time.index, treat, covariate, unit.name, dependent, data)
                 data$W.it <- new.W$weights
             }
             
