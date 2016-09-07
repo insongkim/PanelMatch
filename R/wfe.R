@@ -8,7 +8,7 @@ wfe <- function (formula, data, treat = "treat.name",
                  tol = sqrt(.Machine$double.eps), covariate = "covariate.name", unit.name = "unit.name",
                  dependent = "dependent.name"){
                  
-    data <- na.omit(data[c(unit.id, time.id, treatment, covariate, unit.name, dependent)]) 
+    data <- na.omit(data[c(unit.index, time.index, treat, covariate, unit.name, dependent)]) 
 
     wfe.call <- match.call()
     ## set up data frame, with support for standard and modified responses
