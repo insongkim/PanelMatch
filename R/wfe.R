@@ -7,7 +7,8 @@ wfe <- function (formula, data, treat = "treat.name",
                  store.wdm = FALSE, maxdev.did= NULL,
                  tol = sqrt(.Machine$double.eps), covariate = "covariate.name", unit.name = "unit.name",
                  dependent = "dependent.name"){
-
+                 
+    data <- na.omit(data[c(unit.id, time.id, treatment, covariate, unit.name, dependent)]) 
 
     wfe.call <- match.call()
     ## set up data frame, with support for standard and modified responses
@@ -17,6 +18,7 @@ wfe <- function (formula, data, treat = "treat.name",
     tn.row <- nrow(mf) # total number of rows in data
 
     class(data) <- "data.frame"
+    
 
     ## ## remove missing variables: removing rows with missing values in either y or treat
 
