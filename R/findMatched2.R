@@ -1,3 +1,4 @@
+
 ####### Here begins coding up the estimator for "Synthetic Control for Multiple
 ####### Treated Units", the first approach in the TSCS paper updated on Aug 4
 
@@ -79,7 +80,7 @@ findMatched2 <- function(unit.id, time.id, treatment, covariate, unit.name, depe
                            c(1, testid[2])),
                      "time" = mean(test$time.id))
     names(weights)[2] <- "unit.id" # change the name to "unit.id" just for later
-    # merging purposes
+                                   # merging purposes
 
     # importantly, we merge the smaller dataset "weights" with new.W
     # so that the merged dataset has the nrow of N*T. This will make
@@ -100,5 +101,13 @@ findMatched2 <- function(unit.id, time.id, treatment, covariate, unit.name, depe
   data$weights <- new.W$weights
   # return data
   return(data) # so that the returned object from this function will be
-  # a ready-to-use dataframe with a variable storing all the weights
+               # a ready-to-use dataframe with a variable storing all the weights
 }
+
+# W <- findMatched2("ccode", "year", "demo", "Capacity_l1", "country", "Capacity", d3)
+
+
+# w <- acast(W, unit.id ~ time.id, value.var = "weights")
+
+# w <- matrix(w, nrow=length(unique(W$unit.id)), ncol=length(unique(W$time.id)), byrow=T)
+
