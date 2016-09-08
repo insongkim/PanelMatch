@@ -1,5 +1,5 @@
 useDynLib(wfe)
-export(wfe, pwfe)
+export(wfe, pwfe, wfe.heatmap, findMatched2)
 
 importFrom(Rcpp, evalCpp)
 ## exportPattern("^[[:alpha:]]+")
