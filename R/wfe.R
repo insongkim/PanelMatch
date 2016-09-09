@@ -265,7 +265,8 @@ wfe <- function (formula, data, treat = "treat.name",
             if ( (method=="time" & qoi=="ate" & is.null(estimator) ) | (method=="time" & qoi=="att" & is.null(estimator)) ) {
                 W <- GenWeightsTime(data$t.index, data$u.index, data$TR, data$C.it, tn.row, length(uniq.t), length(uniq.u), ate.n, att.n, length(uniq.t)*length(uniq.u), verbose)
                 W <- matrix(W, nrow=length(uniq.t), ncol=length(uniq.u), byrow=T)
-                new.W <- findMatched2(unit.index, time.index, treat, covariate, unit.name, dependent, data)
+                new.W <- findMatched2(unit.id = unit.index, time.id = time.index, treatment = treat,
+                covariate = covariate, unit.name = unit.name, dependent = dependent, data = data)
                 data$W.it <- new.W$weights
             }
 
