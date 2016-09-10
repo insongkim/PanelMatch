@@ -14,6 +14,7 @@ findMatched2 <- function(unit.id, time.id, treatment, covariate, unit.name, depe
   colnames(data) <- c("unit.id", "time.id", "treatment", "covariate", "unit.name", "dependent") # rename variables to match with the object names in the loop below
   data <- data[order(data$unit.id, data$time.id), ] # order by unit and time. This is important as the loop below works with 
   # this order
+  data$unit.name <- as.character(data$unit.name)
   
   print("finding a matched set of control units for each treated observation...")
   
