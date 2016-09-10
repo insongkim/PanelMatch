@@ -15,6 +15,9 @@ findMatched2 <- function(unit.id, time.id, treatment, covariate, unit.name, depe
   data <- data[order(data$unit.id, data$time.id), ] # order by unit and time. This is important as the loop below works with 
   # this order
   data$unit.name <- as.character(data$unit.name)
+  if(is.numeric(data$unit.id) == FALSE | is.numeric(data$treatment) == FALSE | is.numeric(data$covariate) == FALSE 
+  | is.numeric(data$dependent) == FALSE | is.numeric(data$time.id) == FALSE)
+  stop("unit and time identifiers, treatment, covaraite and dependent variable all have to be numeric")
   
   print("finding a matched set of control units for each treated observation...")
   
