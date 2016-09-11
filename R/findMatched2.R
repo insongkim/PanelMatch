@@ -1,7 +1,7 @@
 ####### Here begins coding up the estimator for "Synthetic Control for Multiple
 ####### Treated Units", the first approach in the TSCS paper updated on Aug 4
 
-findMatched2 <- function(unit.id, time.id, treatment, covariate, unit.name, dependent, data) {
+findMatched2 <- function(unit.id, time.id, treatment, covariate, dependent, unit.name, data) {
   # a list of lists to contain matched matrix for each treated observation
   master_list <- list()
   # a function to delete NULLs from a list
@@ -10,16 +10,21 @@ findMatched2 <- function(unit.id, time.id, treatment, covariate, unit.name, depe
   }
   
   # load the dataframe that the user specifies
-  data <- na.omit(data[c(unit.id, time.id, treatment, covariate, unit.name, dependent)]) # omit NAs 
-  colnames(data) <- c("unit.id", "time.id", "treatment", "covariate", "unit.name", "dependent") # rename variables to match with the object names in the loop below
-  data <- data[order(data$unit.id, data$time.id), ] # order by unit and time. This is important as the loop below works with 
-  # this order
-  data$unit.name <- as.character(data$unit.name)
-  if(is.numeric(data$unit.id) == FALSE | is.numeric(data$treatment) == FALSE | is.numeric(data$covariate) == FALSE 
-  | is.numeric(data$dependent) == FALSE | is.numeric(data$time.id) == FALSE)
-  stop("unit and time identifiers, treatment, covaraite and dependent variable all have to be numeric")
+  data <- na.omit(data[c(unit.id, time.id, treatment, covariate, dependent, unit.name)]) # omit NAs 
   
-  print("finding a matched set of control units for each treated observation...")
+  llist <- list()
+  for (i in 1:length(covariate)) {
+    llist[i] <- paste("covariate",i, sep = "")
+  }
+  
+  colnames(data) <- c("unit.id", "time.id", "treatment", llist, "dependent", "unit.name") # rename variables to match with the object names in the loop below
+  
+  data$unit.name <- as.character(data$unit.name)
+  data[1:(length(data)-1)] <- lapply(data[1:(length(data)-1)], function(x) as.numeric(as.character(x)))
+  data <- data[order(data$unit.id, data$time.id), ] # order by unit and time. This is important as the loop below works with 
+ 
+   # this order
+   print("finding a matched set of control units for each treated observation...")
   
   # the loop
   for (i in 1:nrow(data)) {
@@ -44,7 +49,7 @@ findMatched2 <- function(unit.id, time.id, treatment, covariate, unit.name, depe
   }
   
   newlist <- delete.NULLs(master_list)
-
+  
   print("computing regression weights...")
   
   # create a data.frame of weights that takes directly the unit.id and time.id from "data"
@@ -73,7 +78,7 @@ findMatched2 <- function(unit.id, time.id, treatment, covariate, unit.name, depe
                              controls.identifier = testid[-2], # the ids of all control units
                              time.optimize.ssr = mean(test$time.id), # the pre-treatment preiod
                              time.predictors.prior = mean(test$time.id),
-                             predictors = "covariate")
+                             predictors = as.character(llist))
     
     # extract weights: "solution.w" from "synth" output is the weights. 
     # we use cbind and rbind to combine these weights with the treated observation, which receives a weight of 1
@@ -83,7 +88,7 @@ findMatched2 <- function(unit.id, time.id, treatment, covariate, unit.name, depe
                            c(1, testid[2])), 
                      "time" = mean(test$time.id))
     names(weights)[2] <- "unit.id" # change the name to "unit.id" just for later
-                                   # merging purposes
+    # merging purposes
     
     # importantly, we merge the smaller dataset "weights" with new.W
     # so that the merged dataset has the nrow of N*T. This will make
@@ -104,5 +109,6 @@ findMatched2 <- function(unit.id, time.id, treatment, covariate, unit.name, depe
   data$weights <- new.W$weights 
   # return data
   return(data) # so that the returned object from this function will be 
-               # a ready-to-use dataframe with a variable storing all the weights
+  # a ready-to-use dataframe with a variable storing all the weights
 }
+
