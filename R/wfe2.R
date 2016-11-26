@@ -1,4 +1,4 @@
-wfe <- function (formula, data, treat = "treat.name",
+wfe2 <- function (formula, data, treat = "treat.name",
                  unit.index, time.index = NULL, method = "unit",
                  qoi = "ate", estimator = NULL, C.it = NULL,
                  hetero.se = TRUE, auto.se = TRUE,
