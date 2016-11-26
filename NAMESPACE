@@ -3,7 +3,7 @@ export(wfe, pwfe, wfe.heatmap, findMatched2, findMatched2_vectorized, findMatche
 
 importFrom(Rcpp, evalCpp)
 ## exportPattern("^[[:alpha:]]+")
-export(FindMatches, wfe)
+export(FindMatches, wfe, wfe2)
 
 
 
@@ -13,6 +13,10 @@ import(Matrix, MASS)
 S3method(summary, wfe)
 S3method(print, wfe)
 S3method(print, summary.wfe)
+
+S3method(summary, wfe2)
+S3method(print, wfe2)
+S3method(print, summary.wfe2)
 
 S3method(summary, pwfe)
 S3method(print, pwfe)
