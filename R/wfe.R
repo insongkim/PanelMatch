@@ -705,7 +705,7 @@ wfe <- function (formula, data, treat = "treat.name",
         }
         
         W <- matrix(WDiD, nrow=length(uniq.t), ncol=length(uniq.u), byrow=T)            
-        data$W.it <- d6$weights
+        data$W.it <- d2$weights
         
         if (verbose) { 
           cat("\nWeight calculation done \n")
