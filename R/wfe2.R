@@ -4,7 +4,7 @@ wfe2 <- function (formula, data, treat = "treat.name",
                  hetero.se = TRUE, auto.se = TRUE,
                  White = TRUE, White.alpha = 0.05,
                  verbose = TRUE, unbiased.se = FALSE, unweighted = FALSE,
-                 store.wdm = FALSE, maxdev.did= NULL,
+                 store.wdm = FALSE, maxdev.did= NULL, weights = NULL,
                  tol = sqrt(.Machine$double.eps)){
   
   
@@ -705,7 +705,7 @@ wfe2 <- function (formula, data, treat = "treat.name",
         }
         
         W <- matrix(WDiD, nrow=length(uniq.t), ncol=length(uniq.u), byrow=T)            
-        data$W.it <- d2$weights
+        data$W.it <- weights
         
         if (verbose) { 
           cat("\nWeight calculation done \n")
