@@ -30,3 +30,40 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// findDDmatched2
+List findDDmatched2(int L, int F, NumericMatrix x1);
+RcppExport SEXP sourceCpp_1_findDDmatched2(SEXP LSEXP, SEXP FSEXP, SEXP x1SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type L(LSEXP);
+    Rcpp::traits::input_parameter< int >::type F(FSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type x1(x1SEXP);
+    rcpp_result_gen = Rcpp::wrap(findDDmatched2(L, F, x1));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rbind_c
+NumericMatrix rbind_c(NumericMatrix x, NumericMatrix y);
+RcppExport SEXP sourceCpp_1_rbind_c(SEXP xSEXP, SEXP ySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type x(xSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type y(ySEXP);
+    rcpp_result_gen = Rcpp::wrap(rbind_c(x, y));
+    return rcpp_result_gen;
+END_RCPP
+}
+// all_sug
+bool all_sug(LogicalVector x);
+RcppExport SEXP sourceCpp_1_all_sug(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< LogicalVector >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(all_sug(x));
+    return rcpp_result_gen;
+END_RCPP
+}
+
