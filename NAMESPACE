@@ -3,7 +3,7 @@ export(wfe, pwfe, wfe.heatmap, findMatched2, syn_DID, findMatched, wfe2)
 
 importFrom(Rcpp, evalCpp)
 ## exportPattern("^[[:alpha:]]+")
-export(FindMatches, wfe, wfe2)
+export(FindMatches, findDDmatched2, wfe, wfe2)
 
 
 
