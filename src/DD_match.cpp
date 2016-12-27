@@ -4,14 +4,14 @@ using namespace Rcpp;
 
 
 
-// [[Rcpp::export]]
+// [[Rcpp::export()]]
 bool all_sug(LogicalVector x) {
   // Note the use of is_true to return a bool type.
   return is_true(all(x == TRUE));
 }
 
 
-// [[Rcpp::export]]
+// [[Rcpp::export()]]
 NumericMatrix rbind_c (NumericMatrix x, NumericMatrix y){
   NumericMatrix out (x.nrow()+y.nrow(), x.ncol());
   for (int r = 0; r < x.nrow(); r ++) {
@@ -24,7 +24,7 @@ NumericMatrix rbind_c (NumericMatrix x, NumericMatrix y){
   return out;
 }
 
-// [[Rcpp::export]]
+// [[Rcpp::export()]]
 List findDDmatched2(int L, int F, NumericMatrix x1) {
   int nrow1 = x1.nrow();
  
