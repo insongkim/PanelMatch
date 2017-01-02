@@ -1,9 +1,10 @@
 syn_DID <- function(L, F, time.id = "year", 
                     unit.id = "ccode",
-                    treatment, covariate, dependent) {
+                    treatment, covariate, dependent, d) {
 
 L <- L # set past history
 F <- F # set the future
+d <- d # set dataset
 
 varnames <- c(time.id, unit.id, treatment, covariate, dependent)
 
