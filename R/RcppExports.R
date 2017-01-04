@@ -17,4 +17,6 @@ rbind_c <- function(x, y) {
     .Call('wfe_rbind_c', PACKAGE = 'wfe', x, y)
 }
 
-
+findDDmatched2 <- function(L, F, x1) {
+    .Call('wfe_findDDmatched2', PACKAGE = 'wfe', L, F, x1)
+}
