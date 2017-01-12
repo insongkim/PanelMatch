@@ -9,4 +9,14 @@ FindMatches <- function(unitIdx, timeIdx, treat) {
     .Call('wfe_FindMatches', PACKAGE = 'wfe', unitIdx, timeIdx, treat)
 }
 
+all_sug <- function(x) {
+    .Call('wfe_all_sug', PACKAGE = 'wfe', x)
+}
 
+rbind_c <- function(x, y) {
+    .Call('wfe_rbind_c', PACKAGE = 'wfe', x, y)
+}
+
+findDDmatched2 <- function(L, F, x1) {
+    .Call('wfe_findDDmatched2', PACKAGE = 'wfe', L, F, x1)
+}
