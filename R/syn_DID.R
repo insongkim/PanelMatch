@@ -107,6 +107,39 @@ even_smaller1 <- Filter(function (x) x[x$V2 == unique(x$V2)[2] & x$V1 == unique(
 
 # brute forcing qoi
 all.diffs.weighted <- lapply(even_smaller1, cscwdid)
-qoi <- Reduce("+", all.diffs.weighted)/length(all.diffs.weighted)
-return(qoi)
+ATT <- Reduce("+", all.diffs.weighted)/length(all.diffs.weighted)
+
+
+### from 1 to zero ###
+d2$treat <- ifelse(d2$treat == 1, 0, 1)
+# as.matrix it so that it can work with the cpp function
+dmatrix <- as.matrix(d2)
+    
+### finding matches using the cpp function ###
+biglist <- findDDmatched2(L = L, F, dmatrix) # first argument is matched treatment history
+### finding matches using the cpp function ###
+    
+### cleaning the output from cpp ###
+# delete both higher level and lower level null entries
+smallerlist <- lapply(Filter(function (x) !is.null(x), biglist), delete.NULLs) 
+# further cleaning
+smallerlist <- Filter(function (x) length(x) > 0, smallerlist)
+# use function dframelist.rb_dup to turn every list element into a data.frame
+smallerlist <- lapply(smallerlist, dframelist.rb_dup)
+# subset out any dataframe that have 2 or fewer than 2 units
+smallerlist <- Filter(function (x) nrow(x) > 2*(L+F+1), smallerlist)
+    
+# only focus on ATT
+even_smaller2 <- Filter(function (x) x[x$V2 == unique(x$V2)[2] & x$V1 == unique(x$V1)[1], ]$V3 == 0, smallerlist)
+    
+# brute forcing qoi
+all.diffs.weighted2 <- lapply(even_smaller2, cscwdid)
+ATC <- Reduce("+", all.diffs.weighted2)/length(all.diffs.weighted2)
+ATC <- -(ATC) # make the sign correction
+    
+DID_ATE <- ifelse(length(ATC)>0,
+                      (ATT * length(all.diffs.weighted) + ATC * length(all.diffs.weighted2))
+                      /(length(all.diffs.weighted) + length(all.diffs.weighted2))
+                      , ATT)
+return(DID_ATE)
 }
