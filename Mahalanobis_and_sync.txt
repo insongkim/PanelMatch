@@ -1,1 +1,11 @@
-initialize
+We now have two new functions that implement weighted DID with weights created by synthetic control (hereafter "synthetic control DID"), and Mahalanobis distance matching DID (hereafter Mahalanobis DID).
+For synthetic control DID, the syntax is syn_DID(L, F, time.id = "year", 
+                    unit.id = "ccode",
+                    treatment, covariate, dependent, d). 
+The arguments are the following. "L" takes the lag we want to use to create matched sets. "F" takes how many period after the timing of treatment do we want to examine the treatment's total effect. Both arguments are numeric. "time.id" takes the character name of the time identifier, now defaulted to "year." "unit.id" takes the character name of the unit identifier, now defaulted to "ccode." "treatment" takes the character name of the treatment variable. "covariate" takes the character name(s) of the covariate(s) selected to construct synthetic weights. "dependent" takes the character name of the dependent variable. "d" is the name of the data object.
+
+For Mahalanobis DID, the syntax is syn_DID_MSMD(L, F, M = 1, time.id = "year", unit.id = "ccode", treatment, 
+                          covariate, dependent, data)
+The arguments are almost the same as the ones for synthetic control DID. The only differences are "M" and "covariates." "M" refers to how many units the user wants to match the treated unit with in a given matched set. The algorithm ranks the control units in terms of their Mahalanobis distances to the treated unit and take the first M units to match with the treated unit when computing the DID result (currently each unit receives a weight of 1). "covariates" now refers to character name(s) of the covariate(s) the user specifies when doing Mahalanobis distance computaiton. 
+
+Both functions will return a DID estimate for ATE. 
