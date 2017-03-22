@@ -1,7 +1,6 @@
 PS_DID <- function (L, F, M = 1, time.id = "year", unit.id = "ccode", treatment, 
                     covariate, dependent, data) 
 {
-  # setting L, F and M
   L <- L
   F <- F
   M <- M
@@ -10,7 +9,7 @@ PS_DID <- function (L, F, M = 1, time.id = "year", unit.id = "ccode", treatment,
                   function (i) slide(data = data, Var = dependent, GroupVar = unit.id, TimeVar = time.id, slideBy = -(i),
                                      NewVar = paste("dependent_l", i, sep="")))
   data <- Reduce(function(x, y) {merge(x, y)}, dlist)
-  varnames <- c(time.id, unit.id, treatment, dependent, c(covariate, names(data[, 7:length(data)])))
+  varnames <- c(time.id, unit.id, treatment, dependent, c(covariate, names(data[, (4 + length(covariate) + 1):length(data)])))
   d2 <- na.omit(data[varnames])
   d2[1:(length(d2))] <- lapply(d2[1:(length(d2))], function(x) as.numeric(as.character(x)))
   dmatrix <- as.matrix(d2)
@@ -27,7 +26,7 @@ PS_DID <- function (L, F, M = 1, time.id = "year", unit.id = "ccode", treatment,
     return(x)
   })
   even_smaller1 <- lapply(even_smaller1, function(x) {
-    x <- x[x$V1 != max(unique(x$V1)), ]
+    x <- x[x$V1 %in% sort(unique(x$V1))[1:(L+1)], ]
     return(x)
   })
   
@@ -42,7 +41,7 @@ PS_DID <- function (L, F, M = 1, time.id = "year", unit.id = "ccode", treatment,
   
   pooled <- rbindlist(even_smaller1)
   
-  fit0 <- glm(reformulate(response = treatment, termlabels = c(covariate, names(pooled[, 7:length(pooled)]))), 
+  fit0 <- glm(reformulate(response = treatment, termlabels = c(covariate, names(pooled[, (4 + length(covariate) + 1):length(pooled)]))), 
               family = binomial(link = "logit"), data = pooled)
   pooled$ps <- fit0$fitted.values
   
@@ -84,7 +83,7 @@ PS_DID <- function (L, F, M = 1, time.id = "year", unit.id = "ccode", treatment,
   
   pooled <- rbindlist(even_smaller2)
   
-  fit0 <- glm(reformulate(response = treatment, termlabels = c(covariate, names(pooled[, 7:length(pooled)]))), 
+  fit0 <- glm(reformulate(response = treatment, termlabels = c(covariate, names(pooled[, (4 + length(covariate) + 1):length(pooled)]))), 
               family = binomial(link = "logit"), data = pooled)
   pooled$ps <- fit0$fitted.values
   
