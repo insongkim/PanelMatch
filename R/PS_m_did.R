@@ -1,4 +1,5 @@
 PS_m_did <- function(x, L, FORWARD, M = M) {
+  # setting L, F and M
   L <- L
   FORWARD <- FORWARD
   M <- M

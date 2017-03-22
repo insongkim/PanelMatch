@@ -1,6 +1,7 @@
 PS_DID <- function (L, F, M = 1, time.id = "year", unit.id = "ccode", treatment, 
                     covariate, dependent, data) 
 {
+  # setting L, F and M
   L <- L
   F <- F
   M <- M
