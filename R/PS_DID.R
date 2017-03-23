@@ -68,7 +68,7 @@ PS_DID <- function (L, F, M = 1, time.id = "year", unit.id = "ccode", treatment,
     return(x)
   })
   even_smaller2 <- lapply(even_smaller2, function(x) {
-    x <- x[x$V1 != max(unique(x$V1)), ]
+    x <- x[x$V1 %in% sort(unique(x$V1))[1:(L+1)], ]
     return(x)
   })
   
