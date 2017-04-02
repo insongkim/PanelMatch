@@ -28,7 +28,7 @@ cscwdid <- function(x, L, FORWARD) {
 }
 
 ### writing a function to apply synthetic control and generate a weight vector of the same length as the dataset
-callSynth <- function (x, unit.id, time.id) {
+callSynth <- function (x, unit.id, time.id, d2) {
   testid <- unique(x$V2)
   timeid <- unique(x$V1)
   dataprep.out <- dataprep(foo = x, 
@@ -52,9 +52,12 @@ callSynth <- function (x, unit.id, time.id) {
                                    ifelse(merged$V1 == max(timeid) & merged$V2 %in% testid[-2], merged$w.weight, 
                                           ifelse(merged$V1 == max(timeid) - F - 1 & merged$V2 %in% testid[-2], -merged$w.weight, 0) 
                                    )))
-  new.W <- data.frame(unit.id, time.id) # create a new data.frame as large as the dataset
+  new.W <- d2[c(unit.id, time.id)] # create a new data.frame as large as the dataset
   names(new.W)[1:2] <- c("V2", "V1") # assigning names so as to merge it next
   total2 <- merge(new.W, merged, by = c("V2", "V1"), all= T) # merge, so now we have a full data.frame with weights
   total2$w.weight <- ifelse(is.na(total2$w.weight), 0, total2$w.weight) # turn NAs into zero
-  return (total2$w.weight) # return the weight variable
+  total2$dit <- 0
+  total2$dit[which(total2$V2 == testid[2] & total2$V1 == max(timeid))] <- 1
+  return (list("w.weight" = total2$w.weight, "dit" = total2$dit)) # return the weight variable
 } 
+
