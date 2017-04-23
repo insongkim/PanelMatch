@@ -4,6 +4,8 @@ syn_boot_gDiD <- function(d, unit.id = "ccode", time.id = "year", ITER = 10, qoi
                           treatment, dependent) {
   
   coefs <- rep(NA, ITER) 
+  dit.atts <- rep(NA, ITER)
+  dit.atcs <- rep(NA, ITER)
   if (qoi == "ATT") {
     o.coef <- syn_DID(L = L, F, unit.id = unit.id, treatment = treatment, time.id = time.id, dependent = dependent, 
                       covariate = covariate, d = d, qoi = "ATT")
@@ -20,11 +22,11 @@ syn_boot_gDiD <- function(d, unit.id = "ccode", time.id = "year", ITER = 10, qoi
       df.bs <- lapply(units, function(x) which(d[,unit.id]==x))
       d.sub1 <- d[unlist(df.bs),]
       colnames(d.sub1)[3:4] <- c("treatment", "dv")
-      att.new <- (sum(1 * d.sub1[d.sub1$treatment== 1, ]$dv * d.sub1[d.sub1$treatment== 1, ]$weights_att) -
-                    sum((d.sub1[d.sub1$treatment== 0, ]$treatment+1)*d.sub1[d.sub1$treatment== 0, ]$dv*d.sub1[d.sub1$treatment== 0, ]$weights_att))/sum(d.sub1$dit_att)
+      att.new <- sum(d.sub1$weights_att*(2*d.sub1$treatment-1)*d.sub1$dv)/sum(d.sub1$dit_att)
       coefs[k] <- att.new
+      dit.atts[k] <- sum(d.sub1$dit_att)
     }
-    return(list("o.coef" = o.coef, "boots" = coefs))
+    return(list("o.coef" = o.coef, "boots" = coefs, "ditatt" = d$dit_att))
   } else {
     o.coef <- syn_DID(L = L, F, unit.id = unit.id, treatment = treatment, time.id = time.id, dependent = dependent, 
                       covariate = covariate, d = d, qoi = "ATE")
@@ -41,14 +43,15 @@ syn_boot_gDiD <- function(d, unit.id = "ccode", time.id = "year", ITER = 10, qoi
       df.bs <- lapply(units, function(x) which(d[,unit.id]==x))
       d.sub1 <- d[unlist(df.bs),]
       colnames(d.sub1)[3:4] <- c("treatment", "dv")
-      att.new <- (sum(1 * d.sub1[d.sub1$treatment== 1, ]$dv * d.sub1[d.sub1$treatment== 1, ]$weights_att) -
-                    sum((d.sub1[d.sub1$treatment== 0, ]$treatment+1)*d.sub1[d.sub1$treatment== 0, ]$dv*d.sub1[d.sub1$treatment== 0, ]$weights_att))/sum(d.sub1$dit_att)
-      atc.new <- -((sum(1 * d.sub1[d.sub1$treatment== 0, ]$dv * d.sub1[d.sub1$treatment== 0, ]$weights_atc) -
-                      sum(1 * d.sub1[d.sub1$treatment== 1, ]$dv * d.sub1[d.sub1$treatment== 1, ]$weights_atc))/sum(d.sub1$dit_atc))
+      att.new <- sum(d.sub1$weights_att*(2*d.sub1$treatment-1)*d.sub1$dv)/sum(d.sub1$dit_att)
+      d.sub1$control <- ifelse(d.sub1$treatment == 1, 0, 1)
+      atc.new <- -sum(d.sub1$weights_atc*(2*d.sub1$control-1)*d.sub1$dv)/sum(d.sub1$dit_atc)
       coefs[k] <- (att.new*sum(d.sub1$dit_att) + atc.new*sum(d.sub1$dit_atc))/(sum(d.sub1$dit_att) + sum(d.sub1$dit_atc))
-      
+      dit.atts[k] <- sum(d.sub1$dit_att)
+      dit.atcs[k] <- sum(d.sub1$dit_atc)
     }
-    return(list("o.coef" = o.coef, "boots" = coefs))
+    return(list("o.coef" = o.coef, "boots" = coefs, "ditatt" = dit.atts,
+                "ditatc" = dit.atcs))
   }
   
 }
