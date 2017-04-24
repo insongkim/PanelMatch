@@ -5,8 +5,28 @@ wfe2 <- function (formula, data, treat = "treat.name",
                  White = TRUE, White.alpha = 0.05,
                  verbose = TRUE, unbiased.se = FALSE, unweighted = FALSE,
                  store.wdm = FALSE, maxdev.did= NULL, weights = NULL,
+                 covariate = "gdppc", L = 4, F = 0, 
+                 dependent = "Capacity",
                  tol = sqrt(.Machine$double.eps)){
   
+  ### INSERT WEIGHTS ###
+  qoi2 <- NA
+  if (qoi == "att") {
+    qoi2 <- "ATT"
+  } else {
+    qoi2 <- "ATE"
+  }
+  
+  data <- syn_DID_weights(L, F, time.id = time.index, qoi = qoi2,
+                          unit.id = unit.index,
+                          treatment = treat, covariate = covariate, 
+                          dependent = dependent, d = data)
+  data$weights <- NA
+  if (qoi == "att") {
+    data$weights <- data$weights_att
+  } else {
+    data$weights <- data$weights_att + data$weights_atc
+  }
   
   wfe.call <- match.call()
   ## set up data frame, with support for standard and modified responses
@@ -16,6 +36,8 @@ wfe2 <- function (formula, data, treat = "treat.name",
   tn.row <- nrow(mf) # total number of rows in data
   
   class(data) <- "data.frame"
+  
+
   
   ## ## remove missing variables: removing rows with missing values in either y or treat
   
@@ -33,6 +55,8 @@ wfe2 <- function (formula, data, treat = "treat.name",
   ## Creating dummies variables for White test in the end
   X <- as.data.frame(x[,-1])
   p <- ncol(X)
+  
+
   
   ## e <- environment()
   ## save(file = "temp.RData", list = ls(), env = e)
@@ -663,6 +687,7 @@ wfe2 <- function (formula, data, treat = "treat.name",
     ##     flush.console()
     ## }
     
+    
     ## Differences-in-difference
     if(( (method=="unit") & (qoi == "ate") & (!is.null(estimator) & estimator == "did")) |
        ( (method == "unit") & (qoi =="att") & (!is.null(estimator) & estimator == "did")) |
@@ -705,7 +730,7 @@ wfe2 <- function (formula, data, treat = "treat.name",
         }
         
         W <- matrix(WDiD, nrow=length(uniq.t), ncol=length(uniq.u), byrow=T)            
-        data$W.it <- weights
+        data$W.it <- data$weights
         
         if (verbose) { 
           cat("\nWeight calculation done \n")

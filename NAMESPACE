@@ -1,6 +1,6 @@
 useDynLib(wfe)
 export(wfe, pwfe, wfe.heatmap, findMatched2, findMatched,syn_DID, wfe2, syn_DID_MSMD, 
-       syn_boot_gDiD,
+       syn_boot_gDiD, syn_DID_check, syn_DID_weights,
        PS_DID)
 
 importFrom(Rcpp, evalCpp)
