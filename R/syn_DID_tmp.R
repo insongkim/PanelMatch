@@ -30,10 +30,10 @@ syn_DID_tmp <- function(L, F, time.id = "year", qoi = "ATE",
   # use function dframelist.rb_dup to turn every list element into a data.frame
   smallerlist <- lapply(smallerlist, dframelist.rb_dup)
   # subset out any dataframe that have 2 or fewer than 2 units
-  even_smaller1 <- Filter(function (x) nrow(x) > 2*(L+F+1), smallerlist)
+  smallerlist <- Filter(function (x) nrow(x) > 2*(L+F+1), smallerlist)
   
   # only focus on ATT
-  # even_smaller1 <- Filter(function (x) x[x$V2 == unique(x$V2)[2] & x$V1 == unique(x$V1)[1], ]$V3 == 0, smallerlist)
+  even_smaller1 <- Filter(function (x) x[x$V2 == unique(x$V2)[2] & x$V1 == unique(x$V1)[L], ]$V3 == 0, smallerlist)
   
   # brute forcing qoi
   all.diffs.weighted <- lapply(even_smaller1, cscwdid, L = L, FORWARD = FORWARD)
@@ -56,10 +56,10 @@ syn_DID_tmp <- function(L, F, time.id = "year", qoi = "ATE",
     # use function dframelist.rb_dup to turn every list element into a data.frame
     smallerlist <- lapply(smallerlist, dframelist.rb_dup)
     # subset out any dataframe that have 2 or fewer than 2 units
-    even_smaller2 <- Filter(function (x) nrow(x) > 2*(L+F+1), smallerlist)
+    smallerlist <- Filter(function (x) nrow(x) > 2*(L+F+1), smallerlist)
     
     # only focus on ATT
-   # even_smaller2 <- Filter(function (x) x[x$V2 == unique(x$V2)[2] & x$V1 == unique(x$V1)[1], ]$V3 == 0, smallerlist)
+    even_smaller2 <- Filter(function (x) x[x$V2 == unique(x$V2)[2] & x$V1 == unique(x$V1)[L], ]$V3 == 0, smallerlist)
     
     # brute forcing qoi
     all.diffs.weighted2 <- lapply(even_smaller2, cscwdid, L = L, FORWARD = FORWARD)
