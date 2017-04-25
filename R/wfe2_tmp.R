@@ -1,17 +1,17 @@
-wfe2 <- function (formula, data, treat = "treat.name",
-                 unit.index, time.index = NULL, method = "unit",
-                 qoi = "ate", estimator = NULL, C.it = NULL,
-                 hetero.se = TRUE, auto.se = TRUE,
-                 White = TRUE, White.alpha = 0.05,
-                 verbose = TRUE, unbiased.se = FALSE, unweighted = FALSE,
-                 store.wdm = FALSE, maxdev.did= NULL, weights = NULL,
-                 covariate = "gdppc", L, F = 0, 
-                 dependent = "Capacity",
-                 tol = sqrt(.Machine$double.eps)){
+wfe2_tmp <- function (formula, data, treat = "treat.name",
+                  unit.index, time.index = NULL, method = "unit",
+                  qoi = "ate", estimator = NULL, C.it = NULL,
+                  hetero.se = TRUE, auto.se = TRUE,
+                  White = TRUE, White.alpha = 0.05,
+                  verbose = TRUE, unbiased.se = FALSE, unweighted = FALSE,
+                  store.wdm = FALSE, maxdev.did= NULL, weights = NULL,
+                  covariate = "gdppc", L, F = 0, 
+                  dependent = "Capacity",
+                  tol = sqrt(.Machine$double.eps)){
   
   ### INSERT WEIGHTS ###
   
-  data <- syn_DID_weights(L = L, F = F, time.id = time.index, qoi = qoi,
+  data <- syn_DID_weights_tmp(L = L, F = F, time.id = time.index, qoi = qoi,
                           unit.id = unit.index,
                           treatment = treat, covariate = covariate, 
                           dependent = dependent, d = data)
@@ -31,7 +31,7 @@ wfe2 <- function (formula, data, treat = "treat.name",
   
   class(data) <- "data.frame"
   
-
+  
   
   ## ## remove missing variables: removing rows with missing values in either y or treat
   
@@ -50,7 +50,7 @@ wfe2 <- function (formula, data, treat = "treat.name",
   X <- as.data.frame(x[,-1])
   p <- ncol(X)
   
-
+  
   
   ## e <- environment()
   ## save(file = "temp.RData", list = ls(), env = e)

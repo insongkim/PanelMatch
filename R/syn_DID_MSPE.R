@@ -1,8 +1,10 @@
-# L = 2; F = 0; time.id = "year"; unit.id = "ccode"; treatment = "demo"; covariate = "gdppc"; dependent = "Capacity"
-syn_DID_weights <- function(L, F, time.id = "year", qoi = "ate",
-                            unit.id = "ccode",
-                            treatment, covariate, dependent, d) {
+syn_DID_MSPE <- function(L, F, time.id = "year", qoi = "ATE",
+                             unit.id = "ccode",
+                             treatment, covariate, dependent, d) {
   
+  L <- L # set past history
+  F <- F # set the future
+  FORWARD <- F
   d <- d # set dataset
   
   varnames <- c(time.id, unit.id, treatment, covariate, dependent)
@@ -22,7 +24,7 @@ syn_DID_weights <- function(L, F, time.id = "year", qoi = "ate",
   
   ### cleaning the output from cpp ###
   # delete both higher level and lower level null entries
-  smallerlist <- lapply(Filter(function (x) !is.null(x), findDDmatched2(L = L, F, dmatrix)), delete.NULLs) 
+  smallerlist <- lapply(Filter(function (x) !is.null(x), findDDmatched2(L, F, dmatrix)), delete.NULLs) 
   # further cleaning
   smallerlist <- Filter(function (x) length(x) > 0, smallerlist)
   # use function dframelist.rb_dup to turn every list element into a data.frame
@@ -33,17 +35,8 @@ syn_DID_weights <- function(L, F, time.id = "year", qoi = "ate",
   # only focus on ATT
   even_smaller1 <- Filter(function (x) x[x$V2 == unique(x$V2)[2] & x$V1 == unique(x$V1)[1], ]$V3 == 0, smallerlist)
   
-  # d.sum1 <- length(even_smaller1) 
-  
-  # calibrating weights
-  weights_and_dits <- lapply(even_smaller1, callSynth, unit.id = unit.id, time.id = time.id,
-                             d2 = d2)
-  all.weights <- (lapply(weights_and_dits, function (x) x$w.weight))
-  all.dits <- (lapply(weights_and_dits, function (x) x$dit))
-  d2$weights_att <- Reduce("+", all.weights)
-  d2$dit_att <- Reduce("+", all.dits)
-  if (qoi == "att") {
-    return(d2)
+  if (qoi == "ATT") {
+    return(sapply(even_smaller1, cscMSPE, L = L, FORWARD = FORWARD))
   } else {
     ### from 1 to zero ###
     dmatrix[,3] <- ifelse(dmatrix[,3] == 1, 0, 1)
@@ -62,20 +55,12 @@ syn_DID_weights <- function(L, F, time.id = "year", qoi = "ate",
     # subset out any dataframe that have 2 or fewer than 2 units
     smallerlist <- Filter(function (x) nrow(x) > 2*(L+F+1), smallerlist)
     
-    # only focus on ATC
+    # only focus on ATT
     even_smaller2 <- Filter(function (x) x[x$V2 == unique(x$V2)[2] & x$V1 == unique(x$V1)[1], ]$V3 == 0, smallerlist)
     
-    # d.sum2 <- length(even_smaller2) 
+    return(list("MSPE for ATT" = sapply(even_smaller1, cscMSPE, L = L, FORWARD = FORWARD),
+                "MSPE for ATC" = sapply(even_smaller2, cscMSPE, L = L, FORWARD = FORWARD)))
     
-    # calibrating weights
-    weights_and_dits <- lapply(even_smaller2, callSynth, unit.id = unit.id, time.id = time.id,
-                               d2 = d2)
-    all.weights <- (lapply(weights_and_dits, function (x) x$w.weight))
-    all.dits <- (lapply(weights_and_dits, function (x) x$dit))
-    d2$weights_atc <- Reduce("+", all.weights)
-    d2$dit_atc <- Reduce("+", all.dits)
-    
-    return(d2)
   }
   
 }

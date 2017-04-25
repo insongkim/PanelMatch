@@ -61,3 +61,44 @@ callSynth <- function (x, unit.id, time.id, d2) {
   return (list("w.weight" = total2$w.weight, "dit" = total2$dit)) # return the weight variable
 } 
 
+# diagnostics
+cscwplot <- function(x, L, FORWARD, Main = "ATT", dependent.label) {
+  L <- L; FORWARD <- FORWARD
+  testid <- unique(x$V2)
+  timeid <- unique(x$V1)
+  dataprep.out <- dataprep(foo = x, 
+                           dependent = "V5",
+                           unit.variable = "V2",
+                           # unit.names.variable = "unit.name",
+                           time.variable = "V1",
+                           treatment.identifier = testid[2], # the regionno of the treated unit
+                           controls.identifier = testid[-2],
+                           time.optimize.ssr = min(timeid):max(timeid-F-1), # the pre-treatment preiod
+                           time.predictors.prior = min(timeid):max(timeid-F-1),
+                           predictors = "V4")
+  synth.out <- synth(data.prep.obj = dataprep.out, method = "BFGS") # calibrate the weights
+  # plot the pre-treatment gaps
+  gaps.plot(synth.res = synth.out, dataprep.res = dataprep.out, Main = Main,
+            Ylab = paste("Gaps between real and synthetic", dependent.label))
+}
+
+cscMSPE <- function(x, L, FORWARD) {
+  L <- L; FORWARD <- FORWARD
+  testid <- unique(x$V2)
+  timeid <- unique(x$V1)
+  dataprep.out <- dataprep(foo = x, 
+                           dependent = "V5",
+                           unit.variable = "V2",
+                           # unit.names.variable = "unit.name",
+                           time.variable = "V1",
+                           treatment.identifier = testid[2], # the regionno of the treated unit
+                           controls.identifier = testid[-2],
+                           time.optimize.ssr = min(timeid):max(timeid-F-1), # the pre-treatment preiod
+                           time.predictors.prior = min(timeid):max(timeid-F-1),
+                           predictors = "V4")
+  synth.out <- synth(data.prep.obj = dataprep.out, method = "BFGS") # calibrate the weights
+  # use rbind and cbind to add to the weights a weight vector of 1s for the treated observation,
+  # then making it a data.frame so as to merge it in the next step
+  return(synth.out$loss.v)
+}
+

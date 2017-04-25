@@ -1,6 +1,7 @@
 useDynLib(wfe)
 export(wfe, pwfe, wfe.heatmap, findMatched2, findMatched,syn_DID, wfe2, syn_DID_MSMD, 
-       syn_boot_gDiD, syn_DID_check, syn_DID_weights,
+       syn_boot_gDiD, syn_DID_check, syn_DID_weights, syn_DID_gapsplot, 
+       syn_DID_MSPE, syn_DID_tmp, syn_DID_weights_tmp, wfe2_tmp,
        PS_DID)
 
 importFrom(Rcpp, evalCpp)
@@ -19,6 +20,10 @@ S3method(print, summary.wfe)
 S3method(summary, wfe2)
 S3method(print, wfe2)
 S3method(print, summary.wfe2)
+
+S3method(summary, wfe2_tmp)
+S3method(print, wfe2_tmp)
+S3method(print, summary.wfe2_tmp)
 
 S3method(summary, pwfe)
 S3method(print, pwfe)
