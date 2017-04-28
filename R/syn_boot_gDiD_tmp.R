@@ -11,7 +11,7 @@ syn_boot_gDiD_tmp <- function(d, unit.id = "ccode", time.id = "year", ITER = 10,
   if (qoi == "ATT") {
     o.coef <- syn_DID_tmp(L = L, F, unit.id = unit.id, treatment = treatment, time.id = time.id, dependent = dependent, 
                             covariate = covariate, d = d, qoi = "ATT")
-    d <- syn_DID_weights_tmp(L = L, F, time.id = time.id, qoi = "ATT",
+    d <- syn_DID_weights_tmp(L = L, FORWARD = F, time.id = time.id, qoi = "ATT",
                          unit.id = unit.id,
                          treatment = treatment, covariate = covariate, dependent, d)
     d <- na.omit(d[c(unit.id, time.id, treatment, dependent,
@@ -34,7 +34,7 @@ syn_boot_gDiD_tmp <- function(d, unit.id = "ccode", time.id = "year", ITER = 10,
   } else {
     o.coef <- syn_DID_tmp(L = L, F, unit.id = unit.id, treatment = treatment, time.id = time.id, dependent = dependent, 
                             covariate = covariate, d = d, qoi = "ATE")
-    d <- syn_DID_weights_tmp(L = L, F, time.id = time.id, qoi = "ATE",
+    d <- syn_DID_weights_tmp(L = L, FORWARD = F, time.id = time.id, qoi = "ATE",
                          unit.id = unit.id,
                          treatment = treatment, covariate = covariate, dependent, d)
     d <- na.omit(d[c(unit.id, time.id, treatment, dependent, weights_atc,

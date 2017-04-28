@@ -5,13 +5,13 @@ wfe2_tmp <- function (formula, data, treat = "treat.name",
                   White = TRUE, White.alpha = 0.05,
                   verbose = TRUE, unbiased.se = FALSE, unweighted = FALSE,
                   store.wdm = FALSE, maxdev.did= NULL, weights = NULL,
-                  covariate = "gdppc", L, F = 0, 
+                  covariate = "gdppc", L, FORWARD = 0, 
                   dependent = "Capacity",
                   tol = sqrt(.Machine$double.eps)){
   
   ### INSERT WEIGHTS ###
   
-  data <- syn_DID_weights_tmp(L = L, F = F, time.id = time.index, qoi = qoi,
+  data <- syn_DID_weights_tmp(L = L, FORWARD = FORWARD, time.id = time.index, qoi = qoi,
                           unit.id = unit.index,
                           treatment = treat, covariate = covariate, 
                           dependent = dependent, d = data)
