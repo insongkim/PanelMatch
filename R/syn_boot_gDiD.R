@@ -9,7 +9,7 @@ syn_boot_gDiD <- function(d, unit.id = "ccode", time.id = "year", ITER = 10, qoi
   wit.atts <- list()
   wit.atcs <- list()
   if (qoi == "ATT") {
-    o.coef <- syn_DID_check(L = L, F, unit.id = unit.id, treatment = treatment, time.id = time.id, dependent = dependent, 
+    o.coef <- syn_DID(L = L, F, unit.id = unit.id, treatment = treatment, time.id = time.id, dependent = dependent, 
                       covariate = covariate, d = d, qoi = "ATT")
     d <- syn_DID_weights(L = L, F, time.id = time.id, qoi = "ATT",
                          unit.id = unit.id,
@@ -32,7 +32,7 @@ syn_boot_gDiD <- function(d, unit.id = "ccode", time.id = "year", ITER = 10, qoi
     return(list("o.coef" = o.coef, "boots" = coefs, "ditatt" = d$dit_att,
                 "witatts" = wit.atts))
   } else {
-    o.coef <- syn_DID_check(L = L, F, unit.id = unit.id, treatment = treatment, time.id = time.id, dependent = dependent, 
+    o.coef <- syn_DID(L = L, F, unit.id = unit.id, treatment = treatment, time.id = time.id, dependent = dependent, 
                       covariate = covariate, d = d, qoi = "ATE")
     d <- syn_DID_weights(L = L, F, time.id = time.id, qoi = "ATE",
                          unit.id = unit.id,
