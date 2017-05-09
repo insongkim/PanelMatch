@@ -5,10 +5,9 @@ wfe2_tmp2 <- function (formula, data, treat = "treat.name",
                  White = TRUE, White.alpha = 0.05,
                  verbose = TRUE, unbiased.se = FALSE, unweighted = FALSE,
                  store.wdm = FALSE, maxdev.did= NULL, weights = NULL,
-                 covariate = "gdppc", L, FORWARD = 0, 
-                 dependent = "Capacity",
+                 covariate = "gdppc", L, FORWARD = 0,
                  tol = sqrt(.Machine$double.eps)){
-  
+  dependent = all.vars(formula)[1]
   data <- syn_DID_weights_tmp(L = L, FORWARD = FORWARD, time.id = time.index, qoi = qoi,
                               unit.id = unit.index,
                               treatment = treat, covariate = covariate, 
