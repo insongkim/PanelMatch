@@ -94,9 +94,9 @@ wfe <- function (formula, data, treat = "treat.name",
   }
   
   
-  ### --------------------------------------------------------
-  ### Unit and Time index
-  ### -------------------------------------------------------- 
+  ## --------------------------------------------------------
+  ## Unit and Time index
+  ## -------------------------------------------------------- 
   ## Creating time index for strata fixed effect analysis
   
   ## storing original unit and time index
@@ -927,34 +927,6 @@ wfe <- function (formula, data, treat = "treat.name",
       fn.dummies <- ncol(D) # final number of dummies
       
       
-      #########################################################################
-      ### calculating XWX.inverse with brute force inversion
-      
-      ## if (verbose)
-      ##   cat("\n XWX.inverse using ginv \n")
-      ## flush.console()
-      
-      ## X1 <- Matrix(cBind(D, X))
-      
-      ## ## deleting the column of 1000
-      ## X1 <- X1[,-(ncol(X1)-1)]
-      
-      ## W.matrix <- Diagonal(x = data$W.it[nz.index], n = tn.row)
-      
-      ## ## XWX.inverse <- ginv(as.matrix(t(X1) %*% W.matrix %*% X1))
-      ## XWX.inverse <- ginv(as.matrix(crossprod(X1, W.matrix) %*% X1))
-      
-      ## beta.ginv <- XWX.inverse%*%(crossprod(X1, W.matrix)%*%Y)
-      
-      ## true.resid <- Y -  X1%*%beta.ginv
-      
-      ## print(beta.ginv)
-      
-      ## e <- environment()
-      ## save(file = "temp.RData", list = ls(), env = e)
-      
-      
-      
       
       ### Projection onto Complex-plane
       
@@ -1245,144 +1217,6 @@ wfe <- function (formula, data, treat = "treat.name",
       rm(Transformed)
       gc()
       
-      
-      
-      
-      #########################################################################
-      ### Transform in C
-      
-      
-      ## if (tn.row > 46000) {
-      ##   if (verbose) {
-      ##     cat("\n Projection with C\n")
-      ##     flush.console()
-      ##   }
-      
-      ##   n.var <- ncol(x.starL[[1]])+1
-      
-      ##   P1L.first <- P1L.second <- P1L.third <- P1L.fourth <- P1L.fifth <- list()
-      ##   n.first <- floor(tn.row/5)
-      ##   n.second <- 2*n.first
-      ##   n.third <- 3*n.first
-      ##   n.fourth <- 4*n.first
-      
-      ##   P1L.first[[1]] <- P1L[[1]][,1:n.first]
-      ##   P1L.first[[2]] <- P1L[[2]][,1:n.first]
-      ##   P1L.second[[1]] <- P1L[[1]][,((n.first+1):n.second)]
-      ##   P1L.second[[2]] <- P1L[[2]][,((n.first+1):n.second)]
-      ##   P1L.third[[1]] <- P1L[[1]][,((n.second+1):n.third)]
-      ##   P1L.third[[2]] <- P1L[[2]][,((n.second+1):n.third)]
-      ##   P1L.fourth[[1]] <- P1L[[1]][,((n.third+1):n.fourth)]
-      ##   P1L.fourth[[2]] <- P1L[[2]][,((n.third+1):n.fourth)]
-      ##   P1L.fifth[[1]] <- P1L[[1]][,((n.fourth+1):tn.row)]
-      ##   P1L.fifth[[2]] <- P1L[[2]][,((n.fourth+1):tn.row)]
-      
-      ##   e <- environment()
-      ##   save(file = "temp.RData", list = ls(), env = e)
-      
-      ##   rm(P1L)
-      ##   gc()
-      ##   cat("Dimension of Q.QQinv:" ,dim(Q.QQinv[[1]]), "\n")
-      
-      
-      ##   ## Projection <- ProjectionM(matrix(complex(real=as.vector(Q.QQinv[[1]]), imag=as.vector(Q.QQinv[[2]])), nrow=tn.row),
-      ##   ##                           Q.matrix,
-      ##   ##                           matrix(complex(real=as.vector(P1L.first[[1]]), imag=as.vector(P1L.first[[2]])), nrow=tn.row),
-      ##   ##                           matrix(complex(real=as.vector(P1L.second[[1]]), imag=as.vector(P1L.second[[2]])), nrow=tn.row),
-      ##   ##                           matrix(complex(real=as.vector(P1L.third[[1]]), imag=as.vector(P1L.third[[2]])), nrow=tn.row),
-      ##   ##                           matrix(complex(real=as.vector(y.starL[[1]]), imag=as.vector(y.starL[[2]])), nrow=tn.row),
-      ##   ##                           matrix(complex(real=as.vector(x.starL[[1]]), imag=as.vector(x.starL[[2]])), nrow=tn.row),
-      ##   ##                           tn.row, ncol(Q.matrix), n.var, n.first, n.second
-      ##   ##                           )
-      
-      
-      
-      
-      ## Projection <- ProjectionM(complex(real=as.vector(Q.QQinv[[1]]), imag=as.vector(Q.QQinv[[2]])),
-      ##                           Q.matrix,
-      ##                           complex(real=as.vector(P1L.first[[1]]), imag=as.vector(P1L.first[[2]])),
-      ##                           complex(real=as.vector(P1L.second[[1]]), imag=as.vector(P1L.second[[2]])),
-      ##                           complex(real=as.vector(P1L.third[[1]]), imag=as.vector(P1L.third[[2]])),
-      ##                           complex(real=as.vector(P1L.fourth[[1]]), imag=as.vector(P1L.fourth[[2]])),
-      ##                           complex(real=as.vector(P1L.fifth[[1]]), imag=as.vector(P1L.fifth[[2]])),
-      ##                           complex(real=as.vector(y.starL[[1]]), imag=as.vector(y.starL[[2]])),
-      ##                           complex(real=as.vector(x.starL[[1]]), imag=as.vector(x.starL[[2]])),
-      ##                           tn.row, ncol(Q.matrix), n.var, n.first, n.second, n.third, n.fourth
-      ##                           )
-      
-      ##   rm(Q.QQinv, Q.matrix, P1L.first, P1L.second, P1L.third, P1L.fourth, P1L.fifth, y.starL, x.starL)
-      ##   gc()
-      
-      ##   Transformed <- matrix(Projection, nrow=tn.row, ncol = n.var)
-      
-      ##   y.tilde <- Transformed[,1]
-      ##   X.tilde <- as.matrix(Transformed[,-1])
-      
-      ## } else { 
-      
-      ### Transform in R
-      
-      ## if (verbose) {
-      ##     cat("\n Projection with Sparse Matrix\n")
-      ##     flush.console()
-      ##   }
-      
-      ##   ## P2 takes up lots of memory (sparse matrix but not many zero elements)
-      ##   P2 <- Sparse_compMatrix_tcrossprod(Q.QQinv[[1]], Q.QQinv[[2]], Q[[1]],  Q[[2]])
-      ##   rm(Q.QQinv, Q)
-      ##   gc()
-      
-      ##   if (verbose) {
-      ##     cat("\n Par2L created\n")
-      ##     flush.console()
-      ##   }
-      
-      ##   PL[[1]] <- drop0(P1L[[1]] + P2[[1]])
-      ##   PL[[2]] <- drop0(P1L[[2]] + P2[[2]])
-      
-      
-      ##   rm(P1L, P2)
-      ##   gc()
-      
-      ##   if (verbose) {
-      ##     cat("\n PL created\n")
-      ##     flush.console()
-      ##   }
-      
-      ##   TwayTransL <- list()
-      ##   TwayTransL[[1]] <- drop0(Diagonal(x=1, n=nrow(PL[[1]])) - PL[[1]])
-      ##   TwayTransL[[2]] <- drop0(Diagonal(x=0, n=nrow(PL[[1]])) - PL[[2]])
-      ##   ## print(TwayTransL[[1]][1:6, 1:6])
-      ##   ## print(TwayTransL[[2]][1:6, 1:6])
-      
-      ##   if (verbose) {
-      ##     cat("\n TwayTransL created\n")
-      ##     flush.console()
-      ##   }
-      
-      
-      ##   y.tildeL <- Sparse_compMatrixMultiply(TwayTransL[[1]], TwayTransL[[2]], y.starL[[1]], y.starL[[2]])
-      ##   X.tildeL <- Sparse_compMatrixMultiply(TwayTransL[[1]], TwayTransL[[2]], x.starL[[1]], x.starL[[2]])
-      
-      
-      ##   rm(TwayTransL)
-      ##   gc()
-      
-      ##   y.tilde <- as.matrix(complex(real=as.vector(y.tildeL[[1]]), imag=as.vector(y.tildeL[[2]])))
-      ##   X.tilde <- matrix(complex(real=as.vector(X.tildeL[[1]]), imag=as.vector(X.tildeL[[2]])), nrow=tn.row)
-      ##   rm(y.tildeL, X.tildeL)
-      ##   gc()
-      
-      ## }
-      
-      ## if (verbose) {
-      ##   cat("\n Projection done\n")
-      ##   flush.console()
-      ## }
-      
-      #########################################################################
-      
-      
       if (ncol(X.tilde) == 1) {
         colnames(X.tilde) <- a[3]
       } else {
@@ -1404,7 +1238,7 @@ wfe <- function (formula, data, treat = "treat.name",
       ## save(file = "temp.RData", list = ls(), env = e)
       
       
-      ### heteroskedasticity robust standard errors
+      ## heteroskedasticity robust standard errors
       
       ## if (verbose) {
       ##   cat("\nStd.error calculation start\n")
@@ -1413,11 +1247,10 @@ wfe <- function (formula, data, treat = "treat.name",
       ## }
       
       
-      
-      ### (Robust) standard errors (GMM asymptotic variance for wfe)
+      ## #######################################################################            
+      ## (Robust) standard errors (GMM asymptotic variance for wfe)
       ## calculating GMM standard errors
-      
-      #########################################################################
+      ## #######################################################################
       
       ## weighted residuals
       e.tilde <- (y.tilde - X.tilde %*% betaT)
@@ -1459,30 +1292,88 @@ wfe <- function (formula, data, treat = "treat.name",
       
       ## cat("sigma2", sigma2, "\n")
       
+      
+      ## e <- environment()
+      ## save(file = "temp.RData", list = ls(), env = e)
+      
+      ## two-way WFE robust standard errors calculation
+      
       if ((hetero.se == TRUE) & (auto.se == TRUE)){
         
         ## 1. arbitrary autocorrelation as well as heteroskedasticity (Eq 12)
         std.error <- "Heteroscedastic / Autocorrelation Robust Standard Error"
         ## stop ("Robust standard errors with autocorrelation is currently not supported")
         
-        ## degrees of freedom adjustment
-        ## cat("degrees of freedom:", J.u, J.t, p, "\n")
-        df.adjust <- 1/(nrow(X.tilde)) * ((nrow(X.tilde)-1)/(nrow(X.tilde)-J.u-J.t-p+1)) * (J.u/(J.u-1))
-        
-        Omega.hat.HAC <- as.double(comp_OmegaHAC(c(X.tilde), e.tilde, c(X.tilde), e.tilde, dim(X.tilde)[1], dim(X.tilde)[2], data$u.index, J.u))
-        Omega.hat.HAC <- matrix(Omega.hat.HAC, nrow=ncol(X.tilde), ncol=ncol(X.tilde), byrow=T)
-        ## Omega.hat.HAC <- (1/(nrow(X.tilde)-J.u-J.t-p+1))* Omega.hat.HAC
-        ## Omega.hat.HAC <- (1/(nrow(X.tilde)))* Omega.hat.HAC 
-        ## Omega.hat.HAC <- df.adjust * Omega.hat.HAC
-        Omega.hat.HAC <- (1/J.u) * Omega.hat.HAC
-        
-        
-        ## check positive definiteness of Omega.hat.HAC
-        if ( sum(as.numeric(eigen(Omega.hat.HAC)$values < 0)) > 0 ) {
-          ## cat ("*** Omega.hat is not positive definite ***\n")                    
-          stop ("*** Omega.hat is not positive definite ***")
-          
+        ## Remove observations with zero weights
+        zero.ind <- which(data$W.it==0)
+        if(length(zero.ind)>0){
+          data <- data[-zero.ind, ]
         }
+        Nnonzero <- nrow(data)
+        
+        ## Demean data
+        ## -----------------------------------------------------
+        ## 2way demean variables 
+        ## -----------------------------------------------------
+        
+        x.vars <- colnames(x)
+        x.vars <- x.vars[-grep("Intercept", x.vars)]
+        variables <- c("y", x.vars)
+        
+        DemeanedMatrix <- matrix(NA, nrow=nrow(data), ncol=length(variables))
+        colnames(DemeanedMatrix) <- variables
+        year.counts <- as.numeric(table(data$unit))
+        unit.counts <- as.numeric(table(data$time))
+        obs.counts <- nrow(data)
+        
+        for(k in 1:length(variables)){
+          v <- variables[k]
+          cmd1 <- paste("demean.unit <- tapply(data$", v, ", as.factor(data$u.index), mean, na.rm=T)", sep="")
+          cmd2 <- paste("demean.time <- tapply(data$", v, ", as.factor(data$t.index), mean, na.rm=T)", sep="")
+          cmd3 <- paste("demean.all <- mean(data$", v, ", na.rm=T)", sep="")
+          cmd4 <- paste("demean.units <- demean.unit[data$u.index]", sep="")
+          cmd5 <- paste("demean.times <- demean.time[data$t.index]", sep="")
+          cmd6 <- paste("demean.alls <- rep(demean.all, times=obs.counts)", sep="")
+          cmd7 <- paste("DemeanedMatrix[,k] <- data$", v, "- demean.units - demean.times + demean.alls", sep="")
+          
+          eval(parse(text=cmd1))
+          eval(parse(text=cmd2))
+          eval(parse(text=cmd3))
+          eval(parse(text=cmd4))
+          eval(parse(text=cmd5))
+          eval(parse(text=cmd6))
+          eval(parse(text=cmd7))
+        }
+        ## verify: should return the same results (checked!)
+        ## lm(y~ as.factor(u.index) + as.factor(t.index) + tr+x1+x2, data=data)
+        ## lm(DemeanedMatrix[,1]~ -1 + DemeanedMatrix[,-1])
+        
+        ## standard error calculation
+        n.units <- length(unique(data$u.index))
+        U <- matrix(0, nrow=length(x.vars), ncol=length(x.vars))
+        V <- matrix(0, nrow=length(x.vars), ncol=length(x.vars))
+        Beta <- as.matrix(coef.wls)
+        
+        for(g in 1:length(n.units)){
+          Y.dm <- DemeanedMatrix[which(data$u.index==g),1]
+          X.dm <- DemeanedMatrix[which(data$u.index==g),-1]
+          W.diag <- diag(data$W.it[data$u.index==g])
+          
+          U.i <- t(X.dm) %*% W.diag %*% X.dm
+          U <- U + U.i
+          V.i.tmp <- t(X.dm) %*% W.diag %*% (Y.dm-X.dm %*% Beta) %*% t(Y.dm-X.dm %*% Beta) %*% W.diag %*% X.dm
+          V.i <- V.i.tmp %*% t(V.i.tmp)
+          V <- V + V.i
+        }
+        
+        ## asymptotic variance using Methods of Moments
+        inv.U <- solve(1/Nnonzero * U)
+        V <- 1/Nnonzero * V
+        Psi.hat.wfe <- inv.U %*% V %*% inv.U
+        
+        ## -----------------------------------------------------
+        ## vcov matrix for FE for White statistics calculation
+        ## -----------------------------------------------------
         
         
         Omega.hat.fe.HAC <- OmegaHatHAC(nrow(X.hat), ncol(X.hat), data$u.index, J.u, X.hat, u.hat)
@@ -1490,18 +1381,51 @@ wfe <- function (formula, data, treat = "treat.name",
         ## Omega.hat.fe.HAC <- (1/(nrow(X.hat)-J.u-J.t-p)) * Omega.hat.fe.HAC
         Omega.hat.fe.HAC <- (1/J.u) * Omega.hat.fe.HAC
         
-        
-        ## Psi.hat.wfe <- ((nrow(X.tilde))*ginv.XX.tilde) %*% Omega.hat.HAC %*% ((nrow(X.tilde))*ginv.XX.tilde)
         ## Psi.hat.fe <- (nrow(X.hat)*ginv.XX.hat) %*% Omega.hat.fe.HAC %*% (nrow(X.hat)*ginv.XX.hat)
-        
-        Psi.hat.wfe <- (J.u*ginv.XX.tilde) %*% Omega.hat.HAC %*% (J.u*ginv.XX.tilde)
         Psi.hat.fe <- (J.u*ginv.XX.hat) %*% Omega.hat.fe.HAC %*% (J.u*ginv.XX.hat)
-        
         ## garbage collection
-        rm(Omega.hat.HAC, Omega.hat.fe.HAC)
-        gc()
+        rm(Omega.hat.fe.HAC)
+        
+        
+        ## -----------------------------------------------------
+        ## old code 
+        ## -----------------------------------------------------
+        
+        ## ## degrees of freedom adjustment
+        ## ## cat("degrees of freedom:", J.u, J.t, p, "\n")
+        ## df.adjust <- 1/(nrow(X.tilde)) * ((nrow(X.tilde)-1)/(nrow(X.tilde)-J.u-J.t-p+1)) * (J.u/(J.u-1))
+        
+        ## Omega.hat.HAC <- as.double(comp_OmegaHAC(c(X.tilde), e.tilde, c(X.tilde), e.tilde, dim(X.tilde)[1], dim(X.tilde)[2], data$u.index, J.u))
+        ## Omega.hat.HAC <- matrix(Omega.hat.HAC, nrow=ncol(X.tilde), ncol=ncol(X.tilde), byrow=T)
+        ## ## Omega.hat.HAC <- (1/(nrow(X.tilde)-J.u-J.t-p+1))* Omega.hat.HAC
+        ## ## Omega.hat.HAC <- (1/(nrow(X.tilde)))* Omega.hat.HAC 
+        ## ## Omega.hat.HAC <- df.adjust * Omega.hat.HAC
+        ## Omega.hat.HAC <- (1/J.u) * Omega.hat.HAC
+        
+        
+        ## ## check positive definiteness of Omega.hat.HAC
+        ## if ( sum(as.numeric(eigen(Omega.hat.HAC)$values < 0)) > 0 ) {
+        ##     ## cat ("*** Omega.hat is not positive definite ***\n")                    
+        ##     stop ("*** Omega.hat is not positive definite ***")
+        
+        ## }
+        
+        ## Omega.hat.fe.HAC <- OmegaHatHAC(nrow(X.hat), ncol(X.hat), data$u.index, J.u, X.hat, u.hat)
+        ## Omega.hat.fe.HAC <- matrix(Omega.hat.fe.HAC, nrow = ncol(X.hat), ncol = ncol(X.hat))
+        ## ## Omega.hat.fe.HAC <- (1/(nrow(X.hat)-J.u-J.t-p)) * Omega.hat.fe.HAC
+        ## Omega.hat.fe.HAC <- (1/J.u) * Omega.hat.fe.HAC
+        
+        ## ## Psi.hat.wfe <- ((nrow(X.tilde))*ginv.XX.tilde) %*% Omega.hat.HAC %*% ((nrow(X.tilde))*ginv.XX.tilde)
+        ## ## Psi.hat.fe <- (nrow(X.hat)*ginv.XX.hat) %*% Omega.hat.fe.HAC %*% (nrow(X.hat)*ginv.XX.hat)
+        ## ## Psi.hat.wfe <- (J.u*ginv.XX.tilde) %*% Omega.hat.HAC %*% (J.u*ginv.XX.tilde)
+        ## Psi.hat.fe <- (J.u*ginv.XX.hat) %*% Omega.hat.fe.HAC %*% (J.u*ginv.XX.hat)
+        
+        ## ## garbage collection
+        ## rm(Omega.hat.HAC, Omega.hat.fe.HAC)
+        ## gc()
         
       } else if ( (hetero.se == TRUE) & (auto.se == FALSE)) {
+        stop("Please set hetero.se == TRUE & auto.se == TRUE when you run two-way FE")
         
         ## 2. independence across observations but heteroskedasticity (Eq 11)
         
@@ -1539,7 +1463,7 @@ wfe <- function (formula, data, treat = "treat.name",
         
       } else if ( (hetero.se == FALSE) & (auto.se == FALSE) ) {# indepdence and homoskedasticity
         
-        stop("standard errors with independence and homoskedasticity is not supported")
+        stop("Please set hetero.se == TRUE & auto.se == TRUE when you run two-way FE")
         
         ## std.error <- "Homoskedastic Standard Error"
         
@@ -1556,7 +1480,7 @@ wfe <- function (formula, data, treat = "treat.name",
       
       ## vcov of wfe model
       ## vcov.wfe <- Psi.hat.wfe * (1/nrow(X.tilde))
-      vcov.wfe <- Psi.hat.wfe * (1/J.u)            
+      vcov.wfe <- Psi.hat.wfe * (1/Nnonzero)            
       ## cat("dimension of vcov:", dim(vcov.wfe), "\n")
       se.did <- as.double(Re(sqrt(diag(vcov.wfe))))
       
