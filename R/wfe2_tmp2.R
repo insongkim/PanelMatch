@@ -1161,26 +1161,18 @@ wfe2_tmp2 <- function (formula, data, treat = "treat.name",
       
       Q.matrix <- matrix(complex(real=as.matrix(Q[[1]]), imaginary=as.matrix(Q[[2]])), nrow=nrow(Q[[1]]))
 
-      cat("\nginv test\n")
-      flush.console()
-      
       QQ.inv <- list()
       QQ.inv[[1]] <- drop0(Matrix(Re(ginv(crossprod(Q.matrix)))))
       QQ.inv[[2]] <- drop0(Matrix(Im(ginv(crossprod(Q.matrix)))))
       rm(Q.matrix)
       gc()
 
-      cat("\nginv test\n")
-      flush.console()
-      
       PL <- list()
       
       Q.QQinv <- Sparse_compMatrixMultiply(Q[[1]], Q[[2]], QQ.inv[[1]], QQ.inv[[2]]) 
       rm(QQ.inv)
       gc()
 
-      cat("\nginv test\n")
-      flush.console()
       
       ## if (verbose) {
       ##   cat("\n Q.QQinv created\n")
@@ -1241,16 +1233,13 @@ wfe2_tmp2 <- function (formula, data, treat = "treat.name",
         colnames(X.tilde) <- colnames(X)
       }
       
-      cat("\nginv test\n")
-      flush.console()
-      
       ginv.XX.tilde <- ginv(crossprod(X.tilde))
       betaT <- ginv.XX.tilde%*% crossprod(X.tilde, y.tilde)
       if (length(betaT) == 1) {
         colnames(betaT) <- a[3]
     }
 
-      cat("\nginv test\n")
+      cat("\nginv test1\n")
       flush.console()
       
       ## print(betaT)
@@ -1305,11 +1294,17 @@ wfe2_tmp2 <- function (formula, data, treat = "treat.name",
       #########################################################################
       
       ## cat("dimension of X.tilde:", dim(X.tilde), "\n")
+
+      cat("\nginv test2\n")
+      flush.console()
       
       ## XX.hat <- crossprod(X.hat, X.hat)
       ginv.XX.hat <- ginv(crossprod(X.hat, X.hat))
       ## d.f <- length(y.tilde) - n.Udummy - n.Tdummy - dim(X.tilde)[2]
       d.f <- length(y.tilde)
+
+      cat("\nginv test3\n")
+      flush.console()
       
       ## cat("Sum of squared residuals:", sum(resid^2), "\n")
       sigma2 <- as.double(Re(sum(resid^2)/d.f))
@@ -1404,12 +1399,16 @@ wfe2_tmp2 <- function (formula, data, treat = "treat.name",
         Omega.hat.fe.HAC <- matrix(Omega.hat.fe.HAC, nrow = ncol(X.hat), ncol = ncol(X.hat))
         ## Omega.hat.fe.HAC <- (1/(nrow(X.hat)-J.u-J.t-p)) * Omega.hat.fe.HAC
         Omega.hat.fe.HAC <- (1/J.u) * Omega.hat.fe.HAC
+
         
         ## Psi.hat.fe <- (nrow(X.hat)*ginv.XX.hat) %*% Omega.hat.fe.HAC %*% (nrow(X.hat)*ginv.XX.hat)
         Psi.hat.fe <- (J.u*ginv.XX.hat) %*% Omega.hat.fe.HAC %*% (J.u*ginv.XX.hat)
         ## garbage collection
         rm(Omega.hat.fe.HAC)
         
+        cat("\nginv test4\n")
+        flush.console()
+
         
         ## -----------------------------------------------------
         ## old code 
