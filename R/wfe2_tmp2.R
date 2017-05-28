@@ -855,7 +855,9 @@ wfe2_tmp2 <- function (formula, data, treat = "treat.name",
       if (verbose)
         cat("\nTotal number observations with non-zero weight:", nz.obs,"\n")
       flush.console()
-      
+
+      cat("\nginv testn")
+      flush.console()
       
       
       X <- as.matrix(X)[nz.index,]
