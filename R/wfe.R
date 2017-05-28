@@ -771,11 +771,20 @@ wfe <- function (formula, data, treat = "treat.name",
             ## save(file = "test.RData", list = ls(), env = e)
             
             Q1 <- Diagonal(x=1, n=nrow(Udummy)) - P1
-            
+
+            if (verbose) { 
+                cat("\nginv check started \n")
+                flush.console()
+            }
 
             ## Q: not too sparse
             Q <- Q1 %*% Tdummy
             Q.QQginv <- Q %*% ginv(as.matrix(crossprod(Q)))
+
+            if (verbose) { 
+                cat("\nginv check done \n")
+                flush.console()
+            }
 
             X <- as.matrix(X)
             Y <- as.matrix(data$y)
