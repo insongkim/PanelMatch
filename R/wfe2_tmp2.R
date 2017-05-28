@@ -1535,9 +1535,6 @@ wfe2_tmp2 <- function (formula, data, treat = "treat.name",
       
       if (White == TRUE){
 
-        e <- environment()
-        save(file = "temp.RData", list = ls(), env = e)
-          
         diag.ee <- c(u.hat) * c(e.tilde)
         
         Lambda.hat1 <-  1/((nrow(X.hat)))* (crossprod((X.hat*diag.ee), X.tilde))  
@@ -1552,9 +1549,6 @@ wfe2_tmp2 <- function (formula, data, treat = "treat.name",
         white.p <- pchisq(as.numeric(white.stat), df=p, lower.tail=F)
         flush.console()
 
-        e <- environment()
-        save(file = "temp.RData", list = ls(), env = e)
-        
         
         ## if (verbose) {
         ##   cat("\nWhite calculation done")
