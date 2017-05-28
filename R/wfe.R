@@ -1350,14 +1350,16 @@ wfe <- function (formula, data, treat = "treat.name",
 
                 ## standard error calculation
                 n.units <- length(unique(data$u.index))
+                unique.units <- unique(data$u.index)
                 U <- matrix(0, nrow=length(x.vars), ncol=length(x.vars))
                 V <- matrix(0, nrow=length(x.vars), ncol=length(x.vars))
                 Beta <- as.matrix(coef.wls)
                 
                 for(g in 1:length(n.units)){
-                    Y.dm <- DemeanedMatrix[which(data$u.index==g),1]
-                    X.dm <- DemeanedMatrix[which(data$u.index==g),-1]
-                    W.diag <- diag(data$W.it[data$u.index==g])
+                    unit.g <- unique.units[g]
+                    Y.dm <- DemeanedMatrix[which(data$u.index==unit.g),1]
+                    X.dm <- DemeanedMatrix[which(data$u.index==unit.g),-1]
+                    W.diag <- diag(data$W.it[data$u.index==unit.g])
 
                     U.i <- t(X.dm) %*% W.diag %*% X.dm
                     U <- U + U.i
@@ -1365,9 +1367,9 @@ wfe <- function (formula, data, treat = "treat.name",
                     V.i <- V.i.tmp %*% t(V.i.tmp)
                     V <- V + V.i
                 }
-
+                
                 ## asymptotic variance using Methods of Moments
-                inv.U <- solve(1/Nnonzero * U)
+                inv.U <- ginv(1/Nnonzero * U)
                 V <- 1/Nnonzero * V
                 Psi.hat.wfe <- inv.U %*% V %*% inv.U
 
