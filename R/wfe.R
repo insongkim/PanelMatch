@@ -1151,6 +1151,7 @@ wfe <- function (formula, data, treat = "treat.name",
             
             Q.matrix <- matrix(complex(real=as.matrix(Q[[1]]), imaginary=as.matrix(Q[[2]])), nrow=nrow(Q[[1]]))
 
+            cat("\nginv check\n")
 
             QQ.inv <- list()
             QQ.inv[[1]] <- drop0(Matrix(Re(ginv(crossprod(Q.matrix)))))
@@ -1158,12 +1159,16 @@ wfe <- function (formula, data, treat = "treat.name",
             rm(Q.matrix)
             gc()
 
+            cat("\nginv check\n")
+            
             PL <- list()
 
             Q.QQinv <- Sparse_compMatrixMultiply(Q[[1]], Q[[2]], QQ.inv[[1]], QQ.inv[[2]]) 
             rm(QQ.inv)
             gc()
-            
+
+            cat("\nginv check\n")
+
             ## if (verbose) {
             ##   cat("\n Q.QQinv created\n")
             ##   flush.console()
