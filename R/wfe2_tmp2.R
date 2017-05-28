@@ -1462,9 +1462,6 @@ wfe2_tmp2 <- function (formula, data, treat = "treat.name",
         ## Psi.hat.wfe <- ((nrow(X.tilde))*ginv.XX.tilde) %*% Omega.hat.HC %*% ((nrow(X.tilde))*ginv.XX.tilde)
         Psi.hat.wfe <- (J.u*ginv.XX.tilde) %*% Omega.hat.HC %*% (J.u*ginv.XX.tilde)
 
-        cat("\nginv test5\n")
-        flush.console()
-
         ## ## alternatively calculation (don't need to invert)
         ## Psi.hat.wfe2 <- (length(y.tilde)*ginv.XX.tilde) %*% ( (1/length(y.tilde)) * (crossprod((X.tilde*diag.ee.tilde), X.tilde)) ) %*% ((length(y.tilde))*ginv.XX.tilde)
         
@@ -1479,9 +1476,6 @@ wfe2_tmp2 <- function (formula, data, treat = "treat.name",
         ## Psi.hat.fe <- (nrow(X.hat)*ginv.XX.hat) %*% Omega.hat.fe.he %*% (nrow(X.hat)*ginv.XX.hat)
         Psi.hat.fe <- (J.u*ginv.XX.hat) %*% Omega.hat.fe.he %*% (J.u*ginv.XX.hat)                
 
-        cat("\nginv test6\n")
-        flush.console()
-        
         ## Same as the following matrix multiplication
         ## Psi.hat.fe <- (solve(XX.hat) %*% (1/d.f *(t(X.hat) %*% diag(diag(u.hat %*% t(u.hat))) %*% X.hat)) %*% solve(XX.hat))
         
@@ -1562,11 +1556,15 @@ wfe2_tmp2 <- function (formula, data, treat = "treat.name",
         Phi.hat <- Psi.hat.wfe + Psi.hat.fe - (nrow(X.hat)*ginv.XX.hat) %*% Lambda.hat1 %*% (nrow(X.tilde)*ginv.XX.tilde) - (nrow(X.tilde)*ginv.XX.tilde) %*% Lambda.hat2 %*% (nrow(X.hat)*ginv.XX.hat)
         
         ## White test: null hypothesis is ``no misspecification''
+
+        cat("\nginv test5\n")
+        flush.console()
         
         white.stat <- as.double(Re(nrow(X.hat) * t(coef.ols - coef.wls) %*% ginv(Phi.hat) %*% (coef.ols - coef.wls)))
         test.null <- pchisq(as.numeric(white.stat), df=p, lower.tail=F) < White.alpha
         white.p <- pchisq(as.numeric(white.stat), df=p, lower.tail=F)
         flush.console()
+
         
         ## if (verbose) {
         ##   cat("\nWhite calculation done")
