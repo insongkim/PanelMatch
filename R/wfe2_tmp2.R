@@ -1236,12 +1236,9 @@ wfe2_tmp2 <- function (formula, data, treat = "treat.name",
       ginv.XX.tilde <- ginv(crossprod(X.tilde))
       betaT <- ginv.XX.tilde%*% crossprod(X.tilde, y.tilde)
       if (length(betaT) == 1) {
-        colnames(betaT) <- a[3]
-    }
+          colnames(betaT) <- a[3]
+      }
 
-      cat("\nginv test1\n")
-      flush.console()
-      
       ## print(betaT)
       coef.wls <- matrix(as.double(Re(betaT)))
       rownames(coef.wls) <- colnames(X.tilde)
@@ -1295,17 +1292,11 @@ wfe2_tmp2 <- function (formula, data, treat = "treat.name",
       
       ## cat("dimension of X.tilde:", dim(X.tilde), "\n")
 
-      cat("\nginv test2\n")
-      flush.console()
-      
       ## XX.hat <- crossprod(X.hat, X.hat)
       ginv.XX.hat <- ginv(crossprod(X.hat, X.hat))
       ## d.f <- length(y.tilde) - n.Udummy - n.Tdummy - dim(X.tilde)[2]
       d.f <- length(y.tilde)
 
-      cat("\nginv test3\n")
-      flush.console()
-      
       ## cat("Sum of squared residuals:", sum(resid^2), "\n")
       sigma2 <- as.double(Re(sum(resid^2)/d.f))
       
@@ -1405,10 +1396,6 @@ wfe2_tmp2 <- function (formula, data, treat = "treat.name",
         Psi.hat.fe <- (J.u*ginv.XX.hat) %*% Omega.hat.fe.HAC %*% (J.u*ginv.XX.hat)
         ## garbage collection
         rm(Omega.hat.fe.HAC)
-        
-        cat("\nginv test4\n")
-        flush.console()
-
         
         ## -----------------------------------------------------
         ## old code 
@@ -1557,16 +1544,18 @@ wfe2_tmp2 <- function (formula, data, treat = "treat.name",
         
         ## White test: null hypothesis is ``no misspecification''
 
-        cat("\nginv test5\n")
+        cat("\nginv test\n")
         flush.console()
+
+        e <- environment()
+        save(file = "temp.RData", list = ls(), env = e)
         
         white.stat <- as.double(Re(nrow(X.hat) * t(coef.ols - coef.wls) %*% ginv(Phi.hat) %*% (coef.ols - coef.wls)))
         test.null <- pchisq(as.numeric(white.stat), df=p, lower.tail=F) < White.alpha
         white.p <- pchisq(as.numeric(white.stat), df=p, lower.tail=F)
         flush.console()
 
-
-        cat("\nginv test6\n")
+        cat("\nginv test\n")
         flush.console()
         
         
