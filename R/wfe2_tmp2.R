@@ -1565,6 +1565,10 @@ wfe2_tmp2 <- function (formula, data, treat = "treat.name",
         white.p <- pchisq(as.numeric(white.stat), df=p, lower.tail=F)
         flush.console()
 
+
+        cat("\nginv test6\n")
+        flush.console()
+        
         
         ## if (verbose) {
         ##   cat("\nWhite calculation done")
