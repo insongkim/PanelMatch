@@ -1319,7 +1319,7 @@ wfe2_tmp2 <- function (formula, data, treat = "treat.name",
         ## if(length(zero.ind)>0){
         ##   data <- data[-zero.ind, ]
         ## }
-        ## Nnonzero <- nrow(data)
+        Nnonzero <- nrow(data)
         
         ## Demean data
         ## -----------------------------------------------------
