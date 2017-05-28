@@ -1315,11 +1315,11 @@ wfe2_tmp2 <- function (formula, data, treat = "treat.name",
         ## stop ("Robust standard errors with autocorrelation is currently not supported")
         
         ## Remove observations with zero weights
-        zero.ind <- which(data$W.it==0)
-        if(length(zero.ind)>0){
-          data <- data[-zero.ind, ]
-        }
-        Nnonzero <- nrow(data)
+        ## zero.ind <- which(data$W.it==0)
+        ## if(length(zero.ind)>0){
+        ##   data <- data[-zero.ind, ]
+        ## }
+        ## Nnonzero <- nrow(data)
         
         ## Demean data
         ## -----------------------------------------------------
