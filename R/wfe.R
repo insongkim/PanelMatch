@@ -844,8 +844,6 @@ wfe <- function (formula, data, treat = "treat.name",
                 cat("\nTotal number observations with non-zero weight:", nz.obs,"\n")
             flush.console()
             
-            cat("\nginv check\n")
-            flush.console()
 
             
             X <- as.matrix(X)[nz.index,]
@@ -1153,7 +1151,6 @@ wfe <- function (formula, data, treat = "treat.name",
             
             Q.matrix <- matrix(complex(real=as.matrix(Q[[1]]), imaginary=as.matrix(Q[[2]])), nrow=nrow(Q[[1]]))
 
-            cat("\nginv check\n")
 
             QQ.inv <- list()
             QQ.inv[[1]] <- drop0(Matrix(Re(ginv(crossprod(Q.matrix)))))
@@ -1161,16 +1158,12 @@ wfe <- function (formula, data, treat = "treat.name",
             rm(Q.matrix)
             gc()
 
-            cat("\nginv check\n")
-            
             PL <- list()
 
             Q.QQinv <- Sparse_compMatrixMultiply(Q[[1]], Q[[2]], QQ.inv[[1]], QQ.inv[[2]]) 
             rm(QQ.inv)
             gc()
-
-            cat("\nginv check\n")
-
+            
             ## if (verbose) {
             ##   cat("\n Q.QQinv created\n")
             ##   flush.console()
@@ -1338,8 +1331,8 @@ wfe <- function (formula, data, treat = "treat.name",
                     cmd1 <- paste("demean.unit <- tapply(data$", v, ", as.factor(data$u.index), mean, na.rm=T)", sep="")
                     cmd2 <- paste("demean.time <- tapply(data$", v, ", as.factor(data$t.index), mean, na.rm=T)", sep="")
                     cmd3 <- paste("demean.all <- mean(data$", v, ", na.rm=T)", sep="")
-                    cmd4 <- paste("demean.units <- demean.unit[data$u.index]", sep="")
-                    cmd5 <- paste("demean.times <- demean.time[data$t.index]", sep="")
+                    cmd4 <- paste("demean.units <- demean.unit[match(data$u.index, names(demean.unit))]", sep="")
+                    cmd5 <- paste("demean.times <- demean.time[match(data$t.index, names(demean.time))]", sep="")
                     cmd6 <- paste("demean.alls <- rep(demean.all, times=obs.counts)", sep="")
                     cmd7 <- paste("DemeanedMatrix[,k] <- data$", v, "- demean.units - demean.times + demean.alls", sep="")
 
