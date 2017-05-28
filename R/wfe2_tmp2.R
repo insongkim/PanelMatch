@@ -856,10 +856,6 @@ wfe2_tmp2 <- function (formula, data, treat = "treat.name",
         cat("\nTotal number observations with non-zero weight:", nz.obs,"\n")
       flush.console()
 
-      cat("\nginv testn")
-      flush.console()
-      
-      
       X <- as.matrix(X)[nz.index,]
       Y <- as.matrix(data$y)[nz.index]
       
@@ -1164,19 +1160,27 @@ wfe2_tmp2 <- function (formula, data, treat = "treat.name",
       
       
       Q.matrix <- matrix(complex(real=as.matrix(Q[[1]]), imaginary=as.matrix(Q[[2]])), nrow=nrow(Q[[1]]))
-      
+
+      cat("\nginv test\n")
+      flush.console()
       
       QQ.inv <- list()
       QQ.inv[[1]] <- drop0(Matrix(Re(ginv(crossprod(Q.matrix)))))
       QQ.inv[[2]] <- drop0(Matrix(Im(ginv(crossprod(Q.matrix)))))
       rm(Q.matrix)
       gc()
+
+      cat("\nginv test\n")
+      flush.console()
       
       PL <- list()
       
       Q.QQinv <- Sparse_compMatrixMultiply(Q[[1]], Q[[2]], QQ.inv[[1]], QQ.inv[[2]]) 
       rm(QQ.inv)
       gc()
+
+      cat("\nginv test\n")
+      flush.console()
       
       ## if (verbose) {
       ##   cat("\n Q.QQinv created\n")
@@ -1237,12 +1241,18 @@ wfe2_tmp2 <- function (formula, data, treat = "treat.name",
         colnames(X.tilde) <- colnames(X)
       }
       
+      cat("\nginv test\n")
+      flush.console()
       
       ginv.XX.tilde <- ginv(crossprod(X.tilde))
       betaT <- ginv.XX.tilde%*% crossprod(X.tilde, y.tilde)
       if (length(betaT) == 1) {
         colnames(betaT) <- a[3]
-      }
+    }
+
+      cat("\nginv test\n")
+      flush.console()
+      
       ## print(betaT)
       coef.wls <- matrix(as.double(Re(betaT)))
       rownames(coef.wls) <- colnames(X.tilde)
