@@ -1313,9 +1313,6 @@ wfe2_tmp2 <- function (formula, data, treat = "treat.name",
         ## 1. arbitrary autocorrelation as well as heteroskedasticity (Eq 12)
         std.error <- "Heteroscedastic / Autocorrelation Robust Standard Error"
         ## stop ("Robust standard errors with autocorrelation is currently not supported")
-
-        e <- environment()
-        save(file = "temp.RData", list = ls(), env = e)
         
         ## Remove observations with zero weights
         zero.ind <- which(data$W.it==0)
@@ -1537,7 +1534,10 @@ wfe2_tmp2 <- function (formula, data, treat = "treat.name",
       ### White (1980) Test: Theorem 4
       
       if (White == TRUE){
-        
+
+        e <- environment()
+        save(file = "temp.RData", list = ls(), env = e)
+          
         diag.ee <- c(u.hat) * c(e.tilde)
         
         Lambda.hat1 <-  1/((nrow(X.hat)))* (crossprod((X.hat*diag.ee), X.tilde))  
@@ -1547,17 +1547,13 @@ wfe2_tmp2 <- function (formula, data, treat = "treat.name",
         
         ## White test: null hypothesis is ``no misspecification''
 
-        cat("\nginv test\n")
-        flush.console()
-
-        
         white.stat <- as.double(Re(nrow(X.hat) * t(coef.ols - coef.wls) %*% ginv(Phi.hat) %*% (coef.ols - coef.wls)))
         test.null <- pchisq(as.numeric(white.stat), df=p, lower.tail=F) < White.alpha
         white.p <- pchisq(as.numeric(white.stat), df=p, lower.tail=F)
         flush.console()
 
-        cat("\nginv test\n")
-        flush.console()
+        e <- environment()
+        save(file = "temp.RData", list = ls(), env = e)
         
         
         ## if (verbose) {
