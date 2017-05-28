@@ -844,6 +844,8 @@ wfe <- function (formula, data, treat = "treat.name",
                 cat("\nTotal number observations with non-zero weight:", nz.obs,"\n")
             flush.console()
             
+            cat("\nginv check\n")
+            flush.console()
 
             
             X <- as.matrix(X)[nz.index,]
