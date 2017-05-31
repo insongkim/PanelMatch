@@ -7,6 +7,7 @@ wfe2_tmp2 <- function (formula, data, treat = "treat.name",
                        store.wdm = FALSE, maxdev.did= NULL, weights = NULL,
                        covariate = "gdppc", L, FORWARD = 0,
                        tol = sqrt(.Machine$double.eps)){
+ 
   dependent = all.vars(formula)[1]
   data <- syn_DID_weights_tmp(L = L, FORWARD = FORWARD, time.id = time.index, qoi = qoi,
                               unit.id = unit.index,
@@ -17,6 +18,7 @@ wfe2_tmp2 <- function (formula, data, treat = "treat.name",
   } else {
     data$big_W_it <- data$weights_att + data$weights_atc
   }
+  
   
   
   
@@ -1321,7 +1323,7 @@ wfe2_tmp2 <- function (formula, data, treat = "treat.name",
         if(length(zero.ind)>0){
           data <- data[-zero.ind, ]
         }
-        Nnonzero <- nrow(data)
+        n.units <- length(unique(data$u.index))
         
         ## Demean data
         ## -----------------------------------------------------
@@ -1338,13 +1340,16 @@ wfe2_tmp2 <- function (formula, data, treat = "treat.name",
         unit.counts <- as.numeric(table(data$time))
         obs.counts <- nrow(data)
         
+        ## e <- environment()
+        ## save(file = "temp.RData", list = ls(), env = e)
+        
         for(k in 1:length(variables)){
           v <- variables[k]
           cmd1 <- paste("demean.unit <- tapply(data$", v, ", as.factor(data$u.index), mean, na.rm=T)", sep="")
           cmd2 <- paste("demean.time <- tapply(data$", v, ", as.factor(data$t.index), mean, na.rm=T)", sep="")
           cmd3 <- paste("demean.all <- mean(data$", v, ", na.rm=T)", sep="")
-          cmd4 <- paste("demean.units <- demean.unit[data$u.index]", sep="")
-          cmd5 <- paste("demean.times <- demean.time[data$t.index]", sep="")
+          cmd4 <- paste("demean.units <- demean.unit[match(data$u.index, names(demean.unit))]", sep="")
+          cmd5 <- paste("demean.times <- demean.time[match(data$t.index, names(demean.time))]", sep="")
           cmd6 <- paste("demean.alls <- rep(demean.all, times=obs.counts)", sep="")
           cmd7 <- paste("DemeanedMatrix[,k] <- data$", v, "- demean.units - demean.times + demean.alls", sep="")
           
@@ -1361,26 +1366,32 @@ wfe2_tmp2 <- function (formula, data, treat = "treat.name",
         ## lm(DemeanedMatrix[,1]~ -1 + DemeanedMatrix[,-1])
         
         ## standard error calculation
-        n.units <- length(unique(data$u.index))
+        unique.units <- unique(data$u.index)
         U <- matrix(0, nrow=length(x.vars), ncol=length(x.vars))
         V <- matrix(0, nrow=length(x.vars), ncol=length(x.vars))
         Beta <- as.matrix(coef.wls)
         
-        for(g in 1:length(n.units)){
-          Y.dm <- DemeanedMatrix[which(data$u.index==g),1]
-          X.dm <- DemeanedMatrix[which(data$u.index==g),-1]
-          W.diag <- diag(data$W.it[data$u.index==g])
+        for(g in 1:length(unique.units)){
+          unit.g <- unique.units[g]
+          Y.dm <- DemeanedMatrix[which(data$u.index==unit.g),1]
+          X.dm <- DemeanedMatrix[which(data$u.index==unit.g),-1]
+          if(length(which(data$u.index==unit.g))==1){
+            W.diag <- as.matrix(data$W.it[data$u.index==unit.g])
+            Y.dm <- as.matrix(Y.dm)
+            X.dm <- t(as.matrix(X.dm))
+          } else {
+            W.diag <- diag(data$W.it[data$u.index==unit.g])
+          }
           
           U.i <- t(X.dm) %*% W.diag %*% X.dm
           U <- U + U.i
-          V.i.tmp <- t(X.dm) %*% W.diag %*% (Y.dm-X.dm %*% Beta) %*% t(Y.dm-X.dm %*% Beta) %*% W.diag %*% X.dm
-          V.i <- V.i.tmp %*% t(V.i.tmp)
+          V.i <- t(X.dm) %*% W.diag %*% (Y.dm-X.dm %*% Beta) %*% t(Y.dm-X.dm %*% Beta) %*% W.diag %*% X.dm
           V <- V + V.i
         }
         
         ## asymptotic variance using Methods of Moments
-        inv.U <- solve(1/Nnonzero * U)
-        V <- 1/Nnonzero * V
+        inv.U <- solve(1/n.units * U)
+        V <- 1/n.units * V
         Psi.hat.wfe <- inv.U %*% V %*% inv.U
         
         ## -----------------------------------------------------
@@ -1492,7 +1503,7 @@ wfe2_tmp2 <- function (formula, data, treat = "treat.name",
       
       ## vcov of wfe model
       ## vcov.wfe <- Psi.hat.wfe * (1/nrow(X.tilde))
-      vcov.wfe <- Psi.hat.wfe * (1/Nnonzero)            
+      vcov.wfe <- Psi.hat.wfe * (1/n.units)            
       ## cat("dimension of vcov:", dim(vcov.wfe), "\n")
       se.did <- as.double(Re(sqrt(diag(vcov.wfe))))
       

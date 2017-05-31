@@ -28,12 +28,7 @@ syn_DID_MSPE <- function(L, F, time.id = "year", qoi = "ATE",
   # further cleaning
   smallerlist <- Filter(function (x) length(x) > 0, smallerlist)
   # use function dframelist.rb_dup to turn every list element into a data.frame
-  smallerlist <- lapply(smallerlist, dframelist.rb_dup)
-  # subset out any dataframe that have 2 or fewer than 2 units
-  smallerlist <- Filter(function (x) nrow(x) > 2*(L+F+1), smallerlist)
-  
-  # only focus on ATT
-  even_smaller1 <- Filter(function (x) x[x$V2 == unique(x$V2)[2] & x$V1 == unique(x$V1)[1], ]$V3 == 0, smallerlist)
+  even_smaller1 <- lapply(smallerlist, dframelist.rb_dup)
   
   if (qoi == "ATT") {
     return(sapply(even_smaller1, cscMSPE, L = L, FORWARD = FORWARD))
@@ -51,12 +46,7 @@ syn_DID_MSPE <- function(L, F, time.id = "year", qoi = "ATE",
     # further cleaning
     smallerlist <- Filter(function (x) length(x) > 0, smallerlist)
     # use function dframelist.rb_dup to turn every list element into a data.frame
-    smallerlist <- lapply(smallerlist, dframelist.rb_dup)
-    # subset out any dataframe that have 2 or fewer than 2 units
-    smallerlist <- Filter(function (x) nrow(x) > 2*(L+F+1), smallerlist)
-    
-    # only focus on ATT
-    even_smaller2 <- Filter(function (x) x[x$V2 == unique(x$V2)[2] & x$V1 == unique(x$V1)[1], ]$V3 == 0, smallerlist)
+    even_smaller2 <- lapply(smallerlist, dframelist.rb_dup)
     
     return(list("MSPE for ATT" = sapply(even_smaller1, cscMSPE, L = L, FORWARD = FORWARD),
                 "MSPE for ATC" = sapply(even_smaller2, cscMSPE, L = L, FORWARD = FORWARD)))

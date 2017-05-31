@@ -1,7 +1,7 @@
 useDynLib(wfe)
 export(wfe, pwfe, wfe.heatmap, findMatched2, findMatched,syn_DID, wfe2, syn_DID_MSMD, 
        syn_boot_gDiD, syn_DID_check, syn_DID_weights, syn_DID_gapsplot, 
-       syn_DID_MSPE, syn_DID_tmp, syn_DID_weights_tmp, wfe2_tmp, syn_boot_gDiD_tmp,
+       syn_DID_MSPE, syn_DID_tmp, syn_DID_weights_tmp, syn_boot_gDiD_tmp,
        wfe2_tmp2, wfe2_tmp3,
        PS_DID)
 
