@@ -857,9 +857,7 @@ wfe2_tmp2 <- function (formula, data, treat = "treat.name",
       if (verbose)
         cat("\nTotal number observations with non-zero weight:", nz.obs,"\n")
       flush.console()
-      
-      
-      
+
       X <- as.matrix(X)[nz.index,]
       Y <- as.matrix(data$y)[nz.index]
       
@@ -1164,19 +1162,19 @@ wfe2_tmp2 <- function (formula, data, treat = "treat.name",
       
       
       Q.matrix <- matrix(complex(real=as.matrix(Q[[1]]), imaginary=as.matrix(Q[[2]])), nrow=nrow(Q[[1]]))
-      
-      
+
       QQ.inv <- list()
       QQ.inv[[1]] <- drop0(Matrix(Re(ginv(crossprod(Q.matrix)))))
       QQ.inv[[2]] <- drop0(Matrix(Im(ginv(crossprod(Q.matrix)))))
       rm(Q.matrix)
       gc()
-      
+
       PL <- list()
       
       Q.QQinv <- Sparse_compMatrixMultiply(Q[[1]], Q[[2]], QQ.inv[[1]], QQ.inv[[2]]) 
       rm(QQ.inv)
       gc()
+
       
       ## if (verbose) {
       ##   cat("\n Q.QQinv created\n")
@@ -1237,12 +1235,12 @@ wfe2_tmp2 <- function (formula, data, treat = "treat.name",
         colnames(X.tilde) <- colnames(X)
       }
       
-      
       ginv.XX.tilde <- ginv(crossprod(X.tilde))
       betaT <- ginv.XX.tilde%*% crossprod(X.tilde, y.tilde)
       if (length(betaT) == 1) {
-        colnames(betaT) <- a[3]
+          colnames(betaT) <- a[3]
       }
+
       ## print(betaT)
       coef.wls <- matrix(as.double(Re(betaT)))
       rownames(coef.wls) <- colnames(X.tilde)
@@ -1295,12 +1293,12 @@ wfe2_tmp2 <- function (formula, data, treat = "treat.name",
       #########################################################################
       
       ## cat("dimension of X.tilde:", dim(X.tilde), "\n")
-      
+
       ## XX.hat <- crossprod(X.hat, X.hat)
       ginv.XX.hat <- ginv(crossprod(X.hat, X.hat))
       ## d.f <- length(y.tilde) - n.Udummy - n.Tdummy - dim(X.tilde)[2]
       d.f <- length(y.tilde)
-      
+
       ## cat("Sum of squared residuals:", sum(resid^2), "\n")
       sigma2 <- as.double(Re(sum(resid^2)/d.f))
       
@@ -1403,12 +1401,12 @@ wfe2_tmp2 <- function (formula, data, treat = "treat.name",
         Omega.hat.fe.HAC <- matrix(Omega.hat.fe.HAC, nrow = ncol(X.hat), ncol = ncol(X.hat))
         ## Omega.hat.fe.HAC <- (1/(nrow(X.hat)-J.u-J.t-p)) * Omega.hat.fe.HAC
         Omega.hat.fe.HAC <- (1/J.u) * Omega.hat.fe.HAC
+
         
         ## Psi.hat.fe <- (nrow(X.hat)*ginv.XX.hat) %*% Omega.hat.fe.HAC %*% (nrow(X.hat)*ginv.XX.hat)
         Psi.hat.fe <- (J.u*ginv.XX.hat) %*% Omega.hat.fe.HAC %*% (J.u*ginv.XX.hat)
         ## garbage collection
         rm(Omega.hat.fe.HAC)
-        
         
         ## -----------------------------------------------------
         ## old code 
@@ -1461,7 +1459,7 @@ wfe2_tmp2 <- function (formula, data, treat = "treat.name",
         
         ## Psi.hat.wfe <- ((nrow(X.tilde))*ginv.XX.tilde) %*% Omega.hat.HC %*% ((nrow(X.tilde))*ginv.XX.tilde)
         Psi.hat.wfe <- (J.u*ginv.XX.tilde) %*% Omega.hat.HC %*% (J.u*ginv.XX.tilde)
-        
+
         ## ## alternatively calculation (don't need to invert)
         ## Psi.hat.wfe2 <- (length(y.tilde)*ginv.XX.tilde) %*% ( (1/length(y.tilde)) * (crossprod((X.tilde*diag.ee.tilde), X.tilde)) ) %*% ((length(y.tilde))*ginv.XX.tilde)
         
@@ -1475,7 +1473,7 @@ wfe2_tmp2 <- function (formula, data, treat = "treat.name",
         
         ## Psi.hat.fe <- (nrow(X.hat)*ginv.XX.hat) %*% Omega.hat.fe.he %*% (nrow(X.hat)*ginv.XX.hat)
         Psi.hat.fe <- (J.u*ginv.XX.hat) %*% Omega.hat.fe.he %*% (J.u*ginv.XX.hat)                
-        
+
         ## Same as the following matrix multiplication
         ## Psi.hat.fe <- (solve(XX.hat) %*% (1/d.f *(t(X.hat) %*% diag(diag(u.hat %*% t(u.hat))) %*% X.hat)) %*% solve(XX.hat))
         
@@ -1547,7 +1545,7 @@ wfe2_tmp2 <- function (formula, data, treat = "treat.name",
       ### White (1980) Test: Theorem 4
       
       if (White == TRUE){
-        
+
         diag.ee <- c(u.hat) * c(e.tilde)
         
         Lambda.hat1 <-  1/((nrow(X.hat)))* (crossprod((X.hat*diag.ee), X.tilde))  
@@ -1556,11 +1554,12 @@ wfe2_tmp2 <- function (formula, data, treat = "treat.name",
         Phi.hat <- Psi.hat.wfe + Psi.hat.fe - (nrow(X.hat)*ginv.XX.hat) %*% Lambda.hat1 %*% (nrow(X.tilde)*ginv.XX.tilde) - (nrow(X.tilde)*ginv.XX.tilde) %*% Lambda.hat2 %*% (nrow(X.hat)*ginv.XX.hat)
         
         ## White test: null hypothesis is ``no misspecification''
-        
+
         white.stat <- as.double(Re(nrow(X.hat) * t(coef.ols - coef.wls) %*% ginv(Phi.hat) %*% (coef.ols - coef.wls)))
         test.null <- pchisq(as.numeric(white.stat), df=p, lower.tail=F) < White.alpha
         white.p <- pchisq(as.numeric(white.stat), df=p, lower.tail=F)
         flush.console()
+
         
         ## if (verbose) {
         ##   cat("\nWhite calculation done")
