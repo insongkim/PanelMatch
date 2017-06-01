@@ -6,7 +6,7 @@ syn_DID_gapsplot <- function(L, F, time.id = "year",
                              treatment, covariate, dependent, d) {
   
   FORWARD <- F
-  d <- d # set dataset
+  
   
   varnames <- c(time.id, unit.id, treatment, covariate, dependent)
   
