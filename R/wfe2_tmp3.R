@@ -16,17 +16,26 @@ wfe2_tmp3 <- function (formula, data, treat = "treat.name",
                                 treatment = treat, covariate = covariate, 
                                 dependent = dependent, d = data)
   } else {
-    data <- MSMD_DID_weights(L = L, FORWARD = FORWARD, time.id = time.index, qoi = qoi,
-                             unit.id = unit.index, M = M,
-                             treatment = treat, covariate = covariate, dependent = dependent,
-                             d = data)
+    if (scheme == "Maha") {
+      data <- MSMD_DID_weights(L = L, FORWARD = FORWARD, time.id = time.index, qoi = qoi,
+                               unit.id = unit.index, M = M,
+                               treatment = treat, covariate = covariate, dependent = dependent,
+                               d = data)
+    } else {
+      data <- PS_m_weights(L = L, FORWARD = FORWARD, time.id = time.index, qoi = qoi,
+                           unit.id = unit.index, M = M,
+                           treatment = treat, covariate = covariate, dependent = dependent,
+                           data = data)
+    }
   }
+
   
   if (qoi == "att") {
     data$big_W_it <- data$weights_att
   } else {
     data$big_W_it <- data$weights_att + data$weights_atc
   }
+  
   
   
   wfe.call <- match.call()
@@ -865,6 +874,8 @@ wfe2_tmp3 <- function (formula, data, treat = "treat.name",
         cat("\nTotal number observations with non-zero weight:", nz.obs,"\n")
       flush.console()
       
+      
+      
       X <- as.matrix(X)[nz.index,]
       Y <- as.matrix(data$y)[nz.index]
       
@@ -1170,6 +1181,7 @@ wfe2_tmp3 <- function (formula, data, treat = "treat.name",
       
       Q.matrix <- matrix(complex(real=as.matrix(Q[[1]]), imaginary=as.matrix(Q[[2]])), nrow=nrow(Q[[1]]))
       
+      
       QQ.inv <- list()
       QQ.inv[[1]] <- drop0(Matrix(Re(ginv(crossprod(Q.matrix)))))
       QQ.inv[[2]] <- drop0(Matrix(Im(ginv(crossprod(Q.matrix)))))
@@ -1181,7 +1193,6 @@ wfe2_tmp3 <- function (formula, data, treat = "treat.name",
       Q.QQinv <- Sparse_compMatrixMultiply(Q[[1]], Q[[2]], QQ.inv[[1]], QQ.inv[[2]]) 
       rm(QQ.inv)
       gc()
-      
       
       ## if (verbose) {
       ##   cat("\n Q.QQinv created\n")
@@ -1242,12 +1253,12 @@ wfe2_tmp3 <- function (formula, data, treat = "treat.name",
         colnames(X.tilde) <- colnames(X)
       }
       
+      
       ginv.XX.tilde <- ginv(crossprod(X.tilde))
       betaT <- ginv.XX.tilde%*% crossprod(X.tilde, y.tilde)
       if (length(betaT) == 1) {
         colnames(betaT) <- a[3]
       }
-      
       ## print(betaT)
       coef.wls <- matrix(as.double(Re(betaT)))
       rownames(coef.wls) <- colnames(X.tilde)
@@ -1311,7 +1322,6 @@ wfe2_tmp3 <- function (formula, data, treat = "treat.name",
       
       ## cat("sigma2", sigma2, "\n")
       
-      
       ## e <- environment()
       ## save(file = "temp.RData", list = ls(), env = e)
       
@@ -1324,10 +1334,10 @@ wfe2_tmp3 <- function (formula, data, treat = "treat.name",
         ## stop ("Robust standard errors with autocorrelation is currently not supported")
         
         ## Remove observations with zero weights
-        zero.ind <- which(data$W.it==0)
-        if(length(zero.ind)>0){
-          data <- data[-zero.ind, ]
-        }
+        ## zero.ind <- which(data$W.it==0)
+        ## if(length(zero.ind)>0){
+        ##     data <- data[-zero.ind, ]
+        ## }
         n.units <- length(unique(data$u.index))
         
         ## Demean data
@@ -1403,17 +1413,16 @@ wfe2_tmp3 <- function (formula, data, treat = "treat.name",
         ## vcov matrix for FE for White statistics calculation
         ## -----------------------------------------------------
         
-        
         Omega.hat.fe.HAC <- OmegaHatHAC(nrow(X.hat), ncol(X.hat), data$u.index, J.u, X.hat, u.hat)
         Omega.hat.fe.HAC <- matrix(Omega.hat.fe.HAC, nrow = ncol(X.hat), ncol = ncol(X.hat))
         ## Omega.hat.fe.HAC <- (1/(nrow(X.hat)-J.u-J.t-p)) * Omega.hat.fe.HAC
         Omega.hat.fe.HAC <- (1/J.u) * Omega.hat.fe.HAC
         
-        
         ## Psi.hat.fe <- (nrow(X.hat)*ginv.XX.hat) %*% Omega.hat.fe.HAC %*% (nrow(X.hat)*ginv.XX.hat)
         Psi.hat.fe <- (J.u*ginv.XX.hat) %*% Omega.hat.fe.HAC %*% (J.u*ginv.XX.hat)
         ## garbage collection
         rm(Omega.hat.fe.HAC)
+        
         
         ## -----------------------------------------------------
         ## old code 
@@ -1566,7 +1575,6 @@ wfe2_tmp3 <- function (formula, data, treat = "treat.name",
         test.null <- pchisq(as.numeric(white.stat), df=p, lower.tail=F) < White.alpha
         white.p <- pchisq(as.numeric(white.stat), df=p, lower.tail=F)
         flush.console()
-        
         
         ## if (verbose) {
         ##   cat("\nWhite calculation done")

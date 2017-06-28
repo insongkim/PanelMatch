@@ -16,7 +16,7 @@ MSMD_result <- function(x, L, FORWARD, M = 3) {
     if (M < length(testid)) {
       matchid <- order(MSMD)[2:(M+1)]
     } else {
-      matchid <- order(MSMD)
+      matchid <- order(MSMD)[-1]
     }
     
     second.diff <- mean(x[x$V2 %in% testid[matchid] & 
@@ -35,11 +35,18 @@ MSMD_result <- function(x, L, FORWARD, M = 3) {
 
 MSMD_each <- function(time_id, matched_set, testid) {
   sub_sub <- matched_set[matched_set$V1 == time_id, ]
-  return(tryCatch(mahalanobis(x = sub_sub[sub_sub$V2 %in% testid[-2], 4:length(sub_sub)], 
-                              center = as.numeric(sub_sub[sub_sub$V2 == testid[2], 4:length(sub_sub)]),
-                              cov = cov(sub_sub[sub_sub$V2 %in% testid[-2], 4:length(sub_sub)])), 
-                  error=function(e) NULL))
+  cov_matrix <- cov(sub_sub[sub_sub$V2 %in% testid[-2], 4:length(sub_sub)])
+  if(all(eigen(cov_matrix)$values > .00001)) {
+    return(mahalanobis(x = sub_sub[sub_sub$V2 %in% testid[-2], 4:length(sub_sub)], 
+                       center = as.numeric(sub_sub[sub_sub$V2 == testid[2], 4:length(sub_sub)]),
+                       cov = cov_matrix))
+  } else {
+    return(mahalanobis(x = sub_sub[sub_sub$V2 %in% testid[-2], 4:length(sub_sub)], 
+                       center = as.numeric(sub_sub[sub_sub$V2 == testid[2], 4:length(sub_sub)]),
+                       cov = diag((length(sub_sub) - 3)) * cov_matrix))
+  }
 }
+
 
 
 
@@ -59,10 +66,13 @@ MSMD_weight <- function(x, L, FORWARD, M = 3, d2 = d2, unit.id = unit.id, time.i
     
     # first.diff <- x[x$V2 == testid[2], ]$V4[L + 1 + FORWARD] - x[x$V2 == testid[2], ]$V4[L]
     
-    if (M < length(testid)) {
+    if (M < length(testid)-1) {
       matchid <- order(MSMD)[2:(M+1)]
+      weights <- as.data.frame(rbind(cbind(1/M, testid[matchid]), cbind(w.weight = 1, testid[2])))
     } else {
       matchid <- order(MSMD)
+      weights <- as.data.frame(rbind(cbind(1/(length(testid)-1), testid[matchid[-1]]), cbind(w.weight = 1, testid[2])))
+      
     } 
     
     # second.diff <- mean(x[x$V2 %in% testid[matchid] & 
@@ -72,7 +82,7 @@ MSMD_weight <- function(x, L, FORWARD, M = 3, d2 = d2, unit.id = unit.id, time.i
     # 
     # 
     
-    weights <- as.data.frame(rbind(cbind(1/M, testid[matchid]), cbind(w.weight = 1, testid[2])))
+    # weights <- as.data.frame(rbind(cbind(1/M, testid[matchid]), cbind(w.weight = 1, testid[2])))
     
     colnames(weights)[2] <- "V2" # give the critical column the unit.name, so can merge
     merged <- merge(x, weights, by = "V2") # merge it with the data.frame (smaller data.frame as a list element)
@@ -81,6 +91,9 @@ MSMD_weight <- function(x, L, FORWARD, M = 3, d2 = d2, unit.id = unit.id, time.i
                                      ifelse(merged$V1 == max(timeid_later) & merged$V2 %in% testid[-2], merged$w.weight, 
                                             ifelse(merged$V1 == max(timeid_later) - FORWARD - 1 & merged$V2 %in% testid[-2], -merged$w.weight, 0) 
                                      )))
+    # if (MSMD == 0.0) {
+    #   merged$w.weight <- 0
+    # }
     new.W <- d2[c(unit.id, time.id)] # create a new data.frame as large as the dataset
     names(new.W)[1:2] <- c("V2", "V1") # assigning names so as to merge it next
     total2 <- merge(new.W, merged, by = c("V2", "V1"), all= T) # merge, so now we have a full data.frame with weights
@@ -136,7 +149,7 @@ MSMD_DID_weights <- function(L, FORWARD, time.id = "year", qoi = "ate",
   # use function dframelist.rb_dup to turn every list element into a data.frame
   even_smaller1 <- lapply(smallerlist, dframelist.rb_dup)
   # # subset out any dataframe that have 2 or fewer than 2 units
-  # smallerlist <- Filter(function (x) nrow(x) > 2*(L+FORWARD+1), smallerlist)
+  # even_smaller1 <- Filter(function (x) nrow(x) > 2*(L+FORWARD+1), even_smaller1)
   # 
   # # only focus on ATT
   # even_smaller1 <- Filter(function (x) x[x$V2 == unique(x$V2)[2] & x$V1 == unique(x$V1)[L], ]$V3 == 0, smallerlist)
@@ -168,7 +181,7 @@ MSMD_DID_weights <- function(L, FORWARD, time.id = "year", qoi = "ate",
     # use function dframelist.rb_dup to turn every list element into a data.frame
     even_smaller2 <- lapply(smallerlist, dframelist.rb_dup)
     # subset out any dataframe that have 2 or fewer than 2 units
-    # smallerlist <- Filter(function (x) nrow(x) > 2*(L+FORWARD+1), smallerlist)
+    # even_smaller2 <- Filter(function (x) nrow(x) > 2*(L+FORWARD+1), even_smaller2)
     # 
     # # only focus on ATC
     # even_smaller2 <- Filter(function (x) x[x$V2 == unique(x$V2)[2] & x$V1 == unique(x$V1)[L], ]$V3 == 0, smallerlist)
