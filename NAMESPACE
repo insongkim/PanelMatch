@@ -1,13 +1,13 @@
 useDynLib(wfe)
-export(wfe, pwfe, wfe.heatmap, findMatched2, findMatched,syn_DID, wfe2, syn_DID_MSMD, 
+export(wfe, pwfe, wfe.heatmap, findMatched2, findMatched,syn_DID, syn_DID_MSMD, 
        syn_boot_gDiD, syn_DID_check, syn_DID_weights, syn_DID_gapsplot, 
        syn_DID_MSPE, syn_DID_tmp, syn_DID_weights_tmp, syn_boot_gDiD_tmp,
-       wfe2_tmp2, wfe2_tmp3, MSMD_DID,gDID_master,
+       wfe2_tmp3, MSMD_DID,gDID_master,
        PS_DID)
 
 importFrom(Rcpp, evalCpp)
 ## exportPattern("^[[:alpha:]]+")
-export(FindMatches, wfe, wfe2, findDDmatched2)
+export(FindMatches, wfe, findDDmatched2)
 
 
 
@@ -18,9 +18,6 @@ S3method(summary, wfe)
 S3method(print, wfe)
 S3method(print, summary.wfe)
 
-S3method(summary, wfe2)
-S3method(print, wfe2)
-S3method(print, summary.wfe2)
 
 S3method(summary, wfe2_tmp)
 S3method(print, wfe2_tmp)
