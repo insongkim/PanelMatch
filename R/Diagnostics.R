@@ -60,7 +60,8 @@ syn_DID_gapsplot <- function(L, FORWARD, time.id = "year",
                              ylab = "Gaps between real and synthetic",
                              unit.id = "ccode", 
                              legend.position = "right",
-                             treatment, covariate, dependent, d) {
+                             treatment, covariate, dependent, d,
+                             show.covariate = FALSE) {
   
   
   varnames <- c(time.id, unit.id, treatment, covariate, dependent)
@@ -85,8 +86,9 @@ syn_DID_gapsplot <- function(L, FORWARD, time.id = "year",
   smallerlist <- Filter(function (x) length(x) > 0, smallerlist)
   # use function dframelist.rb_dup to turn every list element into a data.frame
   even_smaller1 <- lapply(smallerlist, dframelist.rb_dup)
-  # execute cscwplot
-  plot.materials <- delete.NULLs(lapply(even_smaller1, cscwplot, L = L, FORWARD = FORWARD))
+  # execute cscwplot to obtain w.weight and unit.id
+  plot.materials <- delete.NULLs(lapply(even_smaller1, cscwplot, L = L, FORWARD = FORWARD,
+                                        show.covariate = show.covariate))
   
   df <- data.frame(x=rep(-L:-1, length(plot.materials)), 
                    val=unlist(lapply(plot.materials, function(x) x$gap)), 
@@ -119,18 +121,3 @@ syn_DID_gapsplot <- function(L, FORWARD, time.id = "year",
   
   
 }
-
-# 
-# 
-# a <- tapply(df$val, df$x, quantile)
-# df2 <- data.frame(x2=rep(1:L,5), y2=unlist(a))
-# 
-# d1 <- data.frame(x1=rep(1:10,3), y1=rnorm(10*3), g1=gl(3,10,labels=letters[1:3]))
-# d2 <- data.frame(x2=rep(1:10,3), y2=rnorm(10*3), g2=gl(3,10, labels=letters[4:6]))
-# 
-# ggplot() + 
-#   geom_line(aes(x1, y1, colour=g1), d1) +  
-#   geom_line(aes(x2, y2, colour=g2), d2)
-
-
-
