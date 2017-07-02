@@ -1,11 +1,11 @@
-syn_DID_gapsplot <- function(L, F, time.id = "year", 
+syn_DID_gapsplot <- function(L, FORWARD, time.id = "year", 
                              xlab = "Pre-treatment periods",
                              ylab = "Gaps between real and synthetic",
                              unit.id = "ccode", 
                              legend.position = "right",
                              treatment, covariate, dependent, d) {
   
-  FORWARD <- F
+  
   
   
   varnames <- c(time.id, unit.id, treatment, covariate, dependent)
@@ -25,7 +25,7 @@ syn_DID_gapsplot <- function(L, F, time.id = "year",
   
   ### cleaning the output from cpp ###
   # delete both higher level and lower level null entries
-  smallerlist <- lapply(Filter(function (x) !is.null(x), findDDmatched2(L, F, dmatrix)), delete.NULLs) 
+  smallerlist <- lapply(Filter(function (x) !is.null(x), findDDmatched2(L, FORWARD, dmatrix)), delete.NULLs) 
   # further cleaning
   smallerlist <- Filter(function (x) length(x) > 0, smallerlist)
   # use function dframelist.rb_dup to turn every list element into a data.frame
