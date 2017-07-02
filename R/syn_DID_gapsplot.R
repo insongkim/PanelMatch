@@ -6,8 +6,6 @@ syn_DID_gapsplot <- function(L, FORWARD, time.id = "year",
                              treatment, covariate, dependent, d) {
   
   
-  
-  
   varnames <- c(time.id, unit.id, treatment, covariate, dependent)
   
   # subsetting the data.frame to include only relevant variables
