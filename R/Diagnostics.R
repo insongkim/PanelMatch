@@ -56,12 +56,14 @@ syn_DID_MSPE <- function(L, F, time.id = "year", qoi = "ATE",
 }
 
 syn_DID_gapsplot <- function(L, FORWARD, time.id = "year", 
-                             xlab = "Pre-treatment periods",
+                             xlab = "Treatment periods",
                              ylab = "Gaps between real and synthetic",
                              unit.id = "ccode", 
                              legend.position = "right",
                              treatment, covariate, dependent, d,
-                             show.covariate = FALSE) {
+                             show.covariate = FALSE,
+                             post.treatment = FALSE, vline = TRUE,
+                             colour = "red", linetype = "longdash") {
   
   
   varnames <- c(time.id, unit.id, treatment, covariate, dependent)
@@ -88,13 +90,23 @@ syn_DID_gapsplot <- function(L, FORWARD, time.id = "year",
   even_smaller1 <- lapply(smallerlist, dframelist.rb_dup)
   # execute cscwplot to obtain w.weight and unit.id
   plot.materials <- delete.NULLs(lapply(even_smaller1, cscwplot, L = L, FORWARD = FORWARD,
-                                        show.covariate = show.covariate))
+                                        show.covariate = show.covariate,
+                                        post.treatment = post.treatment))
   
-  df <- data.frame(x=rep(-L:-1, length(plot.materials)), 
-                   val=unlist(lapply(plot.materials, function(x) x$gap)), 
-                   variable=rep(paste0("unit", 
-                                       unlist(lapply(plot.materials, function(x) x$unit.id))), 
-                                each=L))
+  if (post.treatment == FALSE) {
+    df <- data.frame(x=rep(-L:-1, length(plot.materials)), 
+                     val=unlist(lapply(plot.materials, function(x) x$gap)), 
+                     variable=rep(paste0("unit", 
+                                         unlist(lapply(plot.materials, function(x) x$unit.id))), 
+                                  each=L))
+  } else {
+    df <- data.frame(x=rep(-L:FORWARD, length(plot.materials)), 
+                     val=unlist(lapply(plot.materials, function(x) x$gap)), 
+                     variable=rep(paste0("unit", 
+                                         unlist(lapply(plot.materials, function(x) x$unit.id))), 
+                                  each=L+1+FORWARD))
+  }
+  
   
   t <- tapply(df$val, df$x, quantile)
   
@@ -103,21 +115,52 @@ syn_DID_gapsplot <- function(L, FORWARD, time.id = "year",
   for (i in 2:5) {
     y2 <- c(y2, apply(do.call(rbind,t),2,  FUN = unlist)[,i])
   }
-  df2 <- data.frame(x2=rep(-L:-1,5), 
-                    y2=y2,
-                    g2=gl(5,(L), 
-                          labels=c("Min", "1st Qu.", "Median",
-                                   "3rd Qu.", "Max.")))
   
-  ggplot() + 
-    geom_line(aes(x=factor(x), y=val, group = variable,
-                  colour = variable), df) +
-    labs(x = xlab, y = ylab) + 
-    scale_x_discrete(breaks = -L:-1,
-                     labels=paste("t", -L:-1, sep = "")) +
-    geom_line(aes(x=factor(x2), y=y2, group = g2), 
-              colour = "black",
-              df2) + theme(legend.position=legend.position) 
+  if (post.treatment == FALSE) {
+    df2 <- data.frame(x2=rep(-L:-1,5), 
+                      y2=y2,
+                      g2=gl(5,(L), 
+                            labels=c("Min", "1st Qu.", "Median",
+                                     "3rd Qu.", "Max.")))
+  } else {
+    df2 <- data.frame(x2=rep(-L:FORWARD,5), 
+                      y2=y2,
+                      g2=gl(5,(L+1+FORWARD), 
+                            labels=c("Min", "1st Qu.", "Median",
+                                     "3rd Qu.", "Max.")))
+  }
+  
+  if (post.treatment == FALSE) {
+    ggplot() + 
+      geom_line(aes(x=factor(x), y=val, group = variable,
+                    colour = variable), df) +
+      labs(x = xlab, y = ylab) + 
+      scale_x_discrete(breaks = -L:-1,
+                       labels=paste("t", -L:-1, sep = "")) +
+      geom_line(aes(x=factor(x2), y=y2, group = g2), 
+                colour = "black",
+                df2) + theme(legend.position=legend.position) 
+  } else {
+    ggplot() + 
+      geom_line(aes(x=factor(x), y=val, group = variable,
+                    colour = variable), df) +
+      labs(x = xlab, y = ylab) + 
+      scale_x_discrete(breaks = -L:FORWARD,
+                       labels=c(paste("t", -L:-1, sep = ""), paste("t", 0, sep = ""), 
+                                paste("t+", 1:FORWARD, sep = ""))
+      ) +
+      geom_line(aes(x=factor(x2), y=y2, group = g2), 
+                colour = "black",
+                df2) + theme(legend.position=legend.position) +
+      if(vline == TRUE) {
+        geom_vline(xintercept = L+1, linetype = linetype, 
+                   colour = colour)
+      } else {
+        geom_vline()
+      }
+    
+  }
+  
   
   
 }

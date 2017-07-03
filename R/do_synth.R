@@ -152,41 +152,70 @@ callSynth_tmp <- function (x, unit.id, time.id, L, FORWARD, d2) {
 
 
 # diagnostics
+# diagnostics
 cscwplot <- function(x, L, FORWARD, Main = "ATT",
-                     show.covariate = FALSE) {
+                     show.covariate = FALSE,
+                     post.treatment = FALSE) {
   L <- L; FORWARD <- FORWARD
   testid <- unique(x$V2)
   timeid <- unique(x$V1)
   if (nrow(x) > 2*(L+FORWARD+1)) {
-    dataprep.out <- dataprep(foo = x, 
-                             dependent = "V5",
-                             unit.variable = "V2",
-                             # unit.names.variable = "unit.name",
-                             time.variable = "V1",
-                             treatment.identifier = testid[2], # the regionno of the treated unit
-                             controls.identifier = testid[-2],
-                             time.optimize.ssr = min(timeid):max(timeid-FORWARD-1), # the pre-treatment preiod
-                             time.predictors.prior = min(timeid):max(timeid-FORWARD-1),
-                             predictors = "V4")
+    if (post.treatment == FALSE) {
+      dataprep.out <- dataprep(foo = x, 
+                               dependent = "V5",
+                               unit.variable = "V2",
+                               # unit.names.variable = "unit.name",
+                               time.variable = "V1",
+                               treatment.identifier = testid[2], # the regionno of the treated unit
+                               controls.identifier = testid[-2],
+                               time.optimize.ssr = min(timeid):max(timeid-FORWARD-1), # the pre-treatment preiod
+                               time.predictors.prior = min(timeid):max(timeid-FORWARD-1),
+                               predictors = "V4")
+    } else {
+      dataprep.out <- dataprep(foo = x, 
+                               dependent = "V5",
+                               unit.variable = "V2",
+                               # unit.names.variable = "unit.name",
+                               time.variable = "V1",
+                               treatment.identifier = testid[2], # the regionno of the treated unit
+                               controls.identifier = testid[-2],
+                               time.optimize.ssr = min(timeid):max(timeid-FORWARD-1), # the pre-treatment preiod
+                               time.predictors.prior = min(timeid):max(timeid-FORWARD-1),
+                               predictors = "V4",
+                               time.plot = min(timeid):max(timeid))
+    }
     synth.out <- synth(data.prep.obj = dataprep.out, method = "BFGS") # calibrate the weights
     # plot the pre-treatment gaps (with gap value and treated time+FORWARD for each treated observation)
     # note that dataprep.out$Y0plot %*% synth.out$solution.w
     # is the outcome for the synthetic group
     if (show.covariate == FALSE) {
-      return(list("gap" = x$V5[which(x$V2 == testid[2] & x$V1 %in% timeid[-c((length(timeid)-FORWARD):length(timeid))])] - dataprep.out$Y0plot %*% synth.out$solution.w, 
-                  "unit.id" = paste(testid[2], timeid[L + FORWARD + 1], sep = ",")))
+      if (post.treatment == FALSE) {
+        return(list("gap" = x$V5[which(x$V2 == testid[2] & x$V1 %in% timeid[-c((length(timeid)-FORWARD):length(timeid))])] - dataprep.out$Y0plot %*% synth.out$solution.w, 
+                    "unit.id" = paste(testid[2], timeid[L + FORWARD + 1], sep = ",")))
+      } else {
+        return(list("gap" = x$V5[which(x$V2 == testid[2])] - dataprep.out$Y0plot %*% synth.out$solution.w, 
+                    "unit.id" = paste(testid[2], timeid[L + FORWARD + 1], sep = ",")))
+      }
     } else {
-      covariate.matrix <- matrix(data = x$V4[which(x$V2!=testid[2] & x$V1 %in% timeid[-c((length(timeid)-FORWARD):length(timeid))])],
-                                 ncol = length(testid[-2]))
-      colnames(covariate.matrix) <- colnames(dataprep.out$Y0plot)
-      return(list("gap" = x$V4[which(x$V2 == testid[2] & x$V1 %in% timeid[-c((length(timeid)-FORWARD):length(timeid))])] - covariate.matrix %*% synth.out$solution.w, 
-                  "unit.id" = paste(testid[2], timeid[L + FORWARD + 1], sep = ",")))
+      if (post.treatment == FALSE) {
+        covariate.matrix <- matrix(data = x$V4[which(x$V2!=testid[2] & x$V1 %in% timeid[-c((length(timeid)-FORWARD):length(timeid))])],
+                                   ncol = length(testid[-2]))
+        colnames(covariate.matrix) <- colnames(dataprep.out$Y0plot)
+        return(list("gap" = x$V4[which(x$V2 == testid[2] & x$V1 %in% timeid[-c((length(timeid)-FORWARD):length(timeid))])] - covariate.matrix %*% synth.out$solution.w, 
+                    "unit.id" = paste(testid[2], timeid[L + FORWARD + 1], sep = ",")))
+      } else {
+        covariate.matrix <- matrix(data = x$V4[which(x$V2!=testid[2])],
+                                   ncol = length(testid[-2]))
+        colnames(covariate.matrix) <- colnames(dataprep.out$Y0plot)
+        return(list("gap" = x$V4[which(x$V2 == testid[2])] - covariate.matrix %*% synth.out$solution.w, 
+                    "unit.id" = paste(testid[2], timeid[L + FORWARD + 1], sep = ",")))
+      }
+      
     }
   } else {
     return(NULL)
   }
 }
-
 
 
 cscMSPE <- function(x, L, FORWARD) {
