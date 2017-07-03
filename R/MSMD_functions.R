@@ -200,3 +200,69 @@ MSMD_DID_weights <- function(L, FORWARD, time.id = "year", qoi = "ate",
   }
   
 }
+
+MSMD_plot <- function(x, L, FORWARD, M = 3, unit.id = unit.id, time.id = time.id,
+                      post.treatment = FALSE, show.covariate = FALSE) {
+  L <- L
+  FORWARD <- FORWARD
+  M <- M
+  
+  testid <- unique(x$V2)
+  timeid_later <- unique(x$V1)
+  timeid <- timeid_later[1:L]
+  
+  if (nrow(x) > 2*(L+FORWARD+1)) {
+    matched_set <- x[x$V1 %in% timeid, ]
+    MSMDlist <- lapply(unique(timeid), MSMD_each, matched_set = matched_set, testid = testid)
+    MSMD <- append(Reduce("+", MSMDlist)/length(timeid), 0, after = 1)
+    
+    # first.diff <- x[x$V2 == testid[2], ]$V4[L + 1 + FORWARD] - x[x$V2 == testid[2], ]$V4[L]
+    
+    if (M < length(testid)-1) {
+      matchid <- order(MSMD)[2:(M+1)]
+    } else {
+      matchid <- order(MSMD)
+    } 
+    
+    if(post.treatment == FALSE)
+    {
+      if (show.covariate == FALSE) {
+        # taking average with M
+        return(list("gaps" = as.vector(tapply(matched_set[matched_set$V2 %in% testid[matchid], ]$V4,
+                                              matched_set[matched_set$V2 %in% testid[matchid], ]$V1,
+                                              mean)) - x$V4[which(x$V2 == testid[2] &
+                                                                    x$V1 %in% timeid_later[1:L])],
+                    "unit.id" = paste(testid[2], timeid_later[L + FORWARD + 1], sep = ",")))
+        
+      } else {
+        return(list("gaps" = as.vector(tapply(matched_set[matched_set$V2 %in% testid[matchid], ]$V5,
+                                              matched_set[matched_set$V2 %in% testid[matchid], ]$V1,
+                                              mean)) - x$V5[which(x$V2 == testid[2] &
+                                                                    x$V1 %in% timeid_later[1:L])],
+                    "unit.id" = paste(testid[2], timeid_later[L + FORWARD + 1], sep = ",")))
+        
+        
+      }
+      
+    } else {
+      if (show.covariate == FALSE) {
+        return(list("gaps" = as.vector(tapply(x[x$V2 %in% testid[matchid], ]$V4,
+                                              x[x$V2 %in% testid[matchid], ]$V1,
+                                              mean)) - x$V4[which(x$V2 == testid[2])],
+                    "unit.id" = paste(testid[2], timeid_later[L + FORWARD + 1], sep = ",")))
+      } else {
+        return(list("gaps" = as.vector(tapply(x[x$V2 %in% testid[matchid], ]$V5,
+                                              x[x$V2 %in% testid[matchid], ]$V1,
+                                              mean)) - x$V5[which(x$V2 == testid[2])],
+                    "unit.id" = paste(testid[2], timeid_later[L + FORWARD + 1], sep = ",")))
+        
+      }
+    }
+    
+    
+  } else {
+    return(NULL)
+  }
+  
+}
+
