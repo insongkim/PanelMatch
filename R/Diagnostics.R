@@ -56,8 +56,8 @@ syn_DID_MSPE <- function(L, F, time.id = "year", qoi = "ATE",
 }
 
 syn_DID_gapsplot <- function(L, FORWARD, time.id = "year", 
-                             xlab = "Treatment periods",
-                             ylab = "Gaps between real and synthetic",
+                             xlab = "Time periods",
+                             ylab = "Differences between the treated units and their synthetic control units",
                              unit.id = "ccode", 
                              legend.position = "right",
                              treatment, covariate, dependent, d,
@@ -167,8 +167,8 @@ syn_DID_gapsplot <- function(L, FORWARD, time.id = "year",
 
 
 MSMD_gapsplot <- function(L, FORWARD, time.id = "year", 
-                          xlab = "Treatment periods",
-                          ylab = "Gaps between real and synthetic",
+                          xlab = "Time periods",
+                          ylab = "Differences between the treated units and their synthetic control units",
                           unit.id = "ccode", M = 3,
                           legend.position = "right",
                           treatment, covariate, dependent, d,
@@ -279,8 +279,8 @@ MSMD_gapsplot <- function(L, FORWARD, time.id = "year",
 }
 
 PS_gapsplot <- function(L, FORWARD, time.id = "year", 
-                        xlab = "Treatment periods",
-                        ylab = "Gaps between real and synthetic",
+                        xlab = "Time periods",
+                        ylab = "Differences between the treated units and their synthetic control units",
                         unit.id = "ccode", M = 3,
                         legend.position = "right",
                         treatment, covariate, dependent, data,
