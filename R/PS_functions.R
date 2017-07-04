@@ -196,3 +196,57 @@ PS_m_weights <- function (L, FORWARD, M = 1, time.id = "year", unit.id = "ccode"
   }
 }
 
+
+
+PS_plot <- function(x, L, FORWARD, M = M,
+                    show.covariate = FALSE,
+                    post.treatment = FALSE) {
+  L <- L
+  FORWARD <- FORWARD
+  M <- M
+  colnames(x)[1:5] <- c("V2", "V1", "ps", "V4", "V5")
+  x <- x[!duplicated(x[c("V2", "V1")]),]
+  x <- x[order(x$V2, x$V1), ]
+  treated.id <- x[x$V4 == 1 & x$V1 == (max(x$V1)-FORWARD), ]$V2
+  testid <- unique(x$V2)
+  timeid <- unique(x$V1)[-((length(unique(x$V1)) - FORWARD):length(unique(x$V1)))]
+  matched_set <- x[x$V1 %in% timeid, ]
+  
+  PS_distance <- abs(tapply(matched_set$ps, matched_set$V2, mean) - mean(matched_set$ps[which(matched_set$V2 == treated.id)]))
+  
+  if (M < length(testid)) {
+    matchid <- as.numeric(names(sort(PS_distance))[2:(M+1)])
+  } else {
+    matchid <- testid[testid != treated.id]
+  }
+  
+  if (post.treatment == FALSE) {
+    if (show.covariate == FALSE) {
+      return(list("gap" = as.vector(tapply(matched_set$V5[which(matched_set$V2 %in% matchid)],
+                                           matched_set[matched_set$V2 %in% matchid, ]$V1, mean)) -
+                    x[x$V2 == treated.id & x$V1 %in% timeid, ]$V5, 
+                  "unit.id" = paste(treated.id, unique(x$V1)[(L+FORWARD+1)], sep = ",")))
+    } else {
+      return(list("gap" = as.vector(tapply(matched_set$x[which(matched_set$V2 %in% matchid)],
+                                           matched_set[matched_set$V2 %in% matchid, ]$V1, mean)) -
+                    x[x$V2 == treated.id & x$V1 %in% timeid, ]$x, 
+                  "unit.id" = paste(treated.id, unique(x$V1)[(L+FORWARD+1)], sep = ",")))
+    }
+  } else {
+    if (show.covariate == FALSE) {
+      return(list("gap" = as.vector(tapply(x$V5[which(x$V2 %in% matchid)], 
+                                           x$V1[which(x$V2 %in% matchid)], mean)) -
+                    x$V5[which(x$V2 == treated.id)],
+                  "unit.id" = paste(treated.id, unique(x$V1)[(L+FORWARD+1)], sep = ",")))
+    } else {
+      return(list("gap" = as.vector(tapply(x$x[which(x$V2 %in% matchid)], 
+                                           x$V1[which(x$V2 %in% matchid)], mean)) -
+                    x$x[which(x$V2 == treated.id)],
+                  "unit.id" = paste(treated.id, unique(x$V1)[(L+FORWARD+1)], sep = ",")))
+    }
+  }
+  
+}
+
+
+
