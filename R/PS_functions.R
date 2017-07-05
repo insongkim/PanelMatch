@@ -204,7 +204,7 @@ PS_plot <- function(x, L, FORWARD, M = M,
   L <- L
   FORWARD <- FORWARD
   M <- M
-  colnames(x)[1:5] <- c("V2", "V1", "ps", "V4", "V5")
+  colnames(x)[1:6] <- c("V2", "V1", "ps", "V4", "V5", "x")
   x <- x[!duplicated(x[c("V2", "V1")]),]
   x <- x[order(x$V2, x$V1), ]
   treated.id <- x[x$V4 == 1 & x$V1 == (max(x$V1)-FORWARD), ]$V2

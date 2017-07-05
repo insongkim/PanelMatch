@@ -300,7 +300,7 @@ PS_gapsplot <- function(L, FORWARD, time.id = "year",
   
   d2 <- na.omit(data[varnames])
   d2[1:(length(d2))] <- lapply(d2[1:(length(d2))], function(x) as.numeric(as.character(x)))
-  d2 <- d2[order(d2$unit, d2$time), ]
+  d2 <- d2[order(d2[,2], d2[,1]), ]
   dmatrix <- as.matrix(d2)
   smallerlist <- lapply(Filter(function(x) !is.null(x), findDDmatched2(L, 
                                                                        F = FORWARD, dmatrix)), delete.NULLs)
