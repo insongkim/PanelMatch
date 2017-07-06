@@ -18,7 +18,6 @@ wfe <- function (formula, data, treat = "treat.name",
   class(data) <- "data.frame"
   
   ## ## remove missing variables: removing rows with missing values in either y or treat
-  
   remove.indices <- which(!rownames(data) %in% rownames(mf))
   
   
@@ -1304,11 +1303,13 @@ wfe <- function (formula, data, treat = "treat.name",
         ## stop ("Robust standard errors with autocorrelation is currently not supported")
         
         ## Remove observations with zero weights
+        ## removing these observations won't allow the White stat calculation
         ## zero.ind <- which(data$W.it==0)
         ## if(length(zero.ind)>0){
         ##     data <- data[-zero.ind, ]
         ## }
         n.units <- length(unique(data$u.index))
+        n.times <- length(unique(data$t.index))
         
         ## Demean data
         ## -----------------------------------------------------
@@ -1472,60 +1473,36 @@ wfe <- function (formula, data, treat = "treat.name",
         
         stop("Please set hetero.se == TRUE & auto.se == TRUE when you run two-way FE")
         
-        ## std.error <- "Homoskedastic Standard Error"
-        
-        ## ## Psi.hat.wfe <- sigma2 * ( (length(y.tilde)*ginv.XX.tilde) %*% ((1/(length(y.tilde)-J.u-J.t-p+1))*(crossprod((X.tilde*data$W.it[nz.index]), X.tilde))) %*% (length(y.tilde)*ginv.XX.tilde) ) 
-        ## ## Psi.hat.fe <- (nrow(X.hat)) * vcov(fit.ols)
-        
-        ## Psi.hat.wfe <- sigma2 * ( (J.u*ginv.XX.tilde) %*% ((1/J.u)*(crossprod((X.tilde*data$W.it[nz.index]), X.tilde))) %*% (J.u*ginv.XX.tilde) ) 
-        ## Psi.hat.fe <- (J.u) * vcov(fit.ols)
-        
       } else if ( (hetero.se == FALSE) & (auto.se == TRUE) ) {# Kiefer
         stop ("Robust standard errors with autocorrelation and homoskedasiticy is not supported")
       }
       
       
       ## vcov of wfe model
-      ## vcov.wfe <- Psi.hat.wfe * (1/nrow(X.tilde))
+      
+      ## degrees of freedom correction
+      Nstar <- nrow(data)-length(which(data$W.it==0))
+      nK <- dim(X.tilde)[2]
+      df.correction <- (Nstar-nK+1)/(Nstar-n.units-n.times-nK+1)
+      Psi.hat.wfe <- (n.units/(n.units-1))* df.correction * Psi.hat.wfe
+      
       vcov.wfe <- Psi.hat.wfe * (1/n.units)            
       ## cat("dimension of vcov:", dim(vcov.wfe), "\n")
       se.did <- as.double(Re(sqrt(diag(vcov.wfe))))
       
-      ## ## check vcov of wfe model
-      ## vcov.wfe2 <- Psi.hat.wfe2 * (1/nrow(X.tilde))
-      ## se.did2 <- as.double(Re(sqrt(diag(vcov.wfe2))))
-      
-      ## cat("\nStd.errors for wfe:", se.did, se.did2, "\n")
-      
-      
       ## vcov of standard fe model (note:already divided by J.u)
       ## var.cov.fe <- Psi.hat.fe * (1/nrow(X.hat))
-      var.cov.fe <- Psi.hat.fe * (1/J.u)            
+      var.cov.fe <- Psi.hat.fe * (1/J.u)
       se.ols <- sqrt(diag(var.cov.fe))
       
-      
-      
-      ## if (verbose) {
-      ##   cat("\nStd.error calculation done")
-      ##   flush.console()
-      ## }
+      if (verbose) {
+        cat("\nStd.error calculation done")
+        flush.console()
+      }
       
       
       ## e <- environment()
       ## save(file = "temp.RData", list = ls(), env = e)
-      
-      
-      ### traditional one way fixed effect results
-      
-      
-      ## if (verbose) {
-      ##   cat("Traditional two-way fixed effect\n")
-      ##   print(summary(fit.ols))
-      ##   cat("Robust Standard errors for Standard FE \n")
-      ##   print(se.ols)
-      ##   flush.console()
-      ## }
-      
       
       
       ### White (1980) Test: Theorem 4
@@ -1777,6 +1754,5 @@ print.summary.wfedid <- function(x, ...){
   }
   cat("\n")
 }
-
 
 
