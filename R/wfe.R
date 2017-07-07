@@ -1,7 +1,7 @@
 wfe <- function (formula, data, treat = "treat.name",
                  unit.index, time.index = NULL, method = "unit",
                  qoi = "ate", estimator = NULL, C.it = NULL,
-                 hetero.se = TRUE, auto.se = TRUE,
+                 hetero.se = TRUE, auto.se = TRUE, df.adjustment = TRUE,
                  White = TRUE, White.alpha = 0.05,
                  verbose = TRUE, unbiased.se = FALSE, unweighted = FALSE,
                  store.wdm = FALSE, maxdev.did= NULL,
@@ -1303,11 +1303,12 @@ wfe <- function (formula, data, treat = "treat.name",
         ## stop ("Robust standard errors with autocorrelation is currently not supported")
         
         ## Remove observations with zero weights
-        ## removing these observations won't allow the White stat calculation
-        ## zero.ind <- which(data$W.it==0)
-        ## if(length(zero.ind)>0){
-        ##     data <- data[-zero.ind, ]
-        ## }
+        ## data backup
+        data.zero <- data
+        zero.ind <- which(data$W.it==0)
+        if(length(zero.ind)>0){
+          data.nonzero <- data[-zero.ind, ]
+        }
         n.units <- length(unique(data$u.index))
         n.times <- length(unique(data$t.index))
         
@@ -1481,10 +1482,14 @@ wfe <- function (formula, data, treat = "treat.name",
       ## vcov of wfe model
       
       ## degrees of freedom correction
-      Nstar <- nrow(data)-length(which(data$W.it==0))
-      nK <- dim(X.tilde)[2]
-      df.correction <- (Nstar-nK+1)/(Nstar-n.units-n.times-nK+1)
-      Psi.hat.wfe <- (n.units/(n.units-1))* df.correction * Psi.hat.wfe
+      if(df.adjustment == TRUE){
+        Nstar <- nrow(data)-length(which(data$W.it==0))
+        nK <- dim(X.tilde)[2]
+        df.correction <- (Nstar-nK+1)/(Nstar-n.units-n.times-nK+1)
+        Psi.hat.wfe <- (n.units/(n.units-1))* df.correction * Psi.hat.wfe
+      } else {
+        Psi.hat.wfe <- Psi.hat.wfe
+      }
       
       vcov.wfe <- Psi.hat.wfe * (1/n.units)            
       ## cat("dimension of vcov:", dim(vcov.wfe), "\n")
