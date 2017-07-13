@@ -88,10 +88,13 @@ syn_DID_gapsplot <- function(L, FORWARD, time.id = "year",
   smallerlist <- Filter(function (x) length(x) > 0, smallerlist)
   # use function dframelist.rb_dup to turn every list element into a data.frame
   even_smaller1 <- lapply(smallerlist, dframelist.rb_dup)
+  
+  
   # execute cscwplot to obtain w.weight and unit.id
   plot.materials <- delete.NULLs(lapply(even_smaller1, cscwplot, L = L, FORWARD = FORWARD,
                                         show.covariate = show.covariate,
-                                        post.treatment = post.treatment))
+                                        post.treatment = post.treatment,
+                                        covariate = covariate))
   
   if (post.treatment == FALSE) {
     df <- data.frame(x=rep(-L:-1, length(plot.materials)), 
@@ -111,7 +114,7 @@ syn_DID_gapsplot <- function(L, FORWARD, time.id = "year",
   t <- tapply(df$val, df$x, quantile)
   
   # aggregate(val ~ x, data = df, FUN = quantile)
-  y2 <- apply(do.call(rbind,t),2,  FUN = unlist)[,1]
+  y2 <- apply(do.call(rbind,t),2, FUN = unlist)[,1]
   for (i in 2:5) {
     y2 <- c(y2, apply(do.call(rbind,t),2,  FUN = unlist)[,i])
   }
@@ -161,10 +164,7 @@ syn_DID_gapsplot <- function(L, FORWARD, time.id = "year",
     
   }
   
-  
-  
 }
-
 
 MSMD_gapsplot <- function(L, FORWARD, time.id = "year", 
                           xlab = "Time periods",
