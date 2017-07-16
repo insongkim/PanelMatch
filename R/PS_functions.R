@@ -79,16 +79,23 @@ PS_m_weight <- function(x, L, FORWARD, M = M, d2 = d2,
 
 PS_m_weights <- function (L, FORWARD, M = 1, time.id = "year", unit.id = "ccode",
                           treatment, 
-                          covariate, dependent, data, qoi = "att") 
+                          covariate, dependent, data, qoi = "att",
+                          covariate.only = FALSE) 
 {
   
   data <- data[c(unit.id, time.id,  treatment, dependent, covariate)]
-  dlist <- lapply(1:L, 
-                  function (i) slide(data = data, Var = dependent, GroupVar = unit.id, TimeVar = time.id, slideBy = -(i),
-                                     NewVar = paste("dependent_l", i, sep="")))
-  data <- Reduce(function(x, y) {merge(x, y)}, dlist)
-  # to include ldvs in varnames
-  varnames <- c(time.id, unit.id, treatment, dependent, c(covariate, colnames(data)[(4 + length(covariate) + 1):length(data)]))
+  
+  if (covariate.only == FALSE) {
+    dlist <- lapply(1:L, 
+                    function (i) slide(data = data, Var = dependent, GroupVar = unit.id, TimeVar = time.id, slideBy = -(i),
+                                       NewVar = paste("dependent_l", i, sep="")))
+    data <- Reduce(function(x, y) {merge(x, y)}, dlist)
+    # to include ldvs in varnames
+    varnames <- c(time.id, unit.id, treatment, dependent, c(covariate, colnames(data)[(4 + length(covariate) + 1):length(data)]))
+  } else {
+    varnames <- c(time.id, unit.id, treatment, dependent, covariate)
+  }
+  
   d2 <- na.omit(data[varnames])
   d2[1:(length(d2))] <- lapply(d2[1:(length(d2))], function(x) as.numeric(as.character(x)))
   d2 <- d2[order(d2[,2], d2[,1]), ]
@@ -98,9 +105,10 @@ PS_m_weights <- function (L, FORWARD, M = 1, time.id = "year", unit.id = "ccode"
   smallerlist <- Filter(function(x) length(x) > 0, smallerlist)
   even_smaller1 <- lapply(smallerlist, dframelist.rb_dup)
   
-  # take the last time period from each subset:
+  # take the forward periods from each subset:
+  # IMPORTANT
   Fs <- lapply(even_smaller1, function(x) {
-    x <- x[x$V1 == max(unique(x$V1)), ]
+    x <- x[x$V1 %in% unique(x$V1)[(L+2):(L+1+FORWARD)], ]
     return(x)
   })
   
@@ -116,7 +124,7 @@ PS_m_weights <- function (L, FORWARD, M = 1, time.id = "year", unit.id = "ccode"
     return(x)
   })
   
-  # add varnames to the last-time-period-subset
+  # add varnames to the forward-periods-subset
   Fs <- lapply(Fs, function (x) {
     colnames(x) <- varnames
     return(x)
@@ -125,8 +133,14 @@ PS_m_weights <- function (L, FORWARD, M = 1, time.id = "year", unit.id = "ccode"
   pooled <- rbindlist(even_smaller1) # get a dataset for propensity score generation
   
   # get propensity scores
-  fit0 <- glm(reformulate(response = treatment, termlabels = c(covariate, names(pooled[, (4 + length(covariate) + 1):length(pooled)]))), 
-              family = binomial(link = "logit"), data = pooled)
+  if (covariate.only == TRUE) {
+    fit0 <- glm(reformulate(response = treatment, termlabels = covariate), 
+                family = binomial(link = "logit"), data = pooled)
+  } else {
+    fit0 <- glm(reformulate(response = treatment, termlabels = c(covariate, names(pooled[, (4 + length(covariate) + 1):length(pooled)]))), 
+                family = binomial(link = "logit"), data = pooled)
+  }
+  
   pooled$ps <- fit0$fitted.values
   
   # aggregate to delete duplicates
@@ -152,34 +166,48 @@ PS_m_weights <- function (L, FORWARD, M = 1, time.id = "year", unit.id = "ccode"
                                                                          F = FORWARD, dmatrix)), delete.NULLs)
     smallerlist <- Filter(function(x) length(x) > 0, smallerlist)
     even_smaller2 <- lapply(smallerlist, dframelist.rb_dup)
-    
+   
+    # take the forward periods from each subset:
+    # IMPORTANT
     Fs <- lapply(even_smaller2, function(x) {
-      x <- x[x$V1 == max(unique(x$V1)), ]
+      x <- x[x$V1 %in% unique(x$V1)[(L+2):(L+1+FORWARD)], ]
       return(x)
     })
     
+    # to only include L and the first treatment period
     even_smaller2 <- lapply(even_smaller2, function(x) {
       x <- x[x$V1 %in% sort(unique(x$V1))[1:(L+1)], ]
       return(x)
     })
     
+    # add varnames
     even_smaller2 <- lapply(even_smaller2, function (x) {
       colnames(x) <- varnames
       return(x)
     })
     
+    # add varnames to the forward-periods-subset
     Fs <- lapply(Fs, function (x) {
       colnames(x) <- varnames
       return(x)
     })
     
-    pooled <- rbindlist(even_smaller2)
+    pooled <- rbindlist(even_smaller2) # get a dataset for propensity score generation
     
-    fit0 <- glm(reformulate(response = treatment, termlabels = c(covariate, names(pooled[, (4 + length(covariate) + 1):length(pooled)]))), 
-                family = binomial(link = "logit"), data = pooled)
+    # get propensity scores
+    if (covariate.only == TRUE) {
+      fit0 <- glm(reformulate(response = treatment, termlabels = covariate), 
+                  family = binomial(link = "logit"), data = pooled)
+    } else {
+      fit0 <- glm(reformulate(response = treatment, termlabels = c(covariate, names(pooled[, (4 + length(covariate) + 1):length(pooled)]))), 
+                  family = binomial(link = "logit"), data = pooled)
+    }
+    
     pooled$ps <- fit0$fitted.values
     
+    # aggregate to delete duplicates
     aggregated <- aggregate(reformulate(response = "ps", termlabels = c(unit.id, time.id)), pooled, mean)
+    
     newlist <- lapply(even_smaller2, function(x) merge(aggregated, x, by = c(unit.id, time.id)))
     newlist <- Map(rbind.fill, newlist, Fs)
     # superlist <- mapply(function(x, y) rbind.fill(x,y), newlist, Fs)

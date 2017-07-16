@@ -1,6 +1,7 @@
 gDID_master <- function(d, unit.id = "ccode", time.id = "year", ITER = 10, qoi = "ATE", L = 5, FORWARD = 0, 
                               covariate, weights_att = "weights_att", weights_atc = "weights_atc",
                               dit_att = "dit_att", dit_atc = "dit_atc",
+                              covariate.only = FALSE,
                               treatment, dependent, scheme = "PS", M = 1) {
   
   coefs <- rep(NA, ITER) 
@@ -21,12 +22,13 @@ gDID_master <- function(d, unit.id = "ccode", time.id = "year", ITER = 10, qoi =
       if (scheme == "PS") {
         o.coef <- PS_DID(L = L, FORWARD = FORWARD, M = M, time.id = time.id, unit.id = unit.id, 
                          treatment = treatment, 
-                         covariate = covariate, 
+                         covariate = covariate, covariate.only = covariate.only,
                          dependent = dependent, data = d)
         d <- PS_m_weights(L = L, FORWARD = FORWARD, time.id = time.id, 
                           unit.id = unit.id,
                           treatment = treatment, covariate = covariate, 
-                          dependent = dependent, data = d)
+                          dependent = dependent, covariate.only = covariate.only,
+                          data = d)
         d <- na.omit(d[c(unit.id, time.id, treatment, dependent,
                          weights_att, dit_att)])
       } else {
@@ -73,11 +75,12 @@ gDID_master <- function(d, unit.id = "ccode", time.id = "year", ITER = 10, qoi =
       if (scheme == "PS") {
         o.coef <- PS_DID(L = L, FORWARD = FORWARD, M = M, time.id = time.id, unit.id = unit.id, 
                          treatment = treatment, 
-                         covariate = covariate, 
+                         covariate = covariate, covariate.only = covariate.only,
                          dependent = dependent, data = d)
         d <- PS_m_weights(L = L, FORWARD = FORWARD, time.id = time.id,
                           unit.id = unit.id, qoi = "ate",
                           treatment = treatment, covariate = covariate, 
+                          covariate.only = covariate.only,
                           dependent = dependent, data = d)
         d <- na.omit(d[c(unit.id, time.id, treatment, dependent,
                          weights_atc,

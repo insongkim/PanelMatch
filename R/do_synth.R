@@ -31,7 +31,7 @@ cscwdid_tmp <- function(x, L, FORWARD) {
   L <- L; FORWARD <- FORWARD
   testid <- unique(x$V2)
   timeid <- unique(x$V1)
-  if (nrow(x) > 2*(L+F+1)) {
+  if (nrow(x) > 2*(L+FORWARD+1)) {
     dataprep.out <- dataprep(foo = x, 
                              dependent = "V5",
                              unit.variable = "V2",
@@ -39,8 +39,8 @@ cscwdid_tmp <- function(x, L, FORWARD) {
                              time.variable = "V1",
                              treatment.identifier = testid[2], # the regionno of the treated unit
                              controls.identifier = testid[-2],
-                             time.optimize.ssr = min(timeid):max(timeid-F-1), # the pre-treatment preiod
-                             time.predictors.prior = min(timeid):max(timeid-F-1),
+                             time.optimize.ssr = min(timeid):max(timeid-FORWARD-1), # the pre-treatment preiod
+                             time.predictors.prior = min(timeid):max(timeid-FORWARD-1),
                              predictors = "V4")
     synth.out <- synth(data.prep.obj = dataprep.out, method = "BFGS") # calibrate the weights
     # use rbind and cbind to add to the weights a weight vector of 1s for the treated observation,
@@ -48,16 +48,16 @@ cscwdid_tmp <- function(x, L, FORWARD) {
     weights <- as.data.frame(rbind(cbind(synth.out$solution.w, testid[-2]), cbind(w.weight = 1, testid[2])))
     colnames(weights)[2] <- "V2" # give the critical column the unit.name, so can merge
     x <- merge(x, weights, by = "V2") # merge it with the data.frame (
-    first.diff <- x[x$V2 == testid[2], ]$V5[L+1+F] - x[x$V2 == testid[2], ]$V5[L]
-    second.diff.1 <- sum(x[x$V2 %in% testid[-2] & x$V1 == unique(x$V1)[L+1+F], ]$V5*
-                           x[x$V2 %in% testid[-2] & x$V1 == unique(x$V1)[L+1+F], ]$w.weight)
+    first.diff <- x[x$V2 == testid[2], ]$V5[L+1+FORWARD] - x[x$V2 == testid[2], ]$V5[L]
+    second.diff.1 <- sum(x[x$V2 %in% testid[-2] & x$V1 == unique(x$V1)[L+1+FORWARD], ]$V5*
+                           x[x$V2 %in% testid[-2] & x$V1 == unique(x$V1)[L+1+FORWARD], ]$w.weight)
     second.diff.2 <- sum(x[x$V2 %in% testid[-2] & x$V1 == unique(x$V1)[L], ]$V5*
                            x[x$V2 %in% testid[-2] & x$V1 == unique(x$V1)[L], ]$w.weight)
     second.diff <- second.diff.1 - second.diff.2                    
     return(first.diff - second.diff)
   } else {
-    first.diff <- x[x$V2 == testid[2], ]$V5[L+1+F] - x[x$V2 == testid[2], ]$V5[L]
-    second.diff <- x[x$V2 %in% testid[-2] & x$V1 == unique(x$V1)[L+1+F], ]$V5 -
+    first.diff <- x[x$V2 == testid[2], ]$V5[L+1+FORWARD] - x[x$V2 == testid[2], ]$V5[L]
+    second.diff <- x[x$V2 %in% testid[-2] & x$V1 == unique(x$V1)[L+1+FORWARD], ]$V5 -
       x[x$V2 %in% testid[-2] & x$V1 == unique(x$V1)[L], ]$V5
     return(first.diff - second.diff)
   }

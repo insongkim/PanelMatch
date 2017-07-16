@@ -1,11 +1,7 @@
-syn_DID_check <- function(L, F, time.id = "year", qoi = "ATE",
+syn_DID_check <- function(L, FORWARD, time.id = "year", qoi = "ATE",
                           unit.id = "ccode",
                           treatment, covariate, dependent, d) {
-  
-  L <- L # set past history
-  F <- F # set the future
-  FORWARD <- F
-  d <- d # set dataset
+
   
   varnames <- c(time.id, unit.id, treatment, covariate, dependent)
   
@@ -24,7 +20,7 @@ syn_DID_check <- function(L, F, time.id = "year", qoi = "ATE",
   
   ### cleaning the output from cpp ###
   # delete both higher level and lower level null entries
-  smallerlist <- lapply(Filter(function (x) !is.null(x), findDDmatched2(L, F, dmatrix)), delete.NULLs) 
+  smallerlist <- lapply(Filter(function (x) !is.null(x), findDDmatched2(L, F = FORWARD, dmatrix)), delete.NULLs) 
   # further cleaning
   smallerlist <- Filter(function (x) length(x) > 0, smallerlist)
   # use function dframelist.rb_dup to turn every list element into a data.frame
@@ -46,7 +42,7 @@ syn_DID_check <- function(L, F, time.id = "year", qoi = "ATE",
     
     ### cleaning the output from cpp ###
     # delete both higher level and lower level null entries
-    smallerlist <- lapply(Filter(function (x) !is.null(x), findDDmatched2(L = L, F, dmatrix)), delete.NULLs) 
+    smallerlist <- lapply(Filter(function (x) !is.null(x), findDDmatched2(L = L, F = FORWARD, dmatrix)), delete.NULLs) 
     # further cleaning
     smallerlist <- Filter(function (x) length(x) > 0, smallerlist)
     # use function dframelist.rb_dup to turn every list element into a data.frame

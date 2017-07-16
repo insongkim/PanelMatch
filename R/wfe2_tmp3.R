@@ -6,7 +6,7 @@ wfe2_tmp3 <- function (formula, data, treat = "treat.name",
                        verbose = TRUE, unbiased.se = FALSE, unweighted = FALSE,
                        store.wdm = FALSE, maxdev.did= NULL, weights = NULL,
                        covariate = "gdppc", L, FORWARD = 0,
-                       scheme = "Maha", M = 1,
+                       scheme = "Maha", M = 1, covariate.only = FALSE,
                        tol = sqrt(.Machine$double.eps)){
   dependent = all.vars(formula)[1]
   if (scheme == "synth") {
@@ -24,7 +24,7 @@ wfe2_tmp3 <- function (formula, data, treat = "treat.name",
       data <- PS_m_weights(L = L, FORWARD = FORWARD, time.id = time.index, qoi = qoi,
                            unit.id = unit.index, M = M,
                            treatment = treat, covariate = covariate, dependent = dependent,
-                           data = data)
+                           data = data, covariate.only = covariate.only)
     }
   }
   
