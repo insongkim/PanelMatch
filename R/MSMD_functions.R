@@ -228,17 +228,17 @@ MSMD_plot <- function(x, L, FORWARD, M = 3, unit.id = unit.id, time.id = time.id
     {
       if (show.covariate == FALSE) {
         # taking average with M
-        return(list("gaps" = as.vector(tapply(matched_set[matched_set$V2 %in% testid[matchid], ]$V4,
+        return(list("gaps" = (as.vector(tapply(matched_set[matched_set$V2 %in% testid[matchid], ]$V4,
                                               matched_set[matched_set$V2 %in% testid[matchid], ]$V1,
                                               mean)) - x$V4[which(x$V2 == testid[2] &
-                                                                    x$V1 %in% timeid_later[1:L])],
+                                                                    x$V1 %in% timeid_later[1:L])])/sd(x$V4[which(x$V2 == testid[2] & x$V1 %in% timeid)]),
                     "unit.id" = paste(testid[2], timeid_later[L + FORWARD + 1], sep = ",")))
         
       } else {
-        return(list("gaps" = as.vector(tapply(matched_set[matched_set$V2 %in% testid[matchid], ]$V5,
+        return(list("gaps" = (as.vector(tapply(matched_set[matched_set$V2 %in% testid[matchid], ]$V5,
                                               matched_set[matched_set$V2 %in% testid[matchid], ]$V1,
                                               mean)) - x$V5[which(x$V2 == testid[2] &
-                                                                    x$V1 %in% timeid_later[1:L])],
+                                                                    x$V1 %in% timeid_later[1:L])])/sd(x$V5[which(x$V2 == testid[2] & x$V1 %in% timeid)]),
                     "unit.id" = paste(testid[2], timeid_later[L + FORWARD + 1], sep = ",")))
         
         
@@ -246,14 +246,14 @@ MSMD_plot <- function(x, L, FORWARD, M = 3, unit.id = unit.id, time.id = time.id
       
     } else {
       if (show.covariate == FALSE) {
-        return(list("gaps" = as.vector(tapply(x[x$V2 %in% testid[matchid], ]$V4,
+        return(list("gaps" = (as.vector(tapply(x[x$V2 %in% testid[matchid], ]$V4,
                                               x[x$V2 %in% testid[matchid], ]$V1,
-                                              mean)) - x$V4[which(x$V2 == testid[2])],
+                                              mean)) - x$V4[which(x$V2 == testid[2])])/sd(x$V4[which(x$V2 == testid[2] & x$V1 %in% timeid)]),
                     "unit.id" = paste(testid[2], timeid_later[L + FORWARD + 1], sep = ",")))
       } else {
-        return(list("gaps" = as.vector(tapply(x[x$V2 %in% testid[matchid], ]$V5,
+        return(list("gaps" = (as.vector(tapply(x[x$V2 %in% testid[matchid], ]$V5,
                                               x[x$V2 %in% testid[matchid], ]$V1,
-                                              mean)) - x$V5[which(x$V2 == testid[2])],
+                                              mean)) - x$V5[which(x$V2 == testid[2])])/sd(x$V5[which(x$V2 == testid[2] & x$V1 %in% timeid)]),
                     "unit.id" = paste(testid[2], timeid_later[L + FORWARD + 1], sep = ",")))
         
       }

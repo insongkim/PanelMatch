@@ -91,7 +91,7 @@ PS_m_weights <- function (L, FORWARD, M = 1, time.id = "year", unit.id = "ccode"
   varnames <- c(time.id, unit.id, treatment, dependent, c(covariate, colnames(data)[(4 + length(covariate) + 1):length(data)]))
   d2 <- na.omit(data[varnames])
   d2[1:(length(d2))] <- lapply(d2[1:(length(d2))], function(x) as.numeric(as.character(x)))
-  d2 <- d2[order(d2$unit, d2$time), ]
+  d2 <- d2[order(d2[,2], d2[,1]), ]
   dmatrix <- as.matrix(d2)
   smallerlist <- lapply(Filter(function(x) !is.null(x), findDDmatched2(L, 
                                                                        F = FORWARD, dmatrix)), delete.NULLs)
@@ -222,26 +222,26 @@ PS_plot <- function(x, L, FORWARD, M = M,
   
   if (post.treatment == FALSE) {
     if (show.covariate == FALSE) {
-      return(list("gap" = as.vector(tapply(matched_set$V5[which(matched_set$V2 %in% matchid)],
+      return(list("gap" = (as.vector(tapply(matched_set$V5[which(matched_set$V2 %in% matchid)],
                                            matched_set[matched_set$V2 %in% matchid, ]$V1, mean)) -
-                    x[x$V2 == treated.id & x$V1 %in% timeid, ]$V5, 
+                    x[x$V2 == treated.id & x$V1 %in% timeid, ]$V5)/sd(x[x$V2 == treated.id & x$V1 %in% timeid, ]$V5), 
                   "unit.id" = paste(treated.id, unique(x$V1)[(L+FORWARD+1)], sep = ",")))
     } else {
-      return(list("gap" = as.vector(tapply(matched_set$x[which(matched_set$V2 %in% matchid)],
+      return(list("gap" = (as.vector(tapply(matched_set$x[which(matched_set$V2 %in% matchid)],
                                            matched_set[matched_set$V2 %in% matchid, ]$V1, mean)) -
-                    x[x$V2 == treated.id & x$V1 %in% timeid, ]$x, 
+                    x[x$V2 == treated.id & x$V1 %in% timeid, ]$x)/sd(x[x$V2 == treated.id & x$V1 %in% timeid, ]$x), 
                   "unit.id" = paste(treated.id, unique(x$V1)[(L+FORWARD+1)], sep = ",")))
     }
   } else {
     if (show.covariate == FALSE) {
-      return(list("gap" = as.vector(tapply(x$V5[which(x$V2 %in% matchid)], 
+      return(list("gap" = (as.vector(tapply(x$V5[which(x$V2 %in% matchid)], 
                                            x$V1[which(x$V2 %in% matchid)], mean)) -
-                    x$V5[which(x$V2 == treated.id)],
+                    x$V5[which(x$V2 == treated.id)])/sd(x[x$V2 == treated.id & x$V1 %in% timeid, ]$V5),
                   "unit.id" = paste(treated.id, unique(x$V1)[(L+FORWARD+1)], sep = ",")))
     } else {
-      return(list("gap" = as.vector(tapply(x$x[which(x$V2 %in% matchid)], 
+      return(list("gap" = (as.vector(tapply(x$x[which(x$V2 %in% matchid)], 
                                            x$V1[which(x$V2 %in% matchid)], mean)) -
-                    x$x[which(x$V2 == treated.id)],
+                    x$x[which(x$V2 == treated.id)])/sd(x[x$V2 == treated.id & x$V1 %in% timeid, ]$x),
                   "unit.id" = paste(treated.id, unique(x$V1)[(L+FORWARD+1)], sep = ",")))
     }
   }

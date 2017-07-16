@@ -162,13 +162,15 @@ cscwplot <- function(x, L, FORWARD, Main = "ATT",
   timeid <- unique(x$V1)
   if (nrow(x) > 2*(L+FORWARD+1)) {
     if (is.null(covariate) == TRUE) {
-      
+      V2 = x$V2; V1 = x$V1
       control_data <- reshape2::dcast(x[V2 != testid[2], ], V2 ~ V1)
       
-      treat_data <- x %>% 
-        filter(V2 == testid[2]) %>% 
-        select_("V4") %>% 
-        as.data.frame()
+      # treat_data <- x %>% 
+      #   filter(V2 == testid[2]) %>% 
+      #   select_("V4") %>% 
+      #   as.data.frame()
+      
+      treat_data <- as.data.frame(x$V4[which(x$V2 == testid[2])])
       
       synth_out <- synth_constReg_weight(
         Y_t = as.vector(treat_data[,1]), 
@@ -176,11 +178,11 @@ cscwplot <- function(x, L, FORWARD, Main = "ATT",
         T0 = (L)
       )
       if (post.treatment == FALSE) {
-        return(list("gap" = x$V4[which(x$V2 == testid[2] & x$V1 %in% timeid[-c((length(timeid)-FORWARD):length(timeid))])] -
-                      synth_out$Y_synth[,1][1:L], 
+        return(list("gap" = (x$V4[which(x$V2 == testid[2] & x$V1 %in% timeid[-c((length(timeid)-FORWARD):length(timeid))])] -
+                               synth_out$Y_synth[,1][1:L])/sd(x$V4[which(x$V2 == testid[2] & x$V1 %in% timeid[1:L])]), 
                     "unit.id" = paste(testid[2], timeid[L + FORWARD + 1], sep = ",")))
       } else {
-        return(list("gap" = x$V4[which(x$V2 == testid[2])] - synth_out$Y_synth[,1], 
+        return(list("gap" = (x$V4[which(x$V2 == testid[2])] - synth_out$Y_synth[,1])/sd(x$V4[which(x$V2 == testid[2] & x$V1 %in% timeid[1:L])]), 
                     "unit.id" = paste(testid[2], timeid[L + FORWARD + 1], sep = ",")))
       }
     } else {
@@ -214,10 +216,10 @@ cscwplot <- function(x, L, FORWARD, Main = "ATT",
       # is the outcome for the synthetic group
       if (show.covariate == FALSE) {
         if (post.treatment == FALSE) {
-          return(list("gap" = x$V5[which(x$V2 == testid[2] & x$V1 %in% timeid[-c((length(timeid)-FORWARD):length(timeid))])] - dataprep.out$Y0plot %*% synth.out$solution.w, 
+          return(list("gap" = (x$V5[which(x$V2 == testid[2] & x$V1 %in% timeid[-c((length(timeid)-FORWARD):length(timeid))])] - dataprep.out$Y0plot %*% synth.out$solution.w)/sd(x$V5[which(x$V2 == testid[2] & x$V1 %in% timeid[1:L])]), 
                       "unit.id" = paste(testid[2], timeid[L + FORWARD + 1], sep = ",")))
         } else {
-          return(list("gap" = x$V5[which(x$V2 == testid[2])] - dataprep.out$Y0plot %*% synth.out$solution.w, 
+          return(list("gap" = (x$V5[which(x$V2 == testid[2])] - dataprep.out$Y0plot %*% synth.out$solution.w)/sd(x$V5[which(x$V2 == testid[2] & x$V1 %in% timeid[1:L])]), 
                       "unit.id" = paste(testid[2], timeid[L + FORWARD + 1], sep = ",")))
         }
       } else {
@@ -225,13 +227,13 @@ cscwplot <- function(x, L, FORWARD, Main = "ATT",
           covariate.matrix <- matrix(data = x$V4[which(x$V2!=testid[2] & x$V1 %in% timeid[-c((length(timeid)-FORWARD):length(timeid))])],
                                      ncol = length(testid[-2]))
           colnames(covariate.matrix) <- colnames(dataprep.out$Y0plot)
-          return(list("gap" = x$V4[which(x$V2 == testid[2] & x$V1 %in% timeid[-c((length(timeid)-FORWARD):length(timeid))])] - covariate.matrix %*% synth.out$solution.w, 
+          return(list("gap" = (x$V4[which(x$V2 == testid[2] & x$V1 %in% timeid[-c((length(timeid)-FORWARD):length(timeid))])] - covariate.matrix %*% synth.out$solution.w)/sd(x$V4[which(x$V2 == testid[2] & x$V1 %in% timeid[1:L])]), 
                       "unit.id" = paste(testid[2], timeid[L + FORWARD + 1], sep = ",")))
         } else {
           covariate.matrix <- matrix(data = x$V4[which(x$V2!=testid[2])],
                                      ncol = length(testid[-2]))
           colnames(covariate.matrix) <- colnames(dataprep.out$Y0plot)
-          return(list("gap" = x$V4[which(x$V2 == testid[2])] - covariate.matrix %*% synth.out$solution.w, 
+          return(list("gap" = (x$V4[which(x$V2 == testid[2])] - covariate.matrix %*% synth.out$solution.w)/sd(x$V4[which(x$V2 == testid[2] & x$V1 %in% timeid[1:L])]), 
                       "unit.id" = paste(testid[2], timeid[L + FORWARD + 1], sep = ",")))
         }
         
