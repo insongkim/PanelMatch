@@ -35,7 +35,7 @@ MSMD_result <- function(x, L, FORWARD, M = 3) {
 
 MSMD_each <- function(time_id, matched_set, testid) {
   sub_sub <- matched_set[matched_set$V1 == time_id, ]
-  cov_matrix <- cov(sub_sub[sub_sub$V2 %in% testid[-2], 4:length(sub_sub)])
+  cov_matrix <- cov(as.matrix(sub_sub[sub_sub$V2 %in% testid[-2], 4:length(sub_sub)]))
   if(all(eigen(cov_matrix)$values > .00001)) {
     return(mahalanobis(x = sub_sub[sub_sub$V2 %in% testid[-2], 4:length(sub_sub)], 
                        center = as.numeric(sub_sub[sub_sub$V2 == testid[2], 4:length(sub_sub)]),
