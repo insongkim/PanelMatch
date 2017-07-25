@@ -206,6 +206,21 @@ PanelDiDResult <- function(x, lag, lead){
 #                lag = 4, lead = 2)
 
 
+gaps_plot <- function(x, lag, lead, show.covariate = NULL) {
+  treated.id <- x[x$V3 == 1 & x$V1 == (max(x$V1)-lead), ]$V2
+  if (is.null(show.covariate)) {
+    return(list("gap" = x$V4[x$V2 == treated.id] - 
+                  tapply(x$V4[x$V2 != treated.id] * x$w.weight[x$V2 != treated.id], 
+                         x$V1[x$V2 != treated.id], sum),
+                "unit" = paste(treated.id, unique(x$V1)[lag + 1], sep = ",")))
+  } else {
+    return(list("gap" = x$V5[x$V2 == treated.id] - 
+                  tapply(x$V5[x$V2 != treated.id] * x$w.weight[x$V2 != treated.id], 
+                         x$V1[x$V2 != treated.id], sum),
+                "unit" = paste(treated.id, unique(x$V1)[lag + 1], sep = ",")))
+  }
+  
+}
 
 
 

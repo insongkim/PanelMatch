@@ -1,114 +1,47 @@
 
-wfe.heatmap <- function(unit.id, time.id, treatment, data, color.of.treated = "red",
-                        color.of.untreated = "blue", title = "Treatment Distribution \n Across Units and Time",
-                        add.legend = FALSE,
-                        x.size = 5)
-  # unit.id is the variable name, in character string, of the unit identifier in the dataframe. The user is recommended to
-  # supply a variable of names for the units in her data, because these names will label the ticks
-  # of the x-axis so the user will be able to easily tell which unit receives what kind of distribution.
-  # supplying a numeric variable here will also work, although the function will set it to a character variable
+wfe.heatmap <- function(unit.id, time.id, treatment, data, 
+                        color.of.treated = "red",
+                        color.of.untreated = "blue", 
+                        title = "Treatment Distribution \n Across Units and Time",
+                        legend.position= "none", xlab = "time", ylab = "unit",
+                        x.size = 10, y.size = 5)
 
-  # time.id is the variable name, again in character string, of the time identifier.
-
-  # data is the dataframe
-
-  # color.of.treated is default to red while color.of.untreated to blue, although the user can supply colors
-  # of her own liking
-
-  # The title is already set by default, although the user can supply her own title
-
-  # by default this function will not display legend, but the user can set it to TRUE so it will display it
-
-  # by default the font size of the unit names on the x-axis is set to 5, but the user can supply her own
-
-  {
+{
   # load the dataframe that the user specifies
   data <- na.omit(data[c(unit.id, time.id, treatment)])
-
+  
   # rename variables to match with the object names in the loop below
   colnames(data) <- c("unit.id", "time.id", "treatment")
-
+  
   # make unit.id a character: this is useful when the unit the user
   # passes to the function is numeric (e.g. dyad id)
-  data$unit.id <- as.character(data$unit.id)
-
-  if (add.legend) { # if add.legend is TRUE
-
-  if (length(unique(data$unit.id)) >= 200) { # here we specify that, unit names will not be shown on the x-axis
-                                             # if the no. of units exceeds 200, because the number would be
-                                             # too large for users to read the names of each unit on the x-axis
-
-  # use ggplot2
-  p <- ggplot(data, aes(unit.id, time.id)) + geom_tile(aes(fill = treatment),
-          colour = "white") +
-scale_fill_gradient(low = color.of.untreated,
-high = color.of.treated, guide = "legend", breaks = c(0,1), labels = c("not treated", "treated")) +
-theme_bw() +
-labs(list(title = title, x = unit.id, y = time.id, fill = "")) +
-theme(axis.ticks.x=element_blank(), axis.text.x=element_blank(),
-panel.grid.major = element_blank(),panel.border = element_blank(),
-panel.background = element_blank()) +
-scale_x_discrete(expand = c(0, 0)) +
-scale_y_continuous(limits = c(min(data$time.id), max(data$time.id)), expand = c(0, 0))
-  }
-  else { # if the no. of units is lower than 200, then we will show unit names on the x-axis
-
-    # use ggplot2
-    p <- ggplot(data, aes(unit.id, time.id)) + geom_tile(aes(fill = treatment),
-            colour = "white") +
-scale_fill_gradient(low = color.of.untreated,
-high = color.of.treated, guide = "legend", breaks = c(0,1), labels = c("not treated", "treated")) +
-theme_bw() +
-labs(list(title = title, x = unit.id, y = time.id, fill = "")) +
-theme(axis.ticks.x=element_blank(),
-panel.grid.major = element_blank(), panel.border = element_blank(),
-panel.background = element_blank(), axis.text.x = element_text(angle=90,
-size = x.size, vjust=0.5)) +
-scale_x_discrete(expand = c(0, 0)) +
-scale_y_continuous(limits = c(min(data$time.id),max(data$time.id)), expand = c(0,0))
-    }
-
-   # return the plot
-  return(p)
-  } else {
-
-    # this next chunk of code simply repeats the previous chunk except for not displaying, because
-    # under this condtion the user prefers not to display legend (which is by default)
-
-    if (length(unique(data$unit.id)) >= 200) {
-
+  # data$unit.id <- as.character(data$unit.id)
+  
+  ## Sorting units by treatment intensity 
+ 
+  data$trintens <- tapply(data$treatment, data$unit.id, mean, na.rm = T)[as.character(data$unit.id)]
+  data <- data[order(data$trintens), ]
+  data$old.index <- data$unit.id
+  data$unit.id <- match(data$unit.id, unique(data$unit.id) ) 
+  data$unit.id <- factor(data$unit.id, levels=unique(as.character(data$unit.id)))
+  
       # use ggplot2
       p <- ggplot(data, aes(unit.id, time.id)) + geom_tile(aes(fill = treatment),
                                                            colour = "white") +
         scale_fill_gradient(low = color.of.untreated,
-                            high = color.of.treated) +
+                            high = color.of.treated, guide = "legend", 
+                            breaks = c(0,1), labels = c("not treated", "treated")) +
         theme_bw() +
-        labs(list(title = title, x = unit.id, y = time.id)) +
-        theme(legend.position="none", axis.ticks.x=element_blank(), axis.text.x=element_blank(),
-              panel.grid.major = element_blank(),panel.border = element_blank(),
-              panel.background = element_blank()) +
-        scale_x_discrete(expand = c(0, 0)) +
-        scale_y_continuous(limits = c(min(data$time.id), max(data$time.id)), expand = c(0, 0))
-    }
-    else {
-
-      # use ggplot2
-      p <- ggplot(data, aes(unit.id, time.id)) + geom_tile(aes(fill = treatment),
-                                                           colour = "white") +
-        scale_fill_gradient(low = color.of.untreated,
-                            high = color.of.treated) +
-        theme_bw() +
-        labs(list(title = title, x = unit.id, y = time.id)) +
-        theme(legend.position = "none", axis.ticks.x=element_blank(),
+        labs(list(title = title, x = ylab, y = xlab, fill = "")) +
+        theme(axis.ticks.x=element_blank(),
               panel.grid.major = element_blank(), panel.border = element_blank(),
-              panel.background = element_blank(), axis.text.x = element_text(angle=90,
-                                                                             size = x.size, vjust=0.5)) +
-        scale_x_discrete(expand = c(0, 0)) +
-        scale_y_continuous(limits = c(min(data$time.id),max(data$time.id)), expand = c(0,0))
-    }
-
-    # return the plot
-    return(p)
-  }
+              legend.position = legend.position,
+              panel.background = element_blank(), 
+              axis.text.x = element_text(angle=90, size = x.size, vjust=0.5),
+              axis.text.y = element_text(size = y.size),
+              plot.title = element_text(hjust = 0.5)) +
+        scale_x_discrete(expand = c(0, 0), labels = unique(as.character(data$old.index))) +
+        scale_y_continuous(limits = c(min(data$time.id)-1,max(data$time.id) + 1), expand = c(0,0)) +
+        coord_flip()
+        return(p) # return the plot
 }
-
