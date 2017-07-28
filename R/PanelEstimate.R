@@ -105,7 +105,12 @@ PanelEstimate <- function(lag, lead, scheme = "Synth",
         df.bs <- lapply(units, function(x) which(data[,unit.id]==x))
         d.sub1 <- data[unlist(df.bs),]
         colnames(d.sub1)[3:4] <- c("treatment", "dv")
-        att.new <- sum(d.sub1$weights_att*(2*d.sub1$treatment-1)*d.sub1$dv)/sum(d.sub1$dit_att)
+        if (lead > 0) {
+          att.new <- sum(d.sub1$weights_att*d.sub1$dv)/sum(d.sub1$dit_att)
+        } else {
+          att.new <- sum(d.sub1$weights_att*(2*d.sub1$treatment-1)*d.sub1$dv)/sum(d.sub1$dit_att)
+        }
+       
         coefs[k] <- att.new
         dit.atts[k] <- sum(d.sub1$dit_att)
         wit.atts[[k]] <- d.sub1$weights_att
@@ -149,7 +154,11 @@ PanelEstimate <- function(lag, lead, scheme = "Synth",
         df.bs <- lapply(units, function(x) which(data[,unit.id]==x))
         d.sub1 <- data[unlist(df.bs),]
         colnames(d.sub1)[3:4] <- c("treatment", "dv")
-        atc.new <- sum(d.sub1$weights_atc*(2*d.sub1$treatment-1)*d.sub1$dv)/sum(d.sub1$dit_atc)
+        if (lead > 0) {
+          atc.new <- -sum(d.sub1$weights_atc*d.sub1$dv)/sum(d.sub1$dit_atc)
+        } else {
+          atc.new <- sum(d.sub1$weights_atc*(2*d.sub1$treatment-1)*d.sub1$dv)/sum(d.sub1$dit_atc)
+        }
         coefs[k] <- atc.new
         dit.atcs[k] <- sum(d.sub1$dit_atc)
         wit.atcs[[k]] <- d.sub1$weights_atc
@@ -200,9 +209,20 @@ PanelEstimate <- function(lag, lead, scheme = "Synth",
         df.bs <- lapply(units, function(x) which(data[,unit.id]==x))
         d.sub1 <- data[unlist(df.bs),]
         colnames(d.sub1)[3:4] <- c("treatment", "dv")
-        att.new <- sum(d.sub1$weights_att*(2*d.sub1$treatment-1)*d.sub1$dv)/sum(d.sub1$dit_att)
+       
+        if (lead > 0) {
+          att.new <- sum(d.sub1$weights_att*d.sub1$dv)/sum(d.sub1$dit_att)
+        } else {
+          att.new <- sum(d.sub1$weights_att*(2*d.sub1$treatment-1)*d.sub1$dv)/sum(d.sub1$dit_att)
+        }
+        
         d.sub1$control <- ifelse(d.sub1$treatment == 1, 0, 1)
-        atc.new <- -sum(d.sub1$weights_atc*(2*d.sub1$control-1)*d.sub1$dv)/sum(d.sub1$dit_atc)
+        if (lead > 0) {
+          atc.new <- -sum(d.sub1$weights_atc*d.sub1$dv)/sum(d.sub1$dit_atc)
+        } else {
+          atc.new <- sum(d.sub1$weights_atc*(2*d.sub1$treatment-1)*d.sub1$dv)/sum(d.sub1$dit_atc)
+        }
+        
         coefs[k] <- (att.new*sum(d.sub1$dit_att) + atc.new*sum(d.sub1$dit_atc))/(sum(d.sub1$dit_att) + sum(d.sub1$dit_atc))
         dit.atts[k] <- sum(d.sub1$dit_att)
         dit.atcs[k] <- sum(d.sub1$dit_atc)
