@@ -31,7 +31,8 @@ synth_vit <- function(x, lag, lead) {
       synth_out <- synth_constReg_weight(
         Y_t = as.vector(treat_data[,1]), 
         Y_c = as.matrix(control_data[,-1]), 
-        T0 = (lag)
+        T0 = (lag),
+        init = rep(1/(length(testid)-1), length(testid)-1)
       )
       
       weights <- as.data.frame(rbind(cbind(synth_out$weight, testid[-2]), cbind(w.weight = 1, testid[2])))
