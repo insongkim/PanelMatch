@@ -1,5 +1,5 @@
 
-wfe.heatmap <- function(unit.id, time.id, treatment, data, 
+DisplayTreatment <- function(unit.id, time.id, treatment, data, 
                         color.of.treated = "red",
                         color.of.untreated = "blue", 
                         title = "Treatment Distribution \n Across Units and Time",
