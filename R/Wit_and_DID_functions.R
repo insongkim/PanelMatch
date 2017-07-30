@@ -1,9 +1,9 @@
-Panel_vit <- function(x, lag, lead, scheme, M) {
-  if (scheme == "Synth") {
+Panel_vit <- function(x, lag, lead, method, M) {
+  if (method == "Synth") {
     return(synth_vit(x, lag = lag, lead = lead))
-  } else if(scheme == "Maha"){
+  } else if(method == "Maha"){
     return(Maha_vit(x, lag, lead, M = M))
-  } else if(scheme == "Pscore") {
+  } else if(method == "Pscore") {
     return(PS_vit(x, lag, lead, M = M))
   } else {
     return("WRONG")

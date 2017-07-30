@@ -2,13 +2,13 @@ PanelMatch <- function(lag, lead, time.id = "year", qoi = "ate",
                        unit.id = "ccode",
                        treatment, covariate, dependent, data,
                        M = 3, covariate.only = FALSE,
-                       scheme = NULL) {
+                       method = NULL) {
   varnames <- c(time.id, unit.id, treatment, dependent, covariate)
   
   # subsetting the data.frame to include only relevant variables
   d2 <- na.omit(data[varnames])
 
-  if (scheme == "Pscore") {
+  if (method == "Pscore") {
     if (covariate.only == FALSE) {
       dlist <- lapply(1:lag, 
                       function (i) slide(data = d2, Var = dependent, GroupVar = unit.id, TimeVar = time.id, slideBy = -(i),
@@ -24,7 +24,7 @@ PanelMatch <- function(lag, lead, time.id = "year", qoi = "ate",
   
   d2[1:(length(d2))] <- lapply(d2[1:(length(d2))], function(x) as.numeric(as.character(x))) # as.numeric
   
-  if (scheme == "Pscore") {
+  if (method == "Pscore") {
     d2 <- d2[order(d2[,2], d2[,1]), ]
   }
   
@@ -46,7 +46,7 @@ PanelMatch <- function(lag, lead, time.id = "year", qoi = "ate",
     # use function dframelist.rb_dup to turn every list element into a data.frame
     even_smaller1 <- lapply(smallerlist, dframelist.rb_dup)
     
-    if (scheme == "Pscore") {
+    if (method == "Pscore") {
       # take the forward periods from each subset:
       # IMPORTANT
       Fs <- lapply(even_smaller1, function(x) {
@@ -92,28 +92,28 @@ PanelMatch <- function(lag, lead, time.id = "year", qoi = "ate",
       even_smaller1 <- Map(rbind.fill, even_smaller1, Fs)
     }
 
-    if (is.null(scheme)){
+    if (is.null(method)){
       return(list("data" = d2, "Matched sets for ATT" = even_smaller1, 
                   "# Controls for ATT" = lapply(even_smaller1, function (x) length(unique(x$V2))-1)))
-    } else if (scheme == "Synth") {
+    } else if (method == "Synth") {
       return(list("data" = d2, "Matched sets for ATT" = lapply(even_smaller1, 
                                                  Panel_vit, lag = lag, lead = lead, M = M,
-                                                           scheme = scheme),
+                                                           method = method),
                   "# Controls for ATT" = lapply(even_smaller1, function (x) length(unique(x$V2))-1)))
-    } else if (scheme == "Maha") {
+    } else if (method == "Maha") {
       return(list("data" = d2, "Matched sets for ATT" = lapply(even_smaller1, 
                                                  Panel_vit, lag = lag, lead = lead, M = M,
-                                                           scheme = scheme),
+                                                           method = method),
                   "# Controls for ATT" = lapply(even_smaller1, function (x) length(unique(x$V2))-1)))
-    } else if (scheme == "Pscore") {
+    } else if (method == "Pscore") {
       
       return(list("data" = MoveFront(d2, unit.id), "Matched sets for ATT" = lapply(even_smaller1, 
                                                  Panel_vit, lag = lag, lead = lead, M = M,
-                                                           scheme = scheme),
+                                                           method = method),
                   "# Controls for ATT" = lapply(even_smaller1, function (x) length(unique(x[,1]))-1)))
     } else {
       cat("Please either select NULL or chose one of the following three 
-                       estimation schemes: Synth, Maha and Pscore")
+                       estimation methods: Synth, Maha and Pscore")
     }
   } else {
     if (qoi == "atc") {
@@ -132,7 +132,7 @@ PanelMatch <- function(lag, lead, time.id = "year", qoi = "ate",
       # use function dframelist.rb_dup to turn every list element into a data.frame
       even_smaller2 <- lapply(smallerlist, dframelist.rb_dup)
       
-      if (scheme == "Pscore") {
+      if (method == "Pscore") {
         # take the forward periods from each subset:
         # IMPORTANT
         Fs <- lapply(even_smaller2, function(x) {
@@ -178,27 +178,27 @@ PanelMatch <- function(lag, lead, time.id = "year", qoi = "ate",
         even_smaller2 <- Map(rbind.fill, even_smaller2, Fs)
       }
       
-      if (is.null(scheme)){
+      if (is.null(method)){
         return(list("data" = d2, "Matched sets for ATC" = even_smaller2, 
                     "# Controls for ATC" = lapply(even_smaller2, function (x) length(unique(x$V2))-1)))
-      } else if (scheme == "Synth") {
+      } else if (method == "Synth") {
         return(list("data" = d2, "Matched sets for ATC" = lapply(even_smaller2, 
                                                    Panel_vit, lag = lag, lead = lead, M = M,
-                                                             scheme = scheme),
+                                                             method = method),
                     "# Controls for ATC" = lapply(even_smaller2, function (x) length(unique(x$V2))-1)))
-      } else if (scheme == "Maha") {
+      } else if (method == "Maha") {
         return(list("data" = d2, "Matched sets for ATC" = lapply(even_smaller2, 
                                                    Panel_vit, lag = lag, lead = lead, M = M,
-                                                             scheme = scheme),
+                                                             method = method),
                     "# Controls for ATC" = lapply(even_smaller2, function (x) length(unique(x$V2))-1)))
-      } else if (scheme == "Pscore") {
+      } else if (method == "Pscore") {
         return(list("data" = MoveFront(d2, unit.id), "Matched sets for ATC" = lapply(even_smaller2, 
                                                    Panel_vit, lag = lag, lead = lead, M = M,
-                                                             scheme = scheme),
+                                                             method = method),
                     "# Controls for ATC" = lapply(even_smaller2, function (x) length(unique(x[,1]))-1)))
       } else {
         cat("Please either select NULL or chose one of the following three 
-                       estimation schemes: Synth, Maha and Pscore")
+                       estimation methods: Synth, Maha and Pscore")
       }
     } else {
       if (qoi == "ate") {
@@ -217,7 +217,7 @@ PanelMatch <- function(lag, lead, time.id = "year", qoi = "ate",
         # use function dframelist.rb_dup to turn every list element into a data.frame
         even_smaller1 <- lapply(smallerlist, dframelist.rb_dup)
         
-        if (scheme == "Pscore") {
+        if (method == "Pscore") {
           # take the forward periods from each subset:
           # IMPORTANT
           Fs <- lapply(even_smaller1, function(x) {
@@ -278,7 +278,7 @@ PanelMatch <- function(lag, lead, time.id = "year", qoi = "ate",
         # use function dframelist.rb_dup to turn every list element into a data.frame
         even_smaller2 <- lapply(smallerlist, dframelist.rb_dup)
         
-        if (scheme == "Pscore") {
+        if (method == "Pscore") {
           # take the forward periods from each subset:
           # IMPORTANT
           Fs <- lapply(even_smaller2, function(x) {
@@ -324,40 +324,40 @@ PanelMatch <- function(lag, lead, time.id = "year", qoi = "ate",
           even_smaller2 <- Map(rbind.fill, even_smaller2, Fs)
         }
         
-        if (is.null(scheme)){
+        if (is.null(method)){
           return(list("data" = d2, "Matched sets for ATT" = even_smaller1, 
                       "# Controls for ATT" = lapply(even_smaller1, function (x) length(unique(x$V2))-1),
                       "Matched sets for ATC" = even_smaller2, 
                       "# Controls for ATC" = lapply(even_smaller2, function (x) length(unique(x$V2))-1)))
-        } else if (scheme == "Synth") {
+        } else if (method == "Synth") {
           return(list("data" = d2, "Matched sets for ATT" = lapply(even_smaller1, 
                                                      Panel_vit, lag = lag, lead = lead, M = M,
-                                                               scheme = scheme), 
+                                                               method = method), 
                       "# Controls for ATT" = lapply(even_smaller1, function (x) length(unique(x$V2))-1),
                       "Matched sets for ATC" = lapply(even_smaller2, 
                                                      Panel_vit, lag = lag, lead = lead, M = M,
-                                                               scheme = scheme), 
+                                                               method = method), 
                       "# Controls for ATC" = lapply(even_smaller2, function (x) length(unique(x$V2))-1)))
-        } else if (scheme == "Maha") {
+        } else if (method == "Maha") {
           return(list("data" = d2, "Matched sets for ATT" = lapply(even_smaller1, 
                                                      Panel_vit, lag = lag, lead = lead, M = M,
-                                                               scheme = scheme), 
+                                                               method = method), 
                       "# Controls for ATT" = lapply(even_smaller1, function (x) length(unique(x$V2))-1),
                       "Matched sets for ATC" = lapply(even_smaller2, 
                                                      Panel_vit, lag = lag, lead = lead, M = M,
-                                                               scheme = scheme), 
+                                                               method = method), 
                       "# Controls for ATC" = lapply(even_smaller2, function (x) length(unique(x$V2))-1)))
-        } else if (scheme == "Pscore") {
+        } else if (method == "Pscore") {
           return(list("data" = MoveFront(d2, unit.id), "Matched sets for ATT" = lapply(even_smaller1, 
                                                      Panel_vit, lag = lag, lead = lead, M = M,
-                                                               scheme = scheme), 
+                                                               method = method), 
                       "# Controls for ATT" = lapply(even_smaller1, function (x) length(unique(x[,1]))-1),
                       "Matched sets for ATC" = lapply(even_smaller2, 
                                                      Panel_vit, lag = lag, lead = lead, M = M,
-                                                               scheme = scheme),
+                                                               method = method),
                       "# Controls for ATC" = lapply(even_smaller2, function (x) length(unique(x[,1]))-1)))
         } else { (cat("Please either select NULL or chose one of the following three 
-                       estimation schemes: Synth, Maha and Pscore")) 
+                       estimation methods: Synth, Maha and Pscore")) 
         }
       } else {
         cat("Please supply one of the following quantity of interest:

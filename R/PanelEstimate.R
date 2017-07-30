@@ -1,4 +1,4 @@
-PanelEstimate <- function(lag, lead, scheme = "Synth", 
+PanelEstimate <- function(lag, lead, method= "Synth", 
                           data, treatment, qoi = "att", M = 3,
                           time.id, unit.id, covariate.only = FALSE,
                           inference = c("wfe", "bootstrap"), 
@@ -10,7 +10,7 @@ PanelEstimate <- function(lag, lead, scheme = "Synth",
                           treatment = treatment,
                           dependent = dependent, 
                           covariate = covariate, qoi = qoi, 
-                          scheme = scheme,
+                          method= scheme,
                           M = M, covariate.only = covariate.only,
                           time.id = time.id, unit.id = unit.id)
   } 
