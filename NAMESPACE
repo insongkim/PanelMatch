@@ -4,7 +4,8 @@ export(wfe, pwfe, DisplayTreatment, findMatched2, findMatched,syn_DID, syn_DID_M
        syn_DID_MSPE, syn_DID_tmp, syn_DID_weights_tmp, syn_boot_gDiD_tmp,
        wfe2_tmp3, MSMD_DID,gDID_master,MSMD_gapsplot,PS_gapsplot,
        PS_DID, syn_DID_check_tmp, wfe2_tmp4, syn_DID_weights_tmp2,PanelMatch,
-       PanelEstimate, PanelWFE, PanelGapsPlot)
+       PanelEstimate, PanelWFE, PanelGapsPlot, PanelEstimate_tmp, PanelMatch_tmp,
+       PanelHist, PanelGapsPlot_tmp, PanelCaliper)
 
 importFrom(Rcpp, evalCpp)
 ## exportPattern("^[[:alpha:]]+")

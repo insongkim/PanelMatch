@@ -1,27 +1,39 @@
-PanelEstimate <- function(lag, lead, method= "Synth", 
-                          data, treatment, qoi = "att", M = 3,
-                          time.id, unit.id, covariate.only = FALSE,
+PanelEstimate_tmp <- function(lead, 
+                          covariate.only = FALSE,
                           inference = c("wfe", "bootstrap"), 
-                          ITER = 1000,
-                          covariate = NULL, dependent, matched_sets = NULL,
+                          ITER = 1000, matched_sets = NULL,
                           plot = FALSE) {
-  if(is.null(matched_sets)) {
-    matched_sets <- PanelMatch(lag = lag, lead = lead, data = data, 
-                               treatment = treatment,
-                               dependent = dependent, 
-                               covariate = covariate, qoi = qoi, 
-                               method= scheme,
-                               M = M, covariate.only = covariate.only,
-                               time.id = time.id, unit.id = unit.id)
-  } 
   
+  # stop if lead > max.lead
+  if (lead > matched_sets$max.lead) 
+    stop(paste("The number of leads you choose 
+               has exceeded the maximum number you set
+               when finding matched sets, which is", matched_sets$max.lead))
+  
+  lag = matched_sets$lag
   data <- matched_sets$data
-  if (length(matched_sets) == 3 &
-      "Matched sets for ATT" %in% names(matched_sets)) {
+  dependent = matched_sets$dependent
+  treatment = matched_sets$treatment
+  covariate.only = matched_sets$covariate.only
+  unit.id = matched_sets$unit.id
+  
+  if (is.null(matched_sets$`Matched sets for ATT`) == FALSE) {
+    matched_sets$`Matched sets for ATT` <- lapply(matched_sets$`Matched sets for ATT`, 
+                                                  take_out, lag = lag, lead = lead)
+  }
+  
+  if (is.null(matched_sets$`Matched sets for ATC`) == FALSE) {
+    matched_sets$`Matched sets for ATC` <- lapply(matched_sets$`Matched sets for ATC`, 
+                                                  take_out, lag = lag, lead = lead)
+  }
+  
+
+  
+  if (matched_sets$qoi == "att") {
     weights_and_dits <- lapply(matched_sets$`Matched sets for ATT`,
-                               PanelWit, 
-                               unit.id = unit.id, 
-                               time.id = time.id,
+                               PanelWit2, 
+                               unit.id = matched_sets$unit.id, 
+                               time.id = matched_sets$time.id,
                                data = matched_sets$data, 
                                lag = lag, lead = lead)
     
@@ -30,12 +42,11 @@ PanelEstimate <- function(lag, lead, method= "Synth",
     # cat("doing it")
     data$weights_att <- Reduce("+", all.weights)
     data$dit_att <- Reduce("+", all.dits)
-  } else if (length(matched_sets) == 3 &
-             "Matched sets for ATC" %in% names(matched_sets)) {
+  } else if (matched_sets$qoi == "atc") {
     weights_and_dits <- lapply(matched_sets$`Matched sets for ATC`,
-                               PanelWit, 
-                               unit.id = unit.id, 
-                               time.id = time.id,
+                               PanelWit2, 
+                               unit.id = matched_sets$unit.id, 
+                               time.id = matched_sets$time.id,
                                data = matched_sets$data, 
                                lag = lag, lead = lead)
     
@@ -43,11 +54,11 @@ PanelEstimate <- function(lag, lead, method= "Synth",
     all.dits <- (lapply(weights_and_dits, function (x) x$dit))
     data$weights_atc <- Reduce("+", all.weights)
     data$dit_atc <- Reduce("+", all.dits)
-  } else if (length(matched_sets) == 5) {
+  } else if (matched_sets$qoi == "ate") {
     weights_and_dits <- lapply(matched_sets$`Matched sets for ATT`,
-                               PanelWit, 
-                               unit.id = unit.id, 
-                               time.id = time.id,
+                               PanelWit2, 
+                               unit.id = matched_sets$unit.id, 
+                               time.id = matched_sets$time.id,
                                data = matched_sets$data, 
                                lag = lag, lead = lead)
     
@@ -57,9 +68,9 @@ PanelEstimate <- function(lag, lead, method= "Synth",
     data$dit_att <- Reduce("+", all.dits)
     
     weights_and_dits <- lapply(matched_sets$`Matched sets for ATC`,
-                               PanelWit, 
-                               unit.id = unit.id, 
-                               time.id = time.id,
+                               PanelWit2, 
+                               unit.id = matched_sets$unit.id, 
+                               time.id = matched_sets$time.id,
                                data = matched_sets$data, 
                                lag = lag, lead = lead)
     
@@ -71,12 +82,11 @@ PanelEstimate <- function(lag, lead, method= "Synth",
   
   
   # ATT
-  if (length(matched_sets) == 3 & 
-      "Matched sets for ATT" %in% names(matched_sets)) {
+  if (matched_sets$qoi == "att") {
     if (inference == "wfe"){
       fit <- PanelWFE(formula = as.formula(paste(dependent, "~", treatment)), 
-                      treat = treatment, unit.index = unit.id,
-                      time.index = time.id, method = "unit", 
+                      treat = treatment, unit.index = matched_sets$unit.id,
+                      time.index = matched_sets$time.id, method = "unit", 
                       qoi = "att", estimator = "did", 
                       hetero.se = TRUE, 
                       auto.se = TRUE, White = TRUE,  
@@ -117,17 +127,15 @@ PanelEstimate <- function(lag, lead, method= "Synth",
       }
       
       return(list("o.coef" = mean(all.diffs.weighted, na.rm = T),
-                  "boots" = coefs, "ditatt" = data$dit_att,
-                  "witatts" = wit.atts, "matched_sets" = matched_sets))
+                  "boots" = coefs))
     }
     
     # ATC
-  } else if (length(matched_sets) == 3 & 
-             "Matched sets for ATC" %in% names(matched_sets)){
+  } else if (matched_sets$qoi == "atc"){
     if (inference == "wfe") {
       fit <- PanelWFE(formula = as.formula(paste(dependent, "~", treatment)), 
-                      treat = treatment, unit.index = unit.id,
-                      time.index = time.id, method = "unit", 
+                      treat = treatment, unit.index = matched_sets$unit.id,
+                      time.index = matched_sets$time.id, method = "unit", 
                       qoi = "atc", estimator = "did", 
                       hetero.se = TRUE, 
                       auto.se = TRUE, White = TRUE,  
@@ -165,15 +173,14 @@ PanelEstimate <- function(lag, lead, method= "Synth",
       }
       
       return(list("o.coef" = -mean(all.diffs.weighted, na.rm = T),
-                  "boots" = coefs, "ditatc" = data$dit_atc,
-                  "witatcs" = wit.atcs, "matched_sets" = matched_sets))
+                  "boots" = coefs))
     }
     
-  } else if (length(matched_sets) == 5) {
+  } else if (matched_sets$qoi == "ate") {
     if (inference == "wfe"){
       fit <- PanelWFE(formula = as.formula(paste(dependent, "~", treatment)), 
-                      treat = treatment, unit.index = unit.id,
-                      time.index = time.id, method = "unit", 
+                      treat = treatment, unit.index = matched_sets$unit.id,
+                      time.index = matched_sets$time.id, method = "unit", 
                       qoi = "ate", estimator = "did", 
                       hetero.se = TRUE, 
                       auto.se = TRUE, White = TRUE,  
@@ -190,8 +197,7 @@ PanelEstimate <- function(lag, lead, method= "Synth",
       ATT <- mean(all.diffs.weighted1, na.rm = T)
       all.diffs.weighted2 <- sapply(matched_sets$`Matched sets for ATC`, 
                                     PanelDiDResult, lag = lag, lead = lead)
-      ATC <- mean(all.diffs.weighted2, na.rm = T)
-      ATC <- -(ATC)
+      ATC <- -mean(all.diffs.weighted2, na.rm = T)
       DID_ATE <- ifelse(length(ATC) > 0, (ATT * length(all.diffs.weighted1) + 
                                             ATC * length(all.diffs.weighted2))/(length(all.diffs.weighted1) + 
                                                                                   length(all.diffs.weighted2)), ATT)
@@ -229,9 +235,7 @@ PanelEstimate <- function(lag, lead, method= "Synth",
         wit.atts[[k]] <- d.sub1$weights_att
         wit.atcs[[k]] <- d.sub1$weights_atc
       }
-      return(list("o.coef" = DID_ATE, "boots" = coefs, "ditatt" = dit.atts,
-                  "ditatc" = dit.atcs, "witatts" = wit.atts, 
-                  "witatcs" = wit.atcs, "matched_sets" = matched_sets))
+      return(list("o.coef" = DID_ATE, "boots" = coefs))
       
     }
     

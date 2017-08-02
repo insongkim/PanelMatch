@@ -1,10 +1,10 @@
-Panel_vit <- function(x, lag, lead, method, M) {
+Panel_vit <- function(x, lag, max.lead, method, M) {
   if (method == "Synth") {
-    return(synth_vit(x, lag = lag, lead = lead))
+    return(synth_vit(x, lag = lag, max.lead = max.lead))
   } else if(method == "Maha"){
-    return(Maha_vit(x, lag, lead, M = M))
+    return(Maha_vit(x, lag, max.lead, M = M))
   } else if(method == "Pscore") {
-    return(PS_vit(x, lag, lead, M = M))
+    return(PS_vit(x, lag, max.lead, M = M))
   } else {
     return("WRONG")
   }
@@ -12,11 +12,11 @@ Panel_vit <- function(x, lag, lead, method, M) {
 
 
 
-synth_vit <- function(x, lag, lead) {
+synth_vit <- function(x, lag, max.lead) {
   testid <- unique(x$V2)
   timeid <- unique(x$V1)
   covariate.names <- colnames(x)[5:length(x)]
-  if (nrow(x) > 2*(lag + lead + 1)) {
+  if (nrow(x) > 2*(lag + max.lead + 1)) {
     if (is.na(colnames(x)[5:length(x)][1])) {
       V2 = x$V2; V1 = x$V1
       control_data <- reshape2::dcast(x[V2 != testid[2], ], V2 ~ V1)
@@ -38,17 +38,17 @@ synth_vit <- function(x, lag, lead) {
       weights <- as.data.frame(rbind(cbind(synth_out$weight, testid[-2]), cbind(w.weight = 1, testid[2])))
       colnames(weights)[2] <- "V2" # give the critical column the unit.name, so can merge
       merged <- merge(x, weights, by = "V2") # merge it with the data.frame
-      if (lead > 0) {
+      if (max.lead > 0) {
         merged$wit <- ifelse(merged$V1 == max(timeid) & merged$V2 == testid[2], 1, 
-                             ifelse(merged$V1 == max(timeid) - lead - 1 & merged$V2 == testid[2],-1, 
+                             ifelse(merged$V1 == max(timeid) - max.lead - 1 & merged$V2 == testid[2],-1, 
                                     ifelse(merged$V1 == max(timeid) & merged$V2 %in% testid[-2], -merged$w.weight, 
-                                           ifelse(merged$V1 == max(timeid) - lead - 1 & merged$V2 %in% testid[-2], merged$w.weight, 0) 
+                                           ifelse(merged$V1 == max(timeid) - max.lead - 1 & merged$V2 %in% testid[-2], merged$w.weight, 0) 
                                     )))
       } else {
         merged$wit <- ifelse(merged$V1 == max(timeid) & merged$V2 == testid[2], 1, 
-                             ifelse(merged$V1 == max(timeid) - lead - 1 & merged$V2 == testid[2],1, 
+                             ifelse(merged$V1 == max(timeid) - max.lead - 1 & merged$V2 == testid[2],1, 
                                     ifelse(merged$V1 == max(timeid) & merged$V2 %in% testid[-2], merged$w.weight, 
-                                           ifelse(merged$V1 == max(timeid) - lead - 1 & merged$V2 %in% testid[-2], -merged$w.weight, 0) 
+                                           ifelse(merged$V1 == max(timeid) - max.lead - 1 & merged$V2 %in% testid[-2], -merged$w.weight, 0) 
                                     )))
       }
     
@@ -61,8 +61,8 @@ synth_vit <- function(x, lag, lead) {
                                time.variable = "V1",
                                treatment.identifier = testid[2], # the regionno of the treated unit
                                controls.identifier = testid[-2],
-                               time.optimize.ssr = min(timeid):max(timeid-lead-1), # the pre-treatment preiod
-                               time.predictors.prior = min(timeid):max(timeid-lead-1),
+                               time.optimize.ssr = min(timeid):max(timeid-max.lead-1), # the pre-treatment preiod
+                               time.predictors.prior = min(timeid):max(timeid-max.lead-1),
                                predictors = covariate.names)
       synth.out <- synth(data.prep.obj = dataprep.out, method = "BFGS") # calibrate the weights
       # use rbind and cbind to add to the weights a weight vector of 1s for the treated observation,
@@ -70,17 +70,17 @@ synth_vit <- function(x, lag, lead) {
       weights <- as.data.frame(rbind(cbind(synth.out$solution.w, testid[-2]), cbind(w.weight = 1, testid[2])))
       colnames(weights)[2] <- "V2" # give the critical column the unit.name, so can merge
       merged <- merge(x, weights, by = "V2") # merge it with the data.frame
-      if (lead > 0) {
+      if (max.lead > 0) {
         merged$wit <- ifelse(merged$V1 == max(timeid) & merged$V2 == testid[2], 1, 
-                             ifelse(merged$V1 == max(timeid) - lead - 1 & merged$V2 == testid[2],-1, 
+                             ifelse(merged$V1 == max(timeid) - max.lead - 1 & merged$V2 == testid[2],-1, 
                                     ifelse(merged$V1 == max(timeid) & merged$V2 %in% testid[-2], -merged$w.weight, 
-                                           ifelse(merged$V1 == max(timeid) - lead - 1 & merged$V2 %in% testid[-2], merged$w.weight, 0) 
+                                           ifelse(merged$V1 == max(timeid) - max.lead - 1 & merged$V2 %in% testid[-2], merged$w.weight, 0) 
                                     )))
       } else {
         merged$wit <- ifelse(merged$V1 == max(timeid) & merged$V2 == testid[2], 1, 
-                             ifelse(merged$V1 == max(timeid) - lead - 1 & merged$V2 == testid[2],1, 
+                             ifelse(merged$V1 == max(timeid) - max.lead - 1 & merged$V2 == testid[2],1, 
                                     ifelse(merged$V1 == max(timeid) & merged$V2 %in% testid[-2], merged$w.weight, 
-                                           ifelse(merged$V1 == max(timeid) - lead - 1 & merged$V2 %in% testid[-2], -merged$w.weight, 0) 
+                                           ifelse(merged$V1 == max(timeid) - max.lead - 1 & merged$V2 %in% testid[-2], -merged$w.weight, 0) 
                                     )))
       }
 
@@ -89,17 +89,17 @@ synth_vit <- function(x, lag, lead) {
   } else {
     merged <- x
     merged$w.weight <- 1
-    if (lead > 0){
+    if (max.lead > 0){
       merged$wit <- ifelse(merged$V1 == max(timeid) & merged$V2 == testid[2], 1, 
-                           ifelse(merged$V1 == max(timeid) - lead - 1 & merged$V2 == testid[2],-1, 
+                           ifelse(merged$V1 == max(timeid) - max.lead - 1 & merged$V2 == testid[2],-1, 
                                   ifelse(merged$V1 == max(timeid) & merged$V2 %in% testid[-2], -merged$w.weight, 
-                                         ifelse(merged$V1 == max(timeid) - lead - 1 & merged$V2 %in% testid[-2], merged$w.weight, 0) 
+                                         ifelse(merged$V1 == max(timeid) - max.lead - 1 & merged$V2 %in% testid[-2], merged$w.weight, 0) 
                                   )))
     } else {
       merged$wit <- ifelse(merged$V1 == max(timeid) & merged$V2 == testid[2], 1, 
-                           ifelse(merged$V1 == max(timeid) - lead - 1 & merged$V2 == testid[2],1, 
+                           ifelse(merged$V1 == max(timeid) - max.lead - 1 & merged$V2 == testid[2],1, 
                                   ifelse(merged$V1 == max(timeid) & merged$V2 %in% testid[-2], merged$w.weight, 
-                                         ifelse(merged$V1 == max(timeid) - lead - 1 & merged$V2 %in% testid[-2], -merged$w.weight, 0) 
+                                         ifelse(merged$V1 == max(timeid) - max.lead - 1 & merged$V2 %in% testid[-2], -merged$w.weight, 0) 
                                   )))
     }
   
@@ -107,17 +107,17 @@ synth_vit <- function(x, lag, lead) {
   }
 }
 
-Maha_vit <- function(x, lag, lead, M = 3) {
+Maha_vit <- function(x, lag, max.lead, M = 3) {
   testid <- unique(x$V2)
   timeid_later <- unique(x$V1)
   timeid <- timeid_later[1:lag]
   
-  if (nrow(x) > 2*(lag + lead + 1)) {
+  if (nrow(x) > 2*(lag + max.lead + 1)) {
     matched_set <- x[x$V1 %in% timeid, ]
     MSMDlist <- lapply(unique(timeid), MSMD_each, matched_set = matched_set, testid = testid)
     MSMD <- append(Reduce("+", MSMDlist)/length(timeid), 0, after = 1)
     
-    # first.diff <- x[x$V2 == testid[2], ]$V4[L + 1 + lead] - x[x$V2 == testid[2], ]$V4[L]
+    # first.diff <- x[x$V2 == testid[2], ]$V4[L + 1 + max.lead] - x[x$V2 == testid[2], ]$V4[L]
     
     if (M < length(testid)-1) {
       matchid <- order(MSMD)[2:(M+1)]
@@ -129,7 +129,7 @@ Maha_vit <- function(x, lag, lead, M = 3) {
     } 
     
     # second.diff <- mean(x[x$V2 %in% testid[matchid] & 
-    #                         x$V1 == unique(x$V1)[L + 1 + lead], ]$V4 -
+    #                         x$V1 == unique(x$V1)[L + 1 + max.lead], ]$V4 -
     #                       x[x$V2 %in% testid[matchid] & 
     #                           x$V1 == unique(x$V1)[L], ]$V4, na.rm = T)
     # 
@@ -139,17 +139,17 @@ Maha_vit <- function(x, lag, lead, M = 3) {
     
     colnames(weights)[2] <- "V2" # give the critical column the unit.name, so can merge
     merged <- merge(x, weights, by = "V2") # merge it with the data.frame (smaller data.frame as a list element)
-    if (lead > 0) {
+    if (max.lead > 0) {
       merged$wit <- ifelse(merged$V1 == max(timeid_later) & merged$V2 == testid[2], 1, 
-                           ifelse(merged$V1 == max(timeid_later) - lead - 1 & merged$V2 == testid[2],-1, 
+                           ifelse(merged$V1 == max(timeid_later) - max.lead - 1 & merged$V2 == testid[2],-1, 
                                   ifelse(merged$V1 == max(timeid_later) & merged$V2 %in% testid[-2], -merged$w.weight, 
-                                         ifelse(merged$V1 == max(timeid_later) - lead - 1 & merged$V2 %in% testid[-2], merged$w.weight, 0) 
+                                         ifelse(merged$V1 == max(timeid_later) - max.lead - 1 & merged$V2 %in% testid[-2], merged$w.weight, 0) 
                                   )))
     } else {
       merged$wit <- ifelse(merged$V1 == max(timeid_later) & merged$V2 == testid[2], 1, 
-                           ifelse(merged$V1 == max(timeid_later) - lead - 1 & merged$V2 == testid[2],1, 
+                           ifelse(merged$V1 == max(timeid_later) - max.lead - 1 & merged$V2 == testid[2],1, 
                                   ifelse(merged$V1 == max(timeid_later) & merged$V2 %in% testid[-2], merged$w.weight, 
-                                         ifelse(merged$V1 == max(timeid_later) - lead - 1 & merged$V2 %in% testid[-2], -merged$w.weight, 0) 
+                                         ifelse(merged$V1 == max(timeid_later) - max.lead - 1 & merged$V2 %in% testid[-2], -merged$w.weight, 0) 
                                   )))
     }
    
@@ -157,17 +157,17 @@ Maha_vit <- function(x, lag, lead, M = 3) {
   } else {
     merged <- x
     merged$w.weight <- 1
-    if (lead > 0) {
+    if (max.lead > 0) {
       merged$wit <- ifelse(merged$V1 == max(timeid_later) & merged$V2 == testid[2], 1, 
-                           ifelse(merged$V1 == max(timeid_later) - lead - 1 & merged$V2 == testid[2],-1, 
+                           ifelse(merged$V1 == max(timeid_later) - max.lead - 1 & merged$V2 == testid[2],-1, 
                                   ifelse(merged$V1 == max(timeid_later) & merged$V2 %in% testid[-2], -merged$w.weight, 
-                                         ifelse(merged$V1 == max(timeid_later) - lead - 1 & merged$V2 %in% testid[-2], merged$w.weight, 0) 
+                                         ifelse(merged$V1 == max(timeid_later) - max.lead - 1 & merged$V2 %in% testid[-2], merged$w.weight, 0) 
                                   )))
     } else {
       merged$wit <- ifelse(merged$V1 == max(timeid_later) & merged$V2 == testid[2], 1, 
-                           ifelse(merged$V1 == max(timeid_later) - lead - 1 & merged$V2 == testid[2],1, 
+                           ifelse(merged$V1 == max(timeid_later) - max.lead - 1 & merged$V2 == testid[2],1, 
                                   ifelse(merged$V1 == max(timeid_later) & merged$V2 %in% testid[-2], merged$w.weight, 
-                                         ifelse(merged$V1 == max(timeid_later) - lead - 1 & merged$V2 %in% testid[-2], -merged$w.weight, 0) 
+                                         ifelse(merged$V1 == max(timeid_later) - max.lead - 1 & merged$V2 %in% testid[-2], -merged$w.weight, 0) 
                                   )))
     }
     
@@ -176,15 +176,15 @@ Maha_vit <- function(x, lag, lead, M = 3) {
 }
 
 
-PS_vit <- function(x, lag, lead, M = M) {
+PS_vit <- function(x, lag, max.lead, M = M) {
 
   colnames(x)[1:5] <- c("V2", "V1", "ps", "V4", "V5")
   x <- x[!duplicated(x[c("V2", "V1")]),]
   x <- x[order(x$V2, x$V1), ]
-  treated.id <- x[x$V4 == 1 & x$V1 == (max(x$V1)-lead), ]$V2
+  treated.id <- x[x$V4 == 1 & x$V1 == (max(x$V1)-max.lead), ]$V2
   testid <- unique(x$V2)
   timeid_later <- unique(x$V1)
-  timeid <- unique(x$V1)[-((length(unique(x$V1)) - lead):length(unique(x$V1)))]
+  timeid <- unique(x$V1)[-((length(unique(x$V1)) - max.lead):length(unique(x$V1)))]
   matched_set <- x[x$V1 %in% timeid, ]
   
   PS_distance <- abs(tapply(matched_set$ps, matched_set$V2, mean) - mean(matched_set$ps[which(matched_set$V2 == treated.id)]))
@@ -203,17 +203,17 @@ PS_vit <- function(x, lag, lead, M = M) {
   merged <- merge(x, weights, by = "V2") # merge it with the data.frame (smaller data.frame as a list element)
   merged <- merged[order(merged$V2, merged$V1), ]
   colnames(merged)[c(4,5)] <- c("V3", "V4")
-  if (lead > 0) {
+  if (max.lead > 0) {
     merged$wit <- ifelse(merged$V1 == max(timeid_later) & merged$V2 == treated.id, 1, 
-                         ifelse(merged$V1 == max(timeid_later) - lead - 1 & merged$V2 == treated.id, -1, 
+                         ifelse(merged$V1 == max(timeid_later) - max.lead - 1 & merged$V2 == treated.id, -1, 
                                 ifelse(merged$V1 == max(timeid_later) & merged$V2 %in% testid[testid != treated.id], -merged$w.weight, 
-                                       ifelse(merged$V1 == max(timeid_later) - lead - 1 & merged$V2 %in% testid[testid != treated.id], merged$w.weight, 0) 
+                                       ifelse(merged$V1 == max(timeid_later) - max.lead - 1 & merged$V2 %in% testid[testid != treated.id], merged$w.weight, 0) 
                                 )))
   } else {
     merged$wit <- ifelse(merged$V1 == max(timeid_later) & merged$V2 == treated.id, 1, 
-                         ifelse(merged$V1 == max(timeid_later) - lead - 1 & merged$V2 == treated.id, 1, 
+                         ifelse(merged$V1 == max(timeid_later) - max.lead - 1 & merged$V2 == treated.id, 1, 
                                 ifelse(merged$V1 == max(timeid_later) & merged$V2 %in% testid[testid != treated.id], merged$w.weight, 
-                                       ifelse(merged$V1 == max(timeid_later) - lead - 1 & merged$V2 %in% testid[testid != treated.id], -merged$w.weight, 0) 
+                                       ifelse(merged$V1 == max(timeid_later) - max.lead - 1 & merged$V2 %in% testid[testid != treated.id], -merged$w.weight, 0) 
                                 )))
   }
   
@@ -239,12 +239,32 @@ PanelWit <- function(data, unit.id, time.id, matched_set,
   return (list("wit" = total2$wit, "dit" = total2$dit)) 
 }
 
+take_out <- function(matched_set, lag, lead) {
+  matched_set <- matched_set[matched_set$V1 <= (min(matched_set$V1) + lag + lead),]
+}
+
 PanelWit2 <- function(data, unit.id, time.id, matched_set,
                      lag, lead) {
   # set testid and timeid
-  treated.time <- max(matched_set$V1)-lead
+  treated.time <- min(matched_set$V1) + lag
   treated.id <- matched_set[matched_set$V3 == 1 & 
                               matched_set$V1 == treated.time, ]$V2
+  
+  testid <- unique(matched_set$V2)
+  
+  if (lead > 0) {
+    matched_set$wit <- ifelse(matched_set$V1 == (treated.time+lead) & matched_set$V2 == treated.id, 1, 
+                         ifelse(matched_set$V1 == (treated.time+lead) - lead - 1 & matched_set$V2 == treated.id, -1, 
+                                ifelse(matched_set$V1 == (treated.time+lead) & matched_set$V2 %in% testid[testid != treated.id], -matched_set$w.weight, 
+                                       ifelse(matched_set$V1 == (treated.time+lead) - lead - 1 & matched_set$V2 %in% testid[testid != treated.id], matched_set$w.weight, 0) 
+                                )))
+  } else {
+    matched_set$wit <- ifelse(matched_set$V1 == (treated.time+lead) & matched_set$V2 == treated.id, 1, 
+                         ifelse(matched_set$V1 == (treated.time+lead) - lead - 1 & matched_set$V2 == treated.id, 1, 
+                                ifelse(matched_set$V1 == (treated.time+lead) & matched_set$V2 %in% testid[testid != treated.id], matched_set$w.weight, 
+                                       ifelse(matched_set$V1 == (treated.time+lead) - lead - 1 & matched_set$V2 %in% testid[testid != treated.id], -matched_set$w.weight, 0) 
+                                )))
+  }
   
   new.W <- data[c(unit.id, time.id)] # create a new data.frame as large as the *cleaned* dataset
   names(new.W)[1:2] <- c("V2", "V1") # assigning names so as to merge it next
@@ -254,8 +274,10 @@ PanelWit2 <- function(data, unit.id, time.id, matched_set,
   # IMPORTANT: CHANGE HERE IF THINGS GO WRONG FOR lead >0
   total2$dit[which(total2$V2 == treated.id & total2$V1 == treated.time)] <- 1
   ######################################################
-  return (list(total2)) 
+  return (list("wit" = total2$wit, "dit" = total2$dit)) 
 }
+
+
 
 
 
@@ -279,9 +301,39 @@ PanelDiDResult <- function(x, lag, lead){
 #                lag = 4, lead = 2)
 
 
-gaps_plot <- function(x, lag, lead, show.covariate = NULL) {
+gaps_plot_tmp <- function(x, lag, lead, data, dependent,
+                      qoi,
+                      covariate = NULL) {
+  colnames(data) <- c("time.id", "unit.id",
+                      "treatment", "dependent", covariate)
   treated.id <- x[x$V3 == 1 & x$V1 == (max(x$V1)-lead), ]$V2 # check this
-  if (is.null(show.covariate)) {
+  if (is.null(covariate)) {
+    gap <- x$V4[x$V2 == treated.id] - 
+      tapply(x$V4[x$V2 != treated.id] * x$w.weight[x$V2 != treated.id], 
+             x$V1[x$V2 != treated.id], sum)
+  } else {
+    gap <- x$V5[x$V2 == treated.id] - 
+      tapply(x$V5[x$V2 != treated.id] * x$w.weight[x$V2 != treated.id], 
+             x$V1[x$V2 != treated.id], sum)
+  }
+  if (is.null(covariate) == FALSE) {
+    data$dependent <- data[c(covariate)]
+  }
+  if (qoi == "att") {
+    overall <- sd(data$dependent[data$time.id == (max(x$V1)-lead) & data$treatment == 1])
+  } else {
+    overall <- sd(data$dependent[data$time.id == (max(x$V1)-lead) & data$treatment == 0])
+  }
+ 
+  return(list("gap" = gap/overall,
+                "unit" = paste(treated.id, unique(x$V1)[lag + 1], sep = ",")))
+}
+
+
+
+gaps_plot <- function(x, lag, lead, covariate = NULL) {
+  treated.id <- x[x$V3 == 1 & x$V1 == (max(x$V1)-lead), ]$V2 # check this
+  if (is.null(covariate)) {
     return(list("gap" = x$V4[x$V2 == treated.id] - 
                   tapply(x$V4[x$V2 != treated.id] * x$w.weight[x$V2 != treated.id], 
                          x$V1[x$V2 != treated.id], sum),
@@ -296,7 +348,40 @@ gaps_plot <- function(x, lag, lead, show.covariate = NULL) {
 }
 
 
-
-
+## Caliper
+gaps_caliper <- function(x, lag, covariate = NULL, data,
+                         qoi) {
+  
+  colnames(data) <- c("time.id", "unit.id",
+                      "treatment", "dependent", covariate)
+  
+  
+  treated.id <- x$V2[which(x$V3 == 1 & x$V1 == (min(x$V1)+lag))] # check this
+  x <- x[x$V1 < (min(x$V1)+lag), ]
+  
+  if (is.null(covariate)) {
+    gap <- x$V4[x$V2 == treated.id] - 
+      tapply(x$V4[x$V2 != treated.id] * x$w.weight[x$V2 != treated.id], 
+             x$V1[x$V2 != treated.id], sum)
+  } else {
+    gap <- x$V5[x$V2 == treated.id] - 
+             tapply(x$V5[x$V2 != treated.id] * x$w.weight[x$V2 != treated.id], 
+                    x$V1[x$V2 != treated.id], sum)
+  }
+ 
+  if (is.null(covariate) == FALSE) {
+    data$dependent <- data[c(covariate)]
+  }
+  if (qoi == "att") {
+    overall <- tapply(data$dependent[data$time.id %in% unique(x$V1) & data$treatment == 1],
+                      data$time.id[data$time.id %in% unique(x$V1) & data$treatment == 1], sd)
+  } else {
+    overall <- tapply(data$dependent[data$time.id %in% unique(x$V1) & data$treatment == 0],
+                      data$time.id[data$time.id %in% unique(x$V1) & data$treatment == 0], sd)
+  }
+  
+  return(abs(mean(gap/overall)))
+  
+}
 
 
