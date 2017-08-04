@@ -1,24 +1,40 @@
-PanelMatch <- function(lag, lead, time.id = "year", qoi = "ate",
-                       unit.id = "ccode",
-                       treatment, covariate, dependent, data,
-                       M = 3, covariate.only = FALSE,
-                       method = NULL) {
-  varnames <- c(time.id, unit.id, treatment, dependent, covariate)
+PanelMatch <- function(lag, max.lead, time.id = "year", qoi = "ate",
+                           unit.id = "ccode",
+                           treatment, 
+                           formula = y ~ treat, 
+                           data,
+                           M = 3, covariate.only = FALSE,
+                           method = NULL) {
   
-  # subsetting the data.frame to include only relevant variables
-  d2 <- na.omit(data[varnames])
+  if("-1" %in% as.character(formula)) {
+    formula <- formula
+  } else {
+    formula <- update(formula, ~ . - 1)
+  }
+  # set covariates and dependent
+  covariate <- attr(terms(formula),"term.labels")[!attr(terms(formula),"term.labels") == treatment]
+  if(length(covariate) == 0) {
+    covariate <- NULL # if there is no covariate then it's null
+  }
+  dependent <- all.vars(formula)[1]
+  
+  formula <- merge.formula(reformulate(termlabels = c(time.id, unit.id), response = dependent),formula)
+
+
+  d2 <- as.data.frame(model.matrix(formula, data = data))
+  d2$y <- model.frame(formula, data=data)[,1]
+  d2 <- MoveFront(d2, Var = c(time.id, unit.id, treatment, dependent))
+  
   
   if (method == "Pscore") {
-    if (covariate.only == FALSE) {
-      dlist <- lapply(1:lag, 
-                      function (i) slide(data = d2, Var = dependent, GroupVar = unit.id, TimeVar = time.id, slideBy = -(i),
-                                         NewVar = paste("dependent_l", i, sep="")))
-      d2 <- Reduce(function(x, y) {merge(x, y)}, dlist)
-      # to include ldvs in varnames
-      varnames <- c(time.id, unit.id, treatment, dependent, c(covariate, colnames(d2)[(4 + length(covariate) + 1):length(d2)]))
-    } else {
-      varnames <- c(time.id, unit.id, treatment, dependent, covariate)
-    }
+    
+    dlist <- lapply(1:lag, 
+                    function (i) slide(data = d2, Var = dependent, GroupVar = unit.id, TimeVar = time.id, slideBy = -(i),
+                                       NewVar = paste("dependent_l", i, sep="")))
+    d2 <- Reduce(function(x, y) {merge(x, y)}, dlist)
+    # to include ldvs in varnames
+    varnames <- c(time.id, unit.id, treatment, dependent, colnames(d2)[5:length(d2)])
+    
     d2 <- na.omit(d2[varnames])
   }
   
@@ -40,7 +56,7 @@ PanelMatch <- function(lag, lead, time.id = "year", qoi = "ate",
     
     ### cleaning the output from cpp ###
     # delete both higher level and lower level null entries
-    smallerlist <- lapply(Filter(function (x) !is.null(x), findDDmatched2(L = lag, F = lead, dmatrix)), delete.NULLs) 
+    smallerlist <- lapply(Filter(function (x) !is.null(x), findDDmatched2(L = lag, F = max.lead, dmatrix)), delete.NULLs) 
     # further cleaning
     smallerlist <- Filter(function (x) length(x) > 0, smallerlist)
     # use function dframelist.rb_dup to turn every list element into a data.frame
@@ -50,7 +66,7 @@ PanelMatch <- function(lag, lead, time.id = "year", qoi = "ate",
       # take the forward periods from each subset:
       # IMPORTANT
       Fs <- lapply(even_smaller1, function(x) {
-        x <- x[x$V1 %in% unique(x$V1)[(lag+2):(lag+1+lead)], ]
+        x <- x[x$V1 %in% unique(x$V1)[(lag+2):(lag+1+max.lead)], ]
         return(x)
       })
       
@@ -91,26 +107,41 @@ PanelMatch <- function(lag, lead, time.id = "year", qoi = "ate",
       even_smaller1 <- lapply(even_smaller1, function(x) merge(aggregated, x, by = c(unit.id, time.id)))
       even_smaller1 <- Map(rbind.fill, even_smaller1, Fs)
     }
-    
+
     if (is.null(method)){
-      return(list("data" = d2, "Matched sets for ATT" = even_smaller1, 
-                  "# Controls for ATT" = lapply(even_smaller1, function (x) length(unique(x$V2))-1)))
+      return(list("treatment" = treatment, "qoi" = qoi,
+                  "dependent" = dependent, "covariate" = covariate,
+                  "unit.id" = unit.id, "time.id" = time.id, "M" = M,
+                  "covariate.only" = covariate.only, "lag" = lag, 
+                  "max.lead" = max.lead, "data" = d2, "Matched sets for ATT" = even_smaller1, 
+                  "NC_ATT" = lapply(even_smaller1, function (x) length(unique(x$V2))-1)))
     } else if (method == "Synth") {
-      return(list("data" = d2, "Matched sets for ATT" = lapply(even_smaller1, 
-                                                               Panel_vit, lag = lag, lead = lead, M = M,
-                                                               method = method),
-                  "# Controls for ATT" = lapply(even_smaller1, function (x) length(unique(x$V2))-1)))
+      return(list("treatment" = treatment, "qoi" = qoi, "dependent" = dependent,
+                  "covariate" = covariate, "unit.id" = unit.id, "time.id" = time.id, 
+                  "M" = M, "covariate.only" = covariate.only, "lag" = lag, "max.lead" = max.lead, 
+                  "data" = d2, 
+                  "Matched sets for ATT" = lapply(even_smaller1, 
+                                                  Panel_vit, lag = lag, 
+                                                  max.lead = max.lead, 
+                                                  M = M, method = method),
+                  "NC_ATT" = lapply(even_smaller1, function (x) length(unique(x$V2))-1)))
     } else if (method == "Maha") {
-      return(list("data" = d2, "Matched sets for ATT" = lapply(even_smaller1, 
-                                                               Panel_vit, lag = lag, lead = lead, M = M,
-                                                               method = method),
-                  "# Controls for ATT" = lapply(even_smaller1, function (x) length(unique(x$V2))-1)))
+      return(list("treatment" = treatment, "qoi" = qoi, "dependent" = dependent,
+                  "covariate" = covariate, "unit.id" = unit.id, "time.id" = time.id,
+                  "M" = M, "covariate.only" = covariate.only, "lag" = lag, 
+                  "max.lead" = max.lead, "data" = d2, 
+                  "Matched sets for ATT" = lapply(even_smaller1, Panel_vit, lag = lag, 
+                                                  max.lead = max.lead, M = M, method = method),
+                  "NC_ATT" = lapply(even_smaller1, function (x) length(unique(x$V2))-1)))
     } else if (method == "Pscore") {
       
-      return(list("data" = MoveFront(d2, unit.id), "Matched sets for ATT" = lapply(even_smaller1, 
-                                                                                   Panel_vit, lag = lag, lead = lead, M = M,
-                                                                                   method = method),
-                  "# Controls for ATT" = lapply(even_smaller1, function (x) length(unique(x[,1]))-1)))
+      return(list("treatment" = treatment, "qoi" = qoi, 
+                  "dependent" = dependent, "covariate" = covariate, 
+                  "unit.id" = unit.id, "time.id" = time.id, "M" = M, 
+                  "covariate.only" = covariate.only, "lag" = lag, 
+                  "max.lead" = max.lead, "data" = d2, 
+                  "Matched sets for ATT" = lapply(even_smaller1, Panel_vit, lag = lag, max.lead = max.lead, M = M, method = method),
+                  "NC_ATT" = lapply(even_smaller1, function (x) length(unique(x[,1]))-1)))
     } else {
       cat("Please either select NULL or chose one of the following three 
           estimation methods: Synth, Maha and Pscore")
@@ -126,7 +157,7 @@ PanelMatch <- function(lag, lead, time.id = "year", qoi = "ate",
         
         ### cleaning the output from cpp ###
         # delete both higher level and lower level null entries
-        smallerlist <- lapply(Filter(function (x) !is.null(x), findDDmatched2(L = lag, F = lead, dmatrix)), delete.NULLs) 
+        smallerlist <- lapply(Filter(function (x) !is.null(x), findDDmatched2(L = lag, F = max.lead, dmatrix)), delete.NULLs) 
         # further cleaning
         smallerlist <- Filter(function (x) length(x) > 0, smallerlist)
         # use function dframelist.rb_dup to turn every list element into a data.frame
@@ -136,7 +167,7 @@ PanelMatch <- function(lag, lead, time.id = "year", qoi = "ate",
           # take the forward periods from each subset:
           # IMPORTANT
           Fs <- lapply(even_smaller2, function(x) {
-            x <- x[x$V1 %in% unique(x$V1)[(lag+2):(lag+1+lead)], ]
+            x <- x[x$V1 %in% unique(x$V1)[(lag+2):(lag+1+max.lead)], ]
             return(x)
           })
           
@@ -179,23 +210,35 @@ PanelMatch <- function(lag, lead, time.id = "year", qoi = "ate",
         }
         
         if (is.null(method)){
-          return(list("data" = d2, "Matched sets for ATC" = even_smaller2, 
-                      "# Controls for ATC" = lapply(even_smaller2, function (x) length(unique(x$V2))-1)))
+          return(list("treatment" = treatment, "qoi" = qoi, "dependent" = dependent, "covariate" = covariate,
+                      "unit.id" = unit.id, "time.id" = time.id, "M" = M, 
+                      "covariate.only" = covariate.only, "lag" = lag, "max.lead" = max.lead, 
+                      "data" = d2, "Matched sets for ATC" = even_smaller2, 
+                      "NC_ATC" = lapply(even_smaller2, function (x) length(unique(x$V2))-1)))
         } else if (method == "Synth") {
-          return(list("data" = d2, "Matched sets for ATC" = lapply(even_smaller2, 
-                                                                   Panel_vit, lag = lag, lead = lead, M = M,
+          return(list("treatment" = treatment, "qoi" = qoi, "dependent" = dependent, "covariate" = covariate, 
+                      "unit.id" = unit.id, "time.id" = time.id, "M" = M, 
+                      "covariate.only" = covariate.only, "lag" = lag, "max.lead" = max.lead, 
+                      "data" = d2, "Matched sets for ATC" = lapply(even_smaller2, 
+                                                                   Panel_vit, lag = lag, max.lead = max.lead, M = M,
                                                                    method = method),
-                      "# Controls for ATC" = lapply(even_smaller2, function (x) length(unique(x$V2))-1)))
+                      "NC_ATC" = lapply(even_smaller2, function (x) length(unique(x$V2))-1)))
         } else if (method == "Maha") {
-          return(list("data" = d2, "Matched sets for ATC" = lapply(even_smaller2, 
-                                                                   Panel_vit, lag = lag, lead = lead, M = M,
-                                                                   method = method),
-                      "# Controls for ATC" = lapply(even_smaller2, function (x) length(unique(x$V2))-1)))
+          return(list("treatment" = treatment, "qoi" = qoi, "dependent" = dependent, 
+                      "covariate" = covariate, "unit.id" = unit.id, "time.id" = time.id, 
+                      "M" = M, "covariate.only" = covariate.only, "lag" = lag, "max.lead" = max.lead, 
+                      "data" = d2, "Matched sets for ATC" = lapply(even_smaller2, Panel_vit, 
+                                                                   lag = lag, max.lead = max.lead, 
+                                                                   M = M,method = method),
+                      "NC_ATC" = lapply(even_smaller2, function (x) length(unique(x$V2))-1)))
         } else if (method == "Pscore") {
-          return(list("data" = MoveFront(d2, unit.id), "Matched sets for ATC" = lapply(even_smaller2, 
-                                                                                       Panel_vit, lag = lag, lead = lead, M = M,
-                                                                                       method = method),
-                      "# Controls for ATC" = lapply(even_smaller2, function (x) length(unique(x[,1]))-1)))
+          return(list("treatment" = treatment, "qoi" = qoi, "dependent" = dependent, 
+                      "covariate" = covariate, "unit.id" = unit.id, "time.id" = time.id, "M" = M, 
+                      "covariate.only" = covariate.only, "lag" = lag, "max.lead" = max.lead, "data" = d2, 
+                      "Matched sets for ATC" = lapply(even_smaller2, 
+                                                      Panel_vit, lag = lag,
+                                                      max.lead = max.lead, M = M, method = method),
+                      "NC_ATC" = lapply(even_smaller2, function (x) length(unique(x[,1]))-1)))
         } else {
           cat("Please either select NULL or chose one of the following three 
               estimation methods: Synth, Maha and Pscore")
@@ -211,7 +254,7 @@ PanelMatch <- function(lag, lead, time.id = "year", qoi = "ate",
             
             ### cleaning the output from cpp ###
             # delete both higher level and lower level null entries
-            smallerlist <- lapply(Filter(function (x) !is.null(x), findDDmatched2(L = lag, F = lead, dmatrix)), delete.NULLs) 
+            smallerlist <- lapply(Filter(function (x) !is.null(x), findDDmatched2(L = lag, F = max.lead, dmatrix)), delete.NULLs) 
             # further cleaning
             smallerlist <- Filter(function (x) length(x) > 0, smallerlist)
             # use function dframelist.rb_dup to turn every list element into a data.frame
@@ -221,7 +264,7 @@ PanelMatch <- function(lag, lead, time.id = "year", qoi = "ate",
               # take the forward periods from each subset:
               # IMPORTANT
               Fs <- lapply(even_smaller1, function(x) {
-                x <- x[x$V1 %in% unique(x$V1)[(lag+2):(lag+1+lead)], ]
+                x <- x[x$V1 %in% unique(x$V1)[(lag+2):(lag+1+max.lead)], ]
                 return(x)
               })
               
@@ -272,7 +315,7 @@ PanelMatch <- function(lag, lead, time.id = "year", qoi = "ate",
             
             ### cleaning the output from cpp ###
             # delete both higher level and lower level null entries
-            smallerlist <- lapply(Filter(function (x) !is.null(x), findDDmatched2(L = lag, F = lead, dmatrix)), delete.NULLs) 
+            smallerlist <- lapply(Filter(function (x) !is.null(x), findDDmatched2(L = lag, F = max.lead, dmatrix)), delete.NULLs) 
             # further cleaning
             smallerlist <- Filter(function (x) length(x) > 0, smallerlist)
             # use function dframelist.rb_dup to turn every list element into a data.frame
@@ -282,7 +325,7 @@ PanelMatch <- function(lag, lead, time.id = "year", qoi = "ate",
               # take the forward periods from each subset:
               # IMPORTANT
               Fs <- lapply(even_smaller2, function(x) {
-                x <- x[x$V1 %in% unique(x$V1)[(lag+2):(lag+1+lead)], ]
+                x <- x[x$V1 %in% unique(x$V1)[(lag+2):(lag+1+max.lead)], ]
                 return(x)
               })
               
@@ -325,37 +368,48 @@ PanelMatch <- function(lag, lead, time.id = "year", qoi = "ate",
             }
             
             if (is.null(method)){
-              return(list("data" = d2, "Matched sets for ATT" = even_smaller1, 
-                          "# Controls for ATT" = lapply(even_smaller1, function (x) length(unique(x$V2))-1),
+              return(list("treatment" = treatment, "qoi" = qoi, "dependent" = dependent, 
+                          "covariate" = covariate, "unit.id" = unit.id, "time.id" = time.id, "M" = M, 
+                          "covariate.only" = covariate.only, "lag" = lag, "max.lead" = max.lead, 
+                          "data" = d2, "Matched sets for ATT" = even_smaller1, 
+                          "NC_ATT" = lapply(even_smaller1, function (x) length(unique(x$V2))-1),
                           "Matched sets for ATC" = even_smaller2, 
-                          "# Controls for ATC" = lapply(even_smaller2, function (x) length(unique(x$V2))-1)))
+                          "NC_ATC" = lapply(even_smaller2, function (x) length(unique(x$V2))-1)))
             } else if (method == "Synth") {
-              return(list("data" = d2, "Matched sets for ATT" = lapply(even_smaller1, 
-                                                                       Panel_vit, lag = lag, lead = lead, M = M,
-                                                                       method = method), 
-                          "# Controls for ATT" = lapply(even_smaller1, function (x) length(unique(x$V2))-1),
+              return(list("treatment" = treatment, "qoi" = qoi, "dependent" = dependent, 
+                          "covariate" = covariate, "unit.id" = unit.id, "time.id" = time.id, 
+                          "M" = M, "covariate.only" = covariate.only, "lag" = lag, "max.lead" = max.lead, "data" = d2, 
+                          "Matched sets for ATT" = lapply(even_smaller1,  Panel_vit, 
+                                                          lag = lag, max.lead = max.lead, 
+                                                          M = M,method = method), 
+                          "NC_ATT" = lapply(even_smaller1, function (x) length(unique(x$V2))-1),
                           "Matched sets for ATC" = lapply(even_smaller2, 
-                                                          Panel_vit, lag = lag, lead = lead, M = M,
+                                                          Panel_vit, lag = lag, max.lead = max.lead, M = M,
                                                           method = method), 
-                          "# Controls for ATC" = lapply(even_smaller2, function (x) length(unique(x$V2))-1)))
+                          "NC_ATC" = lapply(even_smaller2, function (x) length(unique(x$V2))-1)))
             } else if (method == "Maha") {
-              return(list("data" = d2, "Matched sets for ATT" = lapply(even_smaller1, 
-                                                                       Panel_vit, lag = lag, lead = lead, M = M,
-                                                                       method = method), 
-                          "# Controls for ATT" = lapply(even_smaller1, function (x) length(unique(x$V2))-1),
+              return(list("treatment" = treatment, "qoi" = qoi, "dependent" = dependent, 
+                          "covariate" = covariate, "unit.id" = unit.id, "time.id" = time.id, 
+                          "M" = M, "covariate.only" = covariate.only, "lag" = lag, "max.lead" = max.lead, 
+                          "data" = d2, 
+                          "Matched sets for ATT" = lapply(even_smaller1,Panel_vit, lag = lag, max.lead = max.lead, M = M,method = method), 
+                          "NC_ATT" = lapply(even_smaller1, function (x) length(unique(x$V2))-1),
                           "Matched sets for ATC" = lapply(even_smaller2, 
-                                                          Panel_vit, lag = lag, lead = lead, M = M,
+                                                          Panel_vit, lag = lag, max.lead = max.lead, M = M,
                                                           method = method), 
-                          "# Controls for ATC" = lapply(even_smaller2, function (x) length(unique(x$V2))-1)))
+                          "NC_ATC" = lapply(even_smaller2, function (x) length(unique(x$V2))-1)))
             } else if (method == "Pscore") {
-              return(list("data" = MoveFront(d2, unit.id), "Matched sets for ATT" = lapply(even_smaller1, 
-                                                                                           Panel_vit, lag = lag, lead = lead, M = M,
-                                                                                           method = method), 
-                          "# Controls for ATT" = lapply(even_smaller1, function (x) length(unique(x[,1]))-1),
+              return(list("treatment" = treatment, "qoi" = qoi, "dependent" = dependent, 
+                          "covariate" = covariate, "unit.id" = unit.id, "time.id" = time.id, 
+                          "M" = M, "covariate.only" = covariate.only, "lag" = lag, 
+                          "max.lead" = max.lead, "data" = d2, 
+                          "Matched sets for ATT" = lapply(even_smaller1, Panel_vit, 
+                                                          lag = lag, max.lead = max.lead, M = M,method = method), 
+                          "NC_ATT" = lapply(even_smaller1, function (x) length(unique(x[,1]))-1),
                           "Matched sets for ATC" = lapply(even_smaller2, 
-                                                          Panel_vit, lag = lag, lead = lead, M = M,
+                                                          Panel_vit, lag = lag, max.lead = max.lead, M = M,
                                                           method = method),
-                          "# Controls for ATC" = lapply(even_smaller2, function (x) length(unique(x[,1]))-1)))
+                          "NC_ATC" = lapply(even_smaller2, function (x) length(unique(x[,1]))-1)))
             } else { (cat("Please either select NULL or chose one of the following three 
                        estimation methods: Synth, Maha and Pscore")) 
             }
