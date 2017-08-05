@@ -14,13 +14,13 @@ PanelGapsPlot_tmp <- function(matched_sets,
   
   if (is.null(qoi)) {
     if (matched_sets$qoi == "att") {
-      plot.materials <- lapply(matched_sets$`Matched sets for ATT`, 
+      plot.materials <- lapply(matched_sets$`ATT_matches`, 
                                gaps_plot_tmp, lag = lag, lead = lead,
                                covariate = covariate,
                                qoi = "att",
                                data = matched_sets$data)
     } else if (matched_sets$qoi == "atc") {
-      plot.materials <- lapply(matched_sets$`Matched sets for ATC`, 
+      plot.materials <- lapply(matched_sets$`ATC_matches`, 
                                gaps_plot_tmp, lag = lag, lead = lead,
                                covariate = covariate,
                                qoi = "atc",
@@ -30,13 +30,13 @@ PanelGapsPlot_tmp <- function(matched_sets,
     }
   } else {
     if (qoi == "att") {
-      plot.materials <- lapply(matched_sets$`Matched sets for ATT`, 
+      plot.materials <- lapply(matched_sets$`ATT_matches`, 
                                gaps_plot_tmp, lag = lag, lead = lead,
                                covariate = covariate,
                                qoi = "att",
                                data = matched_sets$data)
     } else if (qoi == "atc") {
-      plot.materials <- lapply(matched_sets$`Matched sets for ATC`, 
+      plot.materials <- lapply(matched_sets$`ATC_matches`, 
                                gaps_plot_tmp, lag = lag, lead = lead,
                                covariate = covariate,
                                qoi = "atc",

@@ -33,6 +33,8 @@ S3method(summary, wfedid)
 S3method(print, wfedid)
 S3method(print, summary.wfedid)
 
+S3method(summary, PanelEstimate_tmp)
+
 
 importFrom("methods", "as")
 importFrom("stats", "as.formula", "binomial", "coef", "fitted", "lm",

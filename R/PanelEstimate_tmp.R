@@ -16,21 +16,22 @@ PanelEstimate_tmp <- function(lead,
   treatment = matched_sets$treatment
   covariate.only = matched_sets$covariate.only
   unit.id = matched_sets$unit.id
+  method = matched_sets$method
   
-  if (is.null(matched_sets$`Matched sets for ATT`) == FALSE) {
-    matched_sets$`Matched sets for ATT` <- lapply(matched_sets$`Matched sets for ATT`, 
+  if (is.null(matched_sets$`ATT_matches`) == FALSE) {
+    matched_sets$`ATT_matches` <- lapply(matched_sets$`ATT_matches`, 
                                                   take_out, lag = lag, lead = lead)
   }
   
-  if (is.null(matched_sets$`Matched sets for ATC`) == FALSE) {
-    matched_sets$`Matched sets for ATC` <- lapply(matched_sets$`Matched sets for ATC`, 
+  if (is.null(matched_sets$`ATC_matches`) == FALSE) {
+    matched_sets$`ATC_matches` <- lapply(matched_sets$`ATC_matches`, 
                                                   take_out, lag = lag, lead = lead)
   }
   
 
   
   if (matched_sets$qoi == "att") {
-    weights_and_dits <- lapply(matched_sets$`Matched sets for ATT`,
+    weights_and_dits <- lapply(matched_sets$`ATT_matches`,
                                PanelWit2, 
                                unit.id = matched_sets$unit.id, 
                                time.id = matched_sets$time.id,
@@ -43,7 +44,7 @@ PanelEstimate_tmp <- function(lead,
     data$weights_att <- Reduce("+", all.weights)
     data$dit_att <- Reduce("+", all.dits)
   } else if (matched_sets$qoi == "atc") {
-    weights_and_dits <- lapply(matched_sets$`Matched sets for ATC`,
+    weights_and_dits <- lapply(matched_sets$`ATC_matches`,
                                PanelWit2, 
                                unit.id = matched_sets$unit.id, 
                                time.id = matched_sets$time.id,
@@ -55,7 +56,7 @@ PanelEstimate_tmp <- function(lead,
     data$weights_atc <- Reduce("+", all.weights)
     data$dit_atc <- Reduce("+", all.dits)
   } else if (matched_sets$qoi == "ate") {
-    weights_and_dits <- lapply(matched_sets$`Matched sets for ATT`,
+    weights_and_dits <- lapply(matched_sets$`ATT_matches`,
                                PanelWit2, 
                                unit.id = matched_sets$unit.id, 
                                time.id = matched_sets$time.id,
@@ -67,7 +68,7 @@ PanelEstimate_tmp <- function(lead,
     data$weights_att <- Reduce("+", all.weights)
     data$dit_att <- Reduce("+", all.dits)
     
-    weights_and_dits <- lapply(matched_sets$`Matched sets for ATC`,
+    weights_and_dits <- lapply(matched_sets$`ATC_matches`,
                                PanelWit2, 
                                unit.id = matched_sets$unit.id, 
                                time.id = matched_sets$time.id,
@@ -99,7 +100,7 @@ PanelEstimate_tmp <- function(lead,
       }
       
     } else if (inference == "bootstrap"){
-      all.diffs.weighted <- sapply(matched_sets$`Matched sets for ATT`, 
+      all.diffs.weighted <- sapply(matched_sets$`ATT_matches`, 
                                    PanelDiDResult, lag = lag, lead = lead)
       
       coefs <- rep(NA, ITER) 
@@ -125,9 +126,15 @@ PanelEstimate_tmp <- function(lead,
         dit.atts[k] <- sum(d.sub1$dit_att)
         wit.atts[[k]] <- d.sub1$weights_att
       }
-      
-      return(list("o.coef" = mean(all.diffs.weighted, na.rm = T),
-                  "boots" = coefs))
+      # changed return to class
+      # return(list("o.coef" = mean(all.diffs.weighted, na.rm = T),
+      #             "boots" = coefs))
+      z <- list("o.coef" = mean(all.diffs.weighted, na.rm = T),
+                             "boots" = coefs, "ITER" = ITER,
+                              "method" = method, "lag" = lag,
+                "lead" = lead)
+      class(z) <- "PanelEstimate_tmp"
+      z
     }
     
     # ATC
@@ -147,7 +154,7 @@ PanelEstimate_tmp <- function(lead,
         return(fit)
       }
     } else if (inference == "bootstrap") {
-      all.diffs.weighted <- sapply(matched_sets$`Matched sets for ATC`, 
+      all.diffs.weighted <- sapply(matched_sets$`ATC_matches`, 
                                    PanelDiDResult, lag = lag, lead = lead)
       
       coefs <- rep(NA, ITER) 
@@ -171,9 +178,14 @@ PanelEstimate_tmp <- function(lead,
         dit.atcs[k] <- sum(d.sub1$dit_atc)
         wit.atcs[[k]] <- d.sub1$weights_atc
       }
-      
-      return(list("o.coef" = -mean(all.diffs.weighted, na.rm = T),
-                  "boots" = coefs))
+      z <- list("o.coef" = -mean(all.diffs.weighted, na.rm = T),
+                "boots" = coefs, "ITER" = ITER,
+                "method" = method, "lag" = lag,
+                "lead" = lead)
+      class(z) <- "PanelEstimate_tmp"
+      z
+      # return(list("o.coef" = -mean(all.diffs.weighted, na.rm = T),
+      #             "boots" = coefs))
     }
     
   } else if (matched_sets$qoi == "ate") {
@@ -192,10 +204,10 @@ PanelEstimate_tmp <- function(lead,
         return(fit)
       }
     } else if (inference == "bootstrap"){
-      all.diffs.weighted1 <- sapply(matched_sets$`Matched sets for ATT`, 
+      all.diffs.weighted1 <- sapply(matched_sets$`ATT_matches`, 
                                     PanelDiDResult, lag = lag, lead = lead)
       ATT <- mean(all.diffs.weighted1, na.rm = T)
-      all.diffs.weighted2 <- sapply(matched_sets$`Matched sets for ATC`, 
+      all.diffs.weighted2 <- sapply(matched_sets$`ATC_matches`, 
                                     PanelDiDResult, lag = lag, lead = lead)
       ATC <- -mean(all.diffs.weighted2, na.rm = T)
       DID_ATE <- ifelse(length(ATC) > 0, (ATT * length(all.diffs.weighted1) + 
@@ -235,10 +247,37 @@ PanelEstimate_tmp <- function(lead,
         wit.atts[[k]] <- d.sub1$weights_att
         wit.atcs[[k]] <- d.sub1$weights_atc
       }
-      return(list("o.coef" = DID_ATE, "boots" = coefs))
+      # return(list("o.coef" = DID_ATE, "boots" = coefs))
+      z <- list("o.coef" = DID_ATE,
+                "boots" = coefs, "ITER" = ITER,
+                "method" = method, "lag" = lag,
+                "lead" = lead)
+      class(z) <- "PanelEstimate_tmp"
+      z
       
     }
     
     
   }
 }
+
+summary.PanelEstimate_tmp <- function(object) {
+  if(object$method == "Maha"){
+    cat("Weighted Difference-in-Differences with Mahalanobis Distance\n")
+  } else if (object$method == "Pscore") {
+    cat("Weighted Difference-in-Differences with Propensity Score\n")
+  } else if (object$method == "Synth") {
+    cat("Weighted Difference-in-Differences with Synthetic Control\n")
+  }
+  cat("Matches created with", object$lag, "lags\n")
+  cat("\nStandard errors computed with", object$ITER, "Weighted bootstrap samples\n")
+  cat("\nTotal effect in", object$lead, "periods after the treatment:")
+  cat("\nPoint Estimate:", object$o.coef,"\n")
+  cat("Bias:", object$o.coef - mean(object$boots, na.rm = T), "\n")
+  cat("Standard Error:", 
+              sd(object$boots), "\n")
+}
+
+# print.summary.PanelEstimate_tmp <- function(object) {
+#   cat("Success!")
+# }
