@@ -190,10 +190,10 @@ PS_vit <- function(x, lag, max.lead, M = M) {
   PS_distance <- abs(tapply(matched_set$ps, matched_set$V2, mean) - mean(matched_set$ps[which(matched_set$V2 == treated.id)]))
   
   if (M < length(testid) - 1) {
-    matchid <- as.numeric(names(sort(PS_distance))[2:(M+1)])
+    matchid <- as.numeric(names(sort(PS_distance[!names(PS_distance) == treated.id]))[1:M])
     weights <- as.data.frame(rbind(cbind(1/M, matchid), cbind(w.weight = 1, treated.id)))
   } else {
-    matchid <- as.numeric(names(sort(PS_distance)))[-1]
+    matchid <- as.numeric(names(sort(PS_distance[!names(PS_distance) == treated.id])))
     weights <- as.data.frame(rbind(cbind(1/(length(testid)-1), matchid), cbind(w.weight = 1, treated.id)))
   }
   
