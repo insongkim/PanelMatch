@@ -56,9 +56,12 @@ MSMD_each <- function(time_id, matched_set, testid) {
                (sub_sub[sub_sub$V2 %in% testid[-2], 4:length(sub_sub)] - 
                   as.numeric(sub_sub[sub_sub$V2 == testid[2], 4:length(sub_sub)])))
     } else {
-      return(mahalanobis(x = sub_sub[sub_sub$V2 %in% testid[-2], 4:length(sub_sub)], 
+      return(tryCatch(mahalanobis(x = sub_sub[sub_sub$V2 %in% testid[-2], 4:length(sub_sub)], 
                          center = as.numeric(sub_sub[sub_sub$V2 == testid[2], 4:length(sub_sub)]),
-                         cov = diag((length(sub_sub) - 3)) * cov_matrix))
+                         cov = diag((length(sub_sub) - 3)) * cov_matrix), 
+             error = function(e) mahalanobis(x = sub_sub[sub_sub$V2 %in% testid[-2], 4:length(sub_sub)], 
+                                             center = as.numeric(sub_sub[sub_sub$V2 == testid[2], 4:length(sub_sub)]),
+                                             cov = diag((length(sub_sub) - 3)))))
     }
    
   }
