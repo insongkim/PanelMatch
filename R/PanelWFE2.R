@@ -1,31 +1,31 @@
-PanelWFE <- function (formula, data, treat = "treat.name",
-                       unit.index, time.index = NULL, method = "unit",
-                       qoi = "att", estimator = "did", C.it = NULL,
-                       hetero.se = TRUE, auto.se = TRUE,df.adjustment = TRUE,
-                       White = TRUE, White.alpha = 0.05,
-                       verbose = TRUE, unbiased.se = FALSE, unweighted = FALSE,
-                       store.wdm = FALSE, maxdev.did= NULL, weights = NULL,
-                       tol = sqrt(.Machine$double.eps)){
+PanelWFE2 <- function (formula, data, treat = "treat.name",
+                      unit.index, time.index = NULL, method = "unit",
+                      qoi = "att", estimator = "did", C.it = NULL,
+                      hetero.se = TRUE, auto.se = TRUE,df.adjustment = TRUE,
+                      White = TRUE, White.alpha = 0.05,
+                      verbose = TRUE, unbiased.se = FALSE, unweighted = FALSE,
+                      store.wdm = FALSE, maxdev.did= NULL, weights = NULL,
+                      tol = sqrt(.Machine$double.eps)){
+  if (qoi == "att") {
+    data$big_W_it <- data$Wit_att0
+  } else if (qoi == "atc"){
+    data$big_W_it <- data$Wit_atc0
+    qoi = "att"
+  } else if (qoi == "ate") {
+    data$big_W_it <- data$Wit_att0 + data$Wit_atc0
+  }
+
+  
+  # 
   # if (qoi == "att") {
-  #   data$big_W_it <- data$Wit_att0
+  #   data$big_W_it <- data$weights_att
   # } else if (qoi == "atc"){
-  #   data$big_W_it <- data$Wit_atc0
+  #   data$big_W_it <- data$weights_atc
   #   qoi = "att"
   # } else if (qoi == "ate") {
-  #   data$big_W_it <- data$Wit_att0 + data$Wit_atc0
+  #   data$big_W_it <- data$weights_att + data$weights_atc
   # }
-  # 
   
- 
-  if (qoi == "att") {
-     data$big_W_it <- data$weights_att
-   } else if (qoi == "atc"){
-     data$big_W_it <- data$weights_atc
-     qoi = "att"
-   } else if (qoi == "ate") {
-     data$big_W_it <- data$weights_att + data$weights_atc
-   }
-
   
   wfe.call <- match.call()
   ## set up data frame, with support for standard and modified responses

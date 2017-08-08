@@ -7,13 +7,13 @@ PanelCaliper <- function(matched_sets,
   
   if (is.null(qoi)) {
     if (matched_sets$qoi == "att") {
-      plot.materials <- lapply(matched_sets$`Matched sets for ATT`, 
+      plot.materials <- lapply(matched_sets$`ATT_matches`, 
                                gaps_plot_tmp, lag = lag, lead = lead,
                                covariate = covariate,
                                qoi = "att",
                                data = matched_sets$data)
     } else if (matched_sets$qoi == "atc") {
-      plot.materials <- lapply(matched_sets$`Matched sets for ATC`, 
+      plot.materials <- lapply(matched_sets$`ATC_matches`, 
                                gaps_plot_tmp, lag = lag, lead = lead,
                                covariate = covariate,
                                qoi = "atc",
@@ -23,13 +23,13 @@ PanelCaliper <- function(matched_sets,
     }
   } else {
     if (qoi == "att") {
-      plot.materials <- lapply(matched_sets$`Matched sets for ATT`, 
+      plot.materials <- lapply(matched_sets$`ATT_matches`, 
                                gaps_plot_tmp, lag = lag, lead = lead,
                                covariate = covariate,
                                qoi = "att",
                                data = matched_sets$data)
     } else if (qoi == "atc") {
-      plot.materials <- lapply(matched_sets$`Matched sets for ATC`, 
+      plot.materials <- lapply(matched_sets$`ATC_matches`, 
                                gaps_plot_tmp, lag = lag, lead = lead,
                                covariate = covariate,
                                qoi = "atc",
@@ -50,29 +50,29 @@ PanelCaliper <- function(matched_sets,
   
   if (is.null(qoi)) {
     if (matched_sets$qoi == "att") {
-      ind <- as.logical(sapply(matched_sets$`Matched sets for ATT`, qoi = matched_sets$qoi,
+      ind <- as.logical(sapply(matched_sets$`ATT_matches`, qoi = matched_sets$qoi,
                                gaps_caliper, lag = lag, covariate = covariate,
                                data = matched_sets$data) < number)
-      matched_sets$`Matched sets for ATT` <- matched_sets$`Matched sets for ATT`[which(ind)]
+      matched_sets$`ATT_matches` <- matched_sets$`ATT_matches`[which(ind)]
     } else if (matched_sets$qoi == "atc") {
-      ind <- as.logical(sapply(matched_sets$`Matched sets for ATC`, qoi = matched_sets$qoi,
+      ind <- as.logical(sapply(matched_sets$`ATC_matches`, qoi = matched_sets$qoi,
                                gaps_caliper, lag = lag, covariate = covariate,
                                data = matched_sets$data) < number)
-      matched_sets$`Matched sets for ATC` <- matched_sets$`Matched sets for ATC`[which(ind)]
+      matched_sets$`ATC_matches` <- matched_sets$`ATC_matches`[which(ind)]
     } else {
       stop("Please specify either att or atc for `qoi`.")
     }
   } else {
     if (qoi == "att") {
-      ind <- as.logical(sapply(matched_sets$`Matched sets for ATT`, qoi = qoi,
+      ind <- as.logical(sapply(matched_sets$`ATT_matches`, qoi = qoi,
                                gaps_caliper, lag = lag, covariate = covariate,
                                data = matched_sets$data) < number)
-      matched_sets$`Matched sets for ATT` <- matched_sets$`Matched sets for ATT`[which(ind)]
+      matched_sets$`ATT_matches` <- matched_sets$`ATT_matches`[which(ind)]
     } else if (qoi == "atc") {
-      ind <- as.logical(sapply(matched_sets$`Matched sets for ATC`, qoi = qoi,
+      ind <- as.logical(sapply(matched_sets$`ATC_matches`, qoi = qoi,
                                gaps_caliper, lag = lag, covariate = covariate,
                                data = matched_sets$data) < number)
-      matched_sets$`Matched sets for ATC` <- matched_sets$`Matched sets for ATC`[which(ind)]
+      matched_sets$`ATC_matches` <- matched_sets$`ATC_matches`[which(ind)]
     } else {
       stop("Please specify either att or atc for `qoi`.")
     }

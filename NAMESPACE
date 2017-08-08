@@ -5,7 +5,8 @@ export(wfe, pwfe, DisplayTreatment, findMatched2, findMatched,syn_DID, syn_DID_M
        wfe2_tmp3, MSMD_DID,gDID_master,MSMD_gapsplot,PS_gapsplot,
        PS_DID, syn_DID_check_tmp, wfe2_tmp4, syn_DID_weights_tmp2,PanelMatch,
        PanelEstimate, PanelWFE, PanelGapsPlot, PanelEstimate_tmp, PanelMatch_tmp,
-       PanelHist, PanelGapsPlot_tmp, PanelCaliper)
+       PanelHist, PanelGapsPlot_tmp, PanelCaliper, apply_leads, PanelEstimate_tmp2,
+       PanelWFE2)
 
 importFrom(Rcpp, evalCpp)
 ## exportPattern("^[[:alpha:]]+")
@@ -34,6 +35,7 @@ S3method(print, wfedid)
 S3method(print, summary.wfedid)
 
 S3method(summary, PanelEstimate_tmp)
+S3method(summary, PanelEstimate_tmp2)
 
 
 importFrom("methods", "as")

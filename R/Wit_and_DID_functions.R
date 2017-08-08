@@ -240,7 +240,7 @@ PanelWit <- function(data, unit.id, time.id, matched_set,
 }
 
 take_out <- function(matched_set, lag, lead) {
-  matched_set <- matched_set[matched_set$V1 <= (min(matched_set$V1) + lag + lead),]
+  matched_set <- matched_set[matched_set$V1 <= (min(matched_set$V1) + lag + max(lead)),]
 }
 
 PanelWit2 <- function(data, unit.id, time.id, matched_set,
@@ -384,4 +384,8 @@ gaps_caliper <- function(x, lag, covariate = NULL, data,
   
 }
 
+
+equality_four <- function(x, y, z){
+  return(sum(x*y)/sum(z))
+}
 
