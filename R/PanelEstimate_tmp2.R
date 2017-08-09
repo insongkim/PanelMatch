@@ -338,6 +338,8 @@ summary.PanelEstimate_tmp2 <- function(object) {
     cat("Weighted Difference-in-Differences with Propensity Score\n")
   } else if (object$method == "Synth") {
     cat("Weighted Difference-in-Differences with Synthetic Control\n")
+  } else if (object$method == "CBPS") {
+    cat("Weighted Difference-in-Differences with Covariate Balancing Propensity Score\n")
   }
   cat("Matches created with", object$lag, "lags\n")
   cat("\nStandard errors computed with", object$ITER, "Weighted bootstrap samples\n")

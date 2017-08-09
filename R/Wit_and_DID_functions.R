@@ -3,7 +3,7 @@ Panel_vit <- function(x, lag, max.lead, method, M) {
     return(synth_vit(x, lag = lag, max.lead = max.lead))
   } else if(method == "Maha"){
     return(Maha_vit(x, lag, max.lead, M = M))
-  } else if(method == "Pscore") {
+  } else if(method == "Pscore"|method == "CBPS") {
     return(PS_vit(x, lag, max.lead, M = M))
   } else {
     return("WRONG")

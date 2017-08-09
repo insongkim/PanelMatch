@@ -42,7 +42,7 @@ PanelMatch <- function(lag, max.lead, time.id = "year", qoi = "ate",
   d2 <- MoveFront(d2, Var = c(time.id, unit.id, treatment, dependent))
   
   
-  if (method == "Pscore") {
+  if (method == "Pscore"|method == "CBPS") {
     
     dlist <- lapply(1:lag, 
                     function (i) slide(data = d2, Var = dependent, GroupVar = unit.id, TimeVar = time.id, slideBy = -(i),
@@ -56,7 +56,7 @@ PanelMatch <- function(lag, max.lead, time.id = "year", qoi = "ate",
   
   d2[1:(length(d2))] <- lapply(d2[1:(length(d2))], function(x) as.numeric(as.character(x))) # as.numeric
   
-  if (method == "Pscore") {
+  if (method == "Pscore"|method == "CBPS") {
     d2 <- d2[order(d2[,2], d2[,1]), ]
   }
   
@@ -78,7 +78,7 @@ PanelMatch <- function(lag, max.lead, time.id = "year", qoi = "ate",
     # use function dframelist.rb_dup to turn every list element into a data.frame
     even_smaller1 <- lapply(smallerlist, dframelist.rb_dup)
     
-    if (method == "Pscore") {
+    if (method == "Pscore"|method == "CBPS") {
       # take the forward periods from each subset:
       # IMPORTANT
       Fs <- lapply(even_smaller1, function(x) {
@@ -108,11 +108,23 @@ PanelMatch <- function(lag, max.lead, time.id = "year", qoi = "ate",
       
       # get propensity scores
       if (covariate.only == TRUE) {
-        fit0 <- glm(reformulate(response = treatment, termlabels = covariate), 
-                    family = binomial(link = "logit"), data = pooled)
+        if (method == "CBPS") {
+          fit <- CBPS(reformulate(response = treatment, termlabels = covariate), 
+                      family = binomial(link = "logit"), data = pooled)
+        } else {
+          fit0 <- glm(reformulate(response = treatment, termlabels = covariate), 
+                      family = binomial(link = "logit"), data = pooled)
+        }
+       
       } else {
-        fit0 <- glm(reformulate(response = treatment, termlabels = c(covariate, names(pooled[, (4 + length(covariate) + 1):length(pooled)]))), 
-                    family = binomial(link = "logit"), data = pooled)
+        if (method == "CBPS") {
+          fit0 <- CBPS(reformulate(response = treatment, termlabels = c(covariate, names(pooled[, (4 + length(covariate) + 1):length(pooled)]))), 
+                      family = binomial(link = "logit"), data = pooled)
+        } else {
+          fit0 <- glm(reformulate(response = treatment, termlabels = c(covariate, names(pooled[, (4 + length(covariate) + 1):length(pooled)]))), 
+                      family = binomial(link = "logit"), data = pooled)
+        }
+
       }
       
       pooled$ps <- fit0$fitted.values
@@ -149,7 +161,7 @@ PanelMatch <- function(lag, max.lead, time.id = "year", qoi = "ate",
                   "ATT_matches" = lapply(even_smaller1, Panel_vit, lag = lag, 
                                                   max.lead = max.lead, M = M, method = method),
                   "NC_ATT" = lapply(even_smaller1, function (x) length(unique(x$V2))-1)))
-    } else if (method == "Pscore") {
+    } else if (method == "Pscore"|method == "CBPS") {
       
       return(list("treatment" = treatment, "qoi" = qoi, 
                   "dependent" = dependent, "covariate" = covariate, 
@@ -179,7 +191,7 @@ PanelMatch <- function(lag, max.lead, time.id = "year", qoi = "ate",
         # use function dframelist.rb_dup to turn every list element into a data.frame
         even_smaller2 <- lapply(smallerlist, dframelist.rb_dup)
         
-        if (method == "Pscore") {
+        if (method == "Pscore"|method == "CBPS") {
           # take the forward periods from each subset:
           # IMPORTANT
           Fs <- lapply(even_smaller2, function(x) {
@@ -209,13 +221,24 @@ PanelMatch <- function(lag, max.lead, time.id = "year", qoi = "ate",
           
           # get propensity scores
           if (covariate.only == TRUE) {
-            fit0 <- glm(reformulate(response = treatment, termlabels = covariate), 
-                        family = binomial(link = "logit"), data = pooled)
+            if (method == "CBPS") {
+              fit <- CBPS(reformulate(response = treatment, termlabels = covariate), 
+                          family = binomial(link = "logit"), data = pooled)
+            } else {
+              fit0 <- glm(reformulate(response = treatment, termlabels = covariate), 
+                          family = binomial(link = "logit"), data = pooled)
+            }
+            
           } else {
-            fit0 <- glm(reformulate(response = treatment, termlabels = c(covariate, names(pooled[, (4 + length(covariate) + 1):length(pooled)]))), 
-                        family = binomial(link = "logit"), data = pooled)
+            if (method == "CBPS") {
+              fit0 <- CBPS(reformulate(response = treatment, termlabels = c(covariate, names(pooled[, (4 + length(covariate) + 1):length(pooled)]))), 
+                           family = binomial(link = "logit"), data = pooled)
+            } else {
+              fit0 <- glm(reformulate(response = treatment, termlabels = c(covariate, names(pooled[, (4 + length(covariate) + 1):length(pooled)]))), 
+                          family = binomial(link = "logit"), data = pooled)
+            }
+            
           }
-          
           pooled$ps <- fit0$fitted.values
           
           # aggregate to delete duplicates
@@ -248,7 +271,7 @@ PanelMatch <- function(lag, max.lead, time.id = "year", qoi = "ate",
                                                                    lag = lag, max.lead = max.lead, 
                                                                    M = M,method = method),
                       "NC_ATC" = lapply(even_smaller2, function (x) length(unique(x$V2))-1)))
-        } else if (method == "Pscore") {
+        } else if (method == "Pscore"|method == "CBPS") {
           return(list("treatment" = treatment, "qoi" = qoi, "dependent" = dependent, 
                       "covariate" = covariate, "unit.id" = unit.id, "time.id" = time.id, "M" = M, 
                       "covariate.only" = covariate.only, "lag" = lag, 
@@ -278,7 +301,7 @@ PanelMatch <- function(lag, max.lead, time.id = "year", qoi = "ate",
             # use function dframelist.rb_dup to turn every list element into a data.frame
             even_smaller1 <- lapply(smallerlist, dframelist.rb_dup)
             
-            if (method == "Pscore") {
+            if (method == "Pscore"|method == "CBPS") {
               # take the forward periods from each subset:
               # IMPORTANT
               Fs <- lapply(even_smaller1, function(x) {
@@ -308,11 +331,23 @@ PanelMatch <- function(lag, max.lead, time.id = "year", qoi = "ate",
               
               # get propensity scores
               if (covariate.only == TRUE) {
-                fit0 <- glm(reformulate(response = treatment, termlabels = covariate), 
-                            family = binomial(link = "logit"), data = pooled)
+                if (method == "CBPS") {
+                  fit <- CBPS(reformulate(response = treatment, termlabels = covariate), 
+                              family = binomial(link = "logit"), data = pooled)
+                } else {
+                  fit0 <- glm(reformulate(response = treatment, termlabels = covariate), 
+                              family = binomial(link = "logit"), data = pooled)
+                }
+                
               } else {
-                fit0 <- glm(reformulate(response = treatment, termlabels = c(covariate, names(pooled[, (4 + length(covariate) + 1):length(pooled)]))), 
-                            family = binomial(link = "logit"), data = pooled)
+                if (method == "CBPS") {
+                  fit0 <- CBPS(reformulate(response = treatment, termlabels = c(covariate, names(pooled[, (4 + length(covariate) + 1):length(pooled)]))), 
+                               family = binomial(link = "logit"), data = pooled)
+                } else {
+                  fit0 <- glm(reformulate(response = treatment, termlabels = c(covariate, names(pooled[, (4 + length(covariate) + 1):length(pooled)]))), 
+                              family = binomial(link = "logit"), data = pooled)
+                }
+                
               }
               
               pooled$ps <- fit0$fitted.values
@@ -339,7 +374,7 @@ PanelMatch <- function(lag, max.lead, time.id = "year", qoi = "ate",
             # use function dframelist.rb_dup to turn every list element into a data.frame
             even_smaller2 <- lapply(smallerlist, dframelist.rb_dup)
             
-            if (method == "Pscore") {
+            if (method == "Pscore"|method == "CBPS") {
               # take the forward periods from each subset:
               # IMPORTANT
               Fs <- lapply(even_smaller2, function(x) {
@@ -369,11 +404,23 @@ PanelMatch <- function(lag, max.lead, time.id = "year", qoi = "ate",
               
               # get propensity scores
               if (covariate.only == TRUE) {
-                fit0 <- glm(reformulate(response = treatment, termlabels = covariate), 
-                            family = binomial(link = "logit"), data = pooled)
+                if (method == "CBPS") {
+                  fit <- CBPS(reformulate(response = treatment, termlabels = covariate), 
+                              family = binomial(link = "logit"), data = pooled)
+                } else {
+                  fit0 <- glm(reformulate(response = treatment, termlabels = covariate), 
+                              family = binomial(link = "logit"), data = pooled)
+                }
+                
               } else {
-                fit0 <- glm(reformulate(response = treatment, termlabels = c(covariate, names(pooled[, (4 + length(covariate) + 1):length(pooled)]))), 
-                            family = binomial(link = "logit"), data = pooled)
+                if (method == "CBPS") {
+                  fit0 <- CBPS(reformulate(response = treatment, termlabels = c(covariate, names(pooled[, (4 + length(covariate) + 1):length(pooled)]))), 
+                               family = binomial(link = "logit"), data = pooled)
+                } else {
+                  fit0 <- glm(reformulate(response = treatment, termlabels = c(covariate, names(pooled[, (4 + length(covariate) + 1):length(pooled)]))), 
+                              family = binomial(link = "logit"), data = pooled)
+                }
+                
               }
               
               pooled$ps <- fit0$fitted.values
@@ -417,7 +464,7 @@ PanelMatch <- function(lag, max.lead, time.id = "year", qoi = "ate",
                                                           Panel_vit, lag = lag, max.lead = max.lead, M = M,
                                                           method = method), 
                           "NC_ATC" = lapply(even_smaller2, function (x) length(unique(x$V2))-1)))
-            } else if (method == "Pscore") {
+            } else if (method == "Pscore"|method == "CBPS") {
               return(list("treatment" = treatment, "qoi" = qoi, "dependent" = dependent, 
                           "covariate" = covariate, "unit.id" = unit.id, "time.id" = time.id, 
                           "M" = M, "covariate.only" = covariate.only, "lag" = lag, 
