@@ -13,8 +13,20 @@ importFrom(Rcpp, evalCpp)
 export(FindMatches, wfe, findDDmatched2)
 
 
-
+# import functions used for PanelMatch and others
 importFrom(arm, bayesglm)
+importFrom(matrixStats, colSds)
+importFrom(synthR, synth_constReg_weight)
+importFrom(Synth, dataprep)
+importFrom(Synth, synth)
+importFrom(CBPS, CBPS)
+importFrom(data.table, rbindlist)
+importFrom(DataCombine, MoveFront)
+importFrom(DataCombine, slide)
+importFrom(reshape2, dcast)
+importFrom(knitr, kable)
+
+
 import(Matrix, MASS)
 
 S3method(summary, wfe)

@@ -1,10 +1,10 @@
-Panel_vit <- function(x, lag, max.lead, method, M) {
+Panel_vit <- function(x, lag, max.lead, method, M, weighting) {
   if (method == "Synth") {
     return(synth_vit(x, lag = lag, max.lead = max.lead))
   } else if(method == "Maha"){
     return(Maha_vit(x, lag, max.lead, M = M))
   } else if(method == "Pscore"|method == "CBPS") {
-    return(PS_vit(x, lag, max.lead, M = M))
+    return(PS_vit(x, lag, max.lead, M = M, weighting = weighting))
   } else {
     return("WRONG")
   }
@@ -19,7 +19,7 @@ synth_vit <- function(x, lag, max.lead) {
   if (nrow(x) > 2*(lag + max.lead + 1)) {
     if (is.na(colnames(x)[5:length(x)][1])) {
       V2 = x$V2; V1 = x$V1
-      control_data <- reshape2::dcast(x[V2 != testid[2], ], V2 ~ V1)
+      control_data <- dcast(x[V2 != testid[2], ], V2 ~ V1)
       
       # treat_data <- x %>% 
       #   filter(V2 == testid[2]) %>% 
@@ -176,8 +176,8 @@ Maha_vit <- function(x, lag, max.lead, M = 3) {
 }
 
 
-PS_vit <- function(x, lag, max.lead, M = M) {
-
+PS_vit <- function(x, lag, max.lead, M = M, weighting = FALSE) {
+  
   colnames(x)[1:5] <- c("V2", "V1", "ps", "V4", "V5")
   x <- x[!duplicated(x[c("V2", "V1")]),]
   x <- x[order(x$V2, x$V1), ]
@@ -187,16 +187,23 @@ PS_vit <- function(x, lag, max.lead, M = M) {
   timeid <- unique(x$V1)[-((length(unique(x$V1)) - max.lead):length(unique(x$V1)))]
   matched_set <- x[x$V1 %in% timeid, ]
   
-  PS_distance <- abs(tapply(matched_set$ps, matched_set$V2, mean) - mean(matched_set$ps[which(matched_set$V2 == treated.id)]))
-  
-  if (M < length(testid) - 1) {
-    matchid <- as.numeric(names(sort(PS_distance[!names(PS_distance) == treated.id]))[1:M])
-    weights <- as.data.frame(rbind(cbind(1/M, matchid), cbind(w.weight = 1, treated.id)))
+  if (weighting == TRUE) {
+    m_ps <- tapply(matched_set$ps, matched_set$V2, mean)
+    m_ps <- m_ps[!names(m_ps) == treated.id]
+    
+    weights <- as.data.frame(rbind(cbind((m_ps/(1-m_ps))/sum(m_ps/(1-m_ps)), 
+                                         testid[!testid == treated.id]), cbind(w.weight = 1, treated.id)))
   } else {
-    matchid <- as.numeric(names(sort(PS_distance[!names(PS_distance) == treated.id])))
-    weights <- as.data.frame(rbind(cbind(1/(length(testid)-1), matchid), cbind(w.weight = 1, treated.id)))
+    PS_distance <- abs(tapply(matched_set$ps, matched_set$V2, mean) - mean(matched_set$ps[which(matched_set$V2 == treated.id)]))
+    if (M < length(testid) - 1) {
+      matchid <- as.numeric(names(sort(PS_distance[!names(PS_distance) == treated.id]))[1:M])
+      weights <- as.data.frame(rbind(cbind(1/M, matchid), cbind(w.weight = 1, treated.id)))
+    } else {
+      matchid <- as.numeric(names(sort(PS_distance[!names(PS_distance) == treated.id])))
+      weights <- as.data.frame(rbind(cbind(1/(length(testid)-1), matchid), cbind(w.weight = 1, treated.id)))
+    }
+    
   }
-  
   
   colnames(weights)[2] <- "V2" # give the critical column the unit.name, so can merge
   colnames(weights)[1] <- "w.weight"

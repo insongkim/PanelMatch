@@ -348,15 +348,27 @@ summary.PanelEstimate_tmp2 <- function(object) {
                 ifelse(object$qoi == "att", "Average Treatment Effect on the Treated (ATT)", 
                        "Average Treatment Effect on the Control (ATC)"))
   cat("\nEstimate of", qoi, "by Period:")
-  df <- rbind(t(as.data.frame(object$o.coef)), 
-              object$o.coef - colMeans(object$boots, na.rm = T),
-              2*object$o.coef - colMeans(object$boots, na.rm = T),
-              apply(2*matrix(nrow = object$ITER, ncol = length(object$o.coef), 
-                             object$o.coef, byrow = TRUE) - object$boots,
-                    2, quantile, c((1-object$CI)/2, object$CI+(1-object$CI)/2), na.rm = T))
-  rownames(df) <- c("Point Estimates", "Bias", "Bias-corrected Estimates", 
-                    paste("Lower Limit of", object$CI*100, "% Confidence Interval"),
-                    paste("Upper Limit of", object$CI*100, "% Confidence Interval"))
+  df <- rbind(t(as.data.frame(object$o.coef)), # point estimate
+              colSds(result.all$boots, na.rm = T), # bootstrap se
+              
+              # Efron & Tibshirani 1993 p170 - 171
+              t(colQuantiles(object$boots,
+                           probs = c((1-object$CI)/2, object$CI+(1-object$CI)/2), 
+                           na.rm = T)), # percentile CI
+              # Efron & Tibshirani 1993 p138
+              2*object$o.coef - colMeans(object$boots, na.rm = T), # bc point estimate
+              
+              t(colQuantiles(2*matrix(nrow = object$ITER, ncol = length(object$o.coef), 
+                                      object$o.coef, byrow = TRUE) - object$boots,
+                             probs = c((1-object$CI)/2, object$CI+(1-object$CI)/2), 
+                             na.rm = T)) # bc percentile CI
+              )
+  rownames(df) <- c("Point Estimate(s)", "Standard Error(s)", 
+                    paste("Lower Limit of", object$CI*100, "% Regular Confidence Interval"),
+                    paste("Upper Limit of", object$CI*100, "% Regular Confidence Interval"),
+                    "Bias-corrected Estimate(s)", 
+                    paste("Lower Limit of", object$CI*100, "% Bias-corrected Confidence Interval"),
+                    paste("Upper Limit of", object$CI*100, "% Bias-corrected Confidence Interval"))
   print(kable(df))
   # cat("Bias:", object$o.coef - mean(object$boots, na.rm = T), "\n")
   # cat("Standard Error:", 
