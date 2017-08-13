@@ -16,7 +16,6 @@ export(FindMatches, wfe, findDDmatched2)
 # import functions used for PanelMatch and others
 importFrom(arm, bayesglm)
 importFrom(matrixStats, colSds)
-importFrom(synthR, synth_constReg_weight)
 importFrom(Synth, dataprep)
 importFrom(Synth, synth)
 importFrom(CBPS, CBPS)
@@ -25,6 +24,9 @@ importFrom(DataCombine, MoveFront)
 importFrom(DataCombine, slide)
 importFrom(reshape2, dcast)
 importFrom(knitr, kable)
+importFrom(nloptr, nloptr)
+importFrom(Rsolnp, solnp)
+importFrom(MCMCpack, rdirichlet)
 
 
 import(Matrix, MASS)

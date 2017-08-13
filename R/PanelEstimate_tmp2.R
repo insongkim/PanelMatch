@@ -354,14 +354,14 @@ summary.PanelEstimate_tmp2 <- function(object) {
               # Efron & Tibshirani 1993 p170 - 171
               t(colQuantiles(object$boots,
                            probs = c((1-object$CI)/2, object$CI+(1-object$CI)/2), 
-                           na.rm = T)), # percentile CI
+                           na.rm = T, drop = FALSE)), # percentile CI
               # Efron & Tibshirani 1993 p138
               2*object$o.coef - colMeans(object$boots, na.rm = T), # bc point estimate
               
               t(colQuantiles(2*matrix(nrow = object$ITER, ncol = length(object$o.coef), 
                                       object$o.coef, byrow = TRUE) - object$boots,
                              probs = c((1-object$CI)/2, object$CI+(1-object$CI)/2), 
-                             na.rm = T)) # bc percentile CI
+                             na.rm = T, drop = FALSE)) # bc percentile CI
               )
   rownames(df) <- c("Point Estimate(s)", "Standard Error(s)", 
                     paste("Lower Limit of", object$CI*100, "% Regular Confidence Interval"),

@@ -10,7 +10,68 @@ Panel_vit <- function(x, lag, max.lead, method, M, weighting) {
   }
 }
 
-
+# synth_constReg_weight is borrowed from the package "synthR" written 
+# by Professor Soichiro Yamauchi 
+synth_constReg_weight <- function (Y_t, Y_c, T0, init = NULL, method = "solnp") 
+{
+  obj_func <- function(par, Y_t, Y_c) {
+    W_c <- par
+    value <- sum((Y_t - apply(Y_c, 2, function(x) x %*% W_c))^2)
+    value <- value/1000
+    return(value)
+  }
+  const_func <- function(par, Y_t, Y_c) {
+    sum(par)
+  }
+  N_c <- nrow(Y_c)
+  T_total <- ncol(Y_c)
+  T_post <- T_total - T0
+  Y_c_pre <- Y_c[, 1:T0]
+  Y_t_pre <- Y_t[1:T0]
+  convergence <- 1
+  while (convergence != 0) {
+    if (is.null(init)) {
+      W_c_init <- rdirichlet(n = 1, alpha = rep(1, 
+                                                          N_c))
+    }
+    else {
+      W_c_init <- init
+    }
+    if (method == "solnp") {
+      opt_out <- solnp(pars = W_c_init, fun = obj_func, 
+                               Y_t = Y_t_pre, Y_c = Y_c_pre, eqfun = const_func, 
+                               eqB = 1, LB = rep(0, N_c), UB = rep(1, N_c), 
+      )
+      MSE <- opt_out$value
+      weight_est <- opt_out$par
+      convergence <- ifelse(is.null(init), opt_out$convergence, 
+                            0)
+      if (convergence == 0) {
+        cat("-----------------\n")
+        cat("Converged!\n")
+        cat("-----------------\n")
+      }
+      else {
+        cat("--------------------------\n")
+        cat("Did not convergence...\n")
+        cat("Trying with different intial values...\n")
+        cat("--------------------------\n")
+      }
+    }
+    else if (method == "nlopt") {
+      opt_out <- nloptr(x0 = W_c_init, eval_f = obj_func, 
+                                lb = rep(0, N_c), ub = rep(1, N_c), eval_g_eq = const_func, 
+                                opts = list(algorithm = "NLOPT_LD_AUGLAG_EQ"), 
+                                Y_t = Y_t_pre, Y_c = Y_c_pre)
+      MSE <- opt_out$objective
+      weight_est <- opt_out$solution
+      convergence <- 0
+    }
+  }
+  Y_synth <- t(Y_c) %*% weight_est
+  return(list(weight = weight_est, value = MSE, Y_synth = Y_synth, 
+              init = W_c_init))
+}
 
 synth_vit <- function(x, lag, max.lead) {
   testid <- unique(x$V2)
