@@ -349,7 +349,7 @@ summary.PanelEstimate_tmp2 <- function(object) {
                        "Average Treatment Effect on the Control (ATC)"))
   cat("\nEstimate of", qoi, "by Period:")
   df <- rbind(t(as.data.frame(object$o.coef)), # point estimate
-              colSds(result.all$boots, na.rm = T), # bootstrap se
+              colSds(object$boots, na.rm = T), # bootstrap se
               
               # Efron & Tibshirani 1993 p170 - 171
               t(colQuantiles(object$boots,

@@ -16,6 +16,7 @@ export(FindMatches, wfe, findDDmatched2)
 # import functions used for PanelMatch and others
 importFrom(arm, bayesglm)
 importFrom(matrixStats, colSds)
+importFrom(matrixStats, colQuantiles)
 importFrom(Synth, dataprep)
 importFrom(Synth, synth)
 importFrom(CBPS, CBPS)

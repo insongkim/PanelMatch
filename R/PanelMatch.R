@@ -39,7 +39,7 @@ PanelMatch <- function(lag, max.lead, time.id = "year", qoi = "ate",
 
 
   d2 <- as.data.frame(model.matrix(formula, data = data))
-  d2$y <- model.frame(formula, data=data)[,1]
+  d2[dependent] <- model.frame(formula, data=data)[,1]
   d2 <- MoveFront(d2, Var = c(time.id, unit.id, treatment, dependent))
   
   

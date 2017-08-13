@@ -175,8 +175,11 @@ Maha_vit <- function(x, lag, max.lead, M = 3) {
   
   if (nrow(x) > 2*(lag + max.lead + 1)) {
     matched_set <- x[x$V1 %in% timeid, ]
+    
     MSMDlist <- lapply(unique(timeid), MSMD_each, matched_set = matched_set, testid = testid)
-    MSMD <- append(Reduce("+", MSMDlist)/length(timeid), 0, after = 1)
+    
+   # MSMD <- append(Reduce("+", lapply(MSMDlist, as.data.frame))/length(timeid), 0, after = 1)
+    MSMD <- append(Reduce("+", lapply(MSMDlist, function(x) x$V4))/length(timeid), 0, after = 1)
     
     # first.diff <- x[x$V2 == testid[2], ]$V4[L + 1 + max.lead] - x[x$V2 == testid[2], ]$V4[L]
     
