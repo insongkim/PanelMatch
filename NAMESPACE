@@ -27,6 +27,7 @@ importFrom(knitr, kable)
 importFrom(nloptr, nloptr)
 importFrom(Rsolnp, solnp)
 importFrom(MCMCpack, rdirichlet)
+importFrom(plyr, rbind.fill)
 
 
 import(Matrix, MASS)
