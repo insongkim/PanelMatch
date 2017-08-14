@@ -26,7 +26,7 @@ PanelMatch <- function(lag, max.lead, time.id = "year", qoi = "ate",
   if("-1" %in% as.character(formula)) {
     formula <- formula
   } else {
-    formula <- update(formula, ~ . - 1)
+    formula <- update(formula, ~ .- 1)
   }
   # set covariates and dependent
   covariate <- attr(terms(formula),"term.labels")[!attr(terms(formula),"term.labels") == treatment]
