@@ -23,11 +23,7 @@ PanelMatch <- function(lag, max.lead, time.id = "year", qoi = "ate",
   if (missing(formula))
     stop("A formula should be provided")
   
-  if("-1" %in% as.character(formula)) {
-    formula <- formula
-  } else {
-    formula <- update(formula, ~ .- 1)
-  }
+
   # set covariates and dependent
   covariate <- attr(terms(formula),"term.labels")[!attr(terms(formula),"term.labels") == treatment]
   if(length(covariate) == 0) {
@@ -38,7 +34,7 @@ PanelMatch <- function(lag, max.lead, time.id = "year", qoi = "ate",
   formula <- merge.formula(reformulate(termlabels = c(time.id, unit.id), response = dependent),formula)
 
 
-  d2 <- as.data.frame(model.matrix(formula, data = data))
+  d2 <- as.data.frame(model.matrix(formula, data = data))[,-1]
   d2[dependent] <- model.frame(formula, data=data)[,1]
   d2 <- MoveFront(d2, Var = c(time.id, unit.id, treatment, dependent))
   
@@ -78,6 +74,9 @@ PanelMatch <- function(lag, max.lead, time.id = "year", qoi = "ate",
     smallerlist <- Filter(function (x) length(x) > 0, smallerlist)
     # use function dframelist.rb_dup to turn every list element into a data.frame
     even_smaller1 <- lapply(smallerlist, dframelist.rb_dup)
+    
+    if (length(even_smaller1) == 0)
+      stop("There are no matches for ATT")
     
     if (method == "Pscore"|method == "CBPS") {
       # take the forward periods from each subset:
@@ -193,6 +192,9 @@ PanelMatch <- function(lag, max.lead, time.id = "year", qoi = "ate",
         smallerlist <- Filter(function (x) length(x) > 0, smallerlist)
         # use function dframelist.rb_dup to turn every list element into a data.frame
         even_smaller2 <- lapply(smallerlist, dframelist.rb_dup)
+        if (length(even_smaller2) == 0)
+          stop("There are no matches for ATC")
+        
         
         if (method == "Pscore"|method == "CBPS") {
           # take the forward periods from each subset:
@@ -304,7 +306,8 @@ PanelMatch <- function(lag, max.lead, time.id = "year", qoi = "ate",
             # use function dframelist.rb_dup to turn every list element into a data.frame
             even_smaller1 <- lapply(smallerlist, dframelist.rb_dup)
             
-            if (method == "Pscore"|method == "CBPS") {
+            if (method == "Pscore" & length(even_smaller1) > 0|
+                method == "CBPS" & length(even_smaller1) > 0) {
               # take the forward periods from each subset:
               # IMPORTANT
               Fs <- lapply(even_smaller1, function(x) {
@@ -377,7 +380,8 @@ PanelMatch <- function(lag, max.lead, time.id = "year", qoi = "ate",
             # use function dframelist.rb_dup to turn every list element into a data.frame
             even_smaller2 <- lapply(smallerlist, dframelist.rb_dup)
             
-            if (method == "Pscore"|method == "CBPS") {
+            if (method == "Pscore" & length(even_smaller2) > 0|
+                method == "CBPS" & length(even_smaller2) > 0) {
               # take the forward periods from each subset:
               # IMPORTANT
               Fs <- lapply(even_smaller2, function(x) {
@@ -434,7 +438,13 @@ PanelMatch <- function(lag, max.lead, time.id = "year", qoi = "ate",
               even_smaller2 <- lapply(even_smaller2, function(x) merge(aggregated, x, by = c(unit.id, time.id)))
               even_smaller2 <- Map(rbind.fill, even_smaller2, Fs)
             }
-            
+            #########################
+            if (length(even_smaller1) == 0 & length(even_smaller2) == 0) 
+              stop("No matches found.")
+            if (length(even_smaller2) == 0) {
+              qoi <- "att"
+            }
+            #########################
             if (is.null(method)){
               return(list("treatment" = treatment, "qoi" = qoi, "dependent" = dependent, 
                           "covariate" = covariate, "unit.id" = unit.id, "time.id" = time.id, "M" = M, 

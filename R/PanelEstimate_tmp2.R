@@ -21,6 +21,7 @@ PanelEstimate_tmp2 <- function(lead,
   method = matched_sets$method
   qoi = matched_sets$qoi
   
+  
   if (is.null(matched_sets$`ATT_matches`) == FALSE) {
     matched_sets$`ATT_matches` <- lapply(matched_sets$`ATT_matches`, 
                                          take_out, lag = lag, lead = max(lead))
