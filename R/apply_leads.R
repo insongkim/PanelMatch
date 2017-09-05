@@ -1,4 +1,4 @@
-## updating (adding) wits
+### updating (adding) wits
 apply_leads <- function(data, unit.id, time.id, matched_set,
                         lag, lead) {
   unit.id = unit.id; time.id = time.id
