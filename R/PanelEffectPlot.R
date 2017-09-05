@@ -23,8 +23,8 @@ PanelEffectPlot <- function(result, CI = .95, atc.reverse = FALSE,
     P <- result$o.coef
     
     L <- t(colQuantiles(result$boots,
-                   probs = c((1-CI)/2, CI+(1-CI)/2), 
-                   na.rm = T, drop = FALSE))[1,]
+                        probs = c((1-CI)/2, CI+(1-CI)/2), 
+                        na.rm = T, drop = FALSE))[1,]
     U <- t(colQuantiles(result$boots,
                         probs = c((1-CI)/2, CI+(1-CI)/2), 
                         na.rm = T, drop = FALSE))[2,]

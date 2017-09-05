@@ -3,6 +3,7 @@ PanelEstimate_tmp2 <- function(lead,
                                inference = c("wfe", "bootstrap"), 
                                ITER = 1000, matched_sets = NULL,
                                plot = FALSE,
+                               qoi = NULL,
                                CI = .95) {
   
   # stop if lead > max.lead
@@ -19,7 +20,12 @@ PanelEstimate_tmp2 <- function(lead,
   unit.id = matched_sets$unit.id
   time.id = matched_sets$time.id
   method = matched_sets$method
-  qoi = matched_sets$qoi
+  if (is.null(qoi)) {
+    qoi = matched_sets$qoi
+  } else {
+    qoi = qoi
+  }
+  
   
   
   if (is.null(matched_sets$`ATT_matches`) == FALSE) {

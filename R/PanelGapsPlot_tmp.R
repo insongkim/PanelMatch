@@ -53,19 +53,21 @@ PanelGapsPlot_tmp <- function(matched_sets,
                                        unlist(lapply(plot.materials, function(x) x$unit))), 
                                 each=lag+1+lead))
   
-  t <- tapply(df$val, df$x, quantile)
+  # t <- tapply(df$val, df$x, quantile) # quantile hashed out
+  box <- boxplot(df$val ~ df$x, plot = F)
+ 
   
-  # aggregate(val ~ x, data = df, FUN = quantile)
-  y2 <- apply(do.call(rbind,t),2,  FUN = unlist)[,1]
-  for (i in 2:5) {
-    y2 <- c(y2, apply(do.call(rbind,t),2,  FUN = unlist)[,i])
-  }
+  # # aggregate(val ~ x, data = df, FUN = quantile)
+  # y2 <- apply(do.call(rbind,t),2,  FUN = unlist)[,1]
+  # for (i in 2:5) {
+  #   y2 <- c(y2, apply(do.call(rbind,t),2,  FUN = unlist)[,i])
+  # }
   
   df2 <- data.frame(x2=rep(-lag:lead,5), 
-                    y2=y2,
+                    y2=unlist(as.list(t(box$stats))),
                     g2=gl(5,(lag+1+lead), 
-                          labels=c("Min", "1st Qu.", "Median",
-                                   "3rd Qu.", "Max.")))
+                          labels=c("Lowest", "1st Qu.", "Median",
+                                   "3rd Qu.", "Highest")))
   
   if(post.treatment == FALSE){
     df <- df[df$x < 0, ]
@@ -92,7 +94,7 @@ PanelGapsPlot_tmp <- function(matched_sets,
       } 
     p + theme(legend.position = legend.position) +
     if(vline == TRUE) {
-      geom_vline(xintercept = lag+1, linetype = linetype, 
+      geom_vline(xintercept = lag, linetype = linetype, 
                  colour = colour)
     } else {
       geom_vline()
