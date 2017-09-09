@@ -3,7 +3,7 @@ PanelMatch <- function(lag, max.lead, time.id = "year", qoi = "ate",
                            treatment, 
                            formula = y ~ treat, 
                            data,
-                           weighting = TRUE,
+                           weighting = FALSE,
                            M = 3, covariate.only = FALSE,
                            method = NULL) {
   
