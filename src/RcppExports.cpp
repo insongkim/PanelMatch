@@ -8,7 +8,7 @@ using namespace Rcpp;
 
 // sumCpp
 int sumCpp(Rcpp::IntegerVector x);
-RcppExport SEXP wfe_sumCpp(SEXP xSEXP) {
+RcppExport SEXP _wfe_sumCpp(SEXP xSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -19,7 +19,7 @@ END_RCPP
 }
 // FindMatches
 NumericMatrix FindMatches(IntegerVector unitIdx, IntegerVector timeIdx, IntegerVector treat);
-RcppExport SEXP wfe_FindMatches(SEXP unitIdxSEXP, SEXP timeIdxSEXP, SEXP treatSEXP) {
+RcppExport SEXP _wfe_FindMatches(SEXP unitIdxSEXP, SEXP timeIdxSEXP, SEXP treatSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -32,7 +32,7 @@ END_RCPP
 }
 // all_sug
 bool all_sug(LogicalVector x);
-RcppExport SEXP wfe_all_sug(SEXP xSEXP) {
+RcppExport SEXP _wfe_all_sug(SEXP xSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -43,7 +43,7 @@ END_RCPP
 }
 // rbind_c
 NumericMatrix rbind_c(NumericMatrix x, NumericMatrix y);
-RcppExport SEXP wfe_rbind_c(SEXP xSEXP, SEXP ySEXP) {
+RcppExport SEXP _wfe_rbind_c(SEXP xSEXP, SEXP ySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -55,7 +55,7 @@ END_RCPP
 }
 // findDDmatched2
 List findDDmatched2(int L, int F, NumericMatrix x1);
-RcppExport SEXP wfe_findDDmatched2(SEXP LSEXP, SEXP FSEXP, SEXP x1SEXP) {
+RcppExport SEXP _wfe_findDDmatched2(SEXP LSEXP, SEXP FSEXP, SEXP x1SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -65,4 +65,18 @@ BEGIN_RCPP
     rcpp_result_gen = Rcpp::wrap(findDDmatched2(L, F, x1));
     return rcpp_result_gen;
 END_RCPP
+}
+
+static const R_CallMethodDef CallEntries[] = {
+    {"_wfe_sumCpp", (DL_FUNC) &_wfe_sumCpp, 1},
+    {"_wfe_FindMatches", (DL_FUNC) &_wfe_FindMatches, 3},
+    {"_wfe_all_sug", (DL_FUNC) &_wfe_all_sug, 1},
+    {"_wfe_rbind_c", (DL_FUNC) &_wfe_rbind_c, 2},
+    {"_wfe_findDDmatched2", (DL_FUNC) &_wfe_findDDmatched2, 3},
+    {NULL, NULL, 0}
+};
+
+RcppExport void R_init_wfe(DllInfo *dll) {
+    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+    R_useDynamicSymbols(dll, FALSE);
 }
