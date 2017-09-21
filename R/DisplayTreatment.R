@@ -1,4 +1,3 @@
-
 DisplayTreatment <- function(unit.id, time.id, treatment, data, 
                         color.of.treated = "red",
                         color.of.untreated = "blue", 

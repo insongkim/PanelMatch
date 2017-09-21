@@ -55,6 +55,7 @@ PanelEstimate_tmp2 <- function(lead,
     colnames(data)[match(tail(colnames(data), n = length(W_it_by_lead)), colnames(data))] <- sapply(lead, function(x) paste0("Wit_att", x))
     data[, length(data) +1] <- Reduce("+", dits)
     colnames(data)[length(data)] <- "dits_att"
+    data$`Wit_att-1` <- 0
   } else if (qoi == "atc") {
     newlist <- lapply(matched_sets$`ATC_matches`, lapply_leads, unit.id = unit.id, 
                       time.id = time.id, lag = lag,
@@ -71,7 +72,9 @@ PanelEstimate_tmp2 <- function(lead,
     colnames(data)[match(tail(colnames(data), n = length(W_it_by_lead)), colnames(data))] <- sapply(lead, function(x) paste0("Wit_atc", x))
     data[, length(data) +1] <- Reduce("+", dits)
     colnames(data)[length(data)] <- "dits_atc"
+    data$`Wit_atc-1` <- 0
   } else if (qoi == "ate") {
+    # ATT
     newlist <- lapply(matched_sets$`ATT_matches`, lapply_leads, unit.id = unit.id, 
                       time.id = time.id, lag = lag,
                       data = data, leads = lead)
@@ -87,7 +90,7 @@ PanelEstimate_tmp2 <- function(lead,
     colnames(data)[match(tail(colnames(data), n = length(W_it_by_lead)), colnames(data))] <- sapply(lead, function(x) paste0("Wit_att", x))
     data[, length(data) +1] <- Reduce("+", dits)
     colnames(data)[length(data)] <- "dits_att"
-    
+    # ATC
     newlist <- lapply(matched_sets$`ATC_matches`, lapply_leads, unit.id = unit.id, 
                       time.id = time.id, lag = lag,
                       data = data, leads = lead)
@@ -103,6 +106,8 @@ PanelEstimate_tmp2 <- function(lead,
     colnames(data)[match(tail(colnames(data), n = length(W_it_by_lead)), colnames(data))] <- sapply(lead, function(x) paste0("Wit_atc", x))
     data[, length(data) +1] <- Reduce("+", dits)
     colnames(data)[length(data)] <- "dits_atc"
+    data$`Wit_att-1` <- 0
+    data$`Wit_atc-1` <- 0
   }
   
   
@@ -133,7 +138,16 @@ PanelEstimate_tmp2 <- function(lead,
                         y = data[c(dependent)][,1],
                         z = data$dits_att)
       
-      names(o.coefs) <- sapply(lead, function(x) paste0("t+", x))
+      if (length(lead[lead<0]) > 1) {
+        names(o.coefs)[(length(o.coefs)-max(lead[lead>=0])):
+                         length(o.coefs)] <- sapply(lead[lead>=0], function(x) paste0("t+", x))
+        names(o.coefs)[(length(o.coefs)-length(lead) + 1):
+                         length(lead[lead<0])] <- sapply(lead[lead<0], function(x) paste0("t", x))
+        
+      } else {
+        names(o.coefs) <- sapply(lead, function(x) paste0("t+", x))
+      }
+      
       
       
       coefs <- matrix(NA, nrow = ITER, ncol = length(W_it_by_lead))
@@ -199,8 +213,18 @@ PanelEstimate_tmp2 <- function(lead,
       o.coefs <-  -sapply(data[, sapply(lead, function(x) paste0("Wit_atc", x)), drop = FALSE],
                           equality_four,
                           y = data[c(dependent)][,1],
-                          z = data$dits)
-      names(o.coefs) <- sapply(lead, function(x) paste0("t+", x))
+                          z = data$dits_atc)
+      
+      if (length(lead[lead<0]) > 1) {
+        names(o.coefs)[(length(o.coefs)-max(lead[lead>=0])):
+                         length(o.coefs)] <- sapply(lead[lead>=0], function(x) paste0("t+", x))
+        names(o.coefs)[(length(o.coefs)-length(lead) + 1):
+                         length(lead[lead<0])] <- sapply(lead[lead<0], function(x) paste0("t", x))
+        
+      } else {
+        names(o.coefs) <- sapply(lead, function(x) paste0("t+", x))
+      }
+      
       
       coefs <- matrix(NA, nrow = ITER, ncol = length(W_it_by_lead))
       # dit.atts <- rep(NA, ITER)
@@ -282,8 +306,15 @@ PanelEstimate_tmp2 <- function(lead,
       o.coefs_ate <- (o.coefs_att*sum(data$dits_att) + o.coefs_atc*sum(data$dits_atc))/
         (sum(data$dits_att) + sum(data$dits_atc))
       
-      names(o.coefs_ate) <- sapply(lead, function(x) paste0("t+", x))
-      
+      if (length(lead[lead<0]) > 1) {
+        names(o.coefs_ate)[(length(o.coefs_ate)-max(lead[lead>=0])):
+                         length(o.coefs_ate)] <- sapply(lead[lead>=0], function(x) paste0("t+", x))
+        names(o.coefs_ate)[(length(o.coefs_ate)-length(lead) + 1):
+                         length(lead[lead<0])] <- sapply(lead[lead<0], function(x) paste0("t", x))
+        
+      } else {
+        names(o.coefs_ate) <- sapply(lead, function(x) paste0("t+", x))
+      }
       
       
       coefs <- matrix(NA, nrow = ITER, ncol = length(W_it_by_lead))

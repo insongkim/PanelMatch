@@ -27,6 +27,7 @@ apply_leads <- function(data, unit.id, time.id, matched_set,
   return (list("wit" = total2$wit, "dit" = total2$dit)) 
 }
 
+# this will give us wit and dit at the dataset level for each matched set
 lapply_leads <- function(x, leads, data, unit.id = unit.id, time.id = time.id, lag){
   return(lapply(leads, apply_leads, unit.id = unit.id, time.id = time.id,
          matched_set = x, lag = lag,
@@ -42,6 +43,7 @@ extract_objects <- function(x, objective = c("wit", "dit")) {
   
 }
 
+# to eliminate "[[1]]"
 each_lead <- function(x, lead) {
   lapply(x, function(a) a[[lead]])
 }

@@ -1,10 +1,22 @@
 Panel_vit <- function(x, lag, max.lead, method, M, weighting) {
-  if (method == "Synth") {
-    return(synth_vit(x, lag = lag, max.lead = max.lead))
+  if (method == "Synth"|method == "SynthPscore"|method == "SynthCBPS") {
+    return(synth_vit(x, lag = lag, max.lead = max.lead, method = method))
   } else if(method == "Maha"){
     return(Maha_vit(x, lag, max.lead, M = M))
   } else if(method == "Pscore"|method == "CBPS") {
     return(PS_vit(x, lag, max.lead, M = M, weighting = weighting))
+  } else {
+    return("WRONG")
+  }
+}
+
+Panel_vit2 <- function(x, lag, max.lead, method, M, weighting) {
+  if (method == "Synth"|method == "SynthPscore"|method == "SynthCBPS") {
+    return(synth_vit(x, lag = lag, max.lead = max.lead, method = method))
+  } else if(method == "Maha"){
+    return(Maha_vit(x, lag, max.lead, M = M))
+  } else if(method == "Pscore"|method == "CBPS") {
+    return(PS_vit2(x, lag, max.lead, M = M, weighting = weighting))
   } else {
     return("WRONG")
   }
@@ -73,10 +85,15 @@ synth_constReg_weight <- function (Y_t, Y_c, T0, init = NULL, method = "solnp")
               init = W_c_init))
 }
 
-synth_vit <- function(x, lag, max.lead) {
+synth_vit <- function(x, lag, max.lead, method = "Synth") {
   testid <- unique(x$V2)
   timeid <- unique(x$V1)
-  covariate.names <- colnames(x)[5:length(x)]
+  if(method == "Synth") {
+    covariate.names <- colnames(x)[5:length(x)]
+  } else {
+    covariate.names <- "ps"
+  }
+  
   if (nrow(x) > 2*(lag + max.lead + 1)) {
     if (is.na(colnames(x)[5:length(x)][1])) {
       V2 = x$V2; V1 = x$V1
@@ -259,6 +276,59 @@ PS_vit <- function(x, lag, max.lead, M = M, weighting = FALSE) {
                                          testid[!testid == treated.id]), cbind(w.weight = 1, treated.id)))
   } else {
     PS_distance <- abs(tapply(matched_set$ps, matched_set$V2, mean) - mean(matched_set$ps[which(matched_set$V2 == treated.id)]))
+    if (M < length(testid) - 1) {
+      matchid <- as.numeric(names(sort(PS_distance[!names(PS_distance) == treated.id]))[1:M])
+      weights <- as.data.frame(rbind(cbind(1/M, matchid), cbind(w.weight = 1, treated.id)))
+    } else {
+      matchid <- as.numeric(names(sort(PS_distance[!names(PS_distance) == treated.id])))
+      weights <- as.data.frame(rbind(cbind(1/(length(testid)-1), matchid), cbind(w.weight = 1, treated.id)))
+    }
+    
+  }
+  
+  colnames(weights)[2] <- "V2" # give the critical column the unit.name, so can merge
+  colnames(weights)[1] <- "w.weight"
+  merged <- merge(x, weights, by = "V2") # merge it with the data.frame (smaller data.frame as a list element)
+  merged <- merged[order(merged$V2, merged$V1), ]
+  colnames(merged)[c(4,5)] <- c("V3", "V4")
+  # if (max.lead > 0) {
+  #   merged$wit <- ifelse(merged$V1 == max(timeid_later) & merged$V2 == treated.id, 1, 
+  #                        ifelse(merged$V1 == max(timeid_later) - max.lead - 1 & merged$V2 == treated.id, -1, 
+  #                               ifelse(merged$V1 == max(timeid_later) & merged$V2 %in% testid[testid != treated.id], -merged$w.weight, 
+  #                                      ifelse(merged$V1 == max(timeid_later) - max.lead - 1 & merged$V2 %in% testid[testid != treated.id], merged$w.weight, 0) 
+  #                               )))
+  # } else {
+  #   merged$wit <- ifelse(merged$V1 == max(timeid_later) & merged$V2 == treated.id, 1, 
+  #                        ifelse(merged$V1 == max(timeid_later) - max.lead - 1 & merged$V2 == treated.id, 1, 
+  #                               ifelse(merged$V1 == max(timeid_later) & merged$V2 %in% testid[testid != treated.id], merged$w.weight, 
+  #                                      ifelse(merged$V1 == max(timeid_later) - max.lead - 1 & merged$V2 %in% testid[testid != treated.id], -merged$w.weight, 0) 
+  #                               )))
+  # }
+  # 
+  return(merged) # return the weight variable
+} 
+
+PS_vit2 <- function(x, lag, max.lead, M = M, weighting = FALSE) {
+  
+  colnames(x)[1:4] <- c("V1", "V2", "V3", "V4")
+  # x <- x[!duplicated(x[c("V2", "V1")]),]
+  x <- x[order(x$V2, x$V1), ]
+  treated.id <- x[x$V3 == 1 & x$V1 == (max(x$V1)-max.lead), ]$V2
+  testid <- unique(x$V2)
+  treated.set <- x[x$V1 == (unique(x$V1)[lag+1]), ]
+  # timeid_later <- unique(x$V1)
+  # timeid <- unique(x$V1)[-((length(unique(x$V1)) - max.lead):length(unique(x$V1)))]
+  # matched_set <- x[x$V1 %in% timeid, ]
+  
+  if (weighting == TRUE) {
+    m_ps <- treated.set$ps[which(treated.set$V2!=treated.id)]
+    
+    weights <- as.data.frame(rbind(cbind((m_ps/(1-m_ps))/sum(m_ps/(1-m_ps)), 
+                                         testid[!testid == treated.id]), cbind(w.weight = 1, treated.id)))
+  } else {
+    PS_distance <- abs(treated.set$ps[which(treated.set$V2 == treated.id)] - 
+                         treated.set$ps[which(treated.set$V2 != treated.id)])
+    names(PS_distance) <- testid[testid != treated.id]
     if (M < length(testid) - 1) {
       matchid <- as.numeric(names(sort(PS_distance[!names(PS_distance) == treated.id]))[1:M])
       weights <- as.data.frame(rbind(cbind(1/M, matchid), cbind(w.weight = 1, treated.id)))

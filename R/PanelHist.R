@@ -1,10 +1,10 @@
-PanelHist <- function(matched_sets, ...) {
-  if ("NC_ATT" %in% names(matched_sets)) {
+PanelHist <- function(matched_sets, qoi = "att",...) {
+  if (qoi == "att") {
     hist(unlist(matched_sets$NC_ATT), ...)
-  }
-  
-  if ("NC_ATC" %in% names(matched_sets)) {
+  } else if (qoi == "atc") {
     hist(unlist(matched_sets$NC_ATC), ...)
+  } else {
+    stop("please select either att or atc for qoi")
   }
   
 }
