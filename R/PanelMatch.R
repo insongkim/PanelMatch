@@ -31,7 +31,7 @@ PanelMatch <- function(lag, max.lead, time.id = "year", qoi = "ate",
   }
   dependent <- all.vars(formula)[1]
   
-  formula <- lasso2::merge.formula(reformulate(termlabels = c(time.id, unit.id), response = dependent),formula)
+  formula <- suppressWarnings(merge.formula(reformulate(termlabels = c(time.id, unit.id), response = dependent),formula))
   
   
   d2 <- as.data.frame(model.matrix(formula, data = data))[,-1]
