@@ -37,9 +37,16 @@ PanelMatch <- function(lag, max.lead, time.id = "year", qoi = "ate",
   d2 <- as.data.frame(model.matrix(formula, data = data))[,-1]
   d2[dependent] <- model.frame(formula, data=data)[,1]
   d2 <- MoveFront(d2, Var = c(time.id, unit.id, treatment, dependent))
+ 
+  if(method == "Maha" & covariate.only == TRUE){
+    Maha.covariate.only <- "yes"
+  } else if (method == "Maha" & covariate.only == FALSE) {
+    Maha.covariate.only <- "no"
+  } else {
+    Maha.covariate.only <- "notMaha"
+  }
   
-  
-  if (method == "Pscore"|method == "CBPS") {
+  if (method == "Pscore"|method == "CBPS"|Maha.covariate.only == "no") {
     
     dlist <- lapply(1:lag, 
                     function (i) slide(data = d2, Var = dependent, GroupVar = unit.id, TimeVar = time.id, slideBy = -(i),
@@ -53,7 +60,8 @@ PanelMatch <- function(lag, max.lead, time.id = "year", qoi = "ate",
   
   d2[1:(length(d2))] <- lapply(d2[1:(length(d2))], function(x) as.numeric(as.character(x))) # as.numeric
   
-  if (method == "Pscore"|method == "CBPS"|method == "SynthPscore"|method == "SynthCBPS") {
+  if (method == "Pscore"|method == "CBPS"|method == "SynthPscore"|method == "SynthCBPS"|
+      method == "Maha") {
     d2 <- d2[order(d2[,2], d2[,1]), ]
   }
   
@@ -182,8 +190,8 @@ PanelMatch <- function(lag, max.lead, time.id = "year", qoi = "ate",
                   "covariate" = covariate, "unit.id" = unit.id, "time.id" = time.id,
                   "M" = M, "covariate.only" = covariate.only, "lag" = lag, 
                   "max.lead" = max.lead, "data" = d2, "method" = method,
-                  "ATT_matches" = lapply(even_smaller1, Panel_vit, lag = lag, 
-                                         max.lead = max.lead, M = M, method = method),
+                  "ATT_matches" = delete.NULLs(lapply(even_smaller1, Panel_vit, lag = lag, 
+                                         max.lead = max.lead, M = M, method = method)),
                   "NC_ATT" = lapply(even_smaller1, function (x) length(unique(x$V2))-1)))
     } else if (method == "Pscore"|method == "CBPS") {
       
@@ -321,9 +329,9 @@ PanelMatch <- function(lag, max.lead, time.id = "year", qoi = "ate",
                       "covariate" = covariate, "unit.id" = unit.id, "time.id" = time.id, 
                       "M" = M, "covariate.only" = covariate.only, "lag" = lag, 
                       "max.lead" = max.lead, "method" = method,
-                      "data" = d2, "ATC_matches" = lapply(even_smaller2, Panel_vit, 
+                      "data" = d2, "ATC_matches" = delete.NULLs(lapply(even_smaller2, Panel_vit, 
                                                           lag = lag, max.lead = max.lead, 
-                                                          M = M,method = method),
+                                                          M = M,method = method)),
                       "NC_ATC" = lapply(even_smaller2, function (x) length(unique(x$V2))-1)))
         } else if (method == "Pscore"|method == "CBPS") {
           return(list("treatment" = treatment, "qoi" = qoi, "dependent" = dependent, 
@@ -546,11 +554,12 @@ PanelMatch <- function(lag, max.lead, time.id = "year", qoi = "ate",
                           "covariate" = covariate, "unit.id" = unit.id, "time.id" = time.id, 
                           "M" = M, "covariate.only" = covariate.only, "lag" = lag, "max.lead" = max.lead, 
                           "data" = d2, "method" = method,
-                          "ATT_matches" = lapply(even_smaller1,Panel_vit, lag = lag, max.lead = max.lead, M = M,method = method), 
+                          "ATT_matches" = delete.NULLs(lapply(even_smaller1,Panel_vit, lag = lag, 
+                                                              max.lead = max.lead, M = M,method = method)), 
                           "NC_ATT" = lapply(even_smaller1, function (x) length(unique(x$V2))-1),
-                          "ATC_matches" = lapply(even_smaller2, 
+                          "ATC_matches" = delete.NULLs(lapply(even_smaller2, 
                                                  Panel_vit, lag = lag, max.lead = max.lead, M = M,
-                                                 method = method), 
+                                                 method = method)), 
                           "NC_ATC" = lapply(even_smaller2, function (x) length(unique(x$V2))-1)))
             } else if (method == "Pscore"|method == "CBPS") {
               return(list("treatment" = treatment, "qoi" = qoi, "dependent" = dependent, 

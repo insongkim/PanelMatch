@@ -94,12 +94,12 @@ synth_vit <- function(x, lag, max.lead, method = "Synth") {
       
       treat_data <- as.data.frame(x$V4[which(x$V2 == testid[2])])
       
-      synth_out <- synth_constReg_weight(
+      invisible(capture.out(synth_out <- synth_constReg_weight(
         Y_t = as.vector(treat_data[,1]), 
         Y_c = as.matrix(control_data[,-1]), 
         T0 = (lag),
         init = rep(1/(length(testid)-1), length(testid)-1)
-      )
+      )))
       
       weights <- as.data.frame(rbind(cbind(synth_out$weight, testid[-2]), cbind(w.weight = 1, testid[2])))
       colnames(weights)[2] <- "V2" # give the critical column the unit.name, so can merge
@@ -120,7 +120,7 @@ synth_vit <- function(x, lag, max.lead, method = "Synth") {
     
       return(merged)
     } else {
-      dataprep.out <- dataprep(foo = x, 
+      invisible(capture.output(dataprep.out <- dataprep(foo = x, 
                                dependent = "V4",
                                unit.variable = "V2",
                                # unit.names.variable = "unit.name",
@@ -129,8 +129,8 @@ synth_vit <- function(x, lag, max.lead, method = "Synth") {
                                controls.identifier = testid[-2],
                                time.optimize.ssr = min(timeid):max(timeid-max.lead-1), # the pre-treatment preiod
                                time.predictors.prior = min(timeid):max(timeid-max.lead-1),
-                               predictors = covariate.names)
-      synth.out <- synth(data.prep.obj = dataprep.out, method = "BFGS") # calibrate the weights
+                               predictors = covariate.names)))
+      invisible(capture.output(synth.out <- synth(data.prep.obj = dataprep.out, method = "BFGS"))) # calibrate the weights
       # use rbind and cbind to add to the weights a weight vector of 1s for the treated observation,
       # then making it a data.frame so as to merge it in the next step
       weights <- as.data.frame(rbind(cbind(synth.out$solution.w, testid[-2]), cbind(w.weight = 1, testid[2])))
@@ -174,26 +174,49 @@ synth_vit <- function(x, lag, max.lead, method = "Synth") {
 }
 
 Maha_vit <- function(x, lag, max.lead, M = 3) {
+  treated.id <- x[x$V3 == 1 & x$V1 == (max(x$V1)-max.lead), ]$V2
+  x <- na.omit(x)
+  x <- x[x$V2 %in% as.numeric(names(which(table(x$V2) == max.lead + 1 + lag))),]
+
   testid <- unique(x$V2)
   timeid_later <- unique(x$V1)
-  timeid <- timeid_later[1:lag]
+  timeid <- timeid_later[1:(lag+1)]
+  if(treated.id %in% testid == FALSE){
+    return(NULL)
+  }
   
   if (nrow(x) > 2*(lag + max.lead + 1)) {
     matched_set <- x[x$V1 %in% timeid, ]
+    # matched_set <- as.data.frame(apply(matched_set, 2, function(x){
+    #   miss_idx    <- is.na(x)
+    #   mean_x      <- mean(x, na.rm = TRUE)
+    #   x[miss_idx] <- mean_x
+    #   return(x)
+    # }))
     
-    MSMDlist <- lapply(unique(timeid), MSMD_each, matched_set = matched_set, testid = testid)
-    
+    MSMDlist <- MSMD_each(timeid[1], matched_set = matched_set, testid = testid, 
+                          treated.id = treated.id)
+    for (i in 2:length(unique(timeid))) {
+      MSMDlist <- MSMDlist + MSMD_each(timeid[i], matched_set = matched_set, testid = testid, 
+                                       treated.id = treated.id)
+    }
+    if (length(x) <= 5) {
+      MSMDlist <- as.numeric(unlist(as.list(MSMDlist)))
+    }
+    # MSMDlist <- lapply(unique(timeid), MSMD_each, matched_set = matched_set, testid = testid)
+    # MSMDlist <- sapply(unique(timeid), MSMD_each, matched_set = matched_set, testid = testid)
+    MSMD <- append(MSMDlist, 0, after = match(treated.id, testid)-1)
    # MSMD <- append(Reduce("+", lapply(MSMDlist, as.data.frame))/length(timeid), 0, after = 1)
-    MSMD <- append(Reduce("+", lapply(MSMDlist, function(x) as.matrix(x)))/length(timeid), 0, after = 1)
+    # MSMD <- append(Reduce("+", lapply(MSMDlist, function(x) as.matrix(x)))/length(timeid), 0, after = 1)
     
     # first.diff <- x[x$V2 == testid[2], ]$V4[L + 1 + max.lead] - x[x$V2 == testid[2], ]$V4[L]
     
     if (M < length(testid)-1) {
       matchid <- order(MSMD)[2:(M+1)]
-      weights <- as.data.frame(rbind(cbind(1/M, testid[matchid]), cbind(w.weight = 1, testid[2])))
+      weights <- as.data.frame(rbind(cbind(1/M, testid[matchid]), cbind(w.weight = 1, treated.id)))
     } else {
       matchid <- order(MSMD)
-      weights <- as.data.frame(rbind(cbind(1/(length(testid)-1), testid[matchid[-1]]), cbind(w.weight = 1, testid[2])))
+      weights <- as.data.frame(rbind(cbind(1/(length(testid)-1), testid[matchid[-1]]), cbind(w.weight = 1, treated.id)))
       
     } 
     

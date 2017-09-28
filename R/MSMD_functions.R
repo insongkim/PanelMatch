@@ -33,35 +33,43 @@ MSMD_result <- function(x, L, FORWARD, M = 3) {
   
 }
 
-MSMD_each <- function(time_id, matched_set, testid) {
+MSMD_each <- function(time_id, matched_set, testid, treated.id = treated.id) {
+  # we do column-wise deletion for variables that have NAs
   sub_sub <- matched_set[matched_set$V1 == time_id, ]
-  cov_matrix <- cov(as.matrix(sub_sub[sub_sub$V2 %in% testid[-2], 4:length(sub_sub)]))
+ # sub_sub[, colSums(is.na(sub_sub)) != 0]
+  cov_matrix <- cov(as.matrix(sub_sub[sub_sub$V2 %in% testid[testid != treated.id], 5:length(sub_sub)]))
+  #cov_matrix <- cov(as.matrix(sub_sub[sub_sub$V2 %in% testid[testid != treated.id], 5:length(sub_sub)]),
+   #              use = "pairwise.complete.obs") # to avoid NAs causing problems from
+                                                # lagged outcomes
+  # cov_matrix <- cov_matrix[rowSums(is.na(cov_matrix))!=dim(cov_matrix)[1],
+  #            colSums(is.na(cov_matrix))!=dim(cov_matrix)[2]]
+  # 
   if(all(eigen(cov_matrix)$values > .00001)) {
-    if (length(sub_sub) == 4) {
-      return((sub_sub[sub_sub$V2 %in% testid[-2], 4:length(sub_sub)] - 
-                as.numeric(sub_sub[sub_sub$V2 == testid[2], 4:length(sub_sub)])) * cov_matrix^(-1) *
-               (sub_sub[sub_sub$V2 %in% testid[-2], 4:length(sub_sub)] - 
-                  as.numeric(sub_sub[sub_sub$V2 == testid[2], 4:length(sub_sub)]))
+    if (length(sub_sub) == 5) {
+      return((sub_sub[sub_sub$V2 %in% testid[testid != treated.id], 5:length(sub_sub)] - 
+                as.numeric(sub_sub[sub_sub$V2 == treated.id, 5:length(sub_sub)])) * cov_matrix^(-1) *
+               (sub_sub[sub_sub$V2 %in% testid[testid != treated.id], 5:length(sub_sub)] - 
+                  as.numeric(sub_sub[sub_sub$V2 == treated.id, 5:length(sub_sub)]))
       )
     } else {
-      return(mahalanobis(x = sub_sub[sub_sub$V2 %in% testid[-2], 4:length(sub_sub)], 
-                         center = as.numeric(sub_sub[sub_sub$V2 == testid[2], 4:length(sub_sub)]),
+      return(mahalanobis(x = sub_sub[sub_sub$V2 %in% testid[testid != treated.id], 5:length(sub_sub)], 
+                         center = as.numeric(sub_sub[sub_sub$V2 == treated.id, 5:length(sub_sub)]),
                          cov = cov_matrix))
     }
    
   } else {
-    if (length(sub_sub) == 4) {
-      return((sub_sub[sub_sub$V2 %in% testid[-2], 4:length(sub_sub)] - 
-                as.numeric(sub_sub[sub_sub$V2 == testid[2], 4:length(sub_sub)])) * cov_matrix^(-1) *
-               (sub_sub[sub_sub$V2 %in% testid[-2], 4:length(sub_sub)] - 
-                  as.numeric(sub_sub[sub_sub$V2 == testid[2], 4:length(sub_sub)])))
+    if (length(sub_sub) == 5) {
+      return((sub_sub[sub_sub$V2 %in% testid[testid != treated.id], 5:length(sub_sub)] - 
+                as.numeric(sub_sub[sub_sub$V2 == treated.id, 5:length(sub_sub)])) * cov_matrix^(-1) *
+               (sub_sub[sub_sub$V2 %in% testid[testid != treated.id], 5:length(sub_sub)] - 
+                  as.numeric(sub_sub[sub_sub$V2 == treated.id, 5:length(sub_sub)])))
     } else {
-      return(tryCatch(mahalanobis(x = sub_sub[sub_sub$V2 %in% testid[-2], 4:length(sub_sub)], 
-                         center = as.numeric(sub_sub[sub_sub$V2 == testid[2], 4:length(sub_sub)]),
-                         cov = diag((length(sub_sub) - 3)) * cov_matrix), 
-             error = function(e) mahalanobis(x = sub_sub[sub_sub$V2 %in% testid[-2], 4:length(sub_sub)], 
-                                             center = as.numeric(sub_sub[sub_sub$V2 == testid[2], 4:length(sub_sub)]),
-                                             cov = diag((length(sub_sub) - 3)))))
+      return(tryCatch(mahalanobis(x = sub_sub[sub_sub$V2 %in% testid[testid != treated.id], 5:length(sub_sub)], 
+                         center = as.numeric(sub_sub[sub_sub$V2 == treated.id, 5:length(sub_sub)]),
+                         cov = diag((length(sub_sub) - 4)) * cov_matrix), 
+             error = function(e) mahalanobis(x = sub_sub[sub_sub$V2 %in% testid[testid != treated.id], 5:length(sub_sub)], 
+                                             center = as.numeric(sub_sub[sub_sub$V2 == treated.id, 5:length(sub_sub)]),
+                                             cov = diag((length(sub_sub) - 4)))))
     }
    
   }
