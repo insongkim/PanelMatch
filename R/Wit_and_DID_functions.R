@@ -94,7 +94,7 @@ synth_vit <- function(x, lag, max.lead, method = "Synth") {
       
       treat_data <- as.data.frame(x$V4[which(x$V2 == testid[2])])
       
-      invisible(capture.out(synth_out <- synth_constReg_weight(
+      invisible(capture.output(synth_out <- synth_constReg_weight(
         Y_t = as.vector(treat_data[,1]), 
         Y_c = as.matrix(control_data[,-1]), 
         T0 = (lag),
@@ -177,10 +177,10 @@ Maha_vit <- function(x, lag, max.lead, M = 3) {
   treated.id <- x[x$V3 == 1 & x$V1 == (max(x$V1)-max.lead), ]$V2
   x <- na.omit(x)
   x <- x[x$V2 %in% as.numeric(names(which(table(x$V2) == max.lead + 1 + lag))),]
-
+  x <- rbind(x[x$V2 == treated.id, ], x[x$V2 != treated.id, ])
   testid <- unique(x$V2)
-  timeid_later <- unique(x$V1)
-  timeid <- timeid_later[1:(lag+1)]
+  timeid <- unique(x$V1)[1:(lag+1)]
+  
   if(treated.id %in% testid == FALSE){
     return(NULL)
   }

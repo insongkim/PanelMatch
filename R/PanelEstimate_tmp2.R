@@ -4,7 +4,7 @@ PanelEstimate_tmp2 <- function(lead,
                                ITER = 1000, matched_sets = NULL,
                                plot = FALSE,
                                qoi = NULL,
-                               CI = .95) {
+                               CI = .90) {
   
   # stop if lead > max.lead
   if (max(lead) > matched_sets$max.lead) 

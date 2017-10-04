@@ -38,15 +38,19 @@ PanelMatch <- function(lag, max.lead, time.id = "year", qoi = "ate",
   d2[dependent] <- model.frame(formula, data=data)[,1]
   d2 <- MoveFront(d2, Var = c(time.id, unit.id, treatment, dependent))
  
-  if(method == "Maha" & covariate.only == TRUE){
-    Maha.covariate.only <- "yes"
-  } else if (method == "Maha" & covariate.only == FALSE) {
-    Maha.covariate.only <- "no"
-  } else {
-    Maha.covariate.only <- "notMaha"
-  }
+  if(method == "Maha" & covariate.only == FALSE){
+
+    d2 <- slide(data = d2, Var = dependent, GroupVar = unit.id, TimeVar = time.id, slideBy = -1,
+                  NewVar = "dependent_l1")
+    # to include ldvs in varnames
+    # varnames <- c(time.id, unit.id, treatment, dependent, colnames(d2)[5:length(d2)])
+    
+    d2 <- d2[is.na(c(time.id, unit.id, treatment, dependent, covariate)) == FALSE, ]
+    
+  } 
   
-  if (method == "Pscore"|method == "CBPS"|Maha.covariate.only == "no") {
+  
+  if (method == "Pscore"|method == "CBPS") {
     
     dlist <- lapply(1:lag, 
                     function (i) slide(data = d2, Var = dependent, GroupVar = unit.id, TimeVar = time.id, slideBy = -(i),
