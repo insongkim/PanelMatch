@@ -7,6 +7,7 @@ PanelGapsPlot_tmp <- function(matched_sets,
                           and their synthetic control units",
                           legend.position = "none",
                           theme_bw = FALSE,
+                          adjustment = TRUE,
                           linetype = "dashed", colour = "blue"
                           ) {
   lag = matched_sets$lag;lead = matched_sets$max.lead;
@@ -17,13 +18,13 @@ PanelGapsPlot_tmp <- function(matched_sets,
       plot.materials <- lapply(matched_sets$`ATT_matches`, 
                                gaps_plot_tmp, lag = lag, lead = lead,
                                covariate = covariate,
-                               qoi = "att",
+                               qoi = "att", adjustment = adjustment,
                                data = matched_sets$data)
     } else if (matched_sets$qoi == "atc") {
       plot.materials <- lapply(matched_sets$`ATC_matches`, 
                                gaps_plot_tmp, lag = lag, lead = lead,
                                covariate = covariate,
-                               qoi = "atc",
+                               qoi = "atc", adjustment = adjustment, 
                                data = matched_sets$data)
     } else {
       stop("Please specify either att or atc for `qoi`.")
@@ -33,13 +34,13 @@ PanelGapsPlot_tmp <- function(matched_sets,
       plot.materials <- lapply(matched_sets$`ATT_matches`, 
                                gaps_plot_tmp, lag = lag, lead = lead,
                                covariate = covariate,
-                               qoi = "att",
+                               qoi = "att", adjustment = adjustment,
                                data = matched_sets$data)
     } else if (qoi == "atc") {
       plot.materials <- lapply(matched_sets$`ATC_matches`, 
                                gaps_plot_tmp, lag = lag, lead = lead,
                                covariate = covariate,
-                               qoi = "atc",
+                               qoi = "atc", adjustment = adjustment, 
                                data = matched_sets$data)
     } else {
       stop("Please specify either att or atc for `qoi`.")

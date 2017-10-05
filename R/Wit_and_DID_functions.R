@@ -321,7 +321,7 @@ Maha_vit <- function(x, lag, max.lead, M = 3) {
 
 PS_vit <- function(x, lag, max.lead, M = M, weighting = FALSE) {
   
-  colnames(x)[1:4] <- c("V1", "V2", "V3", "V4")
+#  colnames(x)[1:4] <- c("V1", "V2", "V3", "V4")
   # x <- x[!duplicated(x[c("V2", "V1")]),]
   x <- x[order(x$V2, x$V1), ]
   treated.id <- x[x$V3 == 1 & x$V1 == (max(x$V1)-max.lead), ]$V2
@@ -354,7 +354,7 @@ PS_vit <- function(x, lag, max.lead, M = M, weighting = FALSE) {
   colnames(weights)[1] <- "w.weight"
   merged <- merge(x, weights, by = "V2") # merge it with the data.frame (smaller data.frame as a list element)
   merged <- merged[order(merged$V2, merged$V1), ]
-  colnames(merged)[c(4,5)] <- c("V3", "V4")
+ # colnames(merged)[c(4,5)] <- c("V3", "V4")
   # if (max.lead > 0) {
   #   merged$wit <- ifelse(merged$V1 == max(timeid_later) & merged$V2 == treated.id, 1, 
   #                        ifelse(merged$V1 == max(timeid_later) - max.lead - 1 & merged$V2 == treated.id, -1, 
@@ -454,19 +454,33 @@ PanelDiDResult <- function(x, lag, lead){
 
 
 gaps_plot_tmp <- function(x, lag, lead, data, dependent,
-                      qoi,
+                      qoi, adjustment = TRUE,
                       covariate = NULL) {
   colnames(data) <- c("time.id", "unit.id",
                       "treatment", "dependent", covariate)
   treated.id <- x[x$V3 == 1 & x$V1 == (max(x$V1)-lead), ]$V2 # check this
   if (is.null(covariate)) {
-    gap <- x$V4[x$V2 == treated.id] - 
-      tapply(x$V4[x$V2 != treated.id] * x$w.weight[x$V2 != treated.id], 
-             x$V1[x$V2 != treated.id], sum)
+    if (adjustment == TRUE) {
+      gap <- x$V4[x$V2 == treated.id] - 
+        tapply(x$V4[x$V2 != treated.id] * x$w.weight[x$V2 != treated.id], 
+               x$V1[x$V2 != treated.id], sum)
+    } else {
+      gap <- x$V4[x$V2 == treated.id] - 
+        tapply(x$V4[x$V2 != treated.id], 
+               x$V1[x$V2 != treated.id], mean)
+    }
+    
   } else {
-    gap <- x$V5[x$V2 == treated.id] - 
-      tapply(x$V5[x$V2 != treated.id] * x$w.weight[x$V2 != treated.id], 
-             x$V1[x$V2 != treated.id], sum)
+    if (adjustment == TRUE){
+      gap <- x$V5[x$V2 == treated.id] - 
+        tapply(x$V5[x$V2 != treated.id] * x$w.weight[x$V2 != treated.id], 
+               x$V1[x$V2 != treated.id], sum)
+    } else {
+      gap <- x$V4[x$V2 == treated.id] - 
+        tapply(x$V4[x$V2 != treated.id], 
+               x$V1[x$V2 != treated.id], mean)
+    }
+   
   }
   if (is.null(covariate) == FALSE) {
     data$dependent <- data[c(covariate)]
