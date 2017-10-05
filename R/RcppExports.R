@@ -2,22 +2,22 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 sumCpp <- function(x) {
-    .Call('_wfe_sumCpp', PACKAGE = 'wfe', x)
+    .Call(`_wfe_sumCpp`, x)
 }
 
 FindMatches <- function(unitIdx, timeIdx, treat) {
-    .Call('_wfe_FindMatches', PACKAGE = 'wfe', unitIdx, timeIdx, treat)
+    .Call(`_wfe_FindMatches`, unitIdx, timeIdx, treat)
 }
 
 all_sug <- function(x) {
-    .Call('_wfe_all_sug', PACKAGE = 'wfe', x)
+    .Call(`_wfe_all_sug`, x)
 }
 
 rbind_c <- function(x, y) {
-    .Call('_wfe_rbind_c', PACKAGE = 'wfe', x, y)
+    .Call(`_wfe_rbind_c`, x, y)
 }
 
 findDDmatched2 <- function(L, F, x1) {
-    .Call('_wfe_findDDmatched2', PACKAGE = 'wfe', L, F, x1)
+    .Call(`_wfe_findDDmatched2`, L, F, x1)
 }
 
