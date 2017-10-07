@@ -8,6 +8,7 @@ PanelGapsPlot_tmp <- function(matched_sets,
                           legend.position = "none",
                           theme_bw = FALSE,
                           adjustment = TRUE,
+                          int_size = .7,
                           linetype = "dashed", colour = "blue"
                           ) {
   lag = matched_sets$lag;lead = matched_sets$max.lead;
@@ -87,7 +88,7 @@ PanelGapsPlot_tmp <- function(matched_sets,
                        labels=c(paste("t", -lag:-1, sep = ""),
                                 paste("t+", 0:lead, sep = ""))) 
     } 
-    p <- p + geom_line(aes(x=factor(x2), y=y2, group = g2), 
+    p <- p + geom_line(aes(x=factor(x2), y=y2, group = g2), size = int_size,
               colour = "black",
               df2) + 
       if (theme_bw == TRUE) {

@@ -3,7 +3,8 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
                         color.of.untreated = "blue", 
                         title = "Treatment Distribution \n Across Units and Time",
                         legend.position= "none", xlab = "time", ylab = "unit",
-                        x.size = 10, y.size = 5)
+                        x.size = 10, y.size = 5,
+                        legend.labels = c("not treated", "treated"))
 
 {
   # load the dataframe that the user specifies
@@ -29,7 +30,7 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
                                                            colour = "white") +
         scale_fill_gradient(low = color.of.untreated,
                             high = color.of.treated, guide = "legend", 
-                            breaks = c(0,1), labels = c("not treated", "treated")) +
+                            breaks = c(0,1), labels = legend.labels) +
         theme_bw() +
         labs(list(title = title, x = ylab, y = xlab, fill = "")) +
         theme(axis.ticks.x=element_blank(),
