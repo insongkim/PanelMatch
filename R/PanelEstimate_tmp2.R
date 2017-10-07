@@ -31,11 +31,17 @@ PanelEstimate_tmp2 <- function(lead,
   if (is.null(matched_sets$`ATT_matches`) == FALSE) {
     matched_sets$`ATT_matches` <- lapply(matched_sets$`ATT_matches`, 
                                          take_out, lag = lag, lead = max(lead))
+    if (length(matched_sets$ATT_matches) == 0) {
+      qoi <- "atc"
+    }
   }
   
   if (is.null(matched_sets$`ATC_matches`) == FALSE) {
     matched_sets$`ATC_matches` <- lapply(matched_sets$`ATC_matches`, 
                                          take_out, lag = lag, lead = max(lead))
+    if (length(matched_sets$ATC_matches) == 0) {
+      qoi <- "att"
+    }
   }
   
   
@@ -118,7 +124,7 @@ PanelEstimate_tmp2 <- function(lead,
         stop("The wfe option can only take lead = 0")
       data$Wit_att0 <- ifelse(data$dits_att == 1, -1, data$Wit_att0)
       data$Wit_att0 <- -(data$Wit_att0)
-      fit <- PanelWFE2(formula = as.formula(paste(dependent, "~", treatment)), 
+      fit <- PanelWFE(formula = as.formula(paste(dependent, "~", treatment)), 
                       treat = treatment, unit.index = matched_sets$unit.id,
                       time.index = matched_sets$time.id, method = "unit", 
                       qoi = "att", estimator = "did", 
@@ -196,7 +202,7 @@ PanelEstimate_tmp2 <- function(lead,
         stop("The wfe option can only take lead = 0")
       data$Wit_atc0 <- ifelse(data$dits_atc == 1, -1, data$Wit_atc0)
       data$Wit_atc0 <- -(data$Wit_atc0)
-      fit <- PanelWFE2(formula = as.formula(paste(dependent, "~", treatment)), 
+      fit <- PanelWFE(formula = as.formula(paste(dependent, "~", treatment)), 
                       treat = treatment, unit.index = matched_sets$unit.id,
                       time.index = matched_sets$time.id, method = "unit", 
                       qoi = "atc", estimator = "did", 
@@ -277,7 +283,7 @@ PanelEstimate_tmp2 <- function(lead,
       data$Wit_atc0 <- ifelse(data$dits_atc == 1, -1, data$Wit_atc0)
       data$Wit_atc0 <- -(data$Wit_atc0)
 
-      fit <- PanelWFE2(formula = as.formula(paste(dependent, "~", treatment)), 
+      fit <- PanelWFE(formula = as.formula(paste(dependent, "~", treatment)), 
                       treat = treatment, unit.index = matched_sets$unit.id,
                       time.index = matched_sets$time.id, method = "unit", 
                       qoi = "ate", estimator = "did", 

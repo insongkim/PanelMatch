@@ -6,7 +6,7 @@ export(wfe, pwfe,  findMatched2, findMatched,syn_DID, syn_DID_MSMD,
        PS_DID, syn_DID_check_tmp, wfe2_tmp4, syn_DID_weights_tmp2,PanelMatch,
        PanelEstimate, PanelWFE, PanelGapsPlot, PanelEstimate_tmp, 
        PanelHist, PanelGapsPlot_tmp, PanelCaliper, apply_leads, PanelEstimate_tmp2,
-       PanelWFE2, PanelEffectPlot, PanelBCheck, DisplayTreatment,
+      PanelEffectPlot, PanelBCheck, DisplayTreatment,
         syn_DID_gapsplot, syn_DID_MSPE, MSMD_gapsplot, PS_gapsplot,
        PanelParallelPlot)
 
