@@ -3,6 +3,7 @@ PanelEstimate_tmp2 <- function(lead,
                                inference = c("wfe", "bootstrap"), 
                                ITER = 1000, matched_sets = NULL,
                                plot = FALSE,
+                               df.adjustment = FALSE,
                                qoi = NULL,
                                CI = .90) {
   
@@ -128,6 +129,7 @@ PanelEstimate_tmp2 <- function(lead,
                       treat = treatment, unit.index = matched_sets$unit.id,
                       time.index = matched_sets$time.id, method = "unit", 
                       qoi = "att", estimator = "did", 
+                      df.adjustment = df.adjustment,
                       hetero.se = TRUE, 
                       auto.se = TRUE, White = TRUE,  
                       data = data)
@@ -207,6 +209,7 @@ PanelEstimate_tmp2 <- function(lead,
                       time.index = matched_sets$time.id, method = "unit", 
                       qoi = "atc", estimator = "did", 
                       hetero.se = TRUE, 
+                      df.adjustment = df.adjustment,
                       auto.se = TRUE, White = TRUE,  
                       data = data)
       if (plot == TRUE) {
@@ -288,6 +291,7 @@ PanelEstimate_tmp2 <- function(lead,
                       time.index = matched_sets$time.id, method = "unit", 
                       qoi = "ate", estimator = "did", 
                       hetero.se = TRUE, 
+                      df.adjustment = df.adjustment,
                       auto.se = TRUE, White = TRUE,  
                       data = data)
       if (plot == TRUE) {
