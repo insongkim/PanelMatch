@@ -3,6 +3,7 @@ PanelEstimate_tmp2 <- function(lead,
                                inference = c("wfe", "bootstrap"), 
                                ITER = 1000, matched_sets = NULL,
                                plot = FALSE,
+                               estimator = c("did", "matching"),
                                df.adjustment = FALSE,
                                qoi = NULL,
                                CI = .90) {
@@ -48,7 +49,7 @@ PanelEstimate_tmp2 <- function(lead,
   
   if (qoi == "att") {
     newlist <- lapply(matched_sets$`ATT_matches`, lapply_leads, unit.id = unit.id, 
-                      time.id = time.id, lag = lag,
+                      time.id = time.id, lag = lag, estimator = estimator,
                       data = data, leads = lead)
     
     W_it_by_lead <- lapply(newlist, extract_objects, objective = "wit")
@@ -65,7 +66,7 @@ PanelEstimate_tmp2 <- function(lead,
     data$`Wit_att-1` <- 0
   } else if (qoi == "atc") {
     newlist <- lapply(matched_sets$`ATC_matches`, lapply_leads, unit.id = unit.id, 
-                      time.id = time.id, lag = lag,
+                      time.id = time.id, lag = lag, estimator = estimator,
                       data = data, leads = lead)
     
     W_it_by_lead <- lapply(newlist, extract_objects, objective = "wit")
@@ -83,7 +84,7 @@ PanelEstimate_tmp2 <- function(lead,
   } else if (qoi == "ate") {
     # ATT
     newlist <- lapply(matched_sets$`ATT_matches`, lapply_leads, unit.id = unit.id, 
-                      time.id = time.id, lag = lag,
+                      time.id = time.id, lag = lag, estimator = estimator,
                       data = data, leads = lead)
     
     W_it_by_lead <- lapply(newlist, extract_objects, objective = "wit")
@@ -99,7 +100,7 @@ PanelEstimate_tmp2 <- function(lead,
     colnames(data)[length(data)] <- "dits_att"
     # ATC
     newlist <- lapply(matched_sets$`ATC_matches`, lapply_leads, unit.id = unit.id, 
-                      time.id = time.id, lag = lag,
+                      time.id = time.id, lag = lag, estimator = estimator, 
                       data = data, leads = lead)
     
     W_it_by_lead <- lapply(newlist, extract_objects, objective = "wit")
@@ -125,14 +126,26 @@ PanelEstimate_tmp2 <- function(lead,
         stop("The wfe option can only take lead = 0")
       data$Wit_att0 <- ifelse(data$dits_att == 1, -1, data$Wit_att0)
       data$Wit_att0 <- -(data$Wit_att0)
-      fit <- PanelWFE(formula = as.formula(paste(dependent, "~", treatment)), 
-                      treat = treatment, unit.index = matched_sets$unit.id,
-                      time.index = matched_sets$time.id, method = "unit", 
-                      qoi = "att", estimator = "did", 
-                      df.adjustment = df.adjustment,
-                      hetero.se = TRUE, 
-                      auto.se = TRUE, White = TRUE,  
-                      data = data)
+      if (estimator == "did") {
+        fit <- PanelWFE(formula = as.formula(paste(dependent, "~", treatment)), 
+                        treat = treatment, unit.index = matched_sets$unit.id,
+                        time.index = matched_sets$time.id, method = "unit", 
+                        qoi = "att", estimator = "did", 
+                        df.adjustment = df.adjustment,
+                        hetero.se = TRUE, 
+                        auto.se = TRUE, White = TRUE,  
+                        data = data)
+      } else {
+        fit <- PanelWFE(formula = as.formula(paste(dependent, "~", treatment)), 
+                        treat = treatment, unit.index = matched_sets$unit.id,
+                        time.index = matched_sets$time.id, method = "time", 
+                        qoi = "att", estimator = NULL, 
+                        df.adjustment = df.adjustment,
+                        hetero.se = TRUE, 
+                        auto.se = TRUE, White = TRUE,  
+                        data = data)
+      }
+      
       if (plot == TRUE) {
         fit$matched_sets <- matched_sets
         return(fit)
@@ -204,14 +217,26 @@ PanelEstimate_tmp2 <- function(lead,
         stop("The wfe option can only take lead = 0")
       data$Wit_atc0 <- ifelse(data$dits_atc == 1, -1, data$Wit_atc0)
       data$Wit_atc0 <- -(data$Wit_atc0)
-      fit <- PanelWFE(formula = as.formula(paste(dependent, "~", treatment)), 
-                      treat = treatment, unit.index = matched_sets$unit.id,
-                      time.index = matched_sets$time.id, method = "unit", 
-                      qoi = "atc", estimator = "did", 
-                      hetero.se = TRUE, 
-                      df.adjustment = df.adjustment,
-                      auto.se = TRUE, White = TRUE,  
-                      data = data)
+      if (estimator == "did") {
+        fit <- PanelWFE(formula = as.formula(paste(dependent, "~", treatment)), 
+                        treat = treatment, unit.index = matched_sets$unit.id,
+                        time.index = matched_sets$time.id, method = "unit", 
+                        qoi = "atc", estimator = "did", 
+                        df.adjustment = df.adjustment,
+                        hetero.se = TRUE, 
+                        auto.se = TRUE, White = TRUE,  
+                        data = data)
+      } else {
+        fit <- PanelWFE(formula = as.formula(paste(dependent, "~", treatment)), 
+                        treat = treatment, unit.index = matched_sets$unit.id,
+                        time.index = matched_sets$time.id, method = "time", 
+                        qoi = "atc", estimator = NULL, 
+                        df.adjustment = df.adjustment,
+                        hetero.se = TRUE, 
+                        auto.se = TRUE, White = TRUE,  
+                        data = data)
+      }
+      
       if (plot == TRUE) {
         fit$matched_sets <- matched_sets
         return(fit)
@@ -286,14 +311,26 @@ PanelEstimate_tmp2 <- function(lead,
       data$Wit_atc0 <- ifelse(data$dits_atc == 1, -1, data$Wit_atc0)
       data$Wit_atc0 <- -(data$Wit_atc0)
 
-      fit <- PanelWFE(formula = as.formula(paste(dependent, "~", treatment)), 
-                      treat = treatment, unit.index = matched_sets$unit.id,
-                      time.index = matched_sets$time.id, method = "unit", 
-                      qoi = "ate", estimator = "did", 
-                      hetero.se = TRUE, 
-                      df.adjustment = df.adjustment,
-                      auto.se = TRUE, White = TRUE,  
-                      data = data)
+      if (estimator == "did") {
+        fit <- PanelWFE(formula = as.formula(paste(dependent, "~", treatment)), 
+                        treat = treatment, unit.index = matched_sets$unit.id,
+                        time.index = matched_sets$time.id, method = "unit", 
+                        qoi = "ate", estimator = "did", 
+                        df.adjustment = df.adjustment,
+                        hetero.se = TRUE, 
+                        auto.se = TRUE, White = TRUE,  
+                        data = data)
+      } else {
+        fit <- PanelWFE(formula = as.formula(paste(dependent, "~", treatment)), 
+                        treat = treatment, unit.index = matched_sets$unit.id,
+                        time.index = matched_sets$time.id, method = "time", 
+                        qoi = "ate", estimator = NULL, 
+                        df.adjustment = df.adjustment,
+                        hetero.se = TRUE, 
+                        auto.se = TRUE, White = TRUE,  
+                        data = data)
+      }
+      
       if (plot == TRUE) {
         fit$matched_sets <- matched_sets
         return(fit)

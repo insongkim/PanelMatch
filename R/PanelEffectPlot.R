@@ -2,7 +2,8 @@ PanelEffectPlot <- function(result, CI = .95, atc.reverse = FALSE,
                             bias.correction = TRUE,
                             xlab = "Effect by Time Period",
                             ylab = "Effect Size",x.size = 13, y.size = 15,
-                            title = "") {
+                            title = "",
+                            point_size = 2) {
   if (atc.reverse == TRUE) {
     if (result$qoi == "atc") {
       result$o.coef <- -(result$o.coef)
@@ -35,7 +36,7 @@ PanelEffectPlot <- function(result, CI = .95, atc.reverse = FALSE,
   ggplot(df_effect, aes(x = x, y = P)) + 
     scale_x_continuous(breaks = seq(min(df_effect$x), max(df_effect$x), 
                                           by = 1)) +
-    geom_point(size = 4) + theme_bw() +
+    geom_point(size = point_size) + theme_bw() +
     geom_pointrange(aes(ymax = U, ymin = L)) +
     xlab(xlab) +
     ylab(ylab) +

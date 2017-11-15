@@ -1,6 +1,6 @@
 ### updating (adding) wits
 apply_leads <- function(data, unit.id, time.id, matched_set,
-                        lag, lead) {
+                        lag, lead, estimator = c("did", "matching")) {
   unit.id = unit.id; time.id = time.id
   # set testid and timeid
   treated.time <- min(matched_set$V1) + lag
@@ -9,13 +9,19 @@ apply_leads <- function(data, unit.id, time.id, matched_set,
   
   testid <- unique(matched_set$V2)
   
-  
-  matched_set$wit <- ifelse(matched_set$V1 == (treated.time+lead) & matched_set$V2 == treated.id, 1, 
+  if (estimator == "did") {
+    matched_set$wit <- ifelse(matched_set$V1 == (treated.time+lead) & matched_set$V2 == treated.id, 1, 
                               ifelse(matched_set$V1 == (treated.time+lead) - lead - 1 & matched_set$V2 == treated.id, -1, 
                                      ifelse(matched_set$V1 == (treated.time+lead) & matched_set$V2 %in% testid[testid != treated.id], -matched_set$w.weight, 
                                             ifelse(matched_set$V1 == (treated.time+lead) - lead - 1 & matched_set$V2 %in% testid[testid != treated.id], matched_set$w.weight, 0) 
                                      )))
-  
+    
+  } else {
+    matched_set$wit <- ifelse(matched_set$V1 == (treated.time+lead) & matched_set$V2 == treated.id, 1, 
+           ifelse(matched_set$V1 == (treated.time+lead) & matched_set$V2 != treated.id, -matched_set$w.weight, 0))
+                 
+  }
+
   
   new.W <- data[c(unit.id, time.id)] # create a new data.frame as large as the *cleaned* dataset
   names(new.W)[1:2] <- c("V2", "V1") # assigning names so as to merge it next
@@ -28,9 +34,10 @@ apply_leads <- function(data, unit.id, time.id, matched_set,
 }
 
 # this will give us wit and dit at the dataset level for each matched set
-lapply_leads <- function(x, leads, data, unit.id = unit.id, time.id = time.id, lag){
+lapply_leads <- function(x, leads, data, unit.id = unit.id, time.id = time.id, lag,
+                         estimator = estimator){
   return(lapply(leads, apply_leads, unit.id = unit.id, time.id = time.id,
-         matched_set = x, lag = lag,
+         matched_set = x, lag = lag, estimator = estimator,
          data = data))
 }
 

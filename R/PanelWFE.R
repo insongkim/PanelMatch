@@ -1,4 +1,4 @@
-PanelWFE <- function (formula, data, treat = "treat.name",
+PanelWFE <- function (formula, data, treat = "treat.name", # line 283!
                       unit.index, time.index = NULL, method = "unit",
                       qoi = "att", estimator = "did", C.it = NULL,
                       hetero.se = TRUE, auto.se = TRUE,df.adjustment = TRUE,
@@ -280,7 +280,7 @@ PanelWFE <- function (formula, data, treat = "treat.name",
       if ( (method=="time" & qoi=="ate" & is.null(estimator) ) | (method=="time" & qoi=="att" & is.null(estimator)) ) {
         W <- GenWeightsTime(data$t.index, data$u.index, data$TR, data$C.it, tn.row, length(uniq.t), length(uniq.u), ate.n, att.n, length(uniq.t)*length(uniq.u), verbose)
         W <- matrix(W, nrow=length(uniq.t), ncol=length(uniq.u), byrow=T)
-        data$W.it <- VectorizeC(as.matrix(W), data$t.index, data$u.index, tn.row)
+        data$W.it <- data$big_W_it
       }
       
       
