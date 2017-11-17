@@ -483,14 +483,27 @@ gaps_plot_tmp <- function(x, lag, lead, data, dependent,
    
   }
   if (is.null(covariate) == FALSE) {
-    data$dependent <- data[c(covariate)]
+    data$dependent <- data[covariate][,1]
   }
   # divide the gap by the sd of the outcome variable among all treated units 
   # in that treatment time period.
   if (qoi == "att") {
-    overall <- sd(data$dependent[data$time.id == (max(x$V1)-lead) & data$treatment == 1])
+    overall <- rep(NA, (lag+1+lead))
+    sub.data <- data[which(data$time.id <= max(x$V1) & 
+                             data$time.id >= (max(x$V1)-lead-lag)),]
+    index.l <- as.numeric(rownames(sub.data[which(sub.data$time.id == (max(x$V1)-lead) & sub.data$treatment == 1), ]))
+    for (i in 1:(lag + 1 + lead)) {
+      overall[i] <- sd(sub.data$dependent[rownames(sub.data) %in% (index.l-lag-1 + i)])
+    }
+   
   } else {
-    overall <- sd(data$dependent[data$time.id == (max(x$V1)-lead) & data$treatment == 0])
+    overall <- rep(NA, (lag+1+lead))
+    sub.data <- data[which(data$time.id <= max(x$V1) & 
+                             data$time.id >= (max(x$V1)-lead-lag)),]
+    index.l <- as.numeric(rownames(sub.data[which(sub.data$time.id == (max(x$V1)-lead) & sub.data$treatment == 0), ]))
+    for (i in 1:(lag + 1 + lead)) {
+      overall[i] <- sd(sub.data$dependent[rownames(sub.data) %in% (index.l-lag-1 + i)])
+    }
   }
  
   return(list("gap" = gap/overall,
