@@ -3,7 +3,7 @@ PanelEstimate_tmp2 <- function(lead,
                                inference = c("wfe", "bootstrap"), 
                                ITER = 1000, matched_sets = NULL,
                                plot = FALSE,
-                               estimator = c("did", "matching"),
+                               estimator = "did",
                                df.adjustment = FALSE,
                                qoi = NULL,
                                CI = .90) {
