@@ -84,8 +84,9 @@ PanelBCheck <- function(matched_sets,
     output <- tapply(df$val, df$x, mean)
     output <- data.frame("time to treatment" = as.numeric(names(output)), 
                          "balance" = output)
-    return(list("Mean balance by period" = output,
-                "Interquartile balance by period" = df2))
+    return(list("Mean_Balance" = output,
+                "Interquartile_Balance" = df2,
+                "All_Balance" = df))
   } else {
     p <- ggplot() + 
       geom_line(aes(x=factor(x), y=val, group = variable,
