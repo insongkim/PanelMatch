@@ -34,7 +34,7 @@ MSMD_result <- function(x, L, FORWARD, M = 3) {
 }
 
 MSMD_each <- function(time_id, matched_set, testid, treated.id = treated.id) {
-  # we do column-wise deletion for variables that have NAs
+  
   sub_sub <- matched_set[matched_set$V1 == time_id, ]
  # sub_sub[, colSums(is.na(sub_sub)) != 0]
   cov_matrix <- cov(as.matrix(sub_sub[sub_sub$V2 %in% testid[testid != treated.id], 5:length(sub_sub)]))
