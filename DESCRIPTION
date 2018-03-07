@@ -1,6 +1,6 @@
 Package: PanelMatch
 Version: 1.0
-Date: 2017-07-03
+Date: 2018-03-06
 Title: Weighted Linear Fixed Effects Regression Models for Causal Inference
 Author: In Song Kim <insong@mit.edu>, Kosuke Imai <kimai@Princeton.edu>, Erik Wang <haixiaow@Princeton.edu>
 Maintainer: In Song Kim <insong@mit.edu>
