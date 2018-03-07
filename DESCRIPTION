@@ -1,8 +1,8 @@
 Package: PanelMatch
-Version: 1.5
-Date: 2016-07-03
+Version: 1.0
+Date: 2017-07-03
 Title: Weighted Linear Fixed Effects Regression Models for Causal Inference
-Author: In Song Kim <insong@mit.edu>, Kosuke Imai <kimai@Princeton.edu>
+Author: In Song Kim <insong@mit.edu>, Kosuke Imai <kimai@Princeton.edu>, Erik Wang <haixiaow@Princeton.edu>
 Maintainer: In Song Kim <insong@mit.edu>
 Depends: R (>= 2.11.0), utils, arm (>= 1.4-6), Matrix, MASS, methods
 Description: This R package provides a computationally efficient way
