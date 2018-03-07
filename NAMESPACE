@@ -1,0 +1,67 @@
+useDynLib(wfe)
+export(wfe, pwfe,  findMatched2, findMatched,syn_DID, syn_DID_MSMD, 
+       syn_boot_gDiD, syn_DID_check, syn_DID_weights,  
+        syn_DID_tmp, syn_DID_weights_tmp, syn_boot_gDiD_tmp,
+       wfe2_tmp3, MSMD_DID,gDID_master,
+       PS_DID, syn_DID_check_tmp, wfe2_tmp4, syn_DID_weights_tmp2,PanelMatch,
+       PanelEstimate, PanelWFE, PanelGapsPlot, PanelEstimate_tmp, 
+       PanelHist,  PanelCaliper, apply_leads, PanelEstimate_tmp2,
+      PanelEffectPlot, PanelBCheck, DisplayTreatment,
+        syn_DID_gapsplot, syn_DID_MSPE, MSMD_gapsplot, PS_gapsplot,
+       PanelParallelPlot)
+
+# DisplayTreatment, syn_DID_gapsplot, syn_DID_MSPE, MSMD_gapsplot, PS_gapsplot
+
+importFrom(Rcpp, evalCpp)
+## exportPattern("^[[:alpha:]]+")
+export(FindMatches, wfe, findDDmatched2)
+
+
+# import functions used for PanelMatch and others
+importFrom(arm, bayesglm)
+importFrom(matrixStats, colSds)
+importFrom(matrixStats, colQuantiles)
+importFrom(Synth, dataprep)
+importFrom(Synth, synth)
+importFrom(CBPS, CBPS)
+importFrom(data.table, rbindlist)
+importFrom(DataCombine, MoveFront)
+importFrom(DataCombine, slide)
+importFrom(reshape2, dcast)
+importFrom(knitr, kable)
+importFrom(nloptr, nloptr)
+importFrom(Rsolnp, solnp)
+importFrom(MCMCpack, rdirichlet)
+importFrom(plyr, rbind.fill)
+importFrom(lasso2, merge.formula)
+
+
+import(Matrix, MASS)
+
+S3method(summary, wfe)
+S3method(print, wfe)
+S3method(print, summary.wfe)
+
+
+S3method(summary, wfe2_tmp)
+S3method(print, wfe2_tmp)
+S3method(print, summary.wfe2_tmp)
+
+S3method(summary, pwfe)
+S3method(print, pwfe)
+S3method(print, summary.pwfe)
+
+S3method(summary, wfedid)
+S3method(print, wfedid)
+S3method(print, summary.wfedid)
+
+S3method(summary, PanelEstimate_tmp)
+S3method(summary, PanelEstimate_tmp2)
+
+
+importFrom("methods", "as")
+importFrom("stats", "as.formula", "binomial", "coef", "fitted", "lm",
+           "model.frame", "model.matrix", "model.response", "na.omit",
+           "pchisq", "printCoefmat", "pt", "resid", "vcov")
+importFrom("utils", "flush.console", "object.size",
+           "packageDescription")
