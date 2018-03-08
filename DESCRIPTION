@@ -8,18 +8,25 @@ Authors@R: c(
   person("Kosuke", "Imai", email = "kimai@Princeton.edu", role = c("aut"))
   person("Erik", "Wang", email = "haixiaow@Princeton.edu", role = c("aut")),  
   )
-Description: This R package provides a computationally efficient way
-	     of fitting weighted linear fixed effects estimators for
-	     causal inference with various weighting schemes.  Imai
-	     and Kim (2016) show that weighted linear fixed effects
-	     estimators can be used to estimate the average treatment
-	     effects under different identification strategies.  This
-	     includes stratified randomized experiments, matching and
-	     stratification for observational studies, first
-	     differencing, and difference-in-differences.  The package
-	     also provides various robust standard errors and a
-	     specification test for standard linear fixed effects
-	     estimators.
+Description: This R package provides a set of methodological tools
+	     that enable researchers to apply matching methods to
+	     time-series cross-section data. Imai, Kim, and Wang
+	     (2018) proposes a nonparametric generalization of
+	     difference-in-differences estimator, which does not rely
+	     on the linearity assumption as often done in
+	     practice. Researchers first select a method of matching
+	     each treated observation from a given unit in a
+	     particular time period with control observations from
+	     other units in the same time period that have a similar
+	     treatment and covariate history. These methods include
+	     standard matching methods based on propensity score and
+	     Mahalanobis distance as well as weighting methods such as
+	     synthetic controls. Once matching is done, both
+	     short-term and long-term average treatment effects for
+	     the treated can be estimated with standard errors. The
+	     package also offers a visualization technique that allows
+	     researchers to assess the quality of matches by examining
+	     the resulting covariate balance.
 License: GPL(>= 3)	     
 Imports:
     Rcpp (>= 0.12.5),
