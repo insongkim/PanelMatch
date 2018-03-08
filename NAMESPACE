@@ -1,4 +1,4 @@
-useDynLib(wfe)
+useDynLib(PanelMatch)
 export(wfe, pwfe,  findMatched2, findMatched,syn_DID, syn_DID_MSMD, 
        syn_boot_gDiD, syn_DID_check, syn_DID_weights,  
        syn_DID_tmp, syn_DID_weights_tmp, syn_boot_gDiD_tmp,
