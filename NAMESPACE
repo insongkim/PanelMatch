@@ -10,7 +10,6 @@ export(wfe, pwfe,  findMatched2, findMatched,syn_DID, syn_DID_MSMD,
        syn_DID_gapsplot, syn_DID_MSPE, MSMD_gapsplot, PS_gapsplot,
        PanelParallelPlot)
 
-# DisplayTreatment, syn_DID_gapsplot, syn_DID_MSPE, MSMD_gapsplot, PS_gapsplot
 
 ## exportPattern("^[[:alpha:]]+")
 export(FindMatches, PanelMatch, findDDmatched2)
@@ -47,7 +46,6 @@ import(Matrix, MASS)
 S3method(summary, wfe)
 S3method(print, wfe)
 S3method(print, summary.wfe)
-
 
 S3method(summary, wfe2_tmp)
 S3method(print, wfe2_tmp)
