@@ -1,10 +1,13 @@
 Package: PanelMatch
-Version: 1.0
-Date: 2018-03-06
-Title: Weighted Linear Fixed Effects Regression Models for Causal Inference
-Author: In Song Kim <insong@mit.edu>, Kosuke Imai <kimai@Princeton.edu>, Erik Wang <haixiaow@Princeton.edu>
-Maintainer: In Song Kim <insong@mit.edu>
-Depends: R (>= 2.11.0), utils, arm (>= 1.4-6), Matrix, MASS, methods
+Type: Package
+Title: Matching Methods for Causal Inference with Time-Series Cross-Section Data
+Version: 0.0.1
+Date: 2018-03-8
+Authors@R: c(
+  person("In Song", "Kim", email = "insong@mit.edu", role = c("aut", "cre")),
+  person("Kosuke", "Imai", email = "kimai@Princeton.edu", role = c("aut"))
+  person("Erik", "Wang", email = "haixiaow@Princeton.edu", role = c("aut")),  
+  )
 Description: This R package provides a computationally efficient way
 	     of fitting weighted linear fixed effects estimators for
 	     causal inference with various weighting schemes.  Imai
@@ -17,9 +20,25 @@ Description: This R package provides a computationally efficient way
 	     also provides various robust standard errors and a
 	     specification test for standard linear fixed effects
 	     estimators.
-LazyLoad: yes
-LazyData: yes
-License: GPL (>=2)
-Imports: Rcpp (>= 0.12.5)
-LinkingTo: Rcpp, RcppArmadillo
+License: GPL(>= 3)	     
+Imports:
+    Rcpp (>= 0.12.5),
+    CBPS,
+    data.table,
+    DataCombine,
+    knitr,
+    lasso2,
+    matrixStats,
+    MCMCpack,
+    nloptr,
+    plyr,
+    reshape2,
+    Rsolnp,
+    Synth
+Depends:
+    R (>= 2.14.0)
+LinkingTo: RcppArmadillo, Rcpp, RcppEigen
+Encoding: UTF-8
+LazyData: true
+BugReports: https://github.com/insongkim/PanelMatch/issues
 
