@@ -5,8 +5,8 @@ Version: 0.0.1
 Date: 2018-03-8
 Authors@R: c(
   person("In Song", "Kim", email = "insong@mit.edu", role = c("aut", "cre")),
-  person("Kosuke", "Imai", email = "kimai@Princeton.edu", role = c("aut"))
-  person("Erik", "Wang", email = "haixiaow@Princeton.edu", role = c("aut")),  
+  person("Kosuke", "Imai", email = "kimai@Princeton.edu", role = c("aut")),
+  person("Erik", "Wang", email = "haixiaow@Princeton.edu", role = c("aut"))  
   )
 Description: This R package provides a computationally efficient way
 	     of fitting weighted linear fixed effects estimators for
