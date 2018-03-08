@@ -1,23 +1,22 @@
 useDynLib(wfe)
 export(wfe, pwfe,  findMatched2, findMatched,syn_DID, syn_DID_MSMD, 
        syn_boot_gDiD, syn_DID_check, syn_DID_weights,  
-        syn_DID_tmp, syn_DID_weights_tmp, syn_boot_gDiD_tmp,
+       syn_DID_tmp, syn_DID_weights_tmp, syn_boot_gDiD_tmp,
        wfe2_tmp3, MSMD_DID,gDID_master,
        PS_DID, syn_DID_check_tmp, wfe2_tmp4, syn_DID_weights_tmp2,PanelMatch,
        PanelEstimate, PanelWFE, PanelGapsPlot, PanelEstimate_tmp, 
        PanelHist,  PanelCaliper, apply_leads, PanelEstimate_tmp2,
-      PanelEffectPlot, PanelBCheck, DisplayTreatment,
-        syn_DID_gapsplot, syn_DID_MSPE, MSMD_gapsplot, PS_gapsplot,
+       PanelEffectPlot, PanelBCheck, DisplayTreatment,
+       syn_DID_gapsplot, syn_DID_MSPE, MSMD_gapsplot, PS_gapsplot,
        PanelParallelPlot)
 
 # DisplayTreatment, syn_DID_gapsplot, syn_DID_MSPE, MSMD_gapsplot, PS_gapsplot
 
-importFrom(Rcpp, evalCpp)
 ## exportPattern("^[[:alpha:]]+")
-export(FindMatches, wfe, findDDmatched2)
+export(FindMatches, PanelMatch, findDDmatched2)
 
-
-# import functions used for PanelMatch and others
+## import functions used for PanelMatch and others
+importFrom(Rcpp, evalCpp)
 importFrom(arm, bayesglm)
 importFrom(matrixStats, colSds)
 importFrom(matrixStats, colQuantiles)
@@ -34,6 +33,13 @@ importFrom(Rsolnp, solnp)
 importFrom(MCMCpack, rdirichlet)
 importFrom(plyr, rbind.fill)
 importFrom(lasso2, merge.formula)
+
+importFrom("methods", "as")
+importFrom("stats", "as.formula", "binomial", "coef", "fitted", "lm",
+           "model.frame", "model.matrix", "model.response", "na.omit",
+           "pchisq", "printCoefmat", "pt", "resid", "vcov")
+importFrom("utils", "flush.console", "object.size",
+           "packageDescription")
 
 
 import(Matrix, MASS)
@@ -59,9 +65,3 @@ S3method(summary, PanelEstimate_tmp)
 S3method(summary, PanelEstimate_tmp2)
 
 
-importFrom("methods", "as")
-importFrom("stats", "as.formula", "binomial", "coef", "fitted", "lm",
-           "model.frame", "model.matrix", "model.response", "na.omit",
-           "pchisq", "printCoefmat", "pt", "resid", "vcov")
-importFrom("utils", "flush.console", "object.size",
-           "packageDescription")
