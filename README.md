@@ -33,9 +33,9 @@ You can also install the most recent development version of `panelMatch` using t
 if(!require(devtools)) install.packages("devtools")
 ```
 
-Then, load `devtools` and use the function `install_github()` to install `panelMatch`:
+Then, load `devtools` and use the function `install_github()` to install `PanelMatch`:
 
 ``` r
 library(devtools)
-install_github("insongkim/panelMatch", dependencies=TRUE)
+install_github("insongkim/PanelMatch", dependencies=TRUE)
 ```
