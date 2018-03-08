@@ -39,6 +39,7 @@ Imports:
     nloptr,
     plyr,
     reshape2,
+    lasso2,
     Rsolnp,
     Synth,
     MASS,
