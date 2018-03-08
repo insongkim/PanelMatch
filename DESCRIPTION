@@ -30,7 +30,6 @@ Description: This R package provides a set of methodological tools
 License: GPL(>= 3)	     
 Imports:
     Rcpp (>= 0.12.5),
-    CBPS,
     data.table,
     DataCombine,
     knitr,
