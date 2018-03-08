@@ -4,7 +4,7 @@
 #include <R_ext/Rdynload.h>
 
 /* FIXME: 
-Check these declarations against the C/Fortran source code.
+   Check these declarations against the C/Fortran source code.
 */
 
 /* .C calls */
@@ -44,47 +44,48 @@ extern SEXP _PanelMatch_rbind_c(SEXP, SEXP);
 extern SEXP _PanelMatch_sumCpp(SEXP);
 
 static const R_CMethodDef CEntries[] = {
-  {"CalDID",         (DL_FUNC) &CalDID,         12},
-  {"comp_OmegaHAC",  (DL_FUNC) &comp_OmegaHAC,   9},
-  {"comp_OmegaHC",   (DL_FUNC) &comp_OmegaHC,    9},
-  {"Demean",         (DL_FUNC) &Demean,          5},
-  {"DemeanDID",      (DL_FUNC) &DemeanDID,       8},
-  {"GenTime",        (DL_FUNC) &GenTime,         4},
-  {"GenWeightsDID",  (DL_FUNC) &GenWeightsDID,  11},
-  {"GenWeightsFD",   (DL_FUNC) &GenWeightsFD,   11},
-  {"GenWeightsMDID", (DL_FUNC) &GenWeightsMDID, 13},
-  {"GenWeightsTime", (DL_FUNC) &GenWeightsTime, 11},
-  {"GenWeightsUnit", (DL_FUNC) &GenWeightsUnit, 11},
-  {"Index",          (DL_FUNC) &Index,           5},
-  {"LamdaDID1",      (DL_FUNC) &LamdaDID1,      14},
-  {"LamdaDID2",      (DL_FUNC) &LamdaDID2,      14},
-  {"MDummy",         (DL_FUNC) &MDummy,          4},
-  {"OmegaDiDHAC",    (DL_FUNC) &OmegaDiDHAC,     8},
-  {"OmegaDiDHAC2",   (DL_FUNC) &OmegaDiDHAC2,    8},
-  {"OmegaHatHAC",    (DL_FUNC) &OmegaHatHAC,     7},
-  {"OmegaHatHC",     (DL_FUNC) &OmegaHatHC,      7},
-  {"ProjectionM",    (DL_FUNC) &ProjectionM,    17},
-  {"Transform",      (DL_FUNC) &Transform,       5},
-  {"TwayDemean",     (DL_FUNC) &TwayDemean,      7},
-  {"VectorizeC",     (DL_FUNC) &VectorizeC,      7},
-  {"WDemean",        (DL_FUNC) &WDemean,         6},
-  {"WWDemean",       (DL_FUNC) &WWDemean,        6},
-  {"XWXiSum",        (DL_FUNC) &XWXiSum,         7},
-  {"XXiSum",         (DL_FUNC) &XXiSum,          6},
-  {NULL, NULL, 0}
+    {"CalDID",         (DL_FUNC) &CalDID,         12},
+    {"comp_OmegaHAC",  (DL_FUNC) &comp_OmegaHAC,   9},
+    {"comp_OmegaHC",   (DL_FUNC) &comp_OmegaHC,    9},
+    {"Demean",         (DL_FUNC) &Demean,          5},
+    {"DemeanDID",      (DL_FUNC) &DemeanDID,       8},
+    {"GenTime",        (DL_FUNC) &GenTime,         4},
+    {"GenWeightsDID",  (DL_FUNC) &GenWeightsDID,  11},
+    {"GenWeightsFD",   (DL_FUNC) &GenWeightsFD,   11},
+    {"GenWeightsMDID", (DL_FUNC) &GenWeightsMDID, 13},
+    {"GenWeightsTime", (DL_FUNC) &GenWeightsTime, 11},
+    {"GenWeightsUnit", (DL_FUNC) &GenWeightsUnit, 11},
+    {"Index",          (DL_FUNC) &Index,           5},
+    {"LamdaDID1",      (DL_FUNC) &LamdaDID1,      14},
+    {"LamdaDID2",      (DL_FUNC) &LamdaDID2,      14},
+    {"MDummy",         (DL_FUNC) &MDummy,          4},
+    {"OmegaDiDHAC",    (DL_FUNC) &OmegaDiDHAC,     8},
+    {"OmegaDiDHAC2",   (DL_FUNC) &OmegaDiDHAC2,    8},
+    {"OmegaHatHAC",    (DL_FUNC) &OmegaHatHAC,     7},
+    {"OmegaHatHC",     (DL_FUNC) &OmegaHatHC,      7},
+    {"ProjectionM",    (DL_FUNC) &ProjectionM,    17},
+    {"Transform",      (DL_FUNC) &Transform,       5},
+    {"TwayDemean",     (DL_FUNC) &TwayDemean,      7},
+    {"VectorizeC",     (DL_FUNC) &VectorizeC,      7},
+    {"WDemean",        (DL_FUNC) &WDemean,         6},
+    {"WWDemean",       (DL_FUNC) &WWDemean,        6},
+    {"XWXiSum",        (DL_FUNC) &XWXiSum,         7},
+    {"XXiSum",         (DL_FUNC) &XXiSum,          6},
+    {NULL, NULL, 0}
 };
 
 static const R_CallMethodDef CallEntries[] = {
-  {"_PanelMatch_all_sug",        (DL_FUNC) &_PanelMatch_all_sug,        1},
-  {"_PanelMatch_findDDmatched2", (DL_FUNC) &_PanelMatch_findDDmatched2, 3},
-  {"_PanelMatch_FindMatches",    (DL_FUNC) &_PanelMatch_FindMatches,    3},
-  {"_PanelMatch_rbind_c",        (DL_FUNC) &_PanelMatch_rbind_c,        2},
-  {"_PanelMatch_sumCpp",         (DL_FUNC) &_PanelMatch_sumCpp,         1},
-  {NULL, NULL, 0}
+    {"_PanelMatch_all_sug",        (DL_FUNC) &_PanelMatch_all_sug,        1},
+    {"_PanelMatch_findDDmatched2", (DL_FUNC) &_PanelMatch_findDDmatched2, 3},
+    {"_PanelMatch_FindMatches",    (DL_FUNC) &_PanelMatch_FindMatches,    3},
+    {"_PanelMatch_rbind_c",        (DL_FUNC) &_PanelMatch_rbind_c,        2},
+    {"_PanelMatch_sumCpp",         (DL_FUNC) &_PanelMatch_sumCpp,         1},
+    {NULL, NULL, 0}
 };
 
-void R_init_wfe(DllInfo *dll)
+void R_init_PanelMatch(DllInfo *dll)
 {
-  R_registerRoutines(dll, CEntries, CallEntries, NULL, NULL);
-  R_useDynamicSymbols(dll, FALSE);
+    R_registerRoutines(dll, CEntries, CallEntries, NULL, NULL);
+    R_useDynamicSymbols(dll, FALSE);
 }
+
