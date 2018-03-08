@@ -2,22 +2,22 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 sumCpp <- function(x) {
-    .Call('_PanelMatch_sumCpp', PACKAGE = 'PanelMatch', x)
+    .Call(`_PanelMatch_sumCpp`, x)
 }
 
 FindMatches <- function(unitIdx, timeIdx, treat) {
-    .Call('_PanelMatch_FindMatches', PACKAGE = 'PanelMatch', unitIdx, timeIdx, treat)
+    .Call(`_PanelMatch_FindMatches`, unitIdx, timeIdx, treat)
 }
 
 all_sug <- function(x) {
-    .Call('_PanelMatch_all_sug', PACKAGE = 'PanelMatch', x)
+    .Call(`_PanelMatch_all_sug`, x)
 }
 
 rbind_c <- function(x, y) {
-    .Call('_PanelMatch_rbind_c', PACKAGE = 'PanelMatch', x, y)
+    .Call(`_PanelMatch_rbind_c`, x, y)
 }
 
 findDDmatched2 <- function(L, F, x1) {
-    .Call('_PanelMatch_findDDmatched2', PACKAGE = 'PanelMatch', L, F, x1)
+    .Call(`_PanelMatch_findDDmatched2`, L, F, x1)
 }
 

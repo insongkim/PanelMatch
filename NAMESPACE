@@ -31,6 +31,7 @@ importFrom(nloptr, nloptr)
 importFrom(Rsolnp, solnp)
 importFrom(MCMCpack, rdirichlet)
 importFrom(plyr, rbind.fill)
+importFrom(lasso2, merge.formula)
 
 importFrom("methods", "as")
 importFrom("stats", "as.formula", "binomial", "coef", "fitted", "lm",
