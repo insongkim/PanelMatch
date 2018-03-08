@@ -34,7 +34,6 @@ Imports:
     data.table,
     DataCombine,
     knitr,
-    lasso2,
     matrixStats,
     MCMCpack,
     nloptr,
