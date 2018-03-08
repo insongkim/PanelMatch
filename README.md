@@ -16,3 +16,26 @@ effects for the treated can be estimated with standard errors.  The
 package also offers a visualization technique that allows researchers
 to assess the quality of matches by examining the resulting covariate
 balance.
+
+
+Installation Instructions
+-------------------------
+
+<!-- `panelMatch` is available on CRAN and can be installed using: -->
+
+<!-- ``` r -->
+<!-- install.packages("panelMatch") -->
+<!-- ``` -->
+
+You can also install the most recent development version of `panelMatch` using the `devtools` package. First you have to install `devtools` using the following code. Note that you only have to do this once:
+
+``` r
+if(!require(devtools)) install.packages("devtools")
+```
+
+Then, load `devtools` and use the function `install_github()` to install `panelMatch`:
+
+``` r
+library(devtools)
+install_github("insongkim/panelMatch", dependencies=TRUE)
+```
