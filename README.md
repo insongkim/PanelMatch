@@ -1,4 +1,5 @@
-# panelMatch: Matching Methods for Causal Inference with Time-Series Cross-Section Data[![Build Status](https://travis-ci.org/insongkim/wfe.svg?branch=master)](https://travis-ci.org/insongkim/panelMatch)
+# panelMatch: Matching Methods for Causal Inference with Time-Series
+  Cross-Section Data [![Build Status](https://travis-ci.org/insongkim/wfe.svg?branch=master)](https://travis-ci.org/insongkim/panelMatch)
 
 This R package provides a set of methodological tools that enable
 researchers to apply matching methods to time-series cross-section
