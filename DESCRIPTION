@@ -41,7 +41,11 @@ Imports:
     plyr,
     reshape2,
     Rsolnp,
-    Synth
+    Synth,
+    MASS,
+    Matrix,
+    arm,
+    methods
 Depends:
     R (>= 2.14.0)
 LinkingTo: RcppArmadillo, Rcpp, RcppEigen
