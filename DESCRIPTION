@@ -8,6 +8,8 @@ Authors@R: c(
   person("Kosuke", "Imai", email = "kimai@Princeton.edu", role = c("aut")),
   person("Erik", "Wang", email = "haixiaow@Princeton.edu", role = c("aut"))  
   )
+Maintainer: In Song Kim <insong@mit.edu>
+Author: In Song Kim [aut, cre]
 Description: This R package provides a set of methodological tools
 	     that enable researchers to apply matching methods to
 	     time-series cross-section data. Imai, Kim, and Wang
