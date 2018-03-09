@@ -8,7 +8,7 @@ export(wfe, pwfe, PanelMatch,
 
 
 ## exportPattern("^[[:alpha:]]+")
-export(FindMatches, PanelMatch, findDDmatched2)
+## export(FindMatches, PanelMatch, findDDmatched2)
 
 ## import functions used for PanelMatch and others
 importFrom(Rcpp, evalCpp)
