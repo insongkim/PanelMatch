@@ -1,4 +1,4 @@
-useDynLib(PanelMatch)
+useDynLib(PanelMatch, .registration = TRUE)
 
 export(wfe, pwfe, PanelMatch,
        PanelGapsPlot,
@@ -8,7 +8,6 @@ export(wfe, pwfe, PanelMatch,
 
 
 ## exportPattern("^[[:alpha:]]+")
-## export(FindMatches, PanelMatch, findDDmatched2)
 
 ## import functions used for PanelMatch and others
 importFrom(Rcpp, evalCpp)
