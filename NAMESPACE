@@ -1,6 +1,6 @@
 useDynLib(PanelMatch, .registration = TRUE)
 
-export(wfe, pwfe, PanelMatch,
+export(wfe, PanelMatch,
        PanelGapsPlot,
        PanelHist, PanelCaliper, PanelEstimate_tmp2,
        PanelEffectPlot, PanelBCheck, DisplayTreatment,
