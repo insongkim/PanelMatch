@@ -12,8 +12,10 @@
 \usage{
 wfe(formula, data, treat = "treat.name",
     unit.index, time.index = NULL, method = "unit",
+    dyad1.index = NULL, dyad2.index = NULL,
     qoi = "ate", estimator = NULL, C.it = NULL,
-    hetero.se = TRUE, auto.se = TRUE,
+    hetero.se = TRUE, auto.se = TRUE, df.adjustment = TRUE,  
+    dyad.se = FALSE,
     White = TRUE, White.alpha = 0.05,
     verbose = TRUE, unbiased.se = FALSE, unweighted = FALSE,
     store.wdm = FALSE, maxdev.did = NULL,
@@ -48,6 +50,16 @@ wfe(formula, data, treat = "treat.name",
     effects regression models, set method to the default value
     \code{unit}.}
 
+  \item{dyad1.index}{a character string indicating the variable name of first unit
+    of a given dyad. The default is \code{NULL}.
+    This is required to calculate robust standard errors with dyadic data.
+  }
+
+  \item{dyad2.index}{a character string indicating the variable name of second unit
+    of a given dyad. The default is \code{NULL}.
+    This is required to calculate robust standard errors with dyadic data.
+  }
+
   \item{qoi}{one of \code{"ate"} or \code{"att"}. The default is
     \code{"ate"}. If set to \code{"att"} in implementing \code{"fd"}
     and \code{"did"} estimators, the comparison of the treated
@@ -77,7 +89,15 @@ wfe(formula, data, treat = "treat.name",
     autocorrelation is allowed in calculating standard errors. The
     default is \code{TRUE}.
   }
- 
+
+  \item{dyad.se}{a logical value indicating whether correlations across dyads exist. The
+    default is \code{FALSE}. 
+  }
+
+  \item{df.adjustment}{a logical value indicating whether a degrees of freedom adjustment 
+      for standard errors calculation is performed. The default is \code{TRUE}.
+  }
+
   \item{White}{a logical value indicating whether White misspecification
     statistics should be calculated. The default is \code{TRUE}.
   }
@@ -186,11 +206,14 @@ wfe(formula, data, treat = "treat.name",
   Princeton University.  available at
   \url{http://imai.princeton.edu/research/FEmatch.html}
 
+  Aronow, Peter M., Cyrus Samii, and Valentina A. Assenova (2015) ``Cluster–robust
+  Variance Estimation for Dyadic Data." Political Analysis 23, no. 4, 564--577.
+	
   Stock, James and Mark Watson. (2008) ``Heteroskedasticity-Robust
   Standard Errors for Fixed Effect Panel Data Regression'' Econometrica,
   76, 1.
   
-  White, Halbert. (1980) `Using Least Squares to Approximate Unknown
+  White, Halbert. (1980) ``Using Least Squares to Approximate Unknown
   Regression Functions.''  International Economic Review, 21, 1,
   149--170.
 
@@ -290,7 +313,7 @@ summary(mod.obs)
 summary(mod.obs)$W
 
 
-
+\dontrun{
 ###################################################################
 # Example 3: Observational Studies with differences-in-differences
 ###################################################################
@@ -339,7 +362,7 @@ mod.did2 <- wfe(y~ tr+x1+x2, data = Data.obs, treat = "tr",
 ## summarize the results
 summary(mod.did2)
 mod.did2$coef[1] ==  mod.did$coef[1]
-
+}
 
 }
 

@@ -1,4 +1,4 @@
-useDynLib(PanelMatch, .registration = TRUE, .fixes = "C_")
+useDynLib(PanelMatch)
 export(wfe, pwfe, PanelMatch,
        PanelGapsPlot,
        PanelHist,  PanelCaliper, PanelEstimate_tmp2,
@@ -27,6 +27,8 @@ importFrom(Rsolnp, solnp)
 importFrom(MCMCpack, rdirichlet)
 importFrom(plyr, rbind.fill)
 importFrom(lasso2, merge.formula)
+
+
 
 importFrom("methods", "as")
 importFrom("stats", "as.formula", "binomial", "coef", "fitted", "lm",
