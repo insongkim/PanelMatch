@@ -48,10 +48,6 @@ S3method(print, summary.wfe)
 ## S3method(print, wfe2_tmp)
 ## S3method(print, summary.wfe2_tmp)
 
-S3method(summary, pwfe)
-S3method(print, pwfe)
-S3method(print, summary.pwfe)
-
 S3method(summary, wfedid)
 S3method(print, wfedid)
 S3method(print, summary.wfedid)
