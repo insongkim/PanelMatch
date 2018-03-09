@@ -1,5 +1,5 @@
 useDynLib(PanelMatch, .registration = TRUE, .fixes = "C_")
-export(wfe,PanelMatch,
+export(wfe, pwfe, PanelMatch,
        PanelGapsPlot,
        PanelHist,  PanelCaliper, PanelEstimate_tmp2,
        PanelEffectPlot, PanelBCheck, DisplayTreatment,

@@ -1,2 +1,10 @@
+README.md
+README.Rmd
+\.git
+\.gitignore
+\.travis\.yml
+\.DS_Store
+\.\.Rcheck
+builder.sh
 ^.*\.Rproj$
 ^\.Rproj\.user$

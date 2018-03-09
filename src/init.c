@@ -1,7 +1,17 @@
-#include <R.h>
-#include <Rinternals.h>
 #include <stdlib.h> // for NULL
 #include <R_ext/Rdynload.h>
+
+/*
+  The following symbols/expressions for .NAME have been omitted
+
+    _PanelMatch_sumCpp
+    _PanelMatch_FindMatches
+    _PanelMatch_all_sug
+    _PanelMatch_rbind_c
+    _PanelMatch_findDDmatched2
+
+  Most likely possible values need to be added below.
+*/
 
 /* FIXME: 
    Check these declarations against the C/Fortran source code.
@@ -36,13 +46,6 @@ extern void WWDemean(void *, void *, void *, void *, void *, void *);
 extern void XWXiSum(void *, void *, void *, void *, void *, void *, void *);
 extern void XXiSum(void *, void *, void *, void *, void *, void *);
 
-/* .Call calls */
-extern SEXP _PanelMatch_all_sug(SEXP);
-extern SEXP _PanelMatch_findDDmatched2(SEXP, SEXP, SEXP);
-extern SEXP _PanelMatch_FindMatches(SEXP, SEXP, SEXP);
-extern SEXP _PanelMatch_rbind_c(SEXP, SEXP);
-extern SEXP _PanelMatch_sumCpp(SEXP);
-
 static const R_CMethodDef CEntries[] = {
     {"CalDID",         (DL_FUNC) &CalDID,         12},
     {"comp_OmegaHAC",  (DL_FUNC) &comp_OmegaHAC,   9},
@@ -74,18 +77,8 @@ static const R_CMethodDef CEntries[] = {
     {NULL, NULL, 0}
 };
 
-static const R_CallMethodDef CallEntries[] = {
-    {"_PanelMatch_all_sug",        (DL_FUNC) &_PanelMatch_all_sug,        1},
-    {"_PanelMatch_findDDmatched2", (DL_FUNC) &_PanelMatch_findDDmatched2, 3},
-    {"_PanelMatch_FindMatches",    (DL_FUNC) &_PanelMatch_FindMatches,    3},
-    {"_PanelMatch_rbind_c",        (DL_FUNC) &_PanelMatch_rbind_c,        2},
-    {"_PanelMatch_sumCpp",         (DL_FUNC) &_PanelMatch_sumCpp,         1},
-    {NULL, NULL, 0}
-};
-
 void R_init_PanelMatch(DllInfo *dll)
 {
-    R_registerRoutines(dll, CEntries, CallEntries, NULL, NULL);
+    R_registerRoutines(dll, CEntries, NULL, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
 }
-
