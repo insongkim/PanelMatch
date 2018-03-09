@@ -1,4 +1,4 @@
-useDynLib(PanelMatch, .registration = TRUE)
+useDynLib(PanelMatch, .registration = TRUE, .fixes = "C_")
 
 export(wfe, PanelMatch,
        PanelGapsPlot,
