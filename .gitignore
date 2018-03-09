@@ -36,3 +36,5 @@ vignettes/*.pdf
 # .o files
 *.o
 *.so
+
+/src/symbols.rds
