@@ -1,3 +1,26 @@
+#' Illustration of DisplayTreatment
+#' 
+#' \code{DisplayTreatment} visualizes the treatment distribution across unit and time in a panel dataset
+#' 
+#' @author Erik Wang, \email{haixiaow@@princeton.edu}
+#' 
+#' 
+#' 
+#' 
+#' @param unit.id A numeric vector of unit identifiers
+#' @param time.id A numeric vector of time identifiers
+#' @param treatment Name of the treatment variable in character class
+#' @param data The data frame in data.frame class
+#' @param color.of.treated Color of the treated observations in character. Default is red.
+#' @param color.of.untreated Color of the untreated observations in character. Defalt is blue.
+#' @param title Title of the plot in character
+#' @param legend.position Position of the legend with the same choice set as in ggplot2
+#' @param xlab Character label of the x-axis
+#' @param ylab Character label of the y-axis
+#' @param x.size Numeric size of the text for xlab. Default is 10.
+#' @param x.size Numeric size of the text for ylab. Default is 5. 
+#' @param letend.labels Character vector of length two describing the labels of the legend to be shown in the plot
+#' @export
 DisplayTreatment <- function(unit.id, time.id, treatment, data, 
                         color.of.treated = "red",
                         color.of.untreated = "blue", 
