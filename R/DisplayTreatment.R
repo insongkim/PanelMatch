@@ -50,7 +50,7 @@
 #'   eps <- matrix(NA, ncol = N, nrow = (Time + 50))
 #'   
 #'   for (i in 1:N) {
-#'     #' 100 means t0
+#'     # 100 means t0
 #'     y.lagged[1, i] <- 0
 #'     treat.lagged[1,i] <- 0
 #'     treat.error <- interc
@@ -81,8 +81,8 @@
 #'         eps[t, i] <- ephi*eps[t-1, i] + rnorm(n = 1, mean = 0, sd = 1)
 #'       }
 #'       
-#'       #' truth:
-#'       y[t, i] <- rho_1*y[t-1, i] + beta*treat[t,i] + lagTreOutc*treat[t-1,i] + beta_x*x[t,i] + beta_x2*x2[t,i] + alphai[i] + gammat[t] + eps[t, i] #' the current period
+#'       # truth:
+#'       y[t, i] <- rho_1*y[t-1, i] + beta*treat[t,i] + lagTreOutc*treat[t-1,i] + beta_x*x[t,i] + beta_x2*x2[t,i] + alphai[i] + gammat[t] + eps[t, i] # the current period
 #'       
 #'       y.lagged[t,i] <- y[t-1,i]
 #'     }
@@ -93,12 +93,12 @@
 #'   treat.vec <- c(treat)
 #'   treat.lagged.vec <- c(treat.lagged)
 #'   x.vec <- c(x)
-#'   #'y2.vec <- c(y2)
-#'   #'#' generate unit and (Time + 50) index
+#'   #y2.vec <- c(y2)
+#'   ## generate unit and (Time + 50) index
 #'   unit.index <- rep(1:N, each = (Time + 50))
 #'   time.index <- rep(1:(Time + 50), N)
-#'   #' Data.str <- as.data.frame(cbind(y.vec, treat.vec, unit.index, x1.vec, x2.vec))
-#'   #' colnames(Data.str) <- c("y", "tr", "strata.id", "x1", "x2")
+#'   # Data.str <- as.data.frame(cbind(y.vec, treat.vec, unit.index, x1.vec, x2.vec))
+#'   # colnames(Data.str) <- c("y", "tr", "strata.id", "x1", "x2")
 #'   Data.obs <- as.data.frame(cbind(time.index, unit.index, y.vec, y.lagged.vec,
 #'                                   treat.vec, treat.lagged.vec, x.vec))
 #'   colnames(Data.obs) <- c("time", "unit", "y", "y_l1", "treat", "treat_l1", "x")
