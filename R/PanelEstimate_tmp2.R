@@ -1,3 +1,7 @@
+#' Illustration of PanelEstimate_tmp2
+#' 
+
+
 PanelEstimate_tmp2 <- function(lead, 
                                covariate.only = FALSE,
                                inference = c("wfe", "bootstrap"), 

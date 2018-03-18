@@ -435,8 +435,8 @@ PanelWFE <- function (formula, data, treat = "treat.name", # line 283!
     ## cat("3: Robust error calculation started\n")
     
     
-    ginv.XX.tilde <- ginv(crossprod(X.tilde, X.tilde))
-    ginv.XX.hat <- ginv(crossprod(X.hat, X.hat))
+    ginv.XX.tilde <- MASS::ginv(crossprod(X.tilde, X.tilde))
+    ginv.XX.hat <- MASS::ginv(crossprod(X.hat, X.hat))
     
     diag.ee.tilde <- c(u.tilde^2)
     diag.ee.hat <- c(u.hat^2)
@@ -756,7 +756,7 @@ PanelWFE <- function (formula, data, treat = "treat.name", # line 283!
       for (j in 1:length(uniq.u)) {
         Udummy.j <- c(Udummy.j, rep(j, u[j,1]))
       }
-      Udummy  <- sparseMatrix(x=1, i=Udummy.i, j=Udummy.j)
+      Udummy  <- Matrix::sparseMatrix(x=1, i=Udummy.i, j=Udummy.j)
       
       t <- as.matrix(table(data$u.index, data$t.index))
       
@@ -805,7 +805,7 @@ PanelWFE <- function (formula, data, treat = "treat.name", # line 283!
       
       ## Q: not too sparse
       Q <- Q1 %*% Tdummy
-      Q.QQginv <- Q %*% ginv(as.matrix(crossprod(Q)))
+      Q.QQginv <- Q %*% MASS::ginv(as.matrix(crossprod(Q)))
       
       X <- as.matrix(X)
       Y <- as.matrix(data$y)
@@ -1171,8 +1171,8 @@ PanelWFE <- function (formula, data, treat = "treat.name", # line 283!
       
       
       QQ.inv <- list()
-      QQ.inv[[1]] <- drop0(Matrix(Re(ginv(crossprod(Q.matrix)))))
-      QQ.inv[[2]] <- drop0(Matrix(Im(ginv(crossprod(Q.matrix)))))
+      QQ.inv[[1]] <- drop0(Matrix(Re(MASS::ginv(crossprod(Q.matrix)))))
+      QQ.inv[[2]] <- drop0(Matrix(Im(MASS::ginv(crossprod(Q.matrix)))))
       rm(Q.matrix)
       gc()
       
@@ -1242,7 +1242,7 @@ PanelWFE <- function (formula, data, treat = "treat.name", # line 283!
       }
       
       
-      ginv.XX.tilde <- ginv(crossprod(X.tilde))
+      ginv.XX.tilde <- MASS::ginv(crossprod(X.tilde))
       betaT <- ginv.XX.tilde%*% crossprod(X.tilde, y.tilde)
       if (length(betaT) == 1) {
         colnames(betaT) <- a[3]
@@ -1301,7 +1301,7 @@ PanelWFE <- function (formula, data, treat = "treat.name", # line 283!
       ## cat("dimension of X.tilde:", dim(X.tilde), "\n")
       
       ## XX.hat <- crossprod(X.hat, X.hat)
-      ginv.XX.hat <- ginv(crossprod(X.hat, X.hat))
+      ginv.XX.hat <- MASS::ginv(crossprod(X.hat, X.hat))
       ## d.f <- length(y.tilde) - n.Udummy - n.Tdummy - dim(X.tilde)[2]
       d.f <- length(y.tilde)
       
@@ -1542,7 +1542,7 @@ PanelWFE <- function (formula, data, treat = "treat.name", # line 283!
         
         ## White test: null hypothesis is ``no misspecification''
         
-        white.stat <- as.double(Re(nrow(X.hat) * t(coef.ols - coef.wls) %*% ginv(Phi.hat) %*% (coef.ols - coef.wls)))
+        white.stat <- as.double(Re(nrow(X.hat) * t(coef.ols - coef.wls) %*% MASS::ginv(Phi.hat) %*% (coef.ols - coef.wls)))
         test.null <- pchisq(as.numeric(white.stat), df=p, lower.tail=F) < White.alpha
         white.p <- pchisq(as.numeric(white.stat), df=p, lower.tail=F)
         flush.console()

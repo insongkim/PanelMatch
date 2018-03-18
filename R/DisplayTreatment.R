@@ -20,6 +20,9 @@
 #' @param x.size Numeric size of the text for xlab. Default is 10.
 #' @param x.size Numeric size of the text for ylab. Default is 5. 
 #' @param letend.labels Character vector of length two describing the labels of the legend to be shown in the plot
+#' 
+#' @import ggplot2
+#' 
 #' @examples 
 #' set.seed(123)
 #' alphai <- rnorm(5000, mean = 0, sd = 1)

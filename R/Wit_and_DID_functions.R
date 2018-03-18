@@ -38,7 +38,7 @@ synth_constReg_weight <- function (Y_t, Y_c, T0, init = NULL, method = "solnp")
       W_c_init <- init
     }
     if (method == "solnp") {
-      opt_out <- solnp(pars = W_c_init, fun = obj_func, 
+      opt_out <- Rsolnp::solnp(pars = W_c_init, fun = obj_func, 
                                Y_t = Y_t_pre, Y_c = Y_c_pre, eqfun = const_func, 
                                eqB = 1, LB = rep(0, N_c), UB = rep(1, N_c) 
       )
@@ -59,7 +59,7 @@ synth_constReg_weight <- function (Y_t, Y_c, T0, init = NULL, method = "solnp")
       }
     }
     else if (method == "nlopt") {
-      opt_out <- nloptr(x0 = W_c_init, eval_f = obj_func, 
+      opt_out <- nloptr::nloptr(x0 = W_c_init, eval_f = obj_func, 
                                 lb = rep(0, N_c), ub = rep(1, N_c), eval_g_eq = const_func, 
                                 opts = list(algorithm = "NLOPT_LD_AUGLAG_EQ"), 
                                 Y_t = Y_t_pre, Y_c = Y_c_pre)
@@ -85,7 +85,7 @@ synth_vit <- function(x, lag, max.lead, method = "Synth") {
   if (nrow(x) > 2*(lag + max.lead + 1)) {
     if (is.na(colnames(x)[5:length(x)][1])) {
       V2 = x$V2; V1 = x$V1
-      control_data <- dcast(x[V2 != testid[2], ], V2 ~ V1)
+      control_data <- reshape2::dcast(x[V2 != testid[2], ], V2 ~ V1)
       
       # treat_data <- x %>% 
       #   filter(V2 == testid[2]) %>% 
