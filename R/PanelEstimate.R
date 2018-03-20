@@ -429,6 +429,13 @@ PanelEstimate <- function(lead,
 }
 
 
+#' Title 
+#'
+#' @param object takes an PanelEstimate object
+#'
+#' @return a summary of PanelEstimate outputs
+#' @export
+#'
 summary.PanelEstimate <- function(object) {
   if(object$method == "Maha"){
     cat("Weighted Difference-in-Differences with Mahalanobis Distance\n")
