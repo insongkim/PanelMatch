@@ -4,7 +4,7 @@
 #' @importFrom DataCombine slide MoveFront
 #' @importFrom CBPS CBPS
 #' @importFrom lasso2 merge.formula
-#' @import data.table
+#' @importFrom data.table rbindlist
 #' @importFrom plyr rbind.fill
 #' @importFrom reshape2 dcast
 
@@ -134,7 +134,7 @@ PanelMatch <- function(lag, max.lead, time.id = "year", qoi = "ate",
       #   return(x)
       # })
       
-      pooled <- rbindlist(only.t0) # get a dataset for propensity score generation
+      pooled <- data.table::rbindlist(only.t0) # get a dataset for propensity score generation
       colnames(pooled) <- c(time.id, unit.id, treatment, dependent, colnames(d2)[5:length(d2)])
       
       # get propensity scores
@@ -276,7 +276,7 @@ PanelMatch <- function(lag, max.lead, time.id = "year", qoi = "ate",
           #   return(x)
           # })
           
-          pooled <- rbindlist(only.t0) # get a dataset for propensity score generation
+          pooled <- data.table::rbindlist(only.t0) # get a dataset for propensity score generation
           colnames(pooled) <- c(time.id, unit.id, treatment, dependent, colnames(d2)[5:length(d2)])
           
           # get propensity scores
@@ -407,7 +407,7 @@ PanelMatch <- function(lag, max.lead, time.id = "year", qoi = "ate",
               #   return(x)
               # })
               
-              pooled <- rbindlist(only.t0) # get a dataset for propensity score generation
+              pooled <- data.table::rbindlist(only.t0) # get a dataset for propensity score generation
               colnames(pooled) <- c(time.id, unit.id, treatment, dependent, colnames(d2)[5:length(d2)])
               
               # get propensity scores
@@ -482,7 +482,7 @@ PanelMatch <- function(lag, max.lead, time.id = "year", qoi = "ate",
               #   return(x)
               # })
               
-              pooled <- rbindlist(only.t0) # get a dataset for propensity score generation
+              pooled <- data.table::rbindlist(only.t0) # get a dataset for propensity score generation
               if (length(pooled) > 0) {
                 colnames(pooled) <- c(time.id, unit.id, treatment, dependent, colnames(d2)[5:length(d2)])
                 

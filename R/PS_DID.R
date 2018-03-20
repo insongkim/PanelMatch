@@ -48,7 +48,7 @@ PS_DID <- function (L, FORWARD, M = 1, time.id = "year", unit.id = "ccode", trea
     return(x)
   })
   
-  pooled <- rbindlist(even_smaller1) # get a dataset for propensity score generation
+  pooled <- data.table::rbindlist(even_smaller1) # get a dataset for propensity score generation
   
   # get propensity scores
   if (covariate.only == TRUE) {
@@ -102,7 +102,7 @@ PS_DID <- function (L, FORWARD, M = 1, time.id = "year", unit.id = "ccode", trea
     return(x)
   })
   
-  pooled <- rbindlist(even_smaller2) # get a dataset for propensity score generation
+  pooled <- data.table::rbindlist(even_smaller2) # get a dataset for propensity score generation
   
   # get propensity scores
   if (covariate.only == TRUE) {

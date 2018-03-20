@@ -332,7 +332,7 @@ PS_gapsplot <- function(L, FORWARD, time.id = "year",
     return(x)
   })
   
-  pooled <- rbindlist(even_smaller1) # get a dataset for propensity score generation
+  pooled <- data.table::rbindlist(even_smaller1) # get a dataset for propensity score generation
   
   # get propensity scores
   fit0 <- glm(reformulate(response = treatment, termlabels = c(covariate, names(pooled[, (4 + length(covariate) + 1):length(pooled)]))), 
