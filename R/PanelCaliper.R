@@ -1,7 +1,11 @@
 PanelCaliper <- function(matched_sets,
-                              covariate = NULL,
-                              qoi = NULL,
-                              post.treatment = TRUE, number = .1) {
+                         covariate = NULL,
+                         qoi = NULL,
+                         balance_type = c("gap",
+                                          "parallel"), # sd for parallel trend
+                         # mean for gaps    
+                         post.treatment = TRUE, number = .1,
+                         show_all = FALSE) {
   lag = matched_sets$lag;lead = matched_sets$max.lead;
   treatment = matched_sets$treatment; dependent = matched_sets$dependent
   
@@ -50,36 +54,47 @@ PanelCaliper <- function(matched_sets,
   
   if (is.null(qoi)) {
     if (matched_sets$qoi == "att") {
-      ind <- as.logical(sapply(matched_sets$`ATT_matches`, qoi = matched_sets$qoi,
-                               gaps_caliper, lag = lag, covariate = covariate,
-                               data = matched_sets$data) < number)
+      all_stuff <- sapply(matched_sets$`ATT_matches`, qoi = matched_sets$qoi,
+                          gaps_caliper, lag = lag, covariate = covariate,
+                          balance_type = balance_type,
+                          data = matched_sets$data)
+      ind <- as.logical(all_stuff < number)
       matched_sets$`ATT_matches` <- matched_sets$`ATT_matches`[which(ind)]
     } else if (matched_sets$qoi == "atc") {
-      ind <- as.logical(sapply(matched_sets$`ATC_matches`, qoi = matched_sets$qoi,
-                               gaps_caliper, lag = lag, covariate = covariate,
-                               data = matched_sets$data) < number)
+      all_stuff <- sapply(matched_sets$`ATC_matches`, qoi = matched_sets$qoi,
+                          gaps_caliper, lag = lag, covariate = covariate,
+                          balance_type = balance_type,
+                          data = matched_sets$data)
+      ind <- as.logical(all_stuff < number)
       matched_sets$`ATC_matches` <- matched_sets$`ATC_matches`[which(ind)]
     } else {
       stop("Please specify either att or atc for `qoi`.")
     }
   } else {
     if (qoi == "att") {
-      ind <- as.logical(sapply(matched_sets$`ATT_matches`, qoi = qoi,
-                               gaps_caliper, lag = lag, covariate = covariate,
-                               data = matched_sets$data) < number)
+      all_stuff <- sapply(matched_sets$`ATT_matches`, qoi = qoi,
+                          gaps_caliper, lag = lag, covariate = covariate,
+                          balance_type = balance_type,
+                          data = matched_sets$data)
+      ind <- as.logical(all_stuff < number)
       matched_sets$`ATT_matches` <- matched_sets$`ATT_matches`[which(ind)]
     } else if (qoi == "atc") {
-      ind <- as.logical(sapply(matched_sets$`ATC_matches`, qoi = qoi,
-                               gaps_caliper, lag = lag, covariate = covariate,
-                               data = matched_sets$data) < number)
+      all_stuff <- sapply(matched_sets$`ATC_matches`, qoi = qoi,
+                          gaps_caliper, lag = lag, covariate = covariate,
+                          balance_type = balance_type,
+                          data = matched_sets$data)
+      ind <- as.logical(all_stuff < number)
       matched_sets$`ATC_matches` <- matched_sets$`ATC_matches`[which(ind)]
     } else {
       stop("Please specify either att or atc for `qoi`.")
     }
   }
   
-
-  return(matched_sets)
-
+  if (show_all == FALSE) {
+    return(matched_sets)
+  } else {
+    return(all_stuff)
+  }
+  
+  
 }  
-
