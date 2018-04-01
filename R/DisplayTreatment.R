@@ -3,10 +3,6 @@
 #' \code{DisplayTreatment} visualizes the treatment distribution
 #' across unit and time in a panel dataset
 #'
-#' @usage DisplayTreatment(unit.id, time.id, treatment, data,
-#' color.of.treated, color.of.untreated, title, legend.position, xlab,
-#' ylab, x.size, y.size, legend.labels)
-#' 
 #' @param unit.id A numeric vector of unit identifiers
 #' @param time.id A numeric vector of time identifiers
 #' @param treatment Name of the treatment variable in character class

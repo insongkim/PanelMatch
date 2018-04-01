@@ -4,9 +4,11 @@
 \alias{DisplayTreatment}
 \title{DisplayTreatment}
 \usage{
-DisplayTreatment(unit.id, time.id, treatment, data,
-color.of.treated, color.of.untreated, title, legend.position, xlab,
-ylab, x.size, y.size, legend.labels)
+DisplayTreatment(unit.id, time.id, treatment, data, color.of.treated = "red",
+  color.of.untreated = "blue",
+  title = "Treatment Distribution \\n Across Units and Time",
+  legend.position = "none", xlab = "time", ylab = "unit", x.size = 10,
+  y.size = 5, legend.labels = c("not treated", "treated"))
 }
 \arguments{
 \item{unit.id}{A numeric vector of unit identifiers}
