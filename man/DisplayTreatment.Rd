@@ -49,13 +49,12 @@ across unit and time in a panel dataset
 }
 \examples{
 \dontrun{
-library(ggplot2)
-data <- dem
 DisplayTreatment(unit.id = "wbcode2",
                  time.id = "year", legend.position = "none",
                  xlab = "year", ylab = "Country Code",
-                 treatment = "dem", data = data)
+                 treatment = "dem", data = dem)
 }
+
 }
 \author{
 In Song Kim <insong@mit.edu>, Erik Wang

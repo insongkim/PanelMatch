@@ -35,13 +35,12 @@
 #'
 #' @examples 
 #' \dontrun{
-#' library(ggplot2)
-#' data <- dem
 #' DisplayTreatment(unit.id = "wbcode2",
 #'                  time.id = "year", legend.position = "none",
 #'                  xlab = "year", ylab = "Country Code",
-#'                  treatment = "dem", data = data)
+#'                  treatment = "dem", data = dem)
 #' }
+#'
 #' @export
 DisplayTreatment <- function(unit.id, time.id, treatment, data, 
                              color.of.treated = "red",
