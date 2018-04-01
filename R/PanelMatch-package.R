@@ -28,8 +28,20 @@
 #' <haixiao@Princeton.edu>, and Kosuke Imai <kimai@Princeton.edu>
 #' 
 #' Maintainer: In Song Kim \email{insong@mit.edu}
-#' @references Kim, In Song, Erik Wang and Kosuke Imai. (2018) "Matching Methods for Causal Inference with Time-Series Cross-Section Data." Working Paper.
+#' @references Imai, Kosuke, In Song Kim and Erik Wang. (2018)
+#' "Matching Methods for Causal Inference with Time-Series
+#' Cross-Section Data." Working paper.
 #' @keywords package
+#' @import ggplot2 Synth stats
 #' @importFrom Rcpp sourceCpp
-#' @importFrom stats na.omit
+#' @importFrom DataCombine slide MoveFront
+#' @importFrom CBPS CBPS
+#' @importFrom lasso2 merge.formula
+#' @importFrom data.table rbindlist
+#' @importFrom plyr rbind.fill
+#' @importFrom reshape2 dcast
+#' @importFrom utils capture.output
+#' @importFrom MCMCpack rdirichlet
+#' @importFrom nloptr nloptr
+#' @importFrom Rsolnp solnp
 NULL

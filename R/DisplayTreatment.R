@@ -24,8 +24,6 @@
 #' @return \code{DisplayTreatment} returns a treatment variation plot,
 #' which visualizes the variation of treatment across unit and time.
 #' 
-#' @import ggplot2
-#'
 #' @author In Song Kim <insong@mit.edu>, Erik Wang
 #' <haixiao@Princeton.edu>, and Kosuke Imai <kimai@Princeton.edu>
 #'

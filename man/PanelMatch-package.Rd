@@ -27,7 +27,9 @@ quality of matches by examining the resulting covariate balance.
 Date: \tab 2018-03-01\cr License: \tab GPL (>= 3)\cr }
 }
 \references{
-Kim, In Song, Erik Wang and Kosuke Imai. (2018) "Matching Methods for Causal Inference with Time-Series Cross-Section Data." Working Paper.
+Imai, Kosuke, In Song Kim and Erik Wang. (2018)
+"Matching Methods for Causal Inference with Time-Series
+Cross-Section Data." Working paper.
 }
 \author{
 In Song Kim <insong@mit.edu>, Erik Wang
