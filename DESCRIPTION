@@ -39,6 +39,7 @@ Imports:
     MCMCpack,
     nloptr,
     plyr,
+    stats,
     reshape2,
     lasso2,
     Rsolnp,

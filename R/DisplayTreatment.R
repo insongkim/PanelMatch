@@ -20,9 +20,9 @@
 #' set as in ggplot2
 #' @param xlab Character label of the x-axis
 #' @param ylab Character label of the y-axis
-#' @param x.size Numeric size of the text for xlab. Default is 10.
-#' @param x.size Numeric size of the text for ylab. Default is 5. 
-#' @param letend.labels Character vector of length two describing the
+#' @param x.size Numeric size of the text for xlab. Default is 10
+#' @param y.size Numeric size of the text for ylab. Default is 5 
+#' @param legend.labels Character vector of length two describing the
 #' labels of the legend to be shown in the plot
 #'
 #' @return \code{DisplayTreatment} returns a treatment variation plot,
@@ -36,11 +36,11 @@
 #' @examples 
 #' \dontrun{
 #' library(ggplot2)
-#' d2 <- Acemoglu
+#' data <- dem
 #' DisplayTreatment(unit.id = "wbcode2",
 #'                  time.id = "year", legend.position = "none",
 #'                  xlab = "year", ylab = "Country Code",
-#'                  treatment = "dem", data = d2)
+#'                  treatment = "dem", data = data)
 #' }
 #' @export
 DisplayTreatment <- function(unit.id, time.id, treatment, data, 

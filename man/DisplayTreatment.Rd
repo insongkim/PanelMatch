@@ -32,11 +32,11 @@ set as in ggplot2}
 
 \item{ylab}{Character label of the y-axis}
 
-\item{x.size}{Numeric size of the text for xlab. Default is 10.}
+\item{x.size}{Numeric size of the text for xlab. Default is 10}
 
-\item{x.size}{Numeric size of the text for ylab. Default is 5.}
+\item{y.size}{Numeric size of the text for ylab. Default is 5}
 
-\item{letend.labels}{Character vector of length two describing the
+\item{legend.labels}{Character vector of length two describing the
 labels of the legend to be shown in the plot}
 }
 \value{
@@ -50,11 +50,11 @@ across unit and time in a panel dataset
 \examples{
 \dontrun{
 library(ggplot2)
-d2 <- Acemoglu
+data <- dem
 DisplayTreatment(unit.id = "wbcode2",
                  time.id = "year", legend.position = "none",
                  xlab = "year", ylab = "Country Code",
-                 treatment = "dem", data = d2)
+                 treatment = "dem", data = data)
 }
 }
 \author{
