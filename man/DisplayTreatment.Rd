@@ -6,9 +6,9 @@
 \usage{
 DisplayTreatment(unit.id, time.id, treatment, data, color.of.treated = "red",
   color.of.untreated = "blue",
-  title = "Treatment Distribution \\n Across Units and Time",
-  legend.position = "none", xlab = "time", ylab = "unit", x.size = 10,
-  y.size = 5, legend.labels = c("not treated", "treated"))
+  title = "Treatment Distribution \\n Across Units and Time", xlab = "time",
+  ylab = "unit", x.size = 10, y.size = 5, legend.position = "none",
+  legend.labels = c("not treated", "treated"))
 }
 \arguments{
 \item{unit.id}{A numeric vector of unit identifiers}
@@ -25,9 +25,7 @@ character. Default is red.}
 \item{color.of.untreated}{Color of the untreated observations in
 character. Defalt is blue.}
 
-\item{title}{Title of the plot in character}
-
-\item{legend.position}{Position of the legend with the same choice
+\item{title}{Title of the plot in character
 set as in ggplot2}
 
 \item{xlab}{Character label of the x-axis}
@@ -37,6 +35,8 @@ set as in ggplot2}
 \item{x.size}{Numeric size of the text for xlab. Default is 10}
 
 \item{y.size}{Numeric size of the text for ylab. Default is 5}
+
+\item{legend.position}{Position of the legend with the same choice}
 
 \item{legend.labels}{Character vector of length two describing the
 labels of the legend to be shown in the plot}

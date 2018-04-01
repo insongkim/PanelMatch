@@ -12,12 +12,12 @@
 #' @param color.of.untreated Color of the untreated observations in
 #' character. Defalt is blue.
 #' @param title Title of the plot in character
-#' @param legend.position Position of the legend with the same choice
 #' set as in ggplot2
 #' @param xlab Character label of the x-axis
 #' @param ylab Character label of the y-axis
 #' @param x.size Numeric size of the text for xlab. Default is 10
-#' @param y.size Numeric size of the text for ylab. Default is 5 
+#' @param y.size Numeric size of the text for ylab. Default is 5
+#' @param legend.position Position of the legend with the same choice
 #' @param legend.labels Character vector of length two describing the
 #' labels of the legend to be shown in the plot
 #'
@@ -42,8 +42,9 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
                              color.of.treated = "red",
                              color.of.untreated = "blue", 
                              title = "Treatment Distribution \n Across Units and Time",
-                             legend.position= "none", xlab = "time", ylab = "unit",
+                             xlab = "time", ylab = "unit",
                              x.size = 10, y.size = 5,
+                             legend.position= "none", 
                              legend.labels = c("not treated", "treated"))
     
 {
