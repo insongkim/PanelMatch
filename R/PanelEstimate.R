@@ -9,8 +9,6 @@
 #' @importFrom knitr kable
 #' @import Matrix
 #' @import MASS 
-
-#' @export
 PanelEstimate <- function(lead, 
                                covariate.only = FALSE,
                                inference = c("wfe", "bootstrap"), 

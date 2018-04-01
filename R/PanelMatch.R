@@ -7,10 +7,6 @@
 #' @importFrom data.table rbindlist
 #' @importFrom plyr rbind.fill
 #' @importFrom reshape2 dcast
-
-
-
-#' @export
 PanelMatch <- function(lag, max.lead, time.id = "year", qoi = "ate",
                            unit.id = "ccode",
                            treatment, 

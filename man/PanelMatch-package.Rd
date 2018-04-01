@@ -20,8 +20,8 @@ Useful links:
 
 Authors:
 \itemize{
-  \item Kosuke Imai \email{kimai@Princeton.edu}
   \item Erik Wang \email{haixiaow@Princeton.edu}
+  \item Kosuke Imai \email{kimai@Princeton.edu}
 }
 
 }
