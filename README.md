@@ -27,7 +27,7 @@ Installation Instructions
 <!-- install.packages("panelMatch") -->
 <!-- ``` -->
 
-You can also install the most recent development version of `panelMatch` using the `devtools` package. First you have to install `devtools` using the following code. Note that you only have to do this once:
+You can install the most recent development version of `panelMatch` using the `devtools` package. First you have to install `devtools` using the following code. Note that you only have to do this once:
 
 ``` r
 if(!require(devtools)) install.packages("devtools")
@@ -38,4 +38,69 @@ Then, load `devtools` and use the function `install_github()` to install `PanelM
 ``` r
 library(devtools)
 install_github("insongkim/PanelMatch", dependencies=TRUE)
+```
+
+
+Simple usage example
+-------------------------
+
+### PanelMatch
+
+`PanelMatch` identifies a matched set for each treated
+ observation. Specifically, for a given treated unit, the matched set
+ consists of control observations that have the identical treatment
+ history up to a certain number of `lag` years. Researchers must
+ specify `lag`. A further refinement of the matched set will be
+ possible by setting the size of the matched set `M`, and adjusting
+ for other confounders such as past outcomes and covariates via
+ `formula`. Various matching methods such as `Mahalanobis distance`
+ matching, `CBPS`, `Propensity score` matching and weighting, and
+ `Synthetic control` matching can be used.
+
+``` r
+library(PanelMatch)
+ 
+matches.cbps <- PanelMatch(lag = 4, max.lead = 4, time.id = "year",
+                               unit.id = "wbcode2",
+                               treatment = "dem",
+                               formula =  y ~ dem,
+                               method = "CBPS", weighting = FALSE,
+                               qoi = "ate",  M = 5, data = dem)
+```							
+
+Users should closely examine the matched sets, and check the balance
+between treated and control units in terms of their observable
+pre-treatment characteristics.
+
+### PanelEstimate
+
+Once a proper matched sets are attained by `PanelMatch`, users can
+estimate the causal quantity of interest such as the average
+treatment effect using `PanelEstimate`. Either bootstrap or weighted
+fixed effects methods can be used for standard error calculation.
+
+```r
+mod.bootSE <- PanelEstimate(lead = 0:4, inference = "bootstrap",
+                             matched_sets = matches.cbps,
+                             qoi = "att", CI = .95,
+                             ITER = 500)
+
+summary(mod.bootSE)
+
+Weighted Difference-in-Differences with Covariate Balancing Propensity Score
+Matches created with 4 lags
+
+Standard errors computed with 500 Weighted bootstrap samples
+
+Estimate of Average Treatment Effect on the Treated (ATT) by Period:
+
+|                                                       |        t+0|        t+1|        t+2|        t+3|        t+4|
+|:------------------------------------------------------|----------:|----------:|----------:|----------:|----------:|
+|Point Estimate(s)                                      |  0.3697332|  1.9657985|  3.0537125|  4.1564464|  4.1361189|
+|Standard Error(s)                                      |  0.8580289|  1.3487225|  1.7604525|  2.1510657|  2.5481439|
+|Lower Limit of 95 % Regular Confidence Interval        | -1.3428403| -0.6863441| -0.4301161|  0.0415114| -0.5597593|
+|Upper Limit of 95 % Regular Confidence Interval        |  1.9864734|  4.5182535|  6.8135019|  8.6022466|  9.6319008|
+|Bias-corrected Estimate(s)                             |  0.3890818|  1.9662642|  3.0584442|  4.1538121|  4.1586525|
+|Lower Limit of 95 % Bias-corrected Confidence Interval | -1.2470070| -0.5866564| -0.7060769| -0.2893537| -1.3596630|
+|Upper Limit of 95 % Bias-corrected Confidence Interval |  2.0823067|  4.6179412|  6.5375412|  8.2713815|  8.8319971|
 ```

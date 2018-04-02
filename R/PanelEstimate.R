@@ -468,9 +468,10 @@ PanelEstimate <- function(lead, covariate.only = FALSE,
                 "boots" = coefs, "ITER" = ITER,
                 "method" = method, "lag" = lag,
                 "lead" = lead, "CI" = CI, "qoi" = qoi)
+
       class(z) <- "PanelEstimate"
-      z
-      
+
+      return(z)
     }
     
     
@@ -478,7 +479,19 @@ PanelEstimate <- function(lead, covariate.only = FALSE,
 }
 
 
-summary.PanelEstimate <- function(object) {
+#' Get summaries of PanelEstimate objects
+#'
+#' \code{summary.PanelEstimate()} takes an object returned by
+#' \code{PanelEstimate}, and returns a summary table of point
+#' estimates and the confidence intervales.
+#'
+#' @usage \method{summary}{PanelEstimate}(object, ...)
+#' @param object A PanelEstimate object
+#' @param ... Further arguments to be passed to \code{summary.PanelEstimate()}.
+#' 
+#' @export
+#' @method summary PanelEstimate
+summary.PanelEstimate <- function(object, ...) {
   if(object$method == "Maha"){
     cat("Weighted Difference-in-Differences with Mahalanobis Distance\n")
   } else if (object$method == "Pscore") {
