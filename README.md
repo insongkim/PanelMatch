@@ -81,10 +81,11 @@ long-term effects. In this example, we illustrate the use of
 outcomes on `t` through `t+4`.
 
 ```r
+
 mod.bootSE <- PanelEstimate(lead = 0:4, inference = "bootstrap",
-                           matched_sets = matches.cbps,
-                           qoi = "att", CI = .95,
-                           ITER = 500)
+                            matched_sets = matches.cbps,
+                            qoi = "att", CI = .95,
+                            ITER = 500)
 
 summary(mod.bootSE)
 
