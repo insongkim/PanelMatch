@@ -61,11 +61,11 @@ Simple usage example
 library(PanelMatch)
  
 matches.cbps <- PanelMatch(lag = 4, max.lead = 4, time.id = "year",
-                               unit.id = "wbcode2",
-                               treatment = "dem",
-                               formula =  y ~ dem,
-                               method = "CBPS", weighting = FALSE,
-                               qoi = "ate",  M = 5, data = dem)
+	                         unit.id = "wbcode2",
+                             treatment = "dem",
+                             formula =  y ~ dem,
+                             method = "CBPS", weighting = FALSE,
+                             qoi = "ate",  M = 5, data = dem)
 ```							
 
 Users should closely examine the matched sets, and check the balance
@@ -77,13 +77,17 @@ pre-treatment characteristics.
 Once a proper matched sets are attained by `PanelMatch`, users can
 estimate the causal quantity of interest such as the average
 treatment effect using `PanelEstimate`. Either bootstrap or weighted
-fixed effects methods can be used for standard error calculation.
+fixed effects methods can be used for standard error
+calculation. Users can estimate the contemporaneous effect as well as
+long-term effects. In this example, we illustrate the use of
+`PanelEstimate` to estimate the ATT of treatment at time `t` on the
+outcomes on `t` through `t+4`.
 
 ```r
 mod.bootSE <- PanelEstimate(lead = 0:4, inference = "bootstrap",
-                             matched_sets = matches.cbps,
-                             qoi = "att", CI = .95,
-                             ITER = 500)
+                           matched_sets = matches.cbps,
+                           qoi = "att", CI = .95,
+                           ITER = 500)
 
 summary(mod.bootSE)
 

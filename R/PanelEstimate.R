@@ -8,7 +8,8 @@
 #' weighted average computation with weighted bootstrap standard
 #' errors
 #' 
-#' @param lead An integer value indicating the number of leads
+#' @param lead An integer vector indicating the sequence of the lead
+#' periods for which the quantity of interest will be estimated
 #' @param covariate.only A logical value indicating whether only
 #' covariates are used. The default is \code{FALSE}
 #' @param inference One of ``wfe'' (weighted fixed effects) or
