@@ -59,11 +59,10 @@ Simple usage example
 
 ``` r
 library(PanelMatch)
- 
 matches.cbps <- PanelMatch(lag = 4, max.lead = 4, time.id = "year",
-                    unit.id = "wbcode2", treatment = "dem",
-					formula =  y ~ dem, method = "CBPS",
-					weighting = FALSE,  qoi = "ate",  M = 5, data = dem)
+                           unit.id = "wbcode2", treatment = "dem",
+                           formula =  y ~ dem, method = "CBPS",
+                           weighting = FALSE,  qoi = "ate",  M = 5, data = dem)
 ```							
 
 Users should closely examine the matched sets, and check the balance
