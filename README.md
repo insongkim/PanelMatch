@@ -44,6 +44,20 @@ install_github("insongkim/PanelMatch", dependencies=TRUE)
 Simple usage example
 -------------------------
 
+### Treatment Variation Plot
+
+Users can visualize the variation of treatment across space and
+time. This will help users build an intuition about how comparison of
+treated and control observation can be made.
+
+```r
+DisplayTreatment(unit.id = "wbcode2",
+                 time.id = "year", legend.position = "none",
+                 xlab = "year", ylab = "Country Code",
+                 treatment = "dem", data = dem)
+```
+![alt text](http://web.mit.edu/insong/www/pdf/varPlot.pdf)
+
 ### PanelMatch
 
 `PanelMatch` identifies a matched set for each treated
