@@ -41,7 +41,7 @@ install_github("insongkim/PanelMatch", dependencies=TRUE)
 ```
 
 
-Simple usage example
+Usage Examples
 -------------------------
 
 ### Treatment Variation Plot
