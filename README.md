@@ -51,6 +51,7 @@ time. This will help users build an intuition about how comparison of
 treated and control observation can be made.
 
 ```r
+library(PanelMatch)
 DisplayTreatment(unit.id = "wbcode2",
                  time.id = "year", legend.position = "none",
                  xlab = "year", ylab = "Country Code",
@@ -72,7 +73,6 @@ DisplayTreatment(unit.id = "wbcode2",
  `Synthetic control` matching can be used.
 
 ``` r
-library(PanelMatch)
 matches.cbps <- PanelMatch(lag = 4, max.lead = 4, time.id = "year",
                            unit.id = "wbcode2", treatment = "dem",
                            formula =  y ~ dem, method = "CBPS",
