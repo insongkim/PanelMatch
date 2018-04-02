@@ -21,7 +21,7 @@
 #' Date: \tab 2018-03-01\cr License: \tab GPL (>= 3)\cr }
 #'
 #' @name PanelMatch-package
-#' @useDynLib PanelMatch, .registration = TRUE
+#' @useDynLib PanelMatch
 #' @aliases PanelMatch-package 
 #' @docType package
 #' @author In Song Kim <insong@mit.edu>, Erik Wang
@@ -32,7 +32,7 @@
 #' "Matching Methods for Causal Inference with Time-Series
 #' Cross-Section Data." Working paper.
 #' @keywords package
-#' @import ggplot2 Synth stats
+#' @import ggplot2 Synth stats MASS
 #' @importFrom Rcpp sourceCpp
 #' @importFrom DataCombine slide MoveFront
 #' @importFrom CBPS CBPS
@@ -44,4 +44,11 @@
 #' @importFrom MCMCpack rdirichlet
 #' @importFrom nloptr nloptr
 #' @importFrom Rsolnp solnp
+#' @importFrom matrixStats colSds colQuantiles
+#' @importFrom knitr kable
+#' @importFrom Matrix cBind rBind Diagonal Matrix drop0
+#' @importFrom methods as
+#' @importFrom utils flush.console tail object.size
 NULL
+
+
