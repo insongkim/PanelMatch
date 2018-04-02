@@ -54,7 +54,7 @@
 #' \item{NC_ATT}{...}
 #' \item{NC_ATC}{...}
 #'
-#' #' @author In Song Kim <insong@mit.edu>, Erik Wang
+#' @author In Song Kim <insong@mit.edu>, Erik Wang
 #' <haixiao@Princeton.edu>, and Kosuke Imai <kimai@Princeton.edu>
 #'
 #' @examples \dontrun{

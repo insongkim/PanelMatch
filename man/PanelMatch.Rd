@@ -65,9 +65,6 @@ containing the following components:
 \item{ATC_matches}{the matched set given the atc as the quantity of interest}
 \item{NC_ATT}{...}
 \item{NC_ATC}{...}
-
-#' @author In Song Kim <insong@mit.edu>, Erik Wang
-<haixiao@Princeton.edu>, and Kosuke Imai <kimai@Princeton.edu>
 }
 \description{
 \code{PanelMatch} identifies a matched set for each treated
@@ -87,4 +84,8 @@ matches.cbps <- PanelMatch(lag = 4, max.lead = 4,
                            method = "CBPS", weighting = FALSE,
                            qoi = "ate", M = 5, data = dem)
 }
+}
+\author{
+In Song Kim <insong@mit.edu>, Erik Wang
+<haixiao@Princeton.edu>, and Kosuke Imai <kimai@Princeton.edu>
 }

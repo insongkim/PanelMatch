@@ -9,7 +9,8 @@ PanelEstimate(lead, covariate.only = FALSE, inference = c("wfe",
   df.adjustment = FALSE, qoi = NULL, CI = 0.95)
 }
 \arguments{
-\item{lead}{An integer value indicating the number of leads}
+\item{lead}{An integer vector indicating the sequence of the lead
+periods for which the quantity of interest will be estimated}
 
 \item{covariate.only}{A logical value indicating whether only
 covariates are used. The default is \code{FALSE}}
@@ -50,9 +51,6 @@ estimates for statistical inference. The default is .95.}
 \item{lead}{the length of leads}
 \item{CI}{the confidence interval range}
 \item{qoi}{the quantity of interest}
-
-#' @author In Song Kim <insong@mit.edu>, Erik Wang
-<haixiao@Princeton.edu>, and Kosuke Imai <kimai@Princeton.edu>
 }
 \description{
 \code{PanelEstimate} estimates causal quantity of interests, e.g.,
@@ -82,4 +80,8 @@ mod.wfeSE <- PanelEstimate(lead = 0, inference = "wfe",
 matched_sets = matches.cbps, qoi = "att", CI = .95, ITER = 500)
 summary(mod.wfeSE)
 }
+}
+\author{
+In Song Kim <insong@mit.edu>, Erik Wang
+<haixiao@Princeton.edu>, and Kosuke Imai <kimai@Princeton.edu>
 }

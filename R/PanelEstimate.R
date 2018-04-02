@@ -42,7 +42,7 @@
 #' \item{CI}{the confidence interval range}
 #' \item{qoi}{the quantity of interest}
 #'
-#' #' @author In Song Kim <insong@mit.edu>, Erik Wang
+#' @author In Song Kim <insong@mit.edu>, Erik Wang
 #' <haixiao@Princeton.edu>, and Kosuke Imai <kimai@Princeton.edu>
 #'
 #' @examples \dontrun{
