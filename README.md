@@ -56,7 +56,7 @@ DisplayTreatment(unit.id = "wbcode2",
                  xlab = "year", ylab = "Country Code",
                  treatment = "dem", data = dem)
 ```
-![alt text](http://web.mit.edu/insong/www/pdf/varPlot.pdf)
+![](http://web.mit.edu/insong/www/pdf/varPlot.png)
 
 ### PanelMatch
 
