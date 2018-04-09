@@ -70,7 +70,7 @@ DisplayTreatment(unit.id = "wbcode2",
  for other confounders such as past outcomes and covariates via
  `formula`. Various matching methods such as `Mahalanobis distance`
  matching, `CBPS`, `Propensity score` matching and weighting, and
- `Synthetic control` matching can be used.
+ `Synthetic control` weighting can be used.
 
 ``` r
 matches.cbps <- PanelMatch(lag = 4, max.lead = 4, time.id = "year",
