@@ -85,7 +85,7 @@ pre-treatment characteristics.
 
 ### PanelEstimate
 
-Once a proper matched sets are attained by `PanelMatch`, users can
+Once proper matched sets are attained by `PanelMatch`, users can
 estimate the causal quantity of interest such as the average
 treatment effect using `PanelEstimate`. Either bootstrap or weighted
 fixed effects methods can be used for standard error
