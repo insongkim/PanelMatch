@@ -29,8 +29,9 @@
 #' through weighting should be performed. The default is \code{FALSE}.
 #' @param M An integer value indicating the maximum number of the
 #' control units in each matched set. The default is 3.
-#' @param covariate.only A logical value indicating whether the
-#' history should be matched only based on covariates. The default is
+#' @param covariate.only A logical value indicating whether only covariates
+#' are adjusted for when refining the matched sets, not lagged outcome.
+#' The default is
 #' \code{FALSE}.
 #' @param method An optional character string indicating the matching
 #' methods for refining the matched set based on covariates. One of
@@ -45,7 +46,7 @@
 #' \item{unit.id}{the unit id}
 #' \item{time.id}{the time id}
 #' \item{M}{the length of history to be matched}
-#' \item{covariate.only}{the indicator of whether only covariates are matched}
+#' \item{covariate.only}{the indicator of whether only covariates are adjusted for when refining the matched sets}
 #' \item{lag}{the length of lags}
 #' \item{max.lead}{the length of maximum lead}
 #' \item{data}{the data frame}
@@ -66,12 +67,9 @@
 #'                            qoi = "ate", M = 5, data = dem)
 #' }
 #' @export
-PanelMatch <- function(lag, max.lead, time.id = "year", qoi = "ate",
-                       unit.id = "ccode",
-                       treatment, 
-                       formula = y ~ treat, 
-                       data,
-                       weighting = FALSE,
+PanelMatch <- function(formula = y ~ treat, lag, max.lead,
+                       unit.id, time.id, treatment, qoi = "att",
+                       data, weighting = FALSE,
                        M = 3, covariate.only = FALSE,
                        method = NULL) {
   
@@ -195,8 +193,8 @@ PanelMatch <- function(lag, max.lead, time.id = "year", qoi = "ate",
       # get propensity scores
       if (covariate.only == TRUE|method == "SynthPscore"|method == "SynthCBPS") {
         if (method == "CBPS"|method == "SynthCBPS") {
-          fit0 <- CBPS(reformulate(response = treatment, termlabels = covariate), 
-                       family = binomial(link = "logit"), data = pooled)
+          fit0 <- suppressMessages(CBPS::CBPS(reformulate(response = treatment, termlabels = covariate), 
+                       family = binomial(link = "logit"), data = pooled))
         } else {
           fit0 <- glm(reformulate(response = treatment, termlabels = covariate), 
                       family = binomial(link = "logit"), data = pooled)
@@ -204,8 +202,8 @@ PanelMatch <- function(lag, max.lead, time.id = "year", qoi = "ate",
         
       } else {
         if (method == "CBPS") {
-          fit0 <- CBPS::CBPS(reformulate(response = treatment, termlabels = c(covariate, names(pooled[, (4 + length(covariate) + 1):length(pooled)]))), 
-                             family = binomial(link = "logit"), data = pooled)
+          fit0 <- suppressMessages(CBPS::CBPS(reformulate(response = treatment, termlabels = c(covariate, names(pooled[, (4 + length(covariate) + 1):length(pooled)]))), 
+                             family = binomial(link = "logit"), data = pooled))
         } else {
           fit0 <- glm(reformulate(response = treatment, termlabels = c(covariate, names(pooled[, (4 + length(covariate) + 1):length(pooled)]))), 
                       family = binomial(link = "logit"), data = pooled)
@@ -342,8 +340,8 @@ PanelMatch <- function(lag, max.lead, time.id = "year", qoi = "ate",
           # get propensity scores
           if (covariate.only == TRUE|method == "SynthPscore"|method == "SynthCBPS") {
             if (method == "CBPS"|method == "SynthCBPS") {
-              fit0 <- CBPS(reformulate(response = treatment, termlabels = covariate), 
-                           family = binomial(link = "logit"), data = pooled)
+              fit0 <- suppressMessages(CBPS::CBPS(reformulate(response = treatment, termlabels = covariate), 
+                           family = binomial(link = "logit"), data = pooled))
             } else {
               fit0 <- glm(reformulate(response = treatment, termlabels = covariate), 
                           family = binomial(link = "logit"), data = pooled)
@@ -351,8 +349,8 @@ PanelMatch <- function(lag, max.lead, time.id = "year", qoi = "ate",
             
           } else {
             if (method == "CBPS") {
-              fit0 <- CBPS(reformulate(response = treatment, termlabels = c(covariate, names(pooled[, (4 + length(covariate) + 1):length(pooled)]))), 
-                           family = binomial(link = "logit"), data = pooled)
+              fit0 <- suppressMessages(CBPS::CBPS(reformulate(response = treatment, termlabels = c(covariate, names(pooled[, (4 + length(covariate) + 1):length(pooled)]))), 
+                           family = binomial(link = "logit"), data = pooled))
             } else {
               fit0 <- glm(reformulate(response = treatment, termlabels = c(covariate, names(pooled[, (4 + length(covariate) + 1):length(pooled)]))), 
                           family = binomial(link = "logit"), data = pooled)
@@ -478,8 +476,8 @@ PanelMatch <- function(lag, max.lead, time.id = "year", qoi = "ate",
               # get propensity scores
               if (covariate.only == TRUE|method == "SynthPscore"|method == "SynthCBPS") {
                 if (method == "CBPS"|method == "SynthCBPS") {
-                  fit0 <- CBPS(reformulate(response = treatment, termlabels = covariate), 
-                               family = binomial(link = "logit"), data = pooled)
+                  fit0 <- suppressMessages(CBPS::CBPS(reformulate(response = treatment, termlabels = covariate), 
+                               family = binomial(link = "logit"), data = pooled))
                 } else {
                   fit0 <- glm(reformulate(response = treatment, termlabels = covariate), 
                               family = binomial(link = "logit"), data = pooled)
@@ -487,8 +485,8 @@ PanelMatch <- function(lag, max.lead, time.id = "year", qoi = "ate",
                 
               } else {
                 if (method == "CBPS") {
-                  fit0 <- CBPS(reformulate(response = treatment, termlabels = c(covariate, names(pooled[, (4 + length(covariate) + 1):length(pooled)]))), 
-                               family = binomial(link = "logit"), data = pooled)
+                  fit0 <- suppressMessages(CBPS::CBPS(reformulate(response = treatment, termlabels = c(covariate, names(pooled[, (4 + length(covariate) + 1):length(pooled)]))), 
+                               family = binomial(link = "logit"), data = pooled))
                 } else {
                   fit0 <- glm(reformulate(response = treatment, termlabels = c(covariate, names(pooled[, (4 + length(covariate) + 1):length(pooled)]))), 
                               family = binomial(link = "logit"), data = pooled)
@@ -555,8 +553,8 @@ PanelMatch <- function(lag, max.lead, time.id = "year", qoi = "ate",
                 # get propensity scores
                 if (covariate.only == TRUE|method == "SynthPscore"|method == "SynthCBPS") {
                   if (method == "CBPS"|method == "SynthCBPS") {
-                    fit0 <- CBPS(reformulate(response = treatment, termlabels = covariate), 
-                                 family = binomial(link = "logit"), data = pooled)
+                    fit0 <- suppressMessages(CBPS::CBPS(reformulate(response = treatment, termlabels = covariate), 
+                                 family = binomial(link = "logit"), data = pooled))
                   } else {
                     fit0 <- glm(reformulate(response = treatment, termlabels = covariate), 
                                 family = binomial(link = "logit"), data = pooled)
@@ -564,8 +562,8 @@ PanelMatch <- function(lag, max.lead, time.id = "year", qoi = "ate",
                   
                 } else {
                   if (method == "CBPS") {
-                    fit0 <- CBPS(reformulate(response = treatment, termlabels = c(covariate, names(pooled[, (4 + length(covariate) + 1):length(pooled)]))), 
-                                 family = binomial(link = "logit"), data = pooled)
+                    fit0 <- suppressMessages(CBPS::CBPS(reformulate(response = treatment, termlabels = c(covariate, names(pooled[, (4 + length(covariate) + 1):length(pooled)]))), 
+                                 family = binomial(link = "logit"), data = pooled))
                   } else {
                     fit0 <- glm(reformulate(response = treatment, termlabels = c(covariate, names(pooled[, (4 + length(covariate) + 1):length(pooled)]))), 
                                 family = binomial(link = "logit"), data = pooled)

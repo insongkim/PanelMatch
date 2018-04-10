@@ -4,23 +4,22 @@
 \alias{PanelMatch}
 \title{PanelMatch}
 \usage{
-PanelMatch(lag, max.lead, time.id = "year", qoi = "ate",
-  unit.id = "ccode", treatment, formula = y ~ treat, data,
-  weighting = FALSE, M = 3, covariate.only = FALSE, method = NULL)
+PanelMatch(formula = y ~ treat, lag, max.lead, unit.id, time.id, treatment,
+  qoi = "att", data, weighting = FALSE, M = 3, covariate.only = FALSE,
+  method = NULL)
 }
 \arguments{
+\item{formula}{A symbolic description of the outcome variable and
+covariates whose history should be used to refine the matched set.}
+
 \item{lag}{An integer value indicating the length of history to be matched}
 
 \item{max.lead}{An optional integer value indicating the length of maximum leads}
 
-\item{time.id}{A character string indicating the name of time
+\item{unit.id}{A character string indicating the name of unit
 variable in the \code{data}}
 
-\item{qoi}{One of ``att'' (average treatment effect for the
-treated) or ``ate'' (average treatment effect) or atc (average
-treatment effect for the control). The default is ``att.''}
-
-\item{unit.id}{A character string indicating the name of unit
+\item{time.id}{A character string indicating the name of time
 variable in the \code{data}}
 
 \item{treatment}{A character string indicating the name of
@@ -28,8 +27,9 @@ treatment variable in the \code{data}. The treatment should be a
 binary indicator (integer with 0 for the control group and 1 for
 the treatment group).}
 
-\item{formula}{A symbolic description of the outcome variable and
-covariates whose history should be used to refine the matched set.}
+\item{qoi}{One of ``att'' (average treatment effect for the
+treated) or ``ate'' (average treatment effect) or atc (average
+treatment effect for the control). The default is ``att.''}
 
 \item{data}{The data frame in data.frame class}
 
@@ -39,8 +39,9 @@ through weighting should be performed. The default is \code{FALSE}.}
 \item{M}{An integer value indicating the maximum number of the
 control units in each matched set. The default is 3.}
 
-\item{covariate.only}{A logical value indicating whether the
-history should be matched only based on covariates. The default is
+\item{covariate.only}{A logical value indicating whether only covariates
+are adjusted for when refining the matched sets, not lagged outcome.
+The default is
 \code{FALSE}.}
 
 \item{method}{An optional character string indicating the matching
@@ -57,7 +58,7 @@ containing the following components:
 \item{unit.id}{the unit id}
 \item{time.id}{the time id}
 \item{M}{the length of history to be matched}
-\item{covariate.only}{the indicator of whether only covariates are matched}
+\item{covariate.only}{the indicator of whether only covariates are adjusted for when refining the matched sets}
 \item{lag}{the length of lags}
 \item{max.lead}{the length of maximum lead}
 \item{data}{the data frame}

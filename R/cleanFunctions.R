@@ -200,11 +200,11 @@ Maha_vit <- function(x, lag, max.lead, M = 3) {
     #   return(x)
     # }))
     
-    MSMDlist <- MSMD_each(timeid[1], matched_set = matched_set, testid = testid, 
-                          treated.id = treated.id)
+    MSMDlist <- suppressWarnings(MSMD_each(timeid[1], matched_set = matched_set, testid = testid, 
+                          treated.id = treated.id))
     for (i in 2:length(unique(timeid))) {
-      MSMDlist <- MSMDlist + MSMD_each(timeid[i], matched_set = matched_set, testid = testid, 
-                                       treated.id = treated.id)
+      MSMDlist <- MSMDlist + suppressWarnings(MSMD_each(timeid[i], matched_set = matched_set, testid = testid, 
+                                       treated.id = treated.id))
     }
     if (length(x) <= 5) {
       MSMDlist <- as.numeric(unlist(as.list(MSMDlist)))
