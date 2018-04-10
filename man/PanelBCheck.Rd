@@ -6,9 +6,9 @@
 \usage{
 PanelBCheck(matched_sets, covariate = NULL, qoi = NULL,
   post.treatment = TRUE, vline = TRUE, xlab = "Time periods",
-  ylab = "Differences between the treated units \\n                        and their synthetic control units",
-  legend.position = "none", theme_bw = FALSE, adjustment = TRUE,
-  int_size = 0.7, plot = TRUE, linetype = "dashed", colour = "blue")
+  ylab = "Standardized Mean Differences", legend.position = "none",
+  theme_bw = FALSE, adjustment = TRUE, int_size = 0.7, plot = TRUE,
+  linetype = "dashed", colour = "blue")
 }
 \arguments{
 \item{matched_sets}{d}
