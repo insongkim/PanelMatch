@@ -33,9 +33,9 @@ PanelBCheck <- function(matched_sets,
                         plot = TRUE,
                         linetype = "dashed", colour = "blue"
 ) {
-  lag = matched_sets$lag;lead = matched_sets$max.lead;
-  treatment = matched_sets$treatment; dependent = matched_sets$dependent;
-  method = matched_sets$method; covariate_names = matched_sets$covariate_names
+  lag <- matched_sets$lag;lead <- matched_sets$max.lead;
+  treatment <- matched_sets$treatment; dependent <- matched_sets$dependent;
+  method <- matched_sets$method; covariate_names <- matched_sets$covariate_names
   
   if (is.null(qoi)) {
     if (matched_sets$qoi == "att") {
