@@ -39,9 +39,6 @@ PanelBCheck(matched_sets, covariate = NULL, qoi = NULL,
 
 \item{colour}{}
 }
-\value{
-
-}
 \description{
 PanelBCheck
 }
