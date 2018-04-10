@@ -51,6 +51,7 @@
 #' \item{data}{the data frame}
 #' \item{ATT_matches}{the matched set given the att as the quantity of interest}
 #' \item{ATC_matches}{the matched set given the atc as the quantity of interest}
+#' \item{covariate_names}{Names of covariates in the user-specified formula}
 #' \item{NC_ATT}{...}
 #' \item{NC_ATC}{...}
 #'
@@ -65,9 +66,12 @@
 #'                            qoi = "ate", M = 5, data = dem)
 #' }
 #' @export
-PanelMatch <- function(formula = y ~ treat, lag, max.lead,
-                       unit.id, time.id, treatment, qoi = "att",
-                       data, weighting = FALSE,
+PanelMatch <- function(lag, max.lead, time.id = "year", qoi = "ate",
+                       unit.id = "ccode",
+                       treatment, 
+                       formula = y ~ treat, 
+                       data,
+                       weighting = FALSE,
                        M = 3, covariate.only = FALSE,
                        method = NULL) {
   
@@ -94,18 +98,18 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
     covariate <- NULL # if there is no covariate then it's null
   }
   dependent <- all.vars(formula)[1]
-  
-  formula <- suppressWarnings(merge.formula(reformulate(termlabels = c(time.id, unit.id), response = dependent),formula))
+  covariate_names <- covariate
+  formula <- suppressWarnings(lasso2::merge.formula(reformulate(termlabels = c(time.id, unit.id), response = dependent),formula))
   
   
   d2 <- as.data.frame(model.matrix(formula, data = data))[,-1]
   d2[dependent] <- model.frame(formula, data=data)[,1]
   d2 <- DataCombine::MoveFront(d2, Var = c(time.id, unit.id, treatment, dependent))
- 
+  
   if(method == "Maha" & covariate.only == FALSE){
-
+    
     d2 <- DataCombine::slide(data = d2, Var = dependent, GroupVar = unit.id, TimeVar = time.id, slideBy = -1,
-                  NewVar = "dependent_l1")
+                             NewVar = "dependent_l1")
     # to include ldvs in varnames
     # varnames <- c(time.id, unit.id, treatment, dependent, colnames(d2)[5:length(d2)])
     
@@ -118,7 +122,7 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
     
     dlist <- lapply(1:lag, 
                     function (i) DataCombine::slide(data = d2, Var = dependent, GroupVar = unit.id, TimeVar = time.id, slideBy = -(i),
-                                       NewVar = paste("dependent_l", i, sep="")))
+                                                    NewVar = paste("dependent_l", i, sep="")))
     d2 <- Reduce(function(x, y) {merge(x, y)}, dlist)
     # to include ldvs in varnames
     # varnames <- c(time.id, unit.id, treatment, dependent, colnames(d2)[5:length(d2)])
@@ -191,7 +195,7 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
       # get propensity scores
       if (covariate.only == TRUE|method == "SynthPscore"|method == "SynthCBPS") {
         if (method == "CBPS"|method == "SynthCBPS") {
-          fit0 <- CBPS::CBPS(reformulate(response = treatment, termlabels = covariate), 
+          fit0 <- CBPS(reformulate(response = treatment, termlabels = covariate), 
                        family = binomial(link = "logit"), data = pooled)
         } else {
           fit0 <- glm(reformulate(response = treatment, termlabels = covariate), 
@@ -201,7 +205,7 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
       } else {
         if (method == "CBPS") {
           fit0 <- CBPS::CBPS(reformulate(response = treatment, termlabels = c(covariate, names(pooled[, (4 + length(covariate) + 1):length(pooled)]))), 
-                       family = binomial(link = "logit"), data = pooled)
+                             family = binomial(link = "logit"), data = pooled)
         } else {
           fit0 <- glm(reformulate(response = treatment, termlabels = c(covariate, names(pooled[, (4 + length(covariate) + 1):length(pooled)]))), 
                       family = binomial(link = "logit"), data = pooled)
@@ -231,6 +235,7 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
                   "dependent" = dependent, "covariate" = covariate,
                   "unit.id" = unit.id, "time.id" = time.id, "M" = M,
                   "covariate.only" = covariate.only, "lag" = lag, 
+                  "covariate_names" = covariate_names,
                   "max.lead" = max.lead, "data" = d2, "ATT_matches" = even_smaller1, 
                   "NC_ATT" = lapply(even_smaller1, function (x) length(unique(x$V2))-1)))
     } else if (method == "Synth") {
@@ -238,6 +243,7 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
                   "covariate" = covariate, "unit.id" = unit.id, "time.id" = time.id, 
                   "M" = M, "covariate.only" = covariate.only, "lag" = lag, "max.lead" = max.lead, 
                   "data" = d2, "method" = method,
+                  "covariate_names" = covariate_names,
                   "ATT_matches" = lapply(even_smaller1, 
                                          Panel_vit, lag = lag, 
                                          max.lead = max.lead, 
@@ -248,6 +254,7 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
                   "covariate" = covariate, "unit.id" = unit.id, "time.id" = time.id, 
                   "M" = M, "covariate.only" = FALSE, "lag" = lag, "max.lead" = max.lead, 
                   "data" = d2, "method" = method,
+                  "covariate_names" = covariate_names,
                   "ATT_matches" = lapply(even_smaller1, 
                                          Panel_vit, lag = lag, 
                                          max.lead = max.lead, 
@@ -258,8 +265,9 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
                   "covariate" = covariate, "unit.id" = unit.id, "time.id" = time.id,
                   "M" = M, "covariate.only" = covariate.only, "lag" = lag, 
                   "max.lead" = max.lead, "data" = d2, "method" = method,
+                  "covariate_names" = covariate_names,
                   "ATT_matches" = delete.NULLs(lapply(even_smaller1, Panel_vit, lag = lag, 
-                                         max.lead = max.lead, M = M, method = method)),
+                                                      max.lead = max.lead, M = M, method = method)),
                   "NC_ATT" = lapply(even_smaller1, function (x) length(unique(x$V2))-1)))
     } else if (method == "Pscore"|method == "CBPS") {
       
@@ -267,6 +275,7 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
                   "dependent" = dependent, "covariate" = covariate, 
                   "unit.id" = unit.id, "time.id" = time.id, "M" = M, 
                   "covariate.only" = covariate.only, "lag" = lag, 
+                  "covariate_names" = covariate_names,
                   "max.lead" = max.lead, "data" = d2, "method" = method,
                   "ATT_matches" = lapply(even_smaller1, Panel_vit, lag = lag,
                                          weighting = weighting,
@@ -327,13 +336,13 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
           #   return(x)
           # })
           
-          pooled <- data.table::rbindlist(only.t0) # get a dataset for propensity score generation
+          pooled <- rbindlist(only.t0) # get a dataset for propensity score generation
           colnames(pooled) <- c(time.id, unit.id, treatment, dependent, colnames(d2)[5:length(d2)])
           
           # get propensity scores
           if (covariate.only == TRUE|method == "SynthPscore"|method == "SynthCBPS") {
             if (method == "CBPS"|method == "SynthCBPS") {
-              fit0 <- CBPS::CBPS(reformulate(response = treatment, termlabels = covariate), 
+              fit0 <- CBPS(reformulate(response = treatment, termlabels = covariate), 
                            family = binomial(link = "logit"), data = pooled)
             } else {
               fit0 <- glm(reformulate(response = treatment, termlabels = covariate), 
@@ -342,7 +351,7 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
             
           } else {
             if (method == "CBPS") {
-              fit0 <- CBPS::CBPS(reformulate(response = treatment, termlabels = c(covariate, names(pooled[, (4 + length(covariate) + 1):length(pooled)]))), 
+              fit0 <- CBPS(reformulate(response = treatment, termlabels = c(covariate, names(pooled[, (4 + length(covariate) + 1):length(pooled)]))), 
                            family = binomial(link = "logit"), data = pooled)
             } else {
               fit0 <- glm(reformulate(response = treatment, termlabels = c(covariate, names(pooled[, (4 + length(covariate) + 1):length(pooled)]))), 
@@ -373,6 +382,7 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
                       "unit.id" = unit.id, "time.id" = time.id, "M" = M, 
                       "covariate.only" = covariate.only, "lag" = lag, "max.lead" = max.lead, 
                       "data" = d2, "ATC_matches" = even_smaller2, 
+                      "covariate_names" = covariate_names,
                       "NC_ATC" = lapply(even_smaller2, function (x) length(unique(x$V2))-1)))
         } else if (method == "Synth") {
           return(list("treatment" = treatment, "qoi" = qoi, "dependent" = dependent, "covariate" = covariate, 
@@ -381,12 +391,14 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
                       "data" = d2, "method" = method, "ATC_matches" = lapply(even_smaller2, 
                                                                              Panel_vit, lag = lag, max.lead = max.lead, M = M,
                                                                              method = method),
+                      "covariate_names" = covariate_names,
                       "NC_ATC" = lapply(even_smaller2, function (x) length(unique(x$V2))-1)))
         } else if (method == "SynthPscore"|method == "SynthCBPS") {
           return(list("treatment" = treatment, "qoi" = qoi, "dependent" = dependent,
                       "covariate" = covariate, "unit.id" = unit.id, "time.id" = time.id, 
                       "M" = M, "covariate.only" = FALSE, "lag" = lag, "max.lead" = max.lead, 
                       "data" = d2, "method" = method,
+                      "covariate_names" = covariate_names,
                       "ATT_matches" = lapply(even_smaller2, 
                                              Panel_vit, lag = lag, 
                                              max.lead = max.lead, 
@@ -397,15 +409,17 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
                       "covariate" = covariate, "unit.id" = unit.id, "time.id" = time.id, 
                       "M" = M, "covariate.only" = covariate.only, "lag" = lag, 
                       "max.lead" = max.lead, "method" = method,
+                      "covariate_names" = covariate_names,
                       "data" = d2, "ATC_matches" = delete.NULLs(lapply(even_smaller2, Panel_vit, 
-                                                          lag = lag, max.lead = max.lead, 
-                                                          M = M,method = method)),
+                                                                       lag = lag, max.lead = max.lead, 
+                                                                       M = M,method = method)),
                       "NC_ATC" = lapply(even_smaller2, function (x) length(unique(x$V2))-1)))
         } else if (method == "Pscore"|method == "CBPS") {
           return(list("treatment" = treatment, "qoi" = qoi, "dependent" = dependent, 
                       "covariate" = covariate, "unit.id" = unit.id, "time.id" = time.id, "M" = M, 
                       "covariate.only" = covariate.only, "lag" = lag, 
                       "max.lead" = max.lead, "data" = d2, "method" = method,
+                      "covariate_names" = covariate_names,
                       "ATC_matches" = lapply(even_smaller2, weighting = weighting, 
                                              Panel_vit, lag = lag,
                                              max.lead = max.lead, M = M, method = method),
@@ -458,13 +472,13 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
               #   return(x)
               # })
               
-              pooled <- data.table::rbindlist(only.t0) # get a dataset for propensity score generation
+              pooled <- rbindlist(only.t0) # get a dataset for propensity score generation
               colnames(pooled) <- c(time.id, unit.id, treatment, dependent, colnames(d2)[5:length(d2)])
               
               # get propensity scores
               if (covariate.only == TRUE|method == "SynthPscore"|method == "SynthCBPS") {
                 if (method == "CBPS"|method == "SynthCBPS") {
-                  fit0 <- CBPS::CBPS(reformulate(response = treatment, termlabels = covariate), 
+                  fit0 <- CBPS(reformulate(response = treatment, termlabels = covariate), 
                                family = binomial(link = "logit"), data = pooled)
                 } else {
                   fit0 <- glm(reformulate(response = treatment, termlabels = covariate), 
@@ -473,7 +487,7 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
                 
               } else {
                 if (method == "CBPS") {
-                  fit0 <- CBPS::CBPS(reformulate(response = treatment, termlabels = c(covariate, names(pooled[, (4 + length(covariate) + 1):length(pooled)]))), 
+                  fit0 <- CBPS(reformulate(response = treatment, termlabels = c(covariate, names(pooled[, (4 + length(covariate) + 1):length(pooled)]))), 
                                family = binomial(link = "logit"), data = pooled)
                 } else {
                   fit0 <- glm(reformulate(response = treatment, termlabels = c(covariate, names(pooled[, (4 + length(covariate) + 1):length(pooled)]))), 
@@ -533,7 +547,7 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
               #   return(x)
               # })
               
-              pooled <- data.table::rbindlist(only.t0) # get a dataset for propensity score generation
+              pooled <- rbindlist(only.t0) # get a dataset for propensity score generation
               if (length(pooled) > 0) {
                 colnames(pooled) <- c(time.id, unit.id, treatment, dependent, colnames(d2)[5:length(d2)])
                 
@@ -541,7 +555,7 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
                 # get propensity scores
                 if (covariate.only == TRUE|method == "SynthPscore"|method == "SynthCBPS") {
                   if (method == "CBPS"|method == "SynthCBPS") {
-                    fit0 <- CBPS::CBPS(reformulate(response = treatment, termlabels = covariate), 
+                    fit0 <- CBPS(reformulate(response = treatment, termlabels = covariate), 
                                  family = binomial(link = "logit"), data = pooled)
                   } else {
                     fit0 <- glm(reformulate(response = treatment, termlabels = covariate), 
@@ -550,7 +564,7 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
                   
                 } else {
                   if (method == "CBPS") {
-                    fit0 <- CBPS::CBPS(reformulate(response = treatment, termlabels = c(covariate, names(pooled[, (4 + length(covariate) + 1):length(pooled)]))), 
+                    fit0 <- CBPS(reformulate(response = treatment, termlabels = c(covariate, names(pooled[, (4 + length(covariate) + 1):length(pooled)]))), 
                                  family = binomial(link = "logit"), data = pooled)
                   } else {
                     fit0 <- glm(reformulate(response = treatment, termlabels = c(covariate, names(pooled[, (4 + length(covariate) + 1):length(pooled)]))), 
@@ -590,6 +604,7 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
                           "data" = d2, "ATT_matches" = even_smaller1, 
                           "NC_ATT" = lapply(even_smaller1, function (x) length(unique(x$V2))-1),
                           "ATC_matches" = even_smaller2, 
+                          "covariate_names" = covariate_names,
                           "NC_ATC" = lapply(even_smaller2, function (x) length(unique(x$V2))-1)))
             } else if (method == "Synth") {
               return(list("treatment" = treatment, "qoi" = qoi, "dependent" = dependent, 
@@ -599,6 +614,7 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
                           "ATT_matches" = lapply(even_smaller1,  Panel_vit, 
                                                  lag = lag, max.lead = max.lead, 
                                                  M = M,method = method), 
+                          "covariate_names" = covariate_names,
                           "NC_ATT" = lapply(even_smaller1, function (x) length(unique(x$V2))-1),
                           "ATC_matches" = lapply(even_smaller2, 
                                                  Panel_vit, lag = lag, max.lead = max.lead, M = M,
@@ -612,6 +628,7 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
                           "ATT_matches" = lapply(even_smaller1,  Panel_vit, 
                                                  lag = lag, max.lead = max.lead, 
                                                  M = M,method = method), 
+                          "covariate_names" = covariate_names,
                           "NC_ATT" = lapply(even_smaller1, function (x) length(unique(x$V2))-1),
                           "ATC_matches" = lapply(even_smaller2, 
                                                  Panel_vit, lag = lag, max.lead = max.lead, M = M,
@@ -625,15 +642,17 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
                           "ATT_matches" = delete.NULLs(lapply(even_smaller1,Panel_vit, lag = lag, 
                                                               max.lead = max.lead, M = M,method = method)), 
                           "NC_ATT" = lapply(even_smaller1, function (x) length(unique(x$V2))-1),
+                          "covariate_names" = covariate_names,
                           "ATC_matches" = delete.NULLs(lapply(even_smaller2, 
-                                                 Panel_vit, lag = lag, max.lead = max.lead, M = M,
-                                                 method = method)), 
+                                                              Panel_vit, lag = lag, max.lead = max.lead, M = M,
+                                                              method = method)), 
                           "NC_ATC" = lapply(even_smaller2, function (x) length(unique(x$V2))-1)))
             } else if (method == "Pscore"|method == "CBPS") {
               return(list("treatment" = treatment, "qoi" = qoi, "dependent" = dependent, 
                           "covariate" = covariate, "unit.id" = unit.id, "time.id" = time.id, 
                           "M" = M, "covariate.only" = covariate.only, "lag" = lag, 
                           "max.lead" = max.lead, "data" = d2, method = method,
+                          "covariate_names" = covariate_names,
                           "ATT_matches" = lapply(even_smaller1, Panel_vit, weighting = weighting, 
                                                  lag = lag, max.lead = max.lead, M = M,method = method), 
                           "NC_ATT" = lapply(even_smaller1, function (x) length(unique(x[,1]))-1),
@@ -651,6 +670,12 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
           }
       }
 }
+
+
+
+
+
+
 
 
 

@@ -4,22 +4,23 @@
 \alias{PanelMatch}
 \title{PanelMatch}
 \usage{
-PanelMatch(formula = y ~ treat, lag, max.lead, unit.id, time.id, treatment,
-  qoi = "att", data, weighting = FALSE, M = 3, covariate.only = FALSE,
-  method = NULL)
+PanelMatch(lag, max.lead, time.id = "year", qoi = "ate",
+  unit.id = "ccode", treatment, formula = y ~ treat, data,
+  weighting = FALSE, M = 3, covariate.only = FALSE, method = NULL)
 }
 \arguments{
-\item{formula}{A symbolic description of the outcome variable and
-covariates whose history should be used to refine the matched set.}
-
 \item{lag}{An integer value indicating the length of history to be matched}
 
 \item{max.lead}{An optional integer value indicating the length of maximum leads}
 
-\item{unit.id}{A character string indicating the name of unit
+\item{time.id}{A character string indicating the name of time
 variable in the \code{data}}
 
-\item{time.id}{A character string indicating the name of time
+\item{qoi}{One of ``att'' (average treatment effect for the
+treated) or ``ate'' (average treatment effect) or atc (average
+treatment effect for the control). The default is ``att.''}
+
+\item{unit.id}{A character string indicating the name of unit
 variable in the \code{data}}
 
 \item{treatment}{A character string indicating the name of
@@ -27,9 +28,8 @@ treatment variable in the \code{data}. The treatment should be a
 binary indicator (integer with 0 for the control group and 1 for
 the treatment group).}
 
-\item{qoi}{One of ``att'' (average treatment effect for the
-treated) or ``ate'' (average treatment effect) or atc (average
-treatment effect for the control). The default is ``att.''}
+\item{formula}{A symbolic description of the outcome variable and
+covariates whose history should be used to refine the matched set.}
 
 \item{data}{The data frame in data.frame class}
 
@@ -63,6 +63,7 @@ containing the following components:
 \item{data}{the data frame}
 \item{ATT_matches}{the matched set given the att as the quantity of interest}
 \item{ATC_matches}{the matched set given the atc as the quantity of interest}
+\item{covariate_names}{Names of covariates in the user-specified formula}
 \item{NC_ATT}{...}
 \item{NC_ATC}{...}
 }
