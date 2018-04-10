@@ -10,11 +10,11 @@ Panel_vit <- function(x, lag, max.lead, method, M, weighting) {
   }
 }
 
-get_treated_set <- function(x) {
-  treated.id <- x[x$V3 == 1 & x$V1 == (max(x$V1)-lead), ]$V2 # check this
-  return(x[x$V2 == treated.id,])
-  
-}
+# get_treated_set <- function(x) {
+#   treated.id <- x[x$V3 == 1 & x$V1 == (max(x$V1)-lead), ]$V2 # check this
+#   return(x[x$V2 == treated.id,])
+#   
+# }
 
 # synth_constReg_weight is borrowed from the package "synthR" written 
 # by Soichiro Yamauchi 
