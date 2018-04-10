@@ -1,23 +1,25 @@
 #' PanelBCheck
 #'
-#' @param matched_sets 
-#' @param covariate 
-#' @param qoi 
-#' @param post.treatment 
-#' @param vline 
-#' @param xlab 
-#' @param ylab 
-#' @param legend.position 
-#' @param theme_bw 
-#' @param adjustment 
-#' @param int_size 
-#' @param plot 
-#' @param linetype 
-#' @param colour 
+#' @param matched_sets d
+#' @param covariate d
+#' @param qoi d
+#' @param post.treatment d
+#' @param vline d
+#' @param xlab d
+#' @param ylab d
+#' @param legend.position d
+#' @param theme_bw d
+#' @param adjustment d
+#' @param int_size d
+#' @param plot d
+#' @param linetype d
+#' @param colour d
 #'
-#' @return
+#' @return \code{PanelBCheck} returns a balance results
 #' @importFrom graphics boxplot
-#' @examples
+#' @examples \dontrun{
+#' a <- 3
+#' }
 #' @export
 PanelBCheck <- function(matched_sets,
                         covariate = NULL,

@@ -11,34 +11,42 @@ PanelBCheck(matched_sets, covariate = NULL, qoi = NULL,
   int_size = 0.7, plot = TRUE, linetype = "dashed", colour = "blue")
 }
 \arguments{
-\item{matched_sets}{}
+\item{matched_sets}{d}
 
-\item{covariate}{}
+\item{covariate}{d}
 
-\item{qoi}{}
+\item{qoi}{d}
 
-\item{post.treatment}{}
+\item{post.treatment}{d}
 
-\item{vline}{}
+\item{vline}{d}
 
-\item{xlab}{}
+\item{xlab}{d}
 
-\item{ylab}{}
+\item{ylab}{d}
 
-\item{legend.position}{}
+\item{legend.position}{d}
 
-\item{theme_bw}{}
+\item{theme_bw}{d}
 
-\item{adjustment}{}
+\item{adjustment}{d}
 
-\item{int_size}{}
+\item{int_size}{d}
 
-\item{plot}{}
+\item{plot}{d}
 
-\item{linetype}{}
+\item{linetype}{d}
 
-\item{colour}{}
+\item{colour}{d}
+}
+\value{
+\code{PanelBCheck} returns a balance results
 }
 \description{
 PanelBCheck
+}
+\examples{
+\dontrun{
+a <- 3
+}
 }
