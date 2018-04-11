@@ -10,19 +10,29 @@
 #' @param vline A logical value indicating whether a vertical dashed line will be inserted in the plot to separate 
 #' between pre-treatment and post-treatment periods.
 #' @param xlab A character for x-axis label. The default is "Time periods"
-#' @param ylab A character for y-axis label. The default is "Standardized Mean Differences"
+#' @param ylab A character for y-axis label. The default is "Standardized Differences"
 #' @param legend.position A character for the position of the legend on the plot
 #' @param theme_bw Whether to have white background colour for the plot. The default is FALSE.
 #' @param refinement A logical value indicating whether to check balance before or after the refinement. The default is TRUE, 
 #' meaning that balance after the refinement will be shown 
-#' @param plot A logical value indicating whether the function returns a plot or returns values
+#' @param plot A logical value indicating whether the function returns a plot or returns values. 
+#' The default is FALSE.
 #' @param linetype A character for linetype
 #' @param colour Colour for the vline
 #'
-#' @return \code{PanelBCheck} returns a balance results
+#' @return \code{PanelBCheck} returns a list of class "list" consisting of the following components
+#' \item{All_Balance}{The standardized difference
+#'  between treated and control units for each matched set by time period}
+#' \item{Interquartile_Balance}{The lowest, 1st quartile, median, 3rd quartile and the highest of these standardized
+#' differences across matched sets by time period}
+#' \item{Mean_Balance}{The mean standardized differences across all matched sets for each time period}
 #' @importFrom graphics boxplot
 #' @examples \dontrun{
-#' a <- 3
+#' matches.cbps <- PanelMatch(lag = 4, max.lead = 4, time.id = "year",
+#' unit.id = "wbcode2", treatment = "dem",
+#' formula =  y ~ dem, method = "Pscore",
+#' weighting = TRUE,  qoi = "ate",  M = 5, data = dem)
+#' PanelBCheck(matches.cbps, qoi = "att")
 #' }
 #' @export
 PanelBCheck <- function(matched_sets,
@@ -30,11 +40,11 @@ PanelBCheck <- function(matched_sets,
                         qoi = c("att", "atc"),
                         post.treatment = TRUE, 
                         vline = TRUE, xlab = "Time periods", 
-                        ylab = "Standardized Mean Differences",
+                        ylab = "Standardized Differences",
                         legend.position = "none",
                         theme_bw = FALSE,
                         refinement = TRUE,
-                        plot = TRUE,
+                        plot = FALSE,
                         linetype = "dashed", colour = "blue"
 ) {
   lag <- matched_sets$lag;lead <- matched_sets$max.lead;

@@ -6,9 +6,9 @@
 \usage{
 PanelBCheck(matched_sets, covariate = NULL, qoi = c("att", "atc"),
   post.treatment = TRUE, vline = TRUE, xlab = "Time periods",
-  ylab = "Standardized Mean Differences", legend.position = "none",
-  theme_bw = FALSE, refinement = TRUE, plot = TRUE, linetype = "dashed",
-  colour = "blue")
+  ylab = "Standardized Differences", legend.position = "none",
+  theme_bw = FALSE, refinement = TRUE, plot = FALSE,
+  linetype = "dashed", colour = "blue")
 }
 \arguments{
 \item{matched_sets}{A matched set created by \code{PanelMatch}}
@@ -27,7 +27,7 @@ between pre-treatment and post-treatment periods.}
 
 \item{xlab}{A character for x-axis label. The default is "Time periods"}
 
-\item{ylab}{A character for y-axis label. The default is "Standardized Mean Differences"}
+\item{ylab}{A character for y-axis label. The default is "Standardized Differences"}
 
 \item{legend.position}{A character for the position of the legend on the plot}
 
@@ -36,20 +36,30 @@ between pre-treatment and post-treatment periods.}
 \item{refinement}{A logical value indicating whether to check balance before or after the refinement. The default is TRUE, 
 meaning that balance after the refinement will be shown}
 
-\item{plot}{A logical value indicating whether the function returns a plot or returns values}
+\item{plot}{A logical value indicating whether the function returns a plot or returns values. 
+The default is FALSE.}
 
 \item{linetype}{A character for linetype}
 
 \item{colour}{Colour for the vline}
 }
 \value{
-\code{PanelBCheck} returns a balance results
+\code{PanelBCheck} returns a list of class "list" consisting of the following components
+\item{All_Balance}{The standardized difference
+ between treated and control units for each matched set by time period}
+\item{Interquartile_Balance}{The lowest, 1st quartile, median, 3rd quartile and the highest of these standardized
+differences across matched sets by time period}
+\item{Mean_Balance}{The mean standardized differences across all matched sets for each time period}
 }
 \description{
 PanelBCheck
 }
 \examples{
 \dontrun{
-a <- 3
+matches.cbps <- PanelMatch(lag = 4, max.lead = 4, time.id = "year",
+unit.id = "wbcode2", treatment = "dem",
+formula =  y ~ dem, method = "Pscore",
+weighting = TRUE,  qoi = "ate",  M = 5, data = dem)
+PanelBCheck(matches.cbps, qoi = "att")
 }
 }
