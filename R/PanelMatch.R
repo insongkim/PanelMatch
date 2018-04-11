@@ -36,6 +36,10 @@
 #' @param method An optional character string indicating the matching
 #' methods for refining the matched set based on covariates. One of
 #' ``Maha'', ``Pscore'', ``CBPS'', ``SynthPscore'', and ``SynthCBPS''.
+#' @param naive An logical value indicating whether
+#' the user decides not to match on treatment history. By default 
+#' it is FALSE. If TRUE, then \code{PanelMatch} will not match on
+#' treatment history. 
 #'
 #' @return \code{PanelMatch} returns a list of class `panelmatch'
 #' containing the following components:
@@ -71,6 +75,7 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
                        unit.id, time.id, treatment, qoi = "att",
                        data, weighting = FALSE,
                        M = 3, covariate.only = FALSE,
+                       naive = FALSE,
                        method = NULL) {
   
   ## Warning for missing unit & time index
@@ -147,7 +152,11 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
     
     ### cleaning the output from cpp ###
     # delete both higher level and lower level null entries
-    smallerlist <- lapply(Filter(function (x) !is.null(x), findDDmatched2(L = lag, F = max.lead, dmatrix)), delete.NULLs) 
+    if (naive == FALSE) {
+      smallerlist <- lapply(Filter(function (x) !is.null(x), findDDmatched2(L = lag, F = max.lead, dmatrix)), delete.NULLs) 
+    } else {
+      smallerlist <- lapply(Filter(function (x) !is.null(x), findDDNaive(L = lag, F = max.lead, dmatrix)), delete.NULLs) 
+    }
     # further cleaning
     smallerlist <- Filter(function (x) length(x) > 0, smallerlist)
     # use function dframelist.rb_dup to turn every list element into a data.frame
@@ -294,7 +303,11 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
         
         ### cleaning the output from cpp ###
         # delete both higher level and lower level null entries
-        smallerlist <- lapply(Filter(function (x) !is.null(x), findDDmatched2(L = lag, F = max.lead, dmatrix)), delete.NULLs) 
+        if (naive == FALSE) {
+          smallerlist <- lapply(Filter(function (x) !is.null(x), findDDmatched2(L = lag, F = max.lead, dmatrix)), delete.NULLs) 
+        } else {
+          smallerlist <- lapply(Filter(function (x) !is.null(x), findDDNaive(L = lag, F = max.lead, dmatrix)), delete.NULLs) 
+        }
         # further cleaning
         smallerlist <- Filter(function (x) length(x) > 0, smallerlist)
         # use function dframelist.rb_dup to turn every list element into a data.frame
@@ -430,7 +443,11 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
           if (qoi == "ate") {
             ### cleaning the output from cpp ###
             # delete both higher level and lower level null entries
-            smallerlist <- lapply(Filter(function (x) !is.null(x), findDDmatched2(L = lag, F = max.lead, dmatrix)), delete.NULLs) 
+            if (naive == FALSE) {
+              smallerlist <- lapply(Filter(function (x) !is.null(x), findDDmatched2(L = lag, F = max.lead, dmatrix)), delete.NULLs) 
+            } else {
+              smallerlist <- lapply(Filter(function (x) !is.null(x), findDDNaive(L = lag, F = max.lead, dmatrix)), delete.NULLs) 
+            }
             # further cleaning
             smallerlist <- Filter(function (x) length(x) > 0, smallerlist)
             # use function dframelist.rb_dup to turn every list element into a data.frame
@@ -521,7 +538,11 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
             
             ### cleaning the output from cpp ###
             # delete both higher level and lower level null entries
-            smallerlist <- lapply(Filter(function (x) !is.null(x), findDDmatched2(L = lag, F = max.lead, dmatrix)), delete.NULLs) 
+            if (naive == FALSE) {
+              smallerlist <- lapply(Filter(function (x) !is.null(x), findDDmatched2(L = lag, F = max.lead, dmatrix)), delete.NULLs) 
+            } else {
+              smallerlist <- lapply(Filter(function (x) !is.null(x), findDDNaive(L = lag, F = max.lead, dmatrix)), delete.NULLs) 
+            }
             # further cleaning
             smallerlist <- Filter(function (x) length(x) > 0, smallerlist)
             # use function dframelist.rb_dup to turn every list element into a data.frame

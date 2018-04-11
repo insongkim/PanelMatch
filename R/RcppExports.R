@@ -21,3 +21,7 @@ findDDmatched2 <- function(L, F, x1) {
     .Call('_PanelMatch_findDDmatched2', PACKAGE = 'PanelMatch', L, F, x1)
 }
 
+findDDNaive <- function(L, F, x1) {
+    .Call('_PanelMatch_findDDNaive', PACKAGE = 'PanelMatch', L, F, x1)
+}
+

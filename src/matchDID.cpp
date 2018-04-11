@@ -196,3 +196,55 @@ List findDDmatched2(int L, int F, NumericMatrix x1) {
   }
   return out2;
 }
+
+// [[Rcpp::export()]]
+List findDDNaive(int L, int F, NumericMatrix x1) {
+  int nrow1 = x1.nrow();
+  
+  List out2(nrow1);
+  
+  for (int i = L; i < (nrow1 - F); i++) {
+    if (x1(i,2) == 1 & x1(i-L,1) == x1(i+F,1) & 
+        x1(i-L,0) == x1(i,0)-L & x1(i+F,0) == x1(i,0)+F & 
+        x1(i-1, 2) == 0) {
+      List out(nrow1);
+      for (int j = L; j < (nrow1 - F); j++) {
+        
+        if (x1(j,2) == 0 & x1(j,0) == x1(i,0) & x1(j-1, 2) == 0 &// if the treatment status is zero
+            // (it has to be zero so as to be in the control group)
+            // and that the time.id is the same 
+            x1(j-L,1) == x1(j+F,1) & // for this new unit that just got picked,
+            // the unit has to have enough length
+            // the original unit also needs to have enough
+            // length
+            x1(j-L,0) == x1(j,0)-L & // make sure that 
+            // they are in the same unit
+            x1(j+F,0) == x1(j,0)+F  // same rationale
+        ) {
+          
+          NumericMatrix sm = x1( Range(j-L, j-1) , Range(2,2));
+          NumericVector c = sm(_,0);
+          NumericMatrix sn = x1( Range(i-L, i-1) , Range(2,2));
+          NumericVector d = sn(_,0);
+          
+          // if (all_sug(c == d)){
+          out[j] = rbind_c(x1(Range(j-L, j+F), _), x1(Range(i-L,i+F),_));
+          // } else {
+          //   out[j] = R_NilValue;
+          // }
+          
+        } else {
+          out[j] = R_NilValue;
+        }
+        
+      }
+      
+      out2[i] = out;
+    } else {
+      out2[i] = R_NilValue;
+    }
+    
+    
+  }
+  return out2;
+}

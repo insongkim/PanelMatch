@@ -67,3 +67,16 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// findDDNaive
+List findDDNaive(int L, int F, NumericMatrix x1);
+RcppExport SEXP _PanelMatch_findDDNaive(SEXP LSEXP, SEXP FSEXP, SEXP x1SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type L(LSEXP);
+    Rcpp::traits::input_parameter< int >::type F(FSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type x1(x1SEXP);
+    rcpp_result_gen = Rcpp::wrap(findDDNaive(L, F, x1));
+    return rcpp_result_gen;
+END_RCPP
+}
