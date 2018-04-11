@@ -64,7 +64,8 @@ PanelBCheck <- function(matched_sets,
 ) {
   lag <- matched_sets$lag;lead <- matched_sets$max.lead;
   treatment <- matched_sets$treatment; dependent <- matched_sets$dependent;
-  method <- matched_sets$method; covariate_names <- matched_sets$covariate_names
+  method <- matched_sets$method; covariate_names <- matched_sets$covariate_names;
+  x <- val <- variable <- x2 <- y2 <- g2 <- NULL
   
   if (is.null(qoi)) {
     if (matched_sets$qoi == "att") {
@@ -209,8 +210,8 @@ PanelBCheck <- function(matched_sets,
   
 }
 
-if(getRversion() >= "2.15.1")  utils::globalVariables(c("x", "val",
-                                                        "variable", 
-                                                        "x2", 
-                                                        "y2",
-                                                        "g2"))
+# if(getRversion() >= "2.15.1")  utils::globalVariables(c("x", "val",
+#                                                         "variable", 
+#                                                         "x2", 
+#                                                         "y2",
+#                                                         "g2"))
