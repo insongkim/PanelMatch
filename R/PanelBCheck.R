@@ -1,5 +1,16 @@
 #' PanelBCheck
 #'
+#'\code{PanelBCheck} checks balance after finding the matched sets. By default it checks balance
+#' after refinement via methods such as Mahalanobis distance matching and propensity score matching
+#' and weighting. The user can set \code{refinement} to FALSE, thus checking balance before refinement.
+#' Balance is assessed by taking the difference between the values of the 
+#' user-specified covairate (or outcocme) in the treated unit and the weighted
+#' average of that across all the control units in each matched set, divided by 
+#' one standard deviation of the values of the user-specified covariate (or outcome) across all 
+#' treated units of all matched sets. If \code{refinement} is FALSE, then each control unit 
+#' will receive equal weight. If \code{refinement} is TRUE, then each control unit will
+#' receive a weight produced by the refinement process.
+#'
 #' @param matched_sets A matched set created by \code{PanelMatch}
 #' @param covariate A character indicating the name of the covariate that the user wants to check balance of. Default is NULL, 
 #' meaning that the function will check balance for the outcome variable.
@@ -27,6 +38,10 @@
 #' differences across matched sets by time period}
 #' \item{Mean_Balance}{The mean standardized differences across all matched sets for each time period}
 #' @importFrom graphics boxplot
+#' 
+#' @author In Song Kim <insong@mit.edu>, Erik Wang
+#' <haixiao@Princeton.edu>, and Kosuke Imai <kimai@Princeton.edu>
+#' 
 #' @examples \dontrun{
 #' matches.cbps <- PanelMatch(lag = 4, max.lead = 4, time.id = "year",
 #' unit.id = "wbcode2", treatment = "dem",

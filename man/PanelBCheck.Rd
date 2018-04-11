@@ -52,7 +52,16 @@ differences across matched sets by time period}
 \item{Mean_Balance}{The mean standardized differences across all matched sets for each time period}
 }
 \description{
-PanelBCheck
+\code{PanelBCheck} checks balance after finding the matched sets. By default it checks balance
+after refinement via methods such as Mahalanobis distance matching and propensity score matching
+and weighting. The user can set \code{refinement} to FALSE, thus checking balance before refinement.
+Balance is assessed by taking the difference between the values of the 
+user-specified covairate (or outcocme) in the treated unit and the weighted
+average of that across all the control units in each matched set, divided by 
+one standard deviation of the values of the user-specified covariate (or outcome) across all 
+treated units of all matched sets. If \code{refinement} is FALSE, then each control unit 
+will receive equal weight. If \code{refinement} is TRUE, then each control unit will
+receive a weight produced by the refinement process.
 }
 \examples{
 \dontrun{
@@ -62,4 +71,8 @@ formula =  y ~ dem, method = "Pscore",
 weighting = TRUE,  qoi = "ate",  M = 5, data = dem)
 PanelBCheck(matches.cbps, qoi = "att")
 }
+}
+\author{
+In Song Kim <insong@mit.edu>, Erik Wang
+<haixiao@Princeton.edu>, and Kosuke Imai <kimai@Princeton.edu>
 }
