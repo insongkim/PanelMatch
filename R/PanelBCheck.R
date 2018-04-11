@@ -179,46 +179,38 @@ PanelBCheck <- function(matched_sets,
                 "Interquartile_Balance" = df2,
                 "All_Balance" = df))
   } else {
-    colnames(df2) <- c("Time to Treatment",
-                       "Balance",
-                       "Interquartiles")
-    output <- tapply(df$val, df$x, mean, na.rm = T)
-    output <- data.frame("time to treatment" = as.numeric(names(output)), 
-                         "balance" = output)
-    return(list("Mean_Balance" = output,
-                "Interquartile_Balance" = df2,
-                "All_Balance" = df))
+    p <- ggplot() +
+      geom_line(aes(x=factor(x), y=val, group = variable,
+                           colour = variable), df) +
+      labs(x = xlab, y = ylab) +
+      if (post.treatment == FALSE) {
+        scale_x_discrete(breaks = -lag:-1,
+                         labels=paste("t", -lag:-1, sep = ""))
+      } else {
+        scale_x_discrete(breaks = -lag:lead,
+                         labels=c(paste("t", -lag:-1, sep = ""),
+                                  paste("t+", 0:lead, sep = "")))
+      }
+    p <- p + geom_line(aes(x=factor(x2), y=y2, group = g2), size = .7,
+                       colour = "black",
+                       df2) +
+      if (theme_bw == TRUE) {
+        theme_bw()
+      }
+    p + theme(legend.position = legend.position) +
+      if(vline == TRUE) {
+        geom_vline(xintercept = lag, linetype = linetype,
+                   colour = colour)
+      } else {
+        geom_vline()
+      }
+    
   }
+  
 }
-#     
-#     p <- ggplot() + 
-#       geom_line(aes_string(x=factor(x), y=val, group = variable,
-#                     colour = variable), df) +
-#       labs(x = xlab, y = ylab) + 
-#       if (post.treatment == FALSE) {
-#         scale_x_discrete(breaks = -lag:-1,
-#                          labels=paste("t", -lag:-1, sep = "")) 
-#       } else {
-#         scale_x_discrete(breaks = -lag:lead,
-#                          labels=c(paste("t", -lag:-1, sep = ""),
-#                                   paste("t+", 0:lead, sep = ""))) 
-#       } 
-#     p <- p + geom_line(aes_string(x=factor(x2), y=y2, group = g2), size = int_size,
-#                        colour = "black",
-#                        df2) + 
-#       if (theme_bw == TRUE) {
-#         theme_bw()
-#       } 
-#     p + theme(legend.position = legend.position) +
-#       if(vline == TRUE) {
-#         geom_vline(xintercept = lag, linetype = linetype, 
-#                    colour = colour)
-#       } else {
-#         geom_vline()
-#       }  
-#     
-#   }
-#   
-#   
-#   
-# }
+
+if(getRversion() >= "2.15.1")  utils::globalVariables(c("x", "val",
+                                                        "variable", 
+                                                        "x2", 
+                                                        "y2",
+                                                        "g2"))
