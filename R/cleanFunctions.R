@@ -460,7 +460,7 @@ PanelDiDResult <- function(x, lag, lead){
 
 
 gaps_plot_tmp <- function(x, lag, lead, data, dependent,
-                          qoi, adjustment = TRUE, 
+                          qoi, refinement = TRUE, 
                           covariate_names,
                           method,
                           treated_set,
@@ -479,7 +479,7 @@ gaps_plot_tmp <- function(x, lag, lead, data, dependent,
   treated.id <- x[x$V3 == 1 & x$V1 == (max(x$V1)-lead), ]$V2 # check this
   if (is.null(covariate)) {
     treated_set$V5 <- treated_set$V4
-    if (adjustment == TRUE) {
+    if (refinement == TRUE) {
       gap <- x$V4[x$V2 == treated.id] - 
         tapply(x$V4[x$V2 != treated.id] * x$w.weight[x$V2 != treated.id], 
                x$V1[x$V2 != treated.id], sum)
@@ -492,7 +492,7 @@ gaps_plot_tmp <- function(x, lag, lead, data, dependent,
   } else {
     x$V5 <- as.numeric(x[,c(covariate)])
     treated_set$V5 <- as.numeric(treated_set[,c(covariate)])
-    if (adjustment == TRUE){
+    if (refinement == TRUE){
       gap <- x$V5[x$V2 == treated.id] - 
         tapply(x$V5[x$V2 != treated.id] * x$w.weight[x$V2 != treated.id], 
                x$V1[x$V2 != treated.id], sum)

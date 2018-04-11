@@ -1,19 +1,23 @@
 #' PanelBCheck
 #'
-#' @param matched_sets d
-#' @param covariate d
-#' @param qoi d
-#' @param post.treatment d
-#' @param vline d
-#' @param xlab d
-#' @param ylab d
-#' @param legend.position d
-#' @param theme_bw d
-#' @param adjustment d
-#' @param int_size d
-#' @param plot d
-#' @param linetype d
-#' @param colour d
+#' @param matched_sets A matched set created by \code{PanelMatch}
+#' @param covariate A character indicating the name of the covariate that the user wants to check balance of. Default is NULL, 
+#' meaning that the function will check balance for the outcome variable.
+#' @param qoi A character indicating the quantitaty of interest for which balance check is performed. It must be either "att" 
+#' or "atc"
+#' @param post.treatment A logical value indicating whether the user wants to see balance during and after the period
+#' of treatment administration
+#' @param vline A logical value indicating whether a vertical dashed line will be inserted in the plot to separate 
+#' between pre-treatment and post-treatment periods.
+#' @param xlab A character for x-axis label. The default is "Time periods"
+#' @param ylab A character for y-axis label. The default is "Standardized Mean Differences"
+#' @param legend.position A character for the position of the legend on the plot
+#' @param theme_bw Whether to have white background colour for the plot. The default is FALSE.
+#' @param refinement A logical value indicating whether to check balance before or after the refinement. The default is TRUE, 
+#' meaning that balance after the refinement will be shown 
+#' @param plot A logical value indicating whether the function returns a plot or returns values
+#' @param linetype A character for linetype
+#' @param colour Colour for the vline
 #'
 #' @return \code{PanelBCheck} returns a balance results
 #' @importFrom graphics boxplot
@@ -23,14 +27,13 @@
 #' @export
 PanelBCheck <- function(matched_sets,
                         covariate = NULL,
-                        qoi = NULL,
+                        qoi = c("att", "atc"),
                         post.treatment = TRUE, 
                         vline = TRUE, xlab = "Time periods", 
                         ylab = "Standardized Mean Differences",
                         legend.position = "none",
                         theme_bw = FALSE,
-                        adjustment = TRUE,
-                        int_size = .7,
+                        refinement = TRUE,
                         plot = TRUE,
                         linetype = "dashed", colour = "blue"
 ) {
@@ -53,7 +56,7 @@ PanelBCheck <- function(matched_sets,
                                treated_set = treated_set,
                                method = method,
                                covariate_names = covariate_names,
-                               qoi = "att", adjustment = adjustment,
+                               qoi = "att", refinement = refinement,
                                data = matched_sets$data)
     } else if (matched_sets$qoi == "atc") {
       treated_set <- as.data.frame(data.table::rbindlist(lapply(matched_sets$`ATC_matches`, 
@@ -69,7 +72,7 @@ PanelBCheck <- function(matched_sets,
                                treated_set = treated_set,
                                method = method,
                                covariate_names = covariate_names,
-                               qoi = "atc", adjustment = adjustment, 
+                               qoi = "atc", refinement = refinement, 
                                data = matched_sets$data)
     } else {
       stop("Please specify either att or atc for `qoi`.")
@@ -89,7 +92,7 @@ PanelBCheck <- function(matched_sets,
                                treated_set = treated_set,
                                method = method,
                                covariate_names = covariate_names,
-                               qoi = "att", adjustment = adjustment,
+                               qoi = "att", refinement = refinement,
                                data = matched_sets$data)
     } else if (qoi == "atc") {
       treated_set <- as.data.frame(data.table::rbindlist(lapply(matched_sets$`ATC_matches`, 
@@ -105,7 +108,7 @@ PanelBCheck <- function(matched_sets,
                                treated_set = treated_set,
                                method = method,
                                covariate_names = covariate_names,
-                               qoi = "atc", adjustment = adjustment, 
+                               qoi = "atc", refinement = refinement, 
                                data = matched_sets$data)
     } else {
       stop("Please specify either att or atc for `qoi`.")

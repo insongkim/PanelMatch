@@ -4,40 +4,43 @@
 \alias{PanelBCheck}
 \title{PanelBCheck}
 \usage{
-PanelBCheck(matched_sets, covariate = NULL, qoi = NULL,
+PanelBCheck(matched_sets, covariate = NULL, qoi = c("att", "atc"),
   post.treatment = TRUE, vline = TRUE, xlab = "Time periods",
   ylab = "Standardized Mean Differences", legend.position = "none",
-  theme_bw = FALSE, adjustment = TRUE, int_size = 0.7, plot = TRUE,
-  linetype = "dashed", colour = "blue")
+  theme_bw = FALSE, refinement = TRUE, plot = TRUE, linetype = "dashed",
+  colour = "blue")
 }
 \arguments{
-\item{matched_sets}{d}
+\item{matched_sets}{A matched set created by \code{PanelMatch}}
 
-\item{covariate}{d}
+\item{covariate}{A character indicating the name of the covariate that the user wants to check balance of. Default is NULL, 
+meaning that the function will check balance for the outcome variable.}
 
-\item{qoi}{d}
+\item{qoi}{A character indicating the quantitaty of interest for which balance check is performed. It must be either "att" 
+or "atc"}
 
-\item{post.treatment}{d}
+\item{post.treatment}{A logical value indicating whether the user wants to see balance during and after the period
+of treatment administration}
 
-\item{vline}{d}
+\item{vline}{A logical value indicating whether a vertical dashed line will be inserted in the plot to separate 
+between pre-treatment and post-treatment periods.}
 
-\item{xlab}{d}
+\item{xlab}{A character for x-axis label. The default is "Time periods"}
 
-\item{ylab}{d}
+\item{ylab}{A character for y-axis label. The default is "Standardized Mean Differences"}
 
-\item{legend.position}{d}
+\item{legend.position}{A character for the position of the legend on the plot}
 
-\item{theme_bw}{d}
+\item{theme_bw}{Whether to have white background colour for the plot. The default is FALSE.}
 
-\item{adjustment}{d}
+\item{refinement}{A logical value indicating whether to check balance before or after the refinement. The default is TRUE, 
+meaning that balance after the refinement will be shown}
 
-\item{int_size}{d}
+\item{plot}{A logical value indicating whether the function returns a plot or returns values}
 
-\item{plot}{d}
+\item{linetype}{A character for linetype}
 
-\item{linetype}{d}
-
-\item{colour}{d}
+\item{colour}{Colour for the vline}
 }
 \value{
 \code{PanelBCheck} returns a balance results
