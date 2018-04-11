@@ -273,57 +273,48 @@ Maha_vit <- function(x, lag, max.lead, M = 3) {
   }
 }
 
-# 
-# PS_vit <- function(x, lag, max.lead, M = M, weighting = FALSE) {
-#   
-#   colnames(x)[1:5] <- c("V2", "V1", "ps", "V4", "V5")
-#   x <- x[!duplicated(x[c("V2", "V1")]),]
-#   x <- x[order(x$V2, x$V1), ]
-#   treated.id <- x[x$V4 == 1 & x$V1 == (max(x$V1)-max.lead), ]$V2
-#   testid <- unique(x$V2)
-#   timeid_later <- unique(x$V1)
-#   timeid <- unique(x$V1)[-((length(unique(x$V1)) - max.lead):length(unique(x$V1)))]
-#   matched_set <- x[x$V1 %in% timeid, ]
-#   
-#   if (weighting == TRUE) {
-#     m_ps <- tapply(matched_set$ps, matched_set$V2, mean)
-#     m_ps <- m_ps[!names(m_ps) == treated.id]
-#     
-#     weights <- as.data.frame(rbind(cbind((m_ps/(1-m_ps))/sum(m_ps/(1-m_ps)), 
-#                                          testid[!testid == treated.id]), cbind(w.weight = 1, treated.id)))
-#   } else {
-#     PS_distance <- abs(tapply(matched_set$ps, matched_set$V2, mean) - mean(matched_set$ps[which(matched_set$V2 == treated.id)]))
-#     if (M < length(testid) - 1) {
-#       matchid <- as.numeric(names(sort(PS_distance[!names(PS_distance) == treated.id]))[1:M])
-#       weights <- as.data.frame(rbind(cbind(1/M, matchid), cbind(w.weight = 1, treated.id)))
-#     } else {
-#       matchid <- as.numeric(names(sort(PS_distance[!names(PS_distance) == treated.id])))
-#       weights <- as.data.frame(rbind(cbind(1/(length(testid)-1), matchid), cbind(w.weight = 1, treated.id)))
-#     }
-#     
-#   }
-#   
-#   colnames(weights)[2] <- "V2" # give the critical column the unit.name, so can merge
-#   colnames(weights)[1] <- "w.weight"
-#   merged <- merge(x, weights, by = "V2") # merge it with the data.frame (smaller data.frame as a list element)
-#   merged <- merged[order(merged$V2, merged$V1), ]
-#   colnames(merged)[c(4,5)] <- c("V3", "V4")
-#   # if (max.lead > 0) {
-#   #   merged$wit <- ifelse(merged$V1 == max(timeid_later) & merged$V2 == treated.id, 1, 
-#   #                        ifelse(merged$V1 == max(timeid_later) - max.lead - 1 & merged$V2 == treated.id, -1, 
-#   #                               ifelse(merged$V1 == max(timeid_later) & merged$V2 %in% testid[testid != treated.id], -merged$w.weight, 
-#   #                                      ifelse(merged$V1 == max(timeid_later) - max.lead - 1 & merged$V2 %in% testid[testid != treated.id], merged$w.weight, 0) 
-#   #                               )))
-#   # } else {
-#   #   merged$wit <- ifelse(merged$V1 == max(timeid_later) & merged$V2 == treated.id, 1, 
-#   #                        ifelse(merged$V1 == max(timeid_later) - max.lead - 1 & merged$V2 == treated.id, 1, 
-#   #                               ifelse(merged$V1 == max(timeid_later) & merged$V2 %in% testid[testid != treated.id], merged$w.weight, 
-#   #                                      ifelse(merged$V1 == max(timeid_later) - max.lead - 1 & merged$V2 %in% testid[testid != treated.id], -merged$w.weight, 0) 
-#   #                               )))
-#   # }
-#   # 
-#   return(merged) # return the weight variable
-# } 
+MSMD_each <- function(time_id, matched_set, testid, treated.id = treated.id) {
+  
+  sub_sub <- matched_set[matched_set$V1 == time_id, ]
+  # sub_sub[, colSums(is.na(sub_sub)) != 0]
+  cov_matrix <- cov(as.matrix(sub_sub[sub_sub$V2 %in% testid[testid != treated.id], 5:length(sub_sub)]))
+  #cov_matrix <- cov(as.matrix(sub_sub[sub_sub$V2 %in% testid[testid != treated.id], 5:length(sub_sub)]),
+  #              use = "pairwise.complete.obs") # to avoid NAs causing problems from
+  # lagged outcomes
+  # cov_matrix <- cov_matrix[rowSums(is.na(cov_matrix))!=dim(cov_matrix)[1],
+  #            colSums(is.na(cov_matrix))!=dim(cov_matrix)[2]]
+  # 
+  if(all(eigen(cov_matrix)$values > .00001)) {
+    if (length(sub_sub) == 5) {
+      return((sub_sub[sub_sub$V2 %in% testid[testid != treated.id], 5:length(sub_sub)] - 
+                as.numeric(sub_sub[sub_sub$V2 == treated.id, 5:length(sub_sub)])) * cov_matrix^(-1) *
+               (sub_sub[sub_sub$V2 %in% testid[testid != treated.id], 5:length(sub_sub)] - 
+                  as.numeric(sub_sub[sub_sub$V2 == treated.id, 5:length(sub_sub)]))
+      )
+    } else {
+      return(mahalanobis(x = sub_sub[sub_sub$V2 %in% testid[testid != treated.id], 5:length(sub_sub)], 
+                         center = as.numeric(sub_sub[sub_sub$V2 == treated.id, 5:length(sub_sub)]),
+                         cov = cov_matrix))
+    }
+    
+  } else {
+    if (length(sub_sub) == 5) {
+      return((sub_sub[sub_sub$V2 %in% testid[testid != treated.id], 5:length(sub_sub)] - 
+                as.numeric(sub_sub[sub_sub$V2 == treated.id, 5:length(sub_sub)])) * cov_matrix^(-1) *
+               (sub_sub[sub_sub$V2 %in% testid[testid != treated.id], 5:length(sub_sub)] - 
+                  as.numeric(sub_sub[sub_sub$V2 == treated.id, 5:length(sub_sub)])))
+    } else {
+      return(tryCatch(mahalanobis(x = sub_sub[sub_sub$V2 %in% testid[testid != treated.id], 5:length(sub_sub)], 
+                                  center = as.numeric(sub_sub[sub_sub$V2 == treated.id, 5:length(sub_sub)]),
+                                  cov = diag((length(sub_sub) - 4)) * cov_matrix), 
+                      error = function(e) mahalanobis(x = sub_sub[sub_sub$V2 %in% testid[testid != treated.id], 5:length(sub_sub)], 
+                                                      center = as.numeric(sub_sub[sub_sub$V2 == treated.id, 5:length(sub_sub)]),
+                                                      cov = diag((length(sub_sub) - 4)))))
+    }
+    
+  }
+}
+
 
 PS_vit <- function(x, lag, max.lead, M = M, weighting = FALSE) {
   
@@ -439,19 +430,19 @@ take_out <- function(matched_set, lag, lead) {
 
 
 
-PanelDiDResult <- function(x, lag, lead){
-  testid <- unique(x$V2)
-  location <- match(x$V2[x$V3 == 1 & x$V1 == (max(x$V1)-lead)], testid)
-  
-  first.diff <- x[x$V2 == testid[location], ]$V4[lag+1+lead] - x[x$V2 == testid[location], ]$V4[lag]
-  second.diff.1 <- sum(x[x$V2 %in% testid[-location] & x$V1 == unique(x$V1)[lag+1+lead], ]$V4*
-                         x[x$V2 %in% testid[-location] & x$V1 == unique(x$V1)[lag+1+lead], ]$w.weight)
-  second.diff.2 <- sum(x[x$V2 %in% testid[-location] & x$V1 == unique(x$V1)[lag], ]$V4*
-                         x[x$V2 %in% testid[-location] & x$V1 == unique(x$V1)[lag], ]$w.weight)
-  second.diff <- second.diff.1 - second.diff.2  
-  return(first.diff - second.diff)
-  
-}
+# PanelDiDResult <- function(x, lag, lead){
+#   testid <- unique(x$V2)
+#   location <- match(x$V2[x$V3 == 1 & x$V1 == (max(x$V1)-lead)], testid)
+#   
+#   first.diff <- x[x$V2 == testid[location], ]$V4[lag+1+lead] - x[x$V2 == testid[location], ]$V4[lag]
+#   second.diff.1 <- sum(x[x$V2 %in% testid[-location] & x$V1 == unique(x$V1)[lag+1+lead], ]$V4*
+#                          x[x$V2 %in% testid[-location] & x$V1 == unique(x$V1)[lag+1+lead], ]$w.weight)
+#   second.diff.2 <- sum(x[x$V2 %in% testid[-location] & x$V1 == unique(x$V1)[lag], ]$V4*
+#                          x[x$V2 %in% testid[-location] & x$V1 == unique(x$V1)[lag], ]$w.weight)
+#   second.diff <- second.diff.1 - second.diff.2  
+#   return(first.diff - second.diff)
+#   
+# }
 
 
 # newlist$`Matched sets for ATC`[[1]]
@@ -538,23 +529,23 @@ gaps_plot_tmp <- function(x, lag, lead, data, dependent,
 }
 
 
-parallel_trends <- function(x, lag, lead, adjustment) {
-  
-  treated.id <- x[x$V3 == 1 & x$V1 == (max(x$V1)-lead), ]$V2 # check this
-  treated.outcome <- x$V4[which(x$V2 == treated.id)]
-  if (adjustment == FALSE) {
-    control.outcome <- tapply(x$V4[which(x$V2 != treated.id)],
-                              x$V1[which(x$V2 != treated.id)], mean)
-  } else {
-    control.outcome <- tapply(x$V4[x$V2 != treated.id] * x$w.weight[x$V2 != treated.id], 
-                              x$V1[x$V2 != treated.id], sum)
-  }
-  
-  
-  return(list("treated.outcome" = treated.outcome,
-              "control.outcome" = control.outcome))
-}
-
+# parallel_trends <- function(x, lag, lead, adjustment) {
+#   
+#   treated.id <- x[x$V3 == 1 & x$V1 == (max(x$V1)-lead), ]$V2 # check this
+#   treated.outcome <- x$V4[which(x$V2 == treated.id)]
+#   if (adjustment == FALSE) {
+#     control.outcome <- tapply(x$V4[which(x$V2 != treated.id)],
+#                               x$V1[which(x$V2 != treated.id)], mean)
+#   } else {
+#     control.outcome <- tapply(x$V4[x$V2 != treated.id] * x$w.weight[x$V2 != treated.id], 
+#                               x$V1[x$V2 != treated.id], sum)
+#   }
+#   
+#   
+#   return(list("treated.outcome" = treated.outcome,
+#               "control.outcome" = control.outcome))
+# }
+# 
 
 
 
