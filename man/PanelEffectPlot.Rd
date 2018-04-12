@@ -61,3 +61,7 @@ PanelEffectPlot(mod.bootSE)
 
 }
 }
+\author{
+In Song Kim <insong@mit.edu>, Erik Wang
+<haixiao@Princeton.edu>, and Kosuke Imai <kimai@Princeton.edu>
+}

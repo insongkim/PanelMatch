@@ -70,8 +70,6 @@ containing the following components:
 \item{ATT_matches}{the matched set given the att as the quantity of interest}
 \item{ATC_matches}{the matched set given the atc as the quantity of interest}
 \item{covariate_names}{Names of covariates in the user-specified formula}
-\item{NC_ATT}{...}
-\item{NC_ATC}{...}
 }
 \description{
 \code{PanelMatch} identifies a matched set for each treated

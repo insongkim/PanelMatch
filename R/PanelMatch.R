@@ -57,8 +57,6 @@
 #' \item{ATT_matches}{the matched set given the att as the quantity of interest}
 #' \item{ATC_matches}{the matched set given the atc as the quantity of interest}
 #' \item{covariate_names}{Names of covariates in the user-specified formula}
-#' \item{NC_ATT}{...}
-#' \item{NC_ATC}{...}
 #'
 #' @author In Song Kim <insong@mit.edu>, Erik Wang
 #' <haixiao@Princeton.edu>, and Kosuke Imai <kimai@Princeton.edu>
@@ -245,8 +243,7 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
                   "unit.id" = unit.id, "time.id" = time.id, "M" = M,
                   "covariate.only" = covariate.only, "lag" = lag, 
                   "covariate_names" = covariate_names,
-                  "max.lead" = max.lead, "data" = d2, "ATT_matches" = even_smaller1, 
-                  "NC_ATT" = lapply(even_smaller1, function (x) length(unique(x$V2))-1)))
+                  "max.lead" = max.lead, "data" = d2, "ATT_matches" = even_smaller1))
     } else if (method == "Synth") {
       return(list("treatment" = treatment, "qoi" = qoi, "dependent" = dependent,
                   "covariate" = covariate, "unit.id" = unit.id, "time.id" = time.id, 
@@ -256,8 +253,7 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
                   "ATT_matches" = lapply(even_smaller1, 
                                          Panel_vit, lag = lag, 
                                          max.lead = max.lead, 
-                                         M = M, method = method),
-                  "NC_ATT" = lapply(even_smaller1, function (x) length(unique(x$V2))-1)))
+                                         M = M, method = method)))
     } else if (method == "SynthPscore"|method == "SynthCBPS") {
       return(list("treatment" = treatment, "qoi" = qoi, "dependent" = dependent,
                   "covariate" = covariate, "unit.id" = unit.id, "time.id" = time.id, 
@@ -267,8 +263,7 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
                   "ATT_matches" = lapply(even_smaller1, 
                                          Panel_vit, lag = lag, 
                                          max.lead = max.lead, 
-                                         M = M, method = method),
-                  "NC_ATT" = lapply(even_smaller1, function (x) length(unique(x$V2))-1)))
+                                         M = M, method = method)))
     } else if (method == "Maha") {
       return(list("treatment" = treatment, "qoi" = qoi, "dependent" = dependent,
                   "covariate" = covariate, "unit.id" = unit.id, "time.id" = time.id,
@@ -277,8 +272,7 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
                   "covariate_names" = covariate_names,
                   "ATT_matches" = delete.NULLs(lapply(even_smaller1, Panel_vit, lag = lag, 
                                                       max.lead = max.lead, M = M, method = method, 
-                                                      covariate_names = covariate_names)),
-                  "NC_ATT" = lapply(even_smaller1, function (x) length(unique(x$V2))-1)))
+                                                      covariate_names = covariate_names))))
     } else if (method == "Pscore"|method == "CBPS") {
       
       return(list("treatment" = treatment, "qoi" = qoi, 
@@ -289,8 +283,7 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
                   "max.lead" = max.lead, "data" = d2, "method" = method,
                   "ATT_matches" = lapply(even_smaller1, Panel_vit, lag = lag,
                                          weighting = weighting,
-                                         max.lead = max.lead, M = M, method = method),
-                  "NC_ATT" = lapply(even_smaller1, function (x) length(unique(x[,1]))-1)))
+                                         max.lead = max.lead, M = M, method = method)))
     } else {
       cat("Please select either NULL or one of the following
           estimation methods: Synth, Maha, Pscore, SynthPscore and SynthCBPS")
@@ -396,8 +389,7 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
                       "unit.id" = unit.id, "time.id" = time.id, "M" = M, 
                       "covariate.only" = covariate.only, "lag" = lag, "max.lead" = max.lead, 
                       "data" = d2, "ATC_matches" = even_smaller2, 
-                      "covariate_names" = covariate_names,
-                      "NC_ATC" = lapply(even_smaller2, function (x) length(unique(x$V2))-1)))
+                      "covariate_names" = covariate_names))
         } else if (method == "Synth") {
           return(list("treatment" = treatment, "qoi" = qoi, "dependent" = dependent, "covariate" = covariate, 
                       "unit.id" = unit.id, "time.id" = time.id, "M" = M, 
@@ -405,8 +397,7 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
                       "data" = d2, "method" = method, "ATC_matches" = lapply(even_smaller2, 
                                                                              Panel_vit, lag = lag, max.lead = max.lead, M = M,
                                                                              method = method),
-                      "covariate_names" = covariate_names,
-                      "NC_ATC" = lapply(even_smaller2, function (x) length(unique(x$V2))-1)))
+                      "covariate_names" = covariate_names))
         } else if (method == "SynthPscore"|method == "SynthCBPS") {
           return(list("treatment" = treatment, "qoi" = qoi, "dependent" = dependent,
                       "covariate" = covariate, "unit.id" = unit.id, "time.id" = time.id, 
@@ -416,8 +407,7 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
                       "ATT_matches" = lapply(even_smaller2, 
                                              Panel_vit, lag = lag, 
                                              max.lead = max.lead, 
-                                             M = M, method = method),
-                      "NC_ATT" = lapply(even_smaller2, function (x) length(unique(x$V2))-1)))
+                                             M = M, method = method)))
         } else if (method == "Maha") {
           return(list("treatment" = treatment, "qoi" = qoi, "dependent" = dependent, 
                       "covariate" = covariate, "unit.id" = unit.id, "time.id" = time.id, 
@@ -427,8 +417,7 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
                       "data" = d2, "ATC_matches" = delete.NULLs(lapply(even_smaller2, Panel_vit, 
                                                                        lag = lag, max.lead = max.lead, 
                                                                        M = M,method = method, 
-                                                                       covariate_names = covariate_names)),
-                      "NC_ATC" = lapply(even_smaller2, function (x) length(unique(x$V2))-1)))
+                                                                       covariate_names = covariate_names))))
         } else if (method == "Pscore"|method == "CBPS") {
           return(list("treatment" = treatment, "qoi" = qoi, "dependent" = dependent, 
                       "covariate" = covariate, "unit.id" = unit.id, "time.id" = time.id, "M" = M, 
@@ -437,8 +426,7 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
                       "covariate_names" = covariate_names,
                       "ATC_matches" = lapply(even_smaller2, weighting = weighting, 
                                              Panel_vit, lag = lag,
-                                             max.lead = max.lead, M = M, method = method),
-                      "NC_ATC" = lapply(even_smaller2, function (x) length(unique(x[,1]))-1)))
+                                             max.lead = max.lead, M = M, method = method)))
         } else {
           cat("Please select either NULL or one of the following
               estimation methods: Synth, Maha, Pscore, SynthPscore and SynthCBPS")
@@ -625,10 +613,8 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
                           "covariate" = covariate, "unit.id" = unit.id, "time.id" = time.id, "M" = M, 
                           "covariate.only" = covariate.only, "lag" = lag, "max.lead" = max.lead, 
                           "data" = d2, "ATT_matches" = even_smaller1, 
-                          "NC_ATT" = lapply(even_smaller1, function (x) length(unique(x$V2))-1),
                           "ATC_matches" = even_smaller2, 
-                          "covariate_names" = covariate_names,
-                          "NC_ATC" = lapply(even_smaller2, function (x) length(unique(x$V2))-1)))
+                          "covariate_names" = covariate_names))
             } else if (method == "Synth") {
               return(list("treatment" = treatment, "qoi" = qoi, "dependent" = dependent, 
                           "covariate" = covariate, "unit.id" = unit.id, "time.id" = time.id, 
@@ -638,11 +624,9 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
                                                  lag = lag, max.lead = max.lead, 
                                                  M = M,method = method), 
                           "covariate_names" = covariate_names,
-                          "NC_ATT" = lapply(even_smaller1, function (x) length(unique(x$V2))-1),
                           "ATC_matches" = lapply(even_smaller2, 
                                                  Panel_vit, lag = lag, max.lead = max.lead, M = M,
-                                                 method = method), 
-                          "NC_ATC" = lapply(even_smaller2, function (x) length(unique(x$V2))-1)))
+                                                 method = method)))
             } else if (method == "SynthPscore"|method == "SynthCBPS") {
               return(list("treatment" = treatment, "qoi" = qoi, "dependent" = dependent, 
                           "covariate" = covariate, "unit.id" = unit.id, "time.id" = time.id, 
@@ -652,11 +636,9 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
                                                  lag = lag, max.lead = max.lead, 
                                                  M = M,method = method), 
                           "covariate_names" = covariate_names,
-                          "NC_ATT" = lapply(even_smaller1, function (x) length(unique(x$V2))-1),
                           "ATC_matches" = lapply(even_smaller2, 
                                                  Panel_vit, lag = lag, max.lead = max.lead, M = M,
-                                                 method = method), 
-                          "NC_ATC" = lapply(even_smaller2, function (x) length(unique(x$V2))-1)))
+                                                 method = method)))
             } else if (method == "Maha") {
               return(list("treatment" = treatment, "qoi" = qoi, "dependent" = dependent, 
                           "covariate" = covariate, "unit.id" = unit.id, "time.id" = time.id, 
@@ -665,13 +647,11 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
                           "ATT_matches" = delete.NULLs(lapply(even_smaller1,Panel_vit, lag = lag, 
                                                               max.lead = max.lead, M = M,method = method, 
                                                               covariate_names = covariate_names)), 
-                          "NC_ATT" = lapply(even_smaller1, function (x) length(unique(x$V2))-1),
                           "covariate_names" = covariate_names,
                           "ATC_matches" = delete.NULLs(lapply(even_smaller2, 
                                                               Panel_vit, lag = lag, max.lead = max.lead, M = M,
                                                               method = method, 
-                                                              covariate_names = covariate_names)), 
-                          "NC_ATC" = lapply(even_smaller2, function (x) length(unique(x$V2))-1)))
+                                                              covariate_names = covariate_names))))
             } else if (method == "Pscore"|method == "CBPS") {
               return(list("treatment" = treatment, "qoi" = qoi, "dependent" = dependent, 
                           "covariate" = covariate, "unit.id" = unit.id, "time.id" = time.id, 
@@ -680,11 +660,9 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
                           "covariate_names" = covariate_names,
                           "ATT_matches" = lapply(even_smaller1, Panel_vit, weighting = weighting, 
                                                  lag = lag, max.lead = max.lead, M = M,method = method), 
-                          "NC_ATT" = lapply(even_smaller1, function (x) length(unique(x[,1]))-1),
                           "ATC_matches" = lapply(even_smaller2, weighting = weighting,
                                                  Panel_vit, lag = lag, max.lead = max.lead, M = M,
-                                                 method = method),
-                          "NC_ATC" = lapply(even_smaller2, function (x) length(unique(x[,1]))-1)))
+                                                 method = method)))
             } else {     cat("Please select either NULL or one of the following
           estimation methods: Synth, Maha, Pscore, SynthPscore and SynthCBPS")
             }

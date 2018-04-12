@@ -25,6 +25,9 @@
 #' @return It returns a plot
 #' @export
 #'
+#' @author In Song Kim <insong@mit.edu>, Erik Wang
+#' <haixiao@Princeton.edu>, and Kosuke Imai <kimai@Princeton.edu>
+#'
 #' @examples \dontrun{
 #' matches.cbps <- PanelMatch(lag = 4, max.lead = 4, time.id = "year",
 #' unit.id = "wbcode2", treatment = "dem", formula = y ~ dem, method =
