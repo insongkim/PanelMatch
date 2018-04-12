@@ -13,10 +13,10 @@
 #' covariates whose history should be used to refine the matched set.
 #' @param lag An integer value indicating the length of history to be matched
 #' @param max.lead An optional integer value indicating the length of maximum leads
-#' @param unit.id A character string indicating the name of unit
-#' variable in the \code{data}
-#' @param time.id A character string indicating the name of time
-#' variable in the \code{data}
+#' @param unit.id A character string indicating the name of unit identifier
+#' variable in the \code{data}. The variable must be numeric. 
+#' @param time.id A character string indicating the name of time identifier
+#' variable in the \code{data}. This variable must be numeric. 
 #' @param treatment A character string indicating the name of
 #' treatment variable in the \code{data}. The treatment should be a
 #' binary indicator (integer with 0 for the control group and 1 for

@@ -16,11 +16,11 @@ covariates whose history should be used to refine the matched set.}
 
 \item{max.lead}{An optional integer value indicating the length of maximum leads}
 
-\item{unit.id}{A character string indicating the name of unit
-variable in the \code{data}}
+\item{unit.id}{A character string indicating the name of unit identifier
+variable in the \code{data}. The variable must be numeric.}
 
-\item{time.id}{A character string indicating the name of time
-variable in the \code{data}}
+\item{time.id}{A character string indicating the name of time identifier
+variable in the \code{data}. This variable must be numeric.}
 
 \item{treatment}{A character string indicating the name of
 treatment variable in the \code{data}. The treatment should be a
