@@ -10,8 +10,6 @@
 #' 
 #' @param lead An integer vector indicating the sequence of the lead
 #' periods for which the quantity of interest will be estimated
-#' @param covariate.only A logical value indicating whether only
-#' covariates are used. The default is \code{FALSE}
 #' @param inference One of ``wfe'' (weighted fixed effects) or
 #' ``bootstrap'' methods for standard error calculation. The default
 #' is \code{bootstrap}.
@@ -64,7 +62,7 @@
 #' summary(mod.wfeSE)
 #' }
 #' @export
-PanelEstimate <- function(lead, covariate.only = FALSE,
+PanelEstimate <- function(lead, 
                           inference = c("wfe", "bootstrap"),
                           ITER = 1000, matched_sets = NULL,
                           estimator = "did",
@@ -81,7 +79,6 @@ PanelEstimate <- function(lead, covariate.only = FALSE,
   data <- matched_sets$data
   dependent = matched_sets$dependent
   treatment = matched_sets$treatment
-  covariate.only = matched_sets$covariate.only
   unit.id = matched_sets$unit.id
   time.id = matched_sets$time.id
   method = matched_sets$method

@@ -4,16 +4,13 @@
 \alias{PanelEstimate}
 \title{PanelEstimate}
 \usage{
-PanelEstimate(lead, covariate.only = FALSE, inference = c("wfe",
-  "bootstrap"), ITER = 1000, matched_sets = NULL, estimator = "did",
-  df.adjustment = FALSE, qoi = NULL, CI = 0.95)
+PanelEstimate(lead, inference = c("wfe", "bootstrap"), ITER = 1000,
+  matched_sets = NULL, estimator = "did", df.adjustment = FALSE,
+  qoi = NULL, CI = 0.95)
 }
 \arguments{
 \item{lead}{An integer vector indicating the sequence of the lead
 periods for which the quantity of interest will be estimated}
-
-\item{covariate.only}{A logical value indicating whether only
-covariates are used. The default is \code{FALSE}}
 
 \item{inference}{One of ``wfe'' (weighted fixed effects) or
 ``bootstrap'' methods for standard error calculation. The default
