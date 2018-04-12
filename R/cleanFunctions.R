@@ -1,8 +1,9 @@
-Panel_vit <- function(x, lag, max.lead, method, M, weighting) {
+Panel_vit <- function(x, lag, max.lead, method, M, weighting, 
+                      covariate_names) {
   if (method == "Synth"|method == "SynthPscore"|method == "SynthCBPS") {
     return(synth_vit(x, lag = lag, max.lead = max.lead, method = method))
   } else if(method == "Maha"){
-    return(Maha_vit(x, lag, max.lead, M = M))
+    return(Maha_vit(x, lag, max.lead, M = M, covariate_names = covariate_names))
   } else if(method == "Pscore"|method == "CBPS") {
     return(PS_vit(x, lag, max.lead, M = M, weighting = weighting))
   } else {
@@ -173,7 +174,8 @@ synth_vit <- function(x, lag, max.lead, method = "Synth") {
   }
 }
 
-Maha_vit <- function(x, lag, max.lead, M = 3) {
+Maha_vit <- function(x, lag, max.lead, M = 3, covariate_names) {
+  covariate_names <- covariate_names
   treated.id <- x[x$V3 == 1 & x$V1 == (max(x$V1)-max.lead), ]$V2
   x <- na.omit(x)
   x <- x[x$V2 %in% as.numeric(names(which(table(x$V2) == max.lead + 1 + lag))),]
@@ -232,6 +234,9 @@ Maha_vit <- function(x, lag, max.lead, M = 3) {
     colnames(weights)[2] <- "V2" # give the critical column the unit.name, so can merge
     merged <- merge(x, weights, by = "V2", all.x = T) # merge it with the data.frame (smaller data.frame as a list element)
     merged$w.weight[which(is.na(merged$w.weight))] <- 0
+    if (is.null(covariate_names) == FALSE) {
+      colnames(merged)[5:(length(covariate_names) + 4)] <- covariate_names  
+    }
     # if (max.lead > 0) {
     #   merged$wit <- ifelse(merged$V1 == max(timeid_later) & merged$V2 == testid[2], 1, 
     #                        ifelse(merged$V1 == max(timeid_later) - max.lead - 1 & merged$V2 == testid[2],-1, 
@@ -250,6 +255,9 @@ Maha_vit <- function(x, lag, max.lead, M = 3) {
   } else {
     merged <- x
     merged$w.weight <- 1
+    if (is.null(covariate_names) == FALSE) {
+      colnames(merged)[5:(length(covariate_names) + 4)] <- covariate_names  
+    }
     # if (max.lead > 0) {
     #   merged$wit <- ifelse(merged$V1 == max(timeid_later) & merged$V2 == testid[2], 1, 
     #                        ifelse(merged$V1 == max(timeid_later) - max.lead - 1 & merged$V2 == testid[2],-1, 
@@ -453,16 +461,17 @@ gaps_plot_tmp <- function(x, lag, lead, data, dependent,
                           treated_set,
                           covariate = NULL) {
   treated_set <- treated_set
+  x <- as.data.frame(x)
   # colnames(data) <- c("time.id", "unit.id",
   #                     "treatment", "dependent", covariate_names)
-  if (method == "Maha"|method == "Synth") {
-    x <- as.data.frame(x)
-    colnames(x)[5:length(x)] <- c(covariate_names,
-                                  "dependent",
-                                  "w.weight")
-    colnames(treated_set)[5:(length(treated_set)-3)] <- 
-      covariate_names
-  }
+  # if (method == "Maha"|method == "Synth") {
+  #   x <- as.data.frame(x)
+  #   colnames(x)[5:length(x)] <- c(covariate_names,
+  #                                 "dependent",
+  #                                 "w.weight")
+  #   colnames(treated_set)[5:(length(treated_set)-3)] <- 
+  #     covariate_names
+  # }
   treated.id <- x[x$V3 == 1 & x$V1 == (max(x$V1)-lead), ]$V2 # check this
   if (is.null(covariate)) {
     treated_set$V5 <- treated_set$V4

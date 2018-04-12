@@ -9,8 +9,8 @@ practice. Researchers first select a method of matching each treated
 observation from a given unit in a particular time period with control
 observations from other units in the same time period that have a
 similar treatment and covariate history.  These methods include
-standard matching methods based on propensity score and Mahalanobis
-distance as well as weighting methods such as synthetic controls.
+standard matching and weighting methods based on propensity score and Mahalanobis
+distance.
 Once matching is done, both short-term and long-term average treatment
 effects for the treated can be estimated with standard errors.  The
 package also offers a visualization technique that allows researchers
@@ -68,9 +68,9 @@ DisplayTreatment(unit.id = "wbcode2",
  specify `lag`. A further refinement of the matched set will be
  possible by setting the size of the matched set `M`, and adjusting
  for other confounders such as past outcomes and covariates via
- `formula`. Various matching methods such as `Mahalanobis distance`
- matching, `CBPS`, `Propensity score` matching and weighting, and
- `Synthetic control` weighting can be used.
+ `formula`. Various matching and weighting methods such as `Mahalanobis distance`
+ matching and `CBPS` and `Propensity score` matching and weighting can 
+ be used.
 
 ``` r
 matches.cbps <- PanelMatch(lag = 4, max.lead = 4, time.id = "year",

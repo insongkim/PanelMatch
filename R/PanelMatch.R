@@ -94,6 +94,8 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
   if (missing(formula))
     stop("A formula should be provided")
   
+  if (method == "Synth"|method == "SynthPscore"|method == "SynthCBPS")
+    stop("Currently, only Pscore, CBPS and Maha are supported")
   
   # set covariates and dependent
   covariate <- attr(terms(formula),"term.labels")[!attr(terms(formula),"term.labels") == treatment]
@@ -274,7 +276,8 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
                   "max.lead" = max.lead, "data" = d2, "method" = method,
                   "covariate_names" = covariate_names,
                   "ATT_matches" = delete.NULLs(lapply(even_smaller1, Panel_vit, lag = lag, 
-                                                      max.lead = max.lead, M = M, method = method)),
+                                                      max.lead = max.lead, M = M, method = method, 
+                                                      covariate_names = covariate_names)),
                   "NC_ATT" = lapply(even_smaller1, function (x) length(unique(x$V2))-1)))
     } else if (method == "Pscore"|method == "CBPS") {
       
@@ -423,7 +426,8 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
                       "covariate_names" = covariate_names,
                       "data" = d2, "ATC_matches" = delete.NULLs(lapply(even_smaller2, Panel_vit, 
                                                                        lag = lag, max.lead = max.lead, 
-                                                                       M = M,method = method)),
+                                                                       M = M,method = method, 
+                                                                       covariate_names = covariate_names)),
                       "NC_ATC" = lapply(even_smaller2, function (x) length(unique(x$V2))-1)))
         } else if (method == "Pscore"|method == "CBPS") {
           return(list("treatment" = treatment, "qoi" = qoi, "dependent" = dependent, 
@@ -659,12 +663,14 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
                           "M" = M, "covariate.only" = covariate.only, "lag" = lag, "max.lead" = max.lead, 
                           "data" = d2, "method" = method,
                           "ATT_matches" = delete.NULLs(lapply(even_smaller1,Panel_vit, lag = lag, 
-                                                              max.lead = max.lead, M = M,method = method)), 
+                                                              max.lead = max.lead, M = M,method = method, 
+                                                              covariate_names = covariate_names)), 
                           "NC_ATT" = lapply(even_smaller1, function (x) length(unique(x$V2))-1),
                           "covariate_names" = covariate_names,
                           "ATC_matches" = delete.NULLs(lapply(even_smaller2, 
                                                               Panel_vit, lag = lag, max.lead = max.lead, M = M,
-                                                              method = method)), 
+                                                              method = method, 
+                                                              covariate_names = covariate_names)), 
                           "NC_ATC" = lapply(even_smaller2, function (x) length(unique(x$V2))-1)))
             } else if (method == "Pscore"|method == "CBPS") {
               return(list("treatment" = treatment, "qoi" = qoi, "dependent" = dependent, 
