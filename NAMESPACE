@@ -3,6 +3,7 @@
 S3method(summary,PanelEstimate)
 export(DisplayTreatment)
 export(PanelBCheck)
+export(PanelEffectPlot)
 export(PanelEstimate)
 export(PanelMatch)
 import(MASS)
