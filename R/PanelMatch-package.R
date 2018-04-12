@@ -46,7 +46,7 @@
 #' @importFrom Rsolnp solnp
 #' @importFrom matrixStats colSds colQuantiles
 #' @importFrom knitr kable
-#' @importFrom Matrix cBind rBind Diagonal Matrix drop0
+#' @importFrom Matrix cBind rBind tcrossprod crossprod Diagonal Matrix drop0
 #' @importFrom methods as
 #' @importFrom utils flush.console tail object.size
 NULL

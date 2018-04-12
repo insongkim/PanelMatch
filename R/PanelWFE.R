@@ -793,10 +793,13 @@ PanelWFE <- function (formula, data, treat = "treat.name", # line 283!
       ## if (verbose)
       ##   cat("\n Standard FE Projection Started \n")
       ## flush.console()
+
+      ## e <- environment()
+      ## save(file = "test.RData", list = ls(), env = e)
       
       ## this step takes time
       P1 <- Udummy %*% tcrossprod(Diagonal(x=1/as.vector(table(data$u.index))), Udummy)
-      
+
       ## e <- environment()
       ## save(file = "test.RData", list = ls(), env = e)
       
