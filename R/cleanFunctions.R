@@ -230,7 +230,8 @@ Maha_vit <- function(x, lag, max.lead, M = 3) {
     # weights <- as.data.frame(rbind(cbind(1/M, testid[matchid]), cbind(w.weight = 1, testid[2])))
     
     colnames(weights)[2] <- "V2" # give the critical column the unit.name, so can merge
-    merged <- merge(x, weights, by = "V2") # merge it with the data.frame (smaller data.frame as a list element)
+    merged <- merge(x, weights, by = "V2", all.x = T) # merge it with the data.frame (smaller data.frame as a list element)
+    merged$w.weight[which(is.na(merged$w.weight))] <- 0
     # if (max.lead > 0) {
     #   merged$wit <- ifelse(merged$V1 == max(timeid_later) & merged$V2 == testid[2], 1, 
     #                        ifelse(merged$V1 == max(timeid_later) - max.lead - 1 & merged$V2 == testid[2],-1, 
@@ -343,7 +344,8 @@ PS_vit <- function(x, lag, max.lead, M = M, weighting = FALSE) {
   
   colnames(weights)[2] <- "V2" # give the critical column the unit.name, so can merge
   colnames(weights)[1] <- "w.weight"
-  merged <- merge(x, weights, by = "V2") # merge it with the data.frame (smaller data.frame as a list element)
+  merged <- merge(x, weights, by = "V2", all.x = T) # merge it with the data.frame (smaller data.frame as a list element)
+  merged$w.weight[which(is.na(merged$w.weight))] <- 0
   merged <- merged[order(merged$V2, merged$V1), ]
  # colnames(merged)[c(4,5)] <- c("V3", "V4")
   # if (max.lead > 0) {
