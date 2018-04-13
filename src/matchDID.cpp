@@ -210,7 +210,7 @@ List findDDNaive(int L, int F, NumericMatrix x1) {
       List out(nrow1);
       for (int j = L; j < (nrow1 - F); j++) {
         
-        if (x1(j,2) == 0 & x1(j,0) == x1(i,0) & x1(j-1, 2) == 0 &// if the treatment status is zero
+        if (x1(j,2) == 0 & x1(j,0) == x1(i,0) & // if the treatment status is zero
             // (it has to be zero so as to be in the control group)
             // and that the time.id is the same 
             x1(j-L,1) == x1(j+F,1) & // for this new unit that just got picked,
