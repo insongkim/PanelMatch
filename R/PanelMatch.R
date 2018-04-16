@@ -40,6 +40,8 @@
 #' the user decides not to match on treatment history. By default 
 #' it is FALSE. If TRUE, then \code{PanelMatch} will not match on
 #' treatment history. 
+#' @param restricted An logical value indicating whether the user decides 
+#' to match with restricted treatment pattern
 #'
 #' @return \code{PanelMatch} returns a list of class `panelmatch'
 #' containing the following components:
@@ -74,6 +76,7 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
                        data, weighting = FALSE,
                        M = 3, covariate.only = FALSE,
                        naive = FALSE,
+                       restricted = FALSE,
                        method = NULL) {
   
   ## Warning for missing unit & time index
@@ -152,8 +155,10 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
     
     ### cleaning the output from cpp ###
     # delete both higher level and lower level null entries
-    if (naive == FALSE) {
+    if (naive == FALSE & restricted == FALSE) {
       smallerlist <- lapply(Filter(function (x) !is.null(x), findDDmatched2(L = lag, F = max.lead, dmatrix)), delete.NULLs) 
+    } else if (restricted == TRUE) {
+      smallerlist <- lapply(Filter(function (x) !is.null(x), findDDrestricted(L = lag, F = max.lead, dmatrix)), delete.NULLs) 
     } else {
       smallerlist <- lapply(Filter(function (x) !is.null(x), findDDNaive(L = lag, F = max.lead, dmatrix)), delete.NULLs) 
     }
@@ -299,8 +304,10 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
         
         ### cleaning the output from cpp ###
         # delete both higher level and lower level null entries
-        if (naive == FALSE) {
+        if (naive == FALSE & restricted == FALSE) {
           smallerlist <- lapply(Filter(function (x) !is.null(x), findDDmatched2(L = lag, F = max.lead, dmatrix)), delete.NULLs) 
+        } else if (restricted == TRUE) {
+          smallerlist <- lapply(Filter(function (x) !is.null(x), findDDrestricted(L = lag, F = max.lead, dmatrix)), delete.NULLs) 
         } else {
           smallerlist <- lapply(Filter(function (x) !is.null(x), findDDNaive(L = lag, F = max.lead, dmatrix)), delete.NULLs) 
         }
@@ -435,8 +442,10 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
           if (qoi == "ate") {
             ### cleaning the output from cpp ###
             # delete both higher level and lower level null entries
-            if (naive == FALSE) {
+            if (naive == FALSE & restricted == FALSE) {
               smallerlist <- lapply(Filter(function (x) !is.null(x), findDDmatched2(L = lag, F = max.lead, dmatrix)), delete.NULLs) 
+            } else if (restricted == TRUE) {
+              smallerlist <- lapply(Filter(function (x) !is.null(x), findDDrestricted(L = lag, F = max.lead, dmatrix)), delete.NULLs) 
             } else {
               smallerlist <- lapply(Filter(function (x) !is.null(x), findDDNaive(L = lag, F = max.lead, dmatrix)), delete.NULLs) 
             }
@@ -530,8 +539,10 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
             
             ### cleaning the output from cpp ###
             # delete both higher level and lower level null entries
-            if (naive == FALSE) {
+            if (naive == FALSE & restricted == FALSE) {
               smallerlist <- lapply(Filter(function (x) !is.null(x), findDDmatched2(L = lag, F = max.lead, dmatrix)), delete.NULLs) 
+            } else if (restricted == TRUE) {
+              smallerlist <- lapply(Filter(function (x) !is.null(x), findDDrestricted(L = lag, F = max.lead, dmatrix)), delete.NULLs) 
             } else {
               smallerlist <- lapply(Filter(function (x) !is.null(x), findDDNaive(L = lag, F = max.lead, dmatrix)), delete.NULLs) 
             }

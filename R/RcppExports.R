@@ -25,3 +25,7 @@ findDDNaive <- function(L, F, x1) {
     .Call('_PanelMatch_findDDNaive', PACKAGE = 'PanelMatch', L, F, x1)
 }
 
+findDDrestricted <- function(L, F, x1) {
+    .Call('_PanelMatch_findDDrestricted', PACKAGE = 'PanelMatch', L, F, x1)
+}
+

@@ -8,12 +8,12 @@
 using namespace Rcpp;
 
 // sumCpp
-int sumCpp(Rcpp::IntegerVector x);
+int sumCpp(Rcpp::NumericVector x);
 RcppExport SEXP _PanelMatch_sumCpp(SEXP xSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type x(xSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type x(xSEXP);
     rcpp_result_gen = Rcpp::wrap(sumCpp(x));
     return rcpp_result_gen;
 END_RCPP
@@ -77,6 +77,19 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type F(FSEXP);
     Rcpp::traits::input_parameter< NumericMatrix >::type x1(x1SEXP);
     rcpp_result_gen = Rcpp::wrap(findDDNaive(L, F, x1));
+    return rcpp_result_gen;
+END_RCPP
+}
+// findDDrestricted
+List findDDrestricted(int L, int F, NumericMatrix x1);
+RcppExport SEXP _PanelMatch_findDDrestricted(SEXP LSEXP, SEXP FSEXP, SEXP x1SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type L(LSEXP);
+    Rcpp::traits::input_parameter< int >::type F(FSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type x1(x1SEXP);
+    rcpp_result_gen = Rcpp::wrap(findDDrestricted(L, F, x1));
     return rcpp_result_gen;
 END_RCPP
 }
