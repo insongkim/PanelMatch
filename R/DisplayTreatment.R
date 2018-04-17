@@ -43,6 +43,7 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
                              xlab = "time", ylab = "unit",
                              x.size = 10, y.size = 5,
                              legend.position= "none", 
+                             # color.for.missing = "grey",
                              legend.labels = c("not treated", "treated"))
     
 {

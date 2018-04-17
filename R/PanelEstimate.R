@@ -182,8 +182,8 @@ PanelEstimate <- function(lead,
   # ATT
   if (qoi == "att") {
     if (inference == "wfe"){
-      # if(length(lead) != 1 || lead != 0)
-      #   stop("The wfe option can only take lead = 0")
+      if(length(lead) != 1 || lead != 0)
+        stop("The wfe option can only take lead = 0")
       
       data$Wit_att0 <- ifelse(data$dits_att == 1, -1, data[c(paste0("Wit_att", lead))][,1])
       data$Wit_att0 <- -(data$Wit_att0)
@@ -274,8 +274,8 @@ PanelEstimate <- function(lead,
     # ATC
   } else if (qoi == "atc"){
     if (inference == "wfe") {
-      # if(length(lead) != 1 || lead != 0)
-      #   stop("The wfe option can only take lead = 0")
+      if(length(lead) != 1 || lead != 0)
+        stop("The wfe option can only take lead = 0")
       data$Wit_atc0 <- ifelse(data$dits_atc == 1, -1, data$Wit_atc0)
       data$Wit_atc0 <- -(data$Wit_atc0)
       if (estimator == "did") {
@@ -364,8 +364,8 @@ PanelEstimate <- function(lead,
     
   } else if (qoi == "ate") {
     if (inference == "wfe"){
-      # if(length(lead) != 1 || lead != 0)
-      #   stop("The wfe option can only take lead = 0")
+      if(length(lead) != 1 || lead != 0)
+        stop("The wfe option can only take lead = 0")
       data$Wit_att0 <- ifelse(data$dits_att == 1, -1, data$Wit_att0)
       data$Wit_att0 <- -(data$Wit_att0)
       

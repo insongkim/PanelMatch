@@ -278,12 +278,12 @@ List findDDrestricted(int L, int F, NumericMatrix x1) {
           NumericVector c = sm(_,0);
           NumericMatrix sn = x1( Range(i-L, i-1) , Range(2,2));
           NumericVector d = sn(_,0);
-          NumericMatrix so = x1( Range(j+1, j+F) , Range(2,2));
+          NumericMatrix so = x1( Range(j, j+F) , Range(2,2));
           NumericVector e = so(_,0);
-          NumericMatrix sp = x1( Range(i+1, i+F) , Range(2,2));
+          NumericMatrix sp = x1( Range(i, i+F) , Range(2,2));
           NumericVector f = sp(_,0);
           
-          if (all_sug(c == d) & sumCpp(e) == 0 & sumCpp(f) == F){
+          if (all_sug(c == d) & sumCpp(e) == 0 & sumCpp(f) == (F+1)){
             out[j] = rbind_c(x1(Range(j-L, j+F), _), x1(Range(i-L,i+F),_));
           } else {
             out[j] = R_NilValue;

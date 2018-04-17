@@ -742,3 +742,13 @@ extract_objects <- function(x, objective = c("wit", "dit")) {
 each_lead <- function(x, lead) {
   lapply(x, function(a) a[[lead]])
 }
+
+get_treated <- function(matched_set, lag) {
+  lag <- lag; matched_set <- matched_set
+  treated.time <- min(matched_set$V1) + lag
+  treated.id <- matched_set[matched_set$V3 == 1 & 
+                              matched_set$V1 == treated.time, ]$V2
+  return(data.frame(id = treated.id, 
+              time = treated.time))
+}
+
