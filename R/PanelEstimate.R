@@ -68,13 +68,17 @@ PanelEstimate <- function(lead,
                           estimator = "did",
                           df.adjustment = FALSE, qoi = NULL,
                           CI = .95) {
-  
+  if (estimator != "did") 
+    stop("Currently only did estimator is supported")
   # stop if lead > max.lead
   if (max(lead) > matched_sets$max.lead) 
     stop(paste("The number of leads you choose 
                has exceeded the maximum number you set
                when finding matched sets, which is", matched_sets$max.lead))
-  
+  if (inference == "wfe" & length(lead) > 1) 
+    stop("When inference method is wfe, please only supply 1 lead at a time. 
+         For example, please call this function with lead = 1 and then call it with lead = 2,
+         rather than supplying lead = 1:2")
   lag = matched_sets$lag
   data <- matched_sets$data
   dependent = matched_sets$dependent
@@ -82,6 +86,11 @@ PanelEstimate <- function(lead,
   unit.id = matched_sets$unit.id
   time.id = matched_sets$time.id
   method = matched_sets$method
+  restricted = matched_sets$restricted
+  if (inference == "wfe" & restricted == FALSE) 
+    stop("wfe standard errors are only supported when using restricted == TRUE in PanelMatch")
+#  inference = inference
+#  lead = lead
   if (is.null(qoi)) {
     qoi = matched_sets$qoi
   } else {
@@ -110,6 +119,7 @@ PanelEstimate <- function(lead,
   if (qoi == "att") {
     newlist <- lapply(matched_sets$`ATT_matches`, lapply_leads, unit.id = unit.id, 
                       time.id = time.id, lag = lag, estimator = estimator,
+                      inference = inference,
                       data = data, leads = lead)
     
     W_it_by_lead <- lapply(newlist, extract_objects, objective = "wit")
@@ -127,6 +137,7 @@ PanelEstimate <- function(lead,
   } else if (qoi == "atc") {
     newlist <- lapply(matched_sets$`ATC_matches`, lapply_leads, unit.id = unit.id, 
                       time.id = time.id, lag = lag, estimator = estimator,
+                      inference = inference,
                       data = data, leads = lead)
     
     W_it_by_lead <- lapply(newlist, extract_objects, objective = "wit")
@@ -145,6 +156,7 @@ PanelEstimate <- function(lead,
     # ATT
     newlist <- lapply(matched_sets$`ATT_matches`, lapply_leads, unit.id = unit.id, 
                       time.id = time.id, lag = lag, estimator = estimator,
+                      inference = inference,
                       data = data, leads = lead)
     
     W_it_by_lead <- lapply(newlist, extract_objects, objective = "wit")
@@ -161,6 +173,7 @@ PanelEstimate <- function(lead,
     # ATC
     newlist <- lapply(matched_sets$`ATC_matches`, lapply_leads, unit.id = unit.id, 
                       time.id = time.id, lag = lag, estimator = estimator, 
+                      inference = inference,
                       data = data, leads = lead)
     
     W_it_by_lead <- lapply(newlist, extract_objects, objective = "wit")
@@ -182,11 +195,12 @@ PanelEstimate <- function(lead,
   # ATT
   if (qoi == "att") {
     if (inference == "wfe"){
-      if(length(lead) != 1 || lead != 0)
-        stop("The wfe option can only take lead = 0")
+      # if(length(lead) != 1 || lead != 0)
+      #   stop("The wfe option can only take lead = 0")
       
-      data$Wit_att0 <- ifelse(data$dits_att == 1, -1, data[c(paste0("Wit_att", lead))][,1])
-      data$Wit_att0 <- -(data$Wit_att0)
+      data$Wit_att0 <- data[c(paste0("Wit_att", lead))][,1]
+     # data$Wit_att0 <- -(data$Wit_att0)
+     # return(data)
       if (estimator == "did") {
         fit <- PanelWFE(formula = as.formula(paste(dependent, "~", treatment)), 
                         treat = treatment, unit.index = matched_sets$unit.id,
@@ -274,10 +288,11 @@ PanelEstimate <- function(lead,
     # ATC
   } else if (qoi == "atc"){
     if (inference == "wfe") {
-      if(length(lead) != 1 || lead != 0)
-        stop("The wfe option can only take lead = 0")
-      data$Wit_atc0 <- ifelse(data$dits_atc == 1, -1, data$Wit_atc0)
-      data$Wit_atc0 <- -(data$Wit_atc0)
+      # if(length(lead) != 1 || lead != 0)
+      #   stop("The wfe option can only take lead = 0")
+      # data$Wit_atc0 <- ifelse(data$dits_atc == 1, -1, data$Wit_atc0)
+      # data$Wit_atc0 <- -(data$Wit_atc0)
+      data$Wit_atc0 <- data[c(paste0("Wit_atc", lead))][,1]
       if (estimator == "did") {
         fit <- PanelWFE(formula = as.formula(paste(dependent, "~", treatment)), 
                         treat = treatment, unit.index = matched_sets$unit.id,
@@ -364,14 +379,15 @@ PanelEstimate <- function(lead,
     
   } else if (qoi == "ate") {
     if (inference == "wfe"){
-      if(length(lead) != 1 || lead != 0)
-        stop("The wfe option can only take lead = 0")
-      data$Wit_att0 <- ifelse(data$dits_att == 1, -1, data$Wit_att0)
-      data$Wit_att0 <- -(data$Wit_att0)
-      
-      data$Wit_atc0 <- ifelse(data$dits_atc == 1, -1, data$Wit_atc0)
-      data$Wit_atc0 <- -(data$Wit_atc0)
-      
+      # if(length(lead) != 1 || lead != 0)
+      #   stop("The wfe option can only take lead = 0")
+      # data$Wit_att0 <- ifelse(data$dits_att == 1, -1, data$Wit_att0)
+      # data$Wit_att0 <- -(data$Wit_att0)
+      data$Wit_att0 <- data[c(paste0("Wit_att", lead))][,1]
+      data$Wit_atc0 <- data[c(paste0("Wit_atc", lead))][,1]
+      # data$Wit_atc0 <- ifelse(data$dits_atc == 1, -1, data$Wit_atc0)
+      # data$Wit_atc0 <- -(data$Wit_atc0)
+      # 
       if (estimator == "did") {
         fit <- PanelWFE(formula = as.formula(paste(dependent, "~", treatment)), 
                         treat = treatment, unit.index = matched_sets$unit.id,
