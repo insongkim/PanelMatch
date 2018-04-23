@@ -111,41 +111,45 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
   # create the names for all lagged variables with number of lags
   covar_combos <- expand.grid(covars.lagged, 1:lag, 
                               stringsAsFactors = FALSE)
-  lagged_names <- apply(combos, 
+  lagged_names <- apply(covar_combos, 
                         function(x) paste0(x, collapse = "_l"), 
                         MARGIN = 1)
   # add the lagged covariates to the formula (ugly)
   # formulas converted to strings have length 3: ~, dep, indep_vars
   fc <- as.character(formula)
+  covariate_names <- c(attr(terms(formula),"term.labels")[!attr(terms(formula),"term.labels") == treatment],
+                       covars.lagged)
+  
   formula <- as.formula(paste0(paste0(fc[2], "~"), paste0(c(fc[3], lagged_names), collapse = "+")))
   
   formula <- suppressWarnings(lasso2::merge.formula(reformulate(termlabels = c(time.id, unit.id), 
                                                                 response = dependent),
                                                     formula))
   
+  
   lag_vector <- function(df, param){
     new_col <- dplyr::lag(df[,as.character(param[1])], n = as.integer(param[2]))
     return(new_col)
   }
   
-  lags_df <- function(single_df, sort_var, combos, new_names){
+  lags_df <- function(single_df, sort_var, covar_combos, lagged_names){
     # now updated to work with package
-    new_cols <- as.data.frame(apply(combos, lag_vector, 
+    new_cols <- as.data.frame(apply(covar_combos, lag_vector, 
                                     df = single_df, 
                                     MARGIN = 1),
                               stringsAsFactors = FALSE)
-    names(new_cols) <- new_names
+    names(new_cols) <- lagged_names
     single_df <- cbind(single_df, new_cols)
     return(single_df)
   }
   
   # Do the whole lagging for the whole df
-  make_lags <- function(df, split_var, sort_var, vars, lags){
+  make_lags <- function(df, split_var, sort_var, covar_combos, lagged_names){
     df_list <- split(df, df[,split_var])
     lagged_dfs <- lapply(df_list, lags_df, 
                          sort_var = sort_var, 
-                         combos, 
-                         new_names)
+                         covar_combos, 
+                         lagged_names)
     lagged_df <- dplyr::bind_rows(lagged_dfs)
     return(lagged_df)
   }

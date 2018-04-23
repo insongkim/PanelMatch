@@ -27,7 +27,7 @@ Installation Instructions
 <!-- install.packages("panelMatch") -->
 <!-- ``` -->
 
-You can install the most recent development version of `panelMatch` using the `devtools` package. First you have to install `devtools` using the following code. Note that you only have to do this once:
+You can install the most recent development version of `PanelMatch` using the `devtools` package. First you have to install `devtools` using the following code. Note that you only have to do this once:
 
 ``` r
 if(!require(devtools)) install.packages("devtools")
@@ -65,7 +65,9 @@ DisplayTreatment(unit.id = "wbcode2",
  observation. Specifically, for a given treated unit, the matched set
  consists of control observations that have the identical treatment
  history up to a certain number of `lag` years. Researchers must
- specify `lag`. A further refinement of the matched set will be
+ specify `lag`. Researchers may also specify `covars.lagged`, a vector
+ of covariates to be automatically lagged and included in the model formula.
+ A further refinement of the matched set will be
  possible by setting the size of the matched set `M`, and adjusting
  for other confounders such as past outcomes and covariates via
  `formula`. Various matching and weighting methods such as `Mahalanobis distance`
@@ -75,6 +77,8 @@ DisplayTreatment(unit.id = "wbcode2",
 ``` r
 matches.cbps <- PanelMatch(lag = 4, max.lead = 4, time.id = "year",
                            unit.id = "wbcode2", treatment = "dem",
+                           lagged.covars = c("logpop", "tradewb", "nfagdp", 
+                               "Populationages1564oftota", "unrest"),
                            formula =  y ~ dem, method = "CBPS",
                            weighting = FALSE,  qoi = "ate",  M = 5, data = dem)
 ```							
