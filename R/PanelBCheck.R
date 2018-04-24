@@ -65,7 +65,7 @@ PanelBCheck <- function(matched_sets,
   lag <- matched_sets$lag;lead <- matched_sets$max.lead;
   treatment <- matched_sets$treatment; dependent <- matched_sets$dependent;
   method <- matched_sets$method; covariate_names <- matched_sets$covariate_names;
-  x <- val <- variable <- x2 <- y2 <- g2 <- NULL
+  x <- val <- treated_obs <- x2 <- y2 <- g2 <- NULL
   
   if (is.null(qoi)) {
     if (matched_sets$qoi == "att") {
@@ -144,7 +144,7 @@ PanelBCheck <- function(matched_sets,
   
   df <- data.frame(x=rep(-lag:lead, length(plot.materials)), 
                    val=unlist(lapply(plot.materials, function(x) x$gap)), 
-                   variable=rep(paste0("unit", 
+                   treated_obs=rep(paste0("unit", 
                                        unlist(lapply(plot.materials, function(x) x$unit))), 
                                 each=lag+1+lead))
   
@@ -181,8 +181,8 @@ PanelBCheck <- function(matched_sets,
                 "All_Balance" = df))
   } else {
     p <- ggplot() +
-      geom_line(aes(x=factor(x), y=val, group = variable,
-                           colour = variable), df) +
+      geom_line(aes(x=factor(x), y=val, group = treated_obs,
+                           colour = treated_obs), df) +
       labs(x = xlab, y = ylab) +
       if (post.treatment == FALSE) {
         scale_x_discrete(breaks = -lag:-1,
