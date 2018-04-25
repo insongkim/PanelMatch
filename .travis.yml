@@ -3,6 +3,7 @@ cache: packages
 sudo: required
 
 r_build_args: --resave-data
+r: devel
 
 notifications:
   email:
