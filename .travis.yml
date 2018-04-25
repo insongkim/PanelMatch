@@ -3,7 +3,12 @@ cache: packages
 sudo: required
 
 r_build_args: --resave-data
-r: devel
+
+r_packages:
+  - devtools
+  
+r_github_packages:
+  - insongkim/PanelMatch
 
 notifications:
   email:
