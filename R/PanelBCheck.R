@@ -66,7 +66,7 @@ PanelBCheck <- function(matched_sets,
   treatment <- matched_sets$treatment; dependent <- matched_sets$dependent;
   method <- matched_sets$method; covariate_names <- matched_sets$covariate_names;
   x <- val <- treated_obs <- x2 <- y2 <- g2 <- NULL
-  
+  #
   if (is.null(qoi)) {
     if (matched_sets$qoi == "att") {
       treated_set <- as.data.frame(data.table::rbindlist(lapply(matched_sets$`ATT_matches`, 
