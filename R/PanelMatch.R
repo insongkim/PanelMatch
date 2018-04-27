@@ -126,34 +126,6 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
                                                                 response = dependent),
                                                     formula))
   
-  
-  lag_vector <- function(df, param){
-    new_col <- dplyr::lag(df[,as.character(param[1])], n = as.integer(param[2]))
-    return(new_col)
-  }
-  
-  lags_df <- function(single_df, sort_var, covar_combos, lagged_names){
-    # now updated to work with package
-    new_cols <- as.data.frame(apply(covar_combos, lag_vector, 
-                                    df = single_df, 
-                                    MARGIN = 1),
-                              stringsAsFactors = FALSE)
-    names(new_cols) <- lagged_names
-    single_df <- cbind(single_df, new_cols)
-    return(single_df)
-  }
-  
-  # Do the whole lagging for the whole df
-  make_lags <- function(df, split_var, sort_var, covar_combos, lagged_names){
-    df_list <- split(df, df[,split_var])
-    lagged_dfs <- lapply(df_list, lags_df, 
-                         sort_var = sort_var, 
-                         covar_combos, 
-                         lagged_names)
-    lagged_df <- dplyr::bind_rows(lagged_dfs)
-    return(lagged_df)
-  }
-  
   data <- make_lags(data, unit.id, time.id, covar_combos, lagged_names)
   
   d2 <- as.data.frame(model.matrix(formula, data = data))[,-1]
