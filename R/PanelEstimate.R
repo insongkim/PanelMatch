@@ -77,8 +77,8 @@ PanelEstimate <- function(lead,
                when finding matched sets, which is", matched_sets$max.lead))
   if (inference == "wfe" & length(lead) > 1) 
     stop("When inference method is wfe, please only supply 1 lead at a time. 
-         For example, please call this function with lead = 1 and then call it with lead = 2,
-         rather than supplying lead = 1:2")
+         For example, please call this function with `lead` = 1 and then call it with `lead` = 2,
+         rather than supplying `lead`` = 1:2")
   lag = matched_sets$lag
   data <- matched_sets$data
   dependent = matched_sets$dependent
@@ -87,8 +87,20 @@ PanelEstimate <- function(lead,
   time.id = matched_sets$time.id
   method = matched_sets$method
   restricted = matched_sets$restricted
-  if (inference == "wfe" & restricted == FALSE) 
-    stop("wfe standard errors are only supported when using restricted == TRUE in PanelMatch")
+  if (restricted == TRUE & length(lead) > 1 & min(lead) >= 0)
+    stop("When `restricted`` == TRUE in `PanelMatch``, please only supply 1 lead at a time, and
+         the lead must be equal to `max.lead` set when calling `PanelMatch`")
+  
+  if (restricted == TRUE & max(lead) != matched_sets$max.lead & min(lead) >= 0)
+    stop("When `restricted`` == TRUE in `PanelMatch``, please only supply 1 lead at a time, and
+         the lead must be equal to `max.lead` set when calling `PanelMatch`")
+  
+  if (inference == "wfe" & restricted == FALSE) {
+    if(length(lead) > 1 | max(lead) != 0)
+      stop("When `restricted`` == FALSE in `PanelMatch``, wfe standard errors are only supported 
+           when `lead` = 0")
+  } 
+   # stop("wfe standard errors are only supported when using restricted == TRUE in PanelMatch")
 #  inference = inference
 #  lead = lead
   if (is.null(qoi)) {
