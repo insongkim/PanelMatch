@@ -42,9 +42,13 @@
 #' the user decides not to match on treatment history. By default 
 #' it is FALSE. If TRUE, then \code{PanelMatch} will not match on
 #' treatment history. 
-#' @param restricted An logical value indicating whether the user decides 
+#' @param restricted A logical value indicating whether the user decides 
 #' to match with restricted treatment pattern
-#'
+#' @param refinement A logical value indicating whether the user wants to 
+#' refine matched sets based on lagged outcomes and/or covariates (lagged
+#' or not lagged). If set to FALSE, then the function will give equal 
+#' weight to all control units per matched set. By default it is TRUE.
+#' 
 #' @return \code{PanelMatch} returns a list of class `panelmatch'
 #' containing the following components:
 #' \item{treatment}{treatment variable name}
@@ -79,6 +83,7 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
                        M = 3, covariate.only = FALSE,
                        covars.lagged = NULL,
                        naive = FALSE,
+                       refinement = TRUE,
                        restricted = FALSE,
                        method = NULL) {
   
@@ -101,6 +106,12 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
   if (method == "Synth"|method == "SynthPscore"|method == "SynthCBPS")
     stop("Currently, only Pscore, CBPS and Maha are supported")
   
+  if (refinement == FALSE) {
+    M <- Inf
+    method <- "Pscore"
+    weighting <- FALSE
+  }
+  
   # set covariates and dependent
   covariate <- attr(terms(formula),"term.labels")[!attr(terms(formula),"term.labels") == treatment]
   if(length(covariate) == 0) {
@@ -117,14 +128,15 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
   # add the lagged covariates to the formula (ugly)
   # formulas converted to strings have length 3: ~, dep, indep_vars
   fc <- as.character(formula)
-  covariate_names <- c(attr(terms(formula),"term.labels")[!attr(terms(formula),"term.labels") == treatment],
-                       covars.lagged)
   
   formula <- as.formula(paste0(paste0(fc[2], "~"), paste0(c(fc[3], lagged_names), collapse = "+")))
   
   formula <- suppressWarnings(lasso2::merge.formula(reformulate(termlabels = c(time.id, unit.id), 
                                                                 response = dependent),
                                                     formula))
+  
+  # covariate_names <- c(attr(terms(formula),"term.labels")[!attr(terms(formula),"term.labels") == treatment],
+  #                      covars.lagged)
   
   data <- make_lags(data, unit.id, time.id, covar_combos, lagged_names)
   
@@ -160,9 +172,11 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
   d2[1:(length(d2))] <- lapply(d2[1:(length(d2))], function(x) as.numeric(as.character(x))) # as.numeric
   
   if (method == "Pscore"|method == "CBPS"|method == "SynthPscore"|method == "SynthCBPS"|
-      method == "Maha") {
+      method == "Maha"|method == "no_method") {
     d2 <- d2[order(d2[,2], d2[,1]), ]
   }
+  
+  covariate_names <- colnames(d2)[5:length(d2)]
   
   ### from zero to 1 ###
   # as.matrix it so that it can work with the cpp function

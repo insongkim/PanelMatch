@@ -6,8 +6,8 @@
 \usage{
 PanelMatch(formula = y ~ treat, lag, max.lead, unit.id, time.id, treatment,
   qoi = "att", data, weighting = FALSE, M = 3, covariate.only = FALSE,
-  covars.lagged = NULL, naive = FALSE, restricted = FALSE,
-  method = NULL)
+  covars.lagged = NULL, naive = FALSE, refinement = TRUE,
+  restricted = FALSE, method = NULL)
 }
 \arguments{
 \item{formula}{A symbolic description of the outcome variable and
@@ -53,7 +53,12 @@ the user decides not to match on treatment history. By default
 it is FALSE. If TRUE, then \code{PanelMatch} will not match on
 treatment history.}
 
-\item{restricted}{An logical value indicating whether the user decides 
+\item{refinement}{A logical value indicating whether the user wants to 
+refine matched sets based on lagged outcomes and/or covariates (lagged
+or not lagged). If set to FALSE, then the function will give equal 
+weight to all control units per matched set. By default it is TRUE.}
+
+\item{restricted}{A logical value indicating whether the user decides 
 to match with restricted treatment pattern}
 
 \item{method}{An optional character string indicating the matching
