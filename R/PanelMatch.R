@@ -10,7 +10,7 @@
 #' such as past outcomes and covariates via \code{formula}.
 #'
 #' @param formula A symbolic description of the outcome variable and
-#' covariates whose history should be used to refine the matched set.
+#' only covariates with contemporaneous effects.
 #' @param lag An integer value indicating the length of history to be matched
 #' @param max.lead An optional integer value indicating the length of maximum leads
 #' @param unit.id A character string indicating the name of unit identifier
@@ -21,6 +21,8 @@
 #' treatment variable in the \code{data}. The treatment should be a
 #' binary indicator (integer with 0 for the control group and 1 for
 #' the treatment group).
+#' @param covars.lagged A character vector with the names of the covariates
+#' to be lagged.
 #' @param qoi One of ``att'' (average treatment effect for the
 #' treated) or ``ate'' (average treatment effect) or atc (average
 #' treatment effect for the control). The default is ``att.''
@@ -75,6 +77,7 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
                        unit.id, time.id, treatment, qoi = "att",
                        data, weighting = FALSE,
                        M = 3, covariate.only = FALSE,
+                       covars.lagged = NULL,
                        naive = FALSE,
                        restricted = FALSE,
                        method = NULL) {
@@ -104,9 +107,26 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
     covariate <- NULL # if there is no covariate then it's null
   }
   dependent <- all.vars(formula)[1]
-  covariate_names <- covariate
-  formula <- suppressWarnings(lasso2::merge.formula(reformulate(termlabels = c(time.id, unit.id), response = dependent),formula))
   
+  # create the names for all lagged variables with number of lags
+  covar_combos <- expand.grid(covars.lagged, 1:lag, 
+                              stringsAsFactors = FALSE)
+  lagged_names <- apply(covar_combos, 
+                        function(x) paste0(x, collapse = "_l"), 
+                        MARGIN = 1)
+  # add the lagged covariates to the formula (ugly)
+  # formulas converted to strings have length 3: ~, dep, indep_vars
+  fc <- as.character(formula)
+  covariate_names <- c(attr(terms(formula),"term.labels")[!attr(terms(formula),"term.labels") == treatment],
+                       covars.lagged)
+  
+  formula <- as.formula(paste0(paste0(fc[2], "~"), paste0(c(fc[3], lagged_names), collapse = "+")))
+  
+  formula <- suppressWarnings(lasso2::merge.formula(reformulate(termlabels = c(time.id, unit.id), 
+                                                                response = dependent),
+                                                    formula))
+  
+  data <- make_lags(data, unit.id, time.id, covar_combos, lagged_names)
   
   d2 <- as.data.frame(model.matrix(formula, data = data))[,-1]
   d2[dependent] <- model.frame(formula, data=data)[,1]
@@ -127,7 +147,8 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
   if (method == "Pscore"|method == "CBPS") {
     
     dlist <- lapply(1:lag, 
-                    function (i) DataCombine::slide(data = d2, Var = dependent, GroupVar = unit.id, TimeVar = time.id, slideBy = -(i),
+                    function (i) DataCombine::slide(data = d2, Var = dependent, GroupVar = unit.id, 
+                                                    TimeVar = time.id, slideBy = -(i),
                                                     NewVar = paste("dependent_l", i, sep="")))
     d2 <- Reduce(function(x, y) {merge(x, y)}, dlist)
     # to include ldvs in varnames

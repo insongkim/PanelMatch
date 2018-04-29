@@ -6,11 +6,12 @@
 \usage{
 PanelMatch(formula = y ~ treat, lag, max.lead, unit.id, time.id, treatment,
   qoi = "att", data, weighting = FALSE, M = 3, covariate.only = FALSE,
-  naive = FALSE, restricted = FALSE, method = NULL)
+  covars.lagged = NULL, naive = FALSE, restricted = FALSE,
+  method = NULL)
 }
 \arguments{
 \item{formula}{A symbolic description of the outcome variable and
-covariates whose history should be used to refine the matched set.}
+only covariates with contemporaneous effects.}
 
 \item{lag}{An integer value indicating the length of history to be matched}
 
@@ -43,6 +44,9 @@ control units in each matched set. The default is 3.}
 are adjusted for when refining the matched sets, not lagged outcome.
 The default is
 \code{FALSE}.}
+
+\item{covars.lagged}{A character vector with the names of the covariates
+to be lagged.}
 
 \item{naive}{An logical value indicating whether
 the user decides not to match on treatment history. By default 
