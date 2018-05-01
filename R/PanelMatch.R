@@ -137,8 +137,10 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
   
   # covariate_names <- c(attr(terms(formula),"term.labels")[!attr(terms(formula),"term.labels") == treatment],
   #                      covars.lagged)
-  
-  data <- make_lags(data, unit.id, time.id, covar_combos, lagged_names)
+  if (is.null(covars.lagged) == FALSE) {
+    data <- make_lags(data, unit.id, time.id, covar_combos, lagged_names)
+  }
+ 
   
   d2 <- as.data.frame(model.matrix(formula, data = data))[,-1]
   d2[dependent] <- model.frame(formula, data=data)[,1]
