@@ -68,8 +68,8 @@ PanelEstimate <- function(lead,
                           estimator = "did",
                           df.adjustment = FALSE, qoi = NULL,
                           CI = .95) {
-  if (estimator != "did") 
-    stop("Currently only did estimator is supported")
+  # if (estimator != "did") 
+  #   stop("Currently only did estimator is supported")
   # stop if lead > max.lead
   if (max(lead) > matched_sets$max.lead) 
     stop(paste("The number of leads you choose 

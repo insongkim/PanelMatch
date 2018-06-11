@@ -712,10 +712,13 @@ apply_leads <- function(data, unit.id, time.id, matched_set,
                                      ifelse(matched_set$V1 == (treated.time+lead) & matched_set$V2 %in% testid[testid != treated.id], matched_set$w.weight, 
                                             ifelse(matched_set$V1 == (treated.time+lead) - lead - 1 & matched_set$V2 %in% testid[testid != treated.id], -matched_set$w.weight, 0) 
                                      )))
-  } else {
+  } else if (estimator == "matching" & inference == "bootstrap") {
     matched_set$wit <- ifelse(matched_set$V1 == (treated.time+lead) & matched_set$V2 == treated.id, 1, 
            ifelse(matched_set$V1 == (treated.time+lead) & matched_set$V2 != treated.id, -matched_set$w.weight, 0))
                  
+  } else if (estimator == "matching" & inference == "wfe")  {
+    matched_set$wit <- ifelse(matched_set$V1 == (treated.time+lead) & matched_set$V2 == treated.id, 1, 
+                              ifelse(matched_set$V1 == (treated.time+lead) & matched_set$V2 != treated.id, matched_set$w.weight, 0))
   }
 
   
