@@ -146,19 +146,19 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
   d2[dependent] <- model.frame(formula, data=data)[,1]
   d2 <- DataCombine::MoveFront(d2, Var = c(time.id, unit.id, treatment, dependent))
   
-  if(method == "Maha" & covariate.only == FALSE){
-    
-    d2 <- DataCombine::slide(data = d2, Var = dependent, GroupVar = unit.id, TimeVar = time.id, slideBy = -1,
-                             NewVar = "dependent_l1")
-    # to include ldvs in varnames
-    # varnames <- c(time.id, unit.id, treatment, dependent, colnames(d2)[5:length(d2)])
-    
-    d2 <- d2[is.na(c(time.id, unit.id, treatment, dependent, covariate)) == FALSE, ]
-    
-  } 
+  # if(method == "Maha" & covariate.only == FALSE){
+  #   
+  #   d2 <- DataCombine::slide(data = d2, Var = dependent, GroupVar = unit.id, TimeVar = time.id, slideBy = -1,
+  #                            NewVar = "dependent_l1")
+  #   # to include ldvs in varnames
+  #   # varnames <- c(time.id, unit.id, treatment, dependent, colnames(d2)[5:length(d2)])
+  #   
+  #   d2 <- d2[is.na(c(time.id, unit.id, treatment, dependent, covariate)) == FALSE, ]
+  #   
+  # } 
   
   
-  if (method == "Pscore"|method == "CBPS") {
+  if (method == "Pscore"|method == "CBPS"|method == "Maha") {
     
     dlist <- lapply(1:lag, 
                     function (i) DataCombine::slide(data = d2, Var = dependent, GroupVar = unit.id, 
