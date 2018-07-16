@@ -17,7 +17,6 @@ package also offers a visualization technique that allows researchers
 to assess the quality of matches by examining the resulting covariate
 balance.
 
-
 Installation Instructions
 -------------------------
 
@@ -39,6 +38,7 @@ Then, load `devtools` and use the function `install_github()` to install `PanelM
 library(devtools)
 install_github("insongkim/PanelMatch", dependencies=TRUE)
 ```
+If you encounter problems during installation, please consult [the wiki page](https://github.com/insongkim/PanelMatch/wiki/Installation-Troubleshooting) that has some ideas for handling common issues. 
 
 
 Usage Examples
