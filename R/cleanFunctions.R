@@ -763,6 +763,35 @@ get_treated <- function(matched_set, lag) {
               time = treated.time))
 }
 
+get_treated2 <- function(matched_set, lag, ids = c("wbcode2", "year")) {
+  lag <- lag; matched_set <- matched_set
+  treated.time <- min(matched_set$V1) + lag
+  treated.id <- matched_set[matched_set$V3 == 1 & 
+                              matched_set$V1 == treated.time, ]$V2
+  if (is.null(ids) | length(ids) < 2) {
+    return(data.frame("id" = treated.id,
+                      "time" = treated.time)) 
+  } else {
+    ids1 <- ids[1]
+    ids2 <- ids[2]
+    to_return <- data.frame("id" = treated.id,
+                            "time" = treated.time)
+    colnames(to_return) <- c(ids1, ids2)
+    return(to_return)
+  }
+}
+
+get_names2 <- function(data, x, unit.id, time.id, unit.name) {
+  unit.id <- unit.id
+  time.id <- time.id
+  unit.name <- unit.name
+  return(c(data[[unit.name]][as.numeric(data[[unit.id]]) %in% x[1] &
+                               as.numeric(data[[time.id]]) %in% x[2]],
+           data[[time.id]][data[[unit.id]] %in% x[1] &
+                               data[[time.id]] %in% x[2]]))
+}
+
+
 # These three functions are used in PanelMatch to automatically lag covariates
 lag_vector <- function(df, param){
   new_col <- dplyr::lag(df[,as.character(param[1])], n = as.integer(param[2]))
