@@ -8,9 +8,9 @@
 #' @param treatment Name of the treatment variable in character class
 #' @param data The data frame in data.frame class
 #' @param color.of.treated Color of the treated observations in
-#' character. Default is red.
+#' character. Default is red, but shade will depend on whether or not \code{group_on} is provided
 #' @param color.of.untreated Color of the untreated observations in
-#' character. Defalt is blue.
+#' character. Default is blue, but shade will depend on whether or not \code{group_on} is provided
 #' @param title Title of the plot in character
 #' set as in ggplot2
 #' @param xlab Character label of the x-axis
@@ -53,29 +53,45 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
     
 {
   # load the dataframe that the user specifies
-  data <- na.omit(data[c(unit.id, time.id, treatment, group_on)])
-  #browser()
-  # rename variables to match with the object names in the loop below
-  colnames(data) <- c("unit.id", "time.id", "treatment", group_on)
+  if(!is.null(group_on))
+  {
+    data <- na.omit(data[c(unit.id, time.id, treatment, group_on)])  
+    colnames(data) <- c("unit.id", "time.id", "treatment", group_on)
+  }
+  else
+  {
+    data <- na.omit(data[c(unit.id, time.id, treatment)])
+    # rename variables to match with the object names in the loop below
+    colnames(data) <- c("unit.id", "time.id", "treatment")  
+  }
   
   # make unit.id a character: this is useful when the unit the user
   # passes to the function is numeric (e.g. dyad id)
   # data$unit.id <- as.character(data$unit.id)
-  
-  
-  
   ## Sorting units by treatment intensity 
   
   data$trintens <- tapply(data$treatment, data$unit.id, mean, na.rm = T)[as.character(data$unit.id)]
   data <- data[order(data$trintens), ]
+  
   # then sort again by group for plotting, if specified by the user
   if(!is.null(group_on))
   {
     if(group_on %in% colnames(data))
     {
-      data[, group_on] <- as.factor(data[, group_on])
-      data <- data[order(data[, group_on]), ]
-
+      if(length(unique(data[, group_on])) == 1)
+      {
+        group_on <- NULL
+        warning("only one group possible for group provided")
+      }
+      else
+      {
+        data[, group_on] <- as.factor(data[, group_on])
+        data <- data[order(data[, group_on]), ]
+        #change the shades of treated/untreated colors to something more subdued to make group distinctions more clear
+        color.of.untreated <- "#0b45a3"
+        color.of.treated <- "#aa2f2f"  
+      }
+      
     }
     else
     {
@@ -85,42 +101,59 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
   data$old.index <- data$unit.id
   data$unit.id <- match(data$unit.id, unique(data$unit.id) ) 
   data$unit.id <- factor(data$unit.id, levels=unique(as.character(data$unit.id)))
-  #ADD IN SOME CONDITIONALS AGAIN
-  lvls <- levels(data[, group_on])
-  .get_y.max <- function(level)
+  
+  if(!is.null(group_on))
   {
-    data$unit.id[max(which(data[, group_on] == level))]
+    lvls <- levels(data[, group_on])
+    .get_y.max <- function(level)
+    {
+      data$unit.id[max(which(data[, group_on] == level))]
+    }
+    .get_y.min <- function(level)
+    {
+      data$unit.id[min(which(data[, group_on] == level))]
+    }
+    y.mins = sapply(lvls, .get_y.min)
+    y.maxs = sapply(lvls, .get_y.max)
   }
-  .get_y.min <- function(level)
-  {
-    data$unit.id[min(which(data[, group_on] == level))]
-  }
-  
-  x.mins = rep(-Inf, length(lvls))
-  x.maxs = rep(Inf, length(lvls))
-  y.mins = sapply(lvls, .get_y.min)
-  y.maxs = sapply(lvls, .get_y.max)
-  
-  
   
       # use ggplot2
-      p <- ggplot(data, aes(unit.id, time.id)) + geom_tile(aes(fill = treatment),
-                                                           colour = "white") +
-        scale_fill_gradient(low = color.of.untreated,
-                            high = color.of.treated, guide = "legend", 
-                            breaks = c(0,1), labels = legend.labels) +
-        theme_bw() +
-        labs(list(title = title, x = ylab, y = xlab, fill = "")) +
-        theme(axis.ticks.x=element_blank(),
-              panel.grid.major = element_blank(), panel.border = element_blank(),
-              legend.position = legend.position,
-              panel.background = element_blank(), 
-              axis.text.x = element_text(angle=x.angle, size = x.size, vjust=0.5),
-              axis.text.y = element_text(size = y.size, angle = y.angle),
-              plot.title = element_text(hjust = 0.5)) +
-        scale_x_discrete(expand = c(0, 0), labels = unique(as.character(data$old.index))) +
-        scale_y_continuous(limits = c(min(data$time.id)-1,max(data$time.id) + 1), expand = c(0,0)) +
-        coord_flip()
-        #p + annotate("rect", xmin = x.mins, xmax = x.maxs, ymin = y.mins, ymax = y.maxs, alpha = .2, colour = lvls)
-        return(p) # return the plot
+  p <- ggplot(data, aes(unit.id, time.id)) + geom_tile(aes(fill = treatment),
+                                                       colour = "white") +
+    scale_fill_gradient(low = color.of.untreated,
+                        high = color.of.treated, guide = "legend", 
+                        breaks = c(0,1), labels = legend.labels) +
+    theme_bw() +
+    labs(list(title = title, x = ylab, y = xlab, fill = "")) +
+    theme(axis.ticks.x=element_blank(),
+          panel.grid.major = element_blank(), panel.border = element_blank(),
+          legend.position = legend.position,
+          panel.background = element_blank(), 
+          axis.text.x = element_text(angle=x.angle, size = x.size, vjust=0.5),
+          axis.text.y = element_text(size = y.size, angle = y.angle),
+          plot.title = element_text(hjust = 0.5))
+  
+  if(!is.null(group_on))
+  {
+    dat <- ggplot_build(p)$data[[1]] 
+    
+    min.vals.x <- (dat$xmin[match(y.mins, dat$x)])
+    max.vals.x <- (dat$xmax[match(y.maxs, dat$x)])
+    
+    min.vals.y <- rep(min(dat$ymin), length(min.vals.x))
+    max.vals.y <- rep(max(dat$ymax), length(max.vals.x))
+    # adding in some extra space between the lines for clarity-- might be a better way to do this systematically, or just remove
+    max.vals.x[1:length(max.vals.x) - 1] <- max.vals.x[1:length(max.vals.x) - 1] - .02
+    min.vals.x[2:length(min.vals.x)] <- min.vals.x[2:length(min.vals.x)] + .02
+    pj <-  p + annotate("rect", xmin = min.vals.x, xmax = max.vals.x, ymin = min.vals.y, ymax = max.vals.y, alpha = 0, color = factor(lvls), size = 1.25)  
+  }
+  else
+  {
+    pj <- p
+  }
+  pjp <- pj + scale_x_discrete(expand = c(0, 0), labels = unique(as.character(data$old.index))) +
+    scale_y_continuous(limits = c(min(data$time.id)-1,max(data$time.id) + 1), expand = c(0,0)) +
+    coord_flip()
+  
+  return(pjp) # return the plot
 }
