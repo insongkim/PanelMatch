@@ -22,7 +22,7 @@
 #' @param legend.position Position of the legend with the same choice
 #' @param legend.labels Character vector of length two describing the
 #' labels of the legend to be shown in the plot
-#'
+#' @param group_on Character name of column with a categorical variable that is not time dependent. If provided, units with shared values will be grouped together and each group will be highlighted on the resulting plot.
 #' @return \code{DisplayTreatment} returns a treatment variation plot,
 #' which visualizes the variation of treatment across unit and time.
 #' 
