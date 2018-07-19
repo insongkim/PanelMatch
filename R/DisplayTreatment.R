@@ -15,14 +15,21 @@
 #' set as in ggplot2
 #' @param xlab Character label of the x-axis
 #' @param ylab Character label of the y-axis
-#' @param x.size Numeric size of the text for xlab. Default is 10. Assign x.size = NULL to use built in ggplot2 method of determining label size. When the length of the time period is long, consider setting to NULL and adjusting size and ratio of the plot.
-#' @param y.size Numeric size of the text for ylab. Default is 5. Assign y.size = NULL to use built in ggplot2 method of determining label size. When the number of units is large, consider setting to NULL and adjusting size and ratio of the plot.
+#' @param x.size Numeric size of the text for xlab. Default is 10. Assign x.size = NULL to use built in ggplot2 method of determining label size. 
+#' When the length of the time period is long, consider setting to NULL and adjusting size and ratio of the plot.
+#' @param y.size Numeric size of the text for ylab. Default is 5. Assign y.size = NULL to use built in ggplot2 method of determining label size. 
+#' When the number of units is large, consider setting to NULL and adjusting size and ratio of the plot.
 #' @param x.angle Angle (in degrees) of the tick labels for x-axis
 #' @param y.angle Angle (in degrees) of the tick labels for y-axis
 #' @param legend.position Position of the legend with the same choice
 #' @param legend.labels Character vector of length two describing the
 #' labels of the legend to be shown in the plot
-#' @param group_on Character name of column with a categorical variable that is not time dependent. If provided, units with shared values will be grouped together and each group will be highlighted on the resulting plot.
+#' @param group_on Character name of column with a categorical variable that is not time dependent. 
+#' If provided, units with shared values will be grouped together and each group will be highlighted on the resulting plot.
+#' @param sort_by Character name of a column containing data that will be used to help determine the order in which units are displayed on the plot. 
+#' The average value for this variable will be calculated per unit. Units will then be displayed in ascending or descending order, according to that calculated value. 
+#' Default value is the amount of treatment that units receive.
+#' @param decreasing Logical. Determines if display order-- according to either the column specified in the \code{sort_by} argument or amount of treatment that units receive-- should be increasing or decreasing
 #' @return \code{DisplayTreatment} returns a treatment variation plot,
 #' which visualizes the variation of treatment across unit and time.
 #' 
@@ -49,29 +56,72 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
                              y.angle = NULL,
                              # color.for.missing = "grey",
                              legend.labels = c("not treated", "treated"),
-                             group_on = NULL)
+                             group_on = NULL,
+                             sort_by = NULL,
+                             decreasing = FALSE)
     
 {
   # load the dataframe that the user specifies
   if(!is.null(group_on))
   {
-    data <- na.omit(data[c(unit.id, time.id, treatment, group_on)])  
-    colnames(data) <- c("unit.id", "time.id", "treatment", group_on)
+    if(!is.null(sort_by))
+    {
+      data <- na.omit(data[c(unit.id, time.id, treatment, group_on, sort_by)])  
+      colnames(data) <- c("unit.id", "time.id", "treatment", group_on, sort_by)
+    }
+    else
+    {
+      data <- na.omit(data[c(unit.id, time.id, treatment, group_on)])  
+      colnames(data) <- c("unit.id", "time.id", "treatment", group_on)  
+    }
+    
   }
   else
   {
-    data <- na.omit(data[c(unit.id, time.id, treatment)])
-    # rename variables to match with the object names in the loop below
-    colnames(data) <- c("unit.id", "time.id", "treatment")  
+    if(!is.null(sort_by))
+    {
+      data <- na.omit(data[c(unit.id, time.id, treatment, sort_by)])
+      # rename variables to match with the object names in the loop below
+      colnames(data) <- c("unit.id", "time.id", "treatment", sort_by)
+    }
+    else
+    {
+      data <- na.omit(data[c(unit.id, time.id, treatment)])
+      # rename variables to match with the object names in the loop below
+      colnames(data) <- c("unit.id", "time.id", "treatment")  
+    }
+      
   }
   
   # make unit.id a character: this is useful when the unit the user
   # passes to the function is numeric (e.g. dyad id)
   # data$unit.id <- as.character(data$unit.id)
-  ## Sorting units by treatment intensity 
+  # Sorting units by treatment intensity -- default behavior 
   
-  data$trintens <- tapply(data$treatment, data$unit.id, mean, na.rm = T)[as.character(data$unit.id)]
-  data <- data[order(data$trintens), ]
+  if(is.null(sort_by) & !decreasing)
+  {
+    data$trintens <- tapply(data$treatment, data$unit.id, mean, na.rm = T)[as.character(data$unit.id)]
+    data <- data[order(data$trintens), ]  
+  }
+  else if(is.null(sort_by) & decreasing)
+  {
+    data$trintens <- tapply(data$treatment, data$unit.id, mean, na.rm = T)[as.character(data$unit.id)]
+    data <- data[order(data$trintens, decreasing = TRUE), ] 
+  }
+  else if(!is.null(sort_by))
+  {
+    if(!decreasing)
+    {
+      data$sortvar <- tapply(data[, sort_by], data$unit.id, mean, na.rm = T)[as.character(data$unit.id)]
+      data <- data[order(data$sortvar), ]  
+    }
+    else 
+    {
+      data$sortvar <- tapply(data[, sort_by], data$unit.id, mean, na.rm = T)[as.character(data$unit.id)]
+      data <- data[order(data$sortvar, decreasing = TRUE), ]
+    }
+  }
+  
   
   # then sort again by group for plotting, if specified by the user
   if(!is.null(group_on))

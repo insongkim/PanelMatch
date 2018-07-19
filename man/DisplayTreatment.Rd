@@ -9,7 +9,7 @@ DisplayTreatment(unit.id, time.id, treatment, data, color.of.treated = "red",
   title = "Treatment Distribution \\n Across Units and Time", xlab = "time",
   ylab = "unit", x.size = 10, y.size = 5, legend.position = "none",
   x.angle = 45, y.angle = NULL, legend.labels = c("not treated",
-  "treated"), group_on = NULL)
+  "treated"), group_on = NULL, sort_by = NULL, decreasing = FALSE)
 }
 \arguments{
 \item{unit.id}{A numeric vector of unit identifiers}
@@ -33,9 +33,11 @@ set as in ggplot2}
 
 \item{ylab}{Character label of the y-axis}
 
-\item{x.size}{Numeric size of the text for xlab. Default is 10. Assign x.size = NULL to use built in ggplot2 method of determining label size. When the length of the time period is long, consider setting to NULL and adjusting size and ratio of the plot.}
+\item{x.size}{Numeric size of the text for xlab. Default is 10. Assign x.size = NULL to use built in ggplot2 method of determining label size. 
+When the length of the time period is long, consider setting to NULL and adjusting size and ratio of the plot.}
 
-\item{y.size}{Numeric size of the text for ylab. Default is 5. Assign y.size = NULL to use built in ggplot2 method of determining label size. When the number of units is large, consider setting to NULL and adjusting size and ratio of the plot.}
+\item{y.size}{Numeric size of the text for ylab. Default is 5. Assign y.size = NULL to use built in ggplot2 method of determining label size. 
+When the number of units is large, consider setting to NULL and adjusting size and ratio of the plot.}
 
 \item{legend.position}{Position of the legend with the same choice}
 
@@ -46,7 +48,14 @@ set as in ggplot2}
 \item{legend.labels}{Character vector of length two describing the
 labels of the legend to be shown in the plot}
 
-\item{group_on}{Character name of column with a categorical variable that is not time dependent. If provided, units with shared values will be grouped together and each group will be highlighted on the resulting plot.}
+\item{group_on}{Character name of column with a categorical variable that is not time dependent. 
+If provided, units with shared values will be grouped together and each group will be highlighted on the resulting plot.}
+
+\item{sort_by}{Character name of a column containing data that will be used to help determine the order in which units are displayed on the plot. 
+The average value for this variable will be calculated per unit. Units will then be displayed in ascending or descending order, according to that calculated value. 
+Default value is the amount of treatment that units receive.}
+
+\item{decreasing}{Logical. Determines if display order-- according to either the column specified in the \code{sort_by} argument or amount of treatment that units receive-- should be increasing or decreasing}
 }
 \value{
 \code{DisplayTreatment} returns a treatment variation plot,
