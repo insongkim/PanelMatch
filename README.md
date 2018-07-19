@@ -77,7 +77,7 @@ DisplayTreatment(unit.id = "wbcode2",
 ``` r
 matches.cbps <- PanelMatch(lag = 4, max.lead = 4, time.id = "year",
                            unit.id = "wbcode2", treatment = "dem",
-                           lagged.covars = c("logpop", "tradewb", "nfagdp", 
+                           covars.lagged = c("logpop", "tradewb", "nfagdp", 
                                "Populationages1564oftota", "unrest"),
                            formula =  y ~ dem, method = "CBPS",
                            weighting = FALSE,  qoi = "ate",  M = 5, data = dem)
