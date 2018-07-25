@@ -77,8 +77,7 @@ DisplayTreatment(unit.id = "wbcode2",
 ``` r
 matches.cbps <- PanelMatch(lag = 4, max.lead = 4, time.id = "year",
                            unit.id = "wbcode2", treatment = "dem",
-                           covars.lagged = c("logpop", "tradewb", "nfagdp", 
-                               "Populationages1564oftota", "unrest"),
+                           covars.lagged = c("tradewb"),
                            formula =  y ~ dem, method = "CBPS",
                            weighting = FALSE,  qoi = "ate",  M = 5, data = dem)
 ```							
@@ -114,13 +113,13 @@ Standard errors computed with 500 Weighted bootstrap samples
 
 Estimate of Average Treatment Effect on the Treated (ATT) by Period:
 
-|                                                       |        t+0|        t+1|        t+2|        t+3|        t+4|
-|:------------------------------------------------------|----------:|----------:|----------:|----------:|----------:|
-|Point Estimate(s)                                      |  0.3697332|  1.9657985|  3.0537125|  4.1564464|  4.1361189|
-|Standard Error(s)                                      |  0.8580289|  1.3487225|  1.7604525|  2.1510657|  2.5481439|
-|Lower Limit of 95 % Regular Confidence Interval        | -1.3428403| -0.6863441| -0.4301161|  0.0415114| -0.5597593|
-|Upper Limit of 95 % Regular Confidence Interval        |  1.9864734|  4.5182535|  6.8135019|  8.6022466|  9.6319008|
-|Bias-corrected Estimate(s)                             |  0.3890818|  1.9662642|  3.0584442|  4.1538121|  4.1586525|
-|Lower Limit of 95 % Bias-corrected Confidence Interval | -1.2470070| -0.5866564| -0.7060769| -0.2893537| -1.3596630|
-|Upper Limit of 95 % Bias-corrected Confidence Interval |  2.0823067|  4.6179412|  6.5375412|  8.2713815|  8.8319971|
+|                                                       |        t+0|        t+1|       t+2|       t+3|       t+4|
+|:------------------------------------------------------|----------:|----------:|---------:|---------:|---------:|
+|Point Estimate(s)                                      |  0.6882587|  1.1526035|  1.529355|  1.911578|  2.060706|
+|Standard Error(s)                                      |  0.6874394|  1.0909965|  1.441706|  1.812096|  2.229936|
+|Lower Limit of 95 % Regular Confidence Interval        | -0.5811716| -0.9481110| -1.305701| -1.642694| -2.544959|
+|Upper Limit of 95 % Regular Confidence Interval        |  1.9722803|  3.0828392|  4.275508|  5.302505|  6.379517|
+|Bias-corrected Estimate(s)                             |  0.6889523|  1.1386178|  1.509317|  1.921500|  2.091011|
+|Lower Limit of 95 % Bias-corrected Confidence Interval | -0.5957630| -0.7776321| -1.216798| -1.479350| -2.258106|
+|Upper Limit of 95 % Bias-corrected Confidence Interval |  1.9576889|  3.2533181|  4.364411|  5.465850|  6.666370|
 ```
