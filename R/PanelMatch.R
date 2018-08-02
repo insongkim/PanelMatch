@@ -490,6 +490,7 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
             ### cleaning the output from cpp ###
             # delete both higher level and lower level null entries
             if (naive == FALSE & restricted == FALSE) {
+              browser()
               smallerlist <- lapply(Filter(function (x) !is.null(x), findDDmatched2(L = lag, F = max.lead, dmatrix)), delete.NULLs) 
             } else if (restricted == TRUE) {
               smallerlist <- lapply(Filter(function (x) !is.null(x), findDDrestricted(L = lag, F = max.lead, dmatrix)), delete.NULLs) 

@@ -29,3 +29,7 @@ findDDrestricted <- function(L, F, x1) {
     .Call('_PanelMatch_findDDrestricted', PACKAGE = 'PanelMatch', L, F, x1)
 }
 
+findDDM2stripped <- function(L, F, x1) {
+    .Call('_PanelMatch_findDDM2stripped', PACKAGE = 'PanelMatch', L, F, x1)
+}
+

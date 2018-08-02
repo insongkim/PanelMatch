@@ -39,6 +39,7 @@ extern void XXiSum(void *, void *, void *, void *, void *, void *);
 /* .Call calls */
 extern SEXP _PanelMatch_all_sug(SEXP);
 extern SEXP _PanelMatch_findDDmatched2(SEXP, SEXP, SEXP);
+extern SEXP _PanelMatch_findDDM2stripped(SEXP, SEXP, SEXP);
 extern SEXP _PanelMatch_findDDNaive(SEXP, SEXP, SEXP);
 extern SEXP _PanelMatch_findDDrestricted(SEXP, SEXP, SEXP);
 extern SEXP _PanelMatch_FindMatches(SEXP, SEXP, SEXP);
@@ -84,6 +85,7 @@ static const R_CallMethodDef CallEntries[] = {
   {"_PanelMatch_FindMatches",      (DL_FUNC) &_PanelMatch_FindMatches,      3},
   {"_PanelMatch_rbind_c",          (DL_FUNC) &_PanelMatch_rbind_c,          2},
   {"_PanelMatch_sumCpp",           (DL_FUNC) &_PanelMatch_sumCpp,           1},
+  {"_PanelMatch_findDDM2stripped",   (DL_FUNC) &_PanelMatch_findDDM2stripped,   3},
   {NULL, NULL, 0}
 };
 
