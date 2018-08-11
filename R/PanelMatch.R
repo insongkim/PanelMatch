@@ -176,7 +176,7 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
     }
     # to include ldvs in varnames
     # varnames <- c(time.id, unit.id, treatment, dependent, colnames(d2)[5:length(d2)])
-    
+    d2 <- d2[is.na(c(time.id, unit.id, treatment, dependent, covariate)) == FALSE, ]
     # d2 <- d2[is.na(c(time.id, unit.id, treatment, dependent, covariate, 
     #                  paste0("treatment_l", 2:lag))) == FALSE, ]
   }
