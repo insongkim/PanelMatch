@@ -165,6 +165,13 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
                                                     TimeVar = time.id, slideBy = -(i),
                                                     NewVar = paste("dependent_l", i, sep="")))
     d2 <- Reduce(function(x, y) {merge(x, y)}, dlist)
+    if (method == "Pscore"|method == "CBPS") {
+      dlist <- lapply(1:lag,
+                      function (i) DataCombine::slide(data = d2, Var = treatment, GroupVar = unit.id,
+                                                      TimeVar = time.id, slideBy = -(i),
+                                                      NewVar = paste("treatment_l", i, sep="")))
+      d2 <- Reduce(function(x, y) {merge(x, y)}, dlist)
+    }
     # to include ldvs in varnames
     # varnames <- c(time.id, unit.id, treatment, dependent, colnames(d2)[5:length(d2)])
     
@@ -179,6 +186,8 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
   }
   
   covariate_names <- colnames(d2)[5:length(d2)]
+  covariate_names <- covariate_names[covariate_names != "treatment_l1"]
+  d2$treatment_l1 <- NULL
   
   ### from zero to 1 ###
   # as.matrix it so that it can work with the cpp function
