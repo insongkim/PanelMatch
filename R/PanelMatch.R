@@ -165,26 +165,29 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
                                                     TimeVar = time.id, slideBy = -(i),
                                                     NewVar = paste("dependent_l", i, sep="")))
     d2 <- Reduce(function(x, y) {merge(x, y)}, dlist)
+    d2 <- d2[order(d2[,2], d2[,1]), ]
     if (method == "Pscore"|method == "CBPS") {
       dlist <- lapply(1:lag,
                       function (i) DataCombine::slide(data = d2, Var = treatment, GroupVar = unit.id,
                                                       TimeVar = time.id, slideBy = -(i),
                                                       NewVar = paste("treatment_l", i, sep="")))
       d2 <- Reduce(function(x, y) {merge(x, y)}, dlist)
+      d2 <- d2[order(d2[,2], d2[,1]), ]
     }
     # to include ldvs in varnames
     # varnames <- c(time.id, unit.id, treatment, dependent, colnames(d2)[5:length(d2)])
     
-    d2 <- d2[is.na(c(time.id, unit.id, treatment, dependent, covariate)) == FALSE, ]
+    # d2 <- d2[is.na(c(time.id, unit.id, treatment, dependent, covariate, 
+    #                  paste0("treatment_l", 2:lag))) == FALSE, ]
   }
   
   d2[1:(length(d2))] <- lapply(d2[1:(length(d2))], function(x) as.numeric(as.character(x))) # as.numeric
   
-  if (method == "Pscore"|method == "CBPS"|method == "SynthPscore"|method == "SynthCBPS"|
-      method == "Maha"|method == "no_method") {
-    d2 <- d2[order(d2[,2], d2[,1]), ]
-  }
-  
+  # if (method == "Pscore"|method == "CBPS"|method == "SynthPscore"|method == "SynthCBPS"|
+  #     method == "Maha"|method == "no_method") {
+  #   d2 <- d2[order(d2[,2], d2[,1]), ]
+  # }
+  # 
   covariate_names <- colnames(d2)[5:length(d2)]
   covariate_names <- covariate_names[covariate_names != "treatment_l1"]
   d2$treatment_l1 <- NULL
