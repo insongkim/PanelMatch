@@ -547,7 +547,7 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
               #   return(x)
               # })
               
-              pooled <- rbindlist(only.t0) # get a dataset for propensity score generation
+              pooled <- data.table::rbindlist(only.t0) # get a dataset for propensity score generation
               colnames(pooled) <- c(time.id, unit.id, treatment, dependent, colnames(d2)[5:length(d2)])
               
               # get propensity scores
