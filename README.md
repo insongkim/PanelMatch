@@ -133,7 +133,7 @@ uid <-unique(dem$wbcode2)[1:10]
 subdem <- dem[dem$wbcode2 %in% uid, ]
 DisplayTreatment(unit.id = "wbcode2", time.id = "year", treatment = 'dem', data = subdem)
 ```
-![](https://github.com/adamrauh/panel-data/blob/master/dipst1.png)
+![](https://github.com/adamrauh/panel-data/blob/master/dispt1.png)
 
 We can use the `findAllTreated` function to figure out which units received a treatment over a time period and the time at which the treatment was "given." 
 We provide a matrix of data we want to search for control units, and the column names that correspond to the treatment, time, and unit identifier variables.
@@ -270,8 +270,8 @@ Passing a matched set (one treated unit at a particular time and its correspondi
 ```{r}
 DisplayTreatment(unit.id = "wbcode2", time.id = "year", treatment = 'dem', data = subdem, matched.set = msets[1])
 ```
-![](https://github.com/adamrauh/panel-data/blob/master/dipst2.png)
+![](https://github.com/adamrauh/panel-data/blob/master/dispt2.png)
 ```{r}
 DisplayTreatment(unit.id = "wbcode2", time.id = "year", treatment = 'dem', data = subdem, matched.set = msets[1], show.set.only = T)
 ```
-![distplot3](https://github.com/adamrauh/panel-data/blob/master/dipst1.png)
+![](https://github.com/adamrauh/panel-data/blob/master/dispt3.png)
