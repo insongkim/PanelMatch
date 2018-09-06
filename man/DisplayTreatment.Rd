@@ -6,11 +6,11 @@
 \usage{
 DisplayTreatment(unit.id, time.id, treatment, data, color.of.treated = "red",
   color.of.untreated = "blue",
-  title = "Treatment Distribution \\n Across Units and Time", xlab = "time",
-  ylab = "unit", x.size = 10, y.size = 5, legend.position = "none",
+  title = "Treatment Distribution \\n Across Units and Time", xlab = "Time",
+  ylab = "Unit", x.size = 10, y.size = 5, legend.position = "none",
   x.angle = 45, y.angle = NULL, legend.labels = c("not treated",
   "treated"), group_on = NULL, sort_by = NULL, decreasing = FALSE,
-  matched.set = NULL)
+  matched.set = NULL, show.set.only = FALSE)
 }
 \arguments{
 \item{unit.id}{A numeric vector of unit identifiers}

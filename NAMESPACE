@@ -3,7 +3,6 @@
 S3method("[",matched.set)
 S3method(plot,matched.set)
 S3method(print,matched.set)
-S3method(print,panelmatch)
 S3method(summary,PanelEstimate)
 S3method(summary,matched.set)
 export(DisplayTreatment)

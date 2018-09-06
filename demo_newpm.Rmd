@@ -1,0 +1,73 @@
+---
+title: "Demo of new structures"
+output: html_notebook
+---
+
+
+Just creating a smaller subset of the data to make things a little easier to see and work with for the purposes of these examples.
+```{r}
+library(dplyr)
+uid <-unique(dem$wbcode2)[1:10]
+subdem <- dplyr::filter(dem, wbcode2 %in% uid)
+DisplayTreatment(unit.id = "wbcode2", time.id = "year", treatment = 'dem', data = subdem)
+```
+
+Here, we first use the findAllTreated function to give us a list of treated id, t pairs that might have a matched set of control units. This information comes as a data frame object, with each row representing a particular pair. Then we can use the output of this function to help find matched sets. This is done using the get.matched sets function. It is capable of handling a single t/id pair or multiple at once. This returns a "matched.set" object. In practice, this object is a named list with some added attributes (lag, names of variables, refinement method eventually). Each entry in the list is a vector containing the unit ids of control units that are in a matched set. Each entry corresponds to a t/id pair and the names of each member of the list will reflect this, with a <id varable>.<t variable> name scheme. Matched set objects are implemented as lists, but the default printing behavior is that of a data frame. One can toggle a 'verbose' option for more information to print as a list.
+
+One new assumption that must be made (at least, for right now) to use these function is that unit ids must be integers and time variables must be sortable and sequential integers. In practice, it doesn't seem that this will be too burdensome a requirement as some conversion to factors and integers should do the job (and could be something done automatically down the line).
+```{r}
+treateds <- findAllTreated(subdem, "dem", "year", "wbcode2")
+msets <- get.matchedsets(treateds$year, treateds$wbcode2, subdem, 4, "year", "wbcode2", "dem")
+names(msets)
+#data frame printing view: better as a summary view
+print(msets)
+
+#prints as a list, shows all data at once
+print(msets, verbose = T)
+
+#returns a "matched.set" object (list) of length 1
+msets[1]
+
+
+#prints the control units in this matched set
+msets[[1]]
+```
+
+Calling plot on a matched.set object will display a histogram of the sizes of the matched sets. Summary provides a variety of information about the sizes of matched sets, number of empty sets, lag size, and also a data frame that contains the same information as the default printing behavior. The "overview" data frame from the summary function is actually what gets printed, so if one wanted to interact with that data frame as a proper data.frame object, you could do that with the return object of "summary". Summary also has an option to print only the overview data frame. Toggle this by setting verbose = FALSE
+```{r}
+plot(msets)
+summary(msets)
+summary(msets, verbose = FALSE)
+in.set <- extract.set(msets, 4, 1992)
+# or just use the subset operator
+in.set.2 <- msets[2]
+```
+
+Passing a matched set (one treated unit and its corresponding set of controls) to the DisplayTreatment function will visually highlight the lag window histories used to create the matched set. There is also an option to set show.set.only to TRUE to only display units from the matched set (and the treated unit)
+```{r}
+DisplayTreatment(unit.id = "wbcode2", time.id = "year", treatment = 'dem', data = subdem, matched.set = in.set)
+DisplayTreatment(unit.id = "wbcode2", time.id = "year", treatment = 'dem', data = subdem, matched.set = in.set.2)
+#or just hand it directly, of course 
+
+DisplayTreatment(unit.id = "wbcode2", time.id = "year", treatment = 'dem', data = subdem, matched.set = msets[1])
+DisplayTreatment(unit.id = "wbcode2", time.id = "year", treatment = 'dem', data = subdem, matched.set = msets[1], show.set.only = T)
+```
+
+
+We can also see how some of these functions are useful by looking at the full dataset's results. 
+```{r}
+treateds <- findAllTreated(dem, "dem", "year", "wbcode2")
+msets <- get.matchedsets(treateds$year, treateds$wbcode2, dem, 4, "year", "wbcode2", "dem")
+plot(msets)
+summary(msets)
+in.set <- extract.set(msets, 6, 1983)
+# or just use the subset operator
+in.set.2 <- msets[2]
+DisplayTreatment(unit.id = "wbcode2", time.id = "year", treatment = 'dem', data = dem, matched.set = in.set, show.set.only = T)
+DisplayTreatment(unit.id = "wbcode2", time.id = "year", treatment = 'dem', data = dem, matched.set = in.set.2)
+#or just hand it directly, of course 
+DisplayTreatment(unit.id = "wbcode2", time.id = "year", treatment = 'dem', data = dem, matched.set = msets[1], show.set.only = T)
+
+```
+
+
