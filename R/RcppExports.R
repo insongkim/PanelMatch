@@ -33,3 +33,15 @@ findDDM2stripped <- function(L, F, x1) {
     .Call('_PanelMatch_findDDM2stripped', PACKAGE = 'PanelMatch', L, F, x1)
 }
 
+get_treated_indices <- function(ordered_df, treated_indices, treat_col_idx, unit_var_col) {
+    .Call('_PanelMatch_get_treated_indices', PACKAGE = 'PanelMatch', ordered_df, treated_indices, treat_col_idx, unit_var_col)
+}
+
+get_comparison_histories <- function(compmat, ts, ids, t_col, id_col, L, treat_col) {
+    .Call('_PanelMatch_get_comparison_histories', PACKAGE = 'PanelMatch', compmat, ts, ids, t_col, id_col, L, treat_col)
+}
+
+get_msets_helper <- function(control_history_list, widemat, t_as_col_nums, ids, L) {
+    .Call('_PanelMatch_get_msets_helper', PACKAGE = 'PanelMatch', control_history_list, widemat, t_as_col_nums, ids, L)
+}
+

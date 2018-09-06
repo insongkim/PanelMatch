@@ -4,8 +4,8 @@
 #include <R_ext/Rdynload.h>
 
 /* FIXME: 
-Check these declarations against the C/Fortran source code.
-*/
+ Check these declarations against the C/Fortran source code.
+ */
 
 /* .C calls */
 extern void CalDID(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
@@ -38,11 +38,14 @@ extern void XXiSum(void *, void *, void *, void *, void *, void *);
 
 /* .Call calls */
 extern SEXP _PanelMatch_all_sug(SEXP);
-extern SEXP _PanelMatch_findDDmatched2(SEXP, SEXP, SEXP);
 extern SEXP _PanelMatch_findDDM2stripped(SEXP, SEXP, SEXP);
+extern SEXP _PanelMatch_findDDmatched2(SEXP, SEXP, SEXP);
 extern SEXP _PanelMatch_findDDNaive(SEXP, SEXP, SEXP);
 extern SEXP _PanelMatch_findDDrestricted(SEXP, SEXP, SEXP);
 extern SEXP _PanelMatch_FindMatches(SEXP, SEXP, SEXP);
+extern SEXP _PanelMatch_get_comparison_histories(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP _PanelMatch_get_msets_helper(SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP _PanelMatch_get_treated_indices(SEXP, SEXP, SEXP, SEXP);
 extern SEXP _PanelMatch_rbind_c(SEXP, SEXP);
 extern SEXP _PanelMatch_sumCpp(SEXP);
 
@@ -78,14 +81,17 @@ static const R_CMethodDef CEntries[] = {
 };
 
 static const R_CallMethodDef CallEntries[] = {
-  {"_PanelMatch_all_sug",          (DL_FUNC) &_PanelMatch_all_sug,          1},
-  {"_PanelMatch_findDDmatched2",   (DL_FUNC) &_PanelMatch_findDDmatched2,   3},
-  {"_PanelMatch_findDDNaive",      (DL_FUNC) &_PanelMatch_findDDNaive,      3},
-  {"_PanelMatch_findDDrestricted", (DL_FUNC) &_PanelMatch_findDDrestricted, 3},
-  {"_PanelMatch_FindMatches",      (DL_FUNC) &_PanelMatch_FindMatches,      3},
-  {"_PanelMatch_rbind_c",          (DL_FUNC) &_PanelMatch_rbind_c,          2},
-  {"_PanelMatch_sumCpp",           (DL_FUNC) &_PanelMatch_sumCpp,           1},
-  {"_PanelMatch_findDDM2stripped",   (DL_FUNC) &_PanelMatch_findDDM2stripped,   3},
+  {"_PanelMatch_all_sug",                  (DL_FUNC) &_PanelMatch_all_sug,                  1},
+  {"_PanelMatch_findDDM2stripped",         (DL_FUNC) &_PanelMatch_findDDM2stripped,         3},
+  {"_PanelMatch_findDDmatched2",           (DL_FUNC) &_PanelMatch_findDDmatched2,           3},
+  {"_PanelMatch_findDDNaive",              (DL_FUNC) &_PanelMatch_findDDNaive,              3},
+  {"_PanelMatch_findDDrestricted",         (DL_FUNC) &_PanelMatch_findDDrestricted,         3},
+  {"_PanelMatch_FindMatches",              (DL_FUNC) &_PanelMatch_FindMatches,              3},
+  {"_PanelMatch_get_comparison_histories", (DL_FUNC) &_PanelMatch_get_comparison_histories, 7},
+  {"_PanelMatch_get_msets_helper",         (DL_FUNC) &_PanelMatch_get_msets_helper,         5},
+  {"_PanelMatch_get_treated_indices",      (DL_FUNC) &_PanelMatch_get_treated_indices,      4},
+  {"_PanelMatch_rbind_c",                  (DL_FUNC) &_PanelMatch_rbind_c,                  2},
+  {"_PanelMatch_sumCpp",                   (DL_FUNC) &_PanelMatch_sumCpp,                   1},
   {NULL, NULL, 0}
 };
 

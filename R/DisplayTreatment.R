@@ -49,7 +49,7 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
                              color.of.treated = "red",
                              color.of.untreated = "blue", 
                              title = "Treatment Distribution \n Across Units and Time",
-                             xlab = "time", ylab = "unit",
+                             xlab = "Time", ylab = "Unit",
                              x.size = 10, y.size = 5,
                              legend.position= "none",
                              x.angle = 45,
@@ -58,10 +58,35 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
                              legend.labels = c("not treated", "treated"),
                              group_on = NULL,
                              sort_by = NULL,
-                             decreasing = FALSE)
+                             decreasing = FALSE,
+                             matched.set = NULL,
+                             show.set.only = FALSE)
     
 {
   # load the dataframe that the user specifies
+  #TODO: fix layout here
+
+  if(show.set.only & !is.null(matched.set) & length(matched.set) == 1 & class(matched.set) == "matched.set")
+  {
+    info <- unlist(strsplit(names(matched.set)[1], split = ".", fixed = TRUE))
+    id <- info[1]
+    t <- info[2]
+    .in.set <- function(id_comp)
+    {
+      
+      if(id_comp == id | id_comp %in% unlist(matched.set))
+      {
+        return(TRUE)
+      }
+      else
+      {
+        return(FALSE)
+      }
+    }
+    data <- data[sapply(data[, unit.id], .in.set), ]
+  }
+  x.size = NULL
+  y.size = NULL
   if(!is.null(group_on))
   {
     if(!is.null(sort_by))
@@ -167,21 +192,113 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
     y.maxs = sapply(lvls, .get_y.max)
   }
   
-      # use ggplot2
-  p <- ggplot(data, aes(unit.id, time.id)) + geom_tile(aes(fill = treatment),
-                                                       colour = "white") +
-    scale_fill_gradient(low = color.of.untreated,
-                        high = color.of.treated, guide = "legend", 
-                        breaks = c(0,1), labels = legend.labels) +
-    theme_bw() +
-    labs(list(title = title, x = ylab, y = xlab, fill = "")) +
-    theme(axis.ticks.x=element_blank(),
-          panel.grid.major = element_blank(), panel.border = element_blank(),
-          legend.position = legend.position,
-          panel.background = element_blank(), 
-          axis.text.x = element_text(angle=x.angle, size = x.size, vjust=0.5),
-          axis.text.y = element_text(size = y.size, angle = y.angle),
-          plot.title = element_text(hjust = 0.5))
+  
+  if(!is.null(matched.set) & length(matched.set) == 1 & class(matched.set) == "matched.set")
+  {
+    
+    info <- unlist(strsplit(names(matched.set)[1], split = ".", fixed = TRUE))
+    id <- info[1]
+    t <- info[2]
+    .in.set <- function(id_comp)
+    {
+      
+      if(id_comp == id | id_comp %in% unlist(matched.set))
+      {
+        return(TRUE)
+      }
+      else
+      {
+        return(FALSE)
+      }
+    }
+    # "#adc5ff" #control, not in set -- this will correspond to 0
+    # "#ffadad" #treated, not in set -- corresponds to 1
+    # "red" #treated, in set -- 3
+    # "blue" #control, in set -- 2
+    # #data$colref <- NA
+    
+    
+    lag <- attr(matched.set, "lag")
+    time <- as.numeric(t)
+    .set.colref <- function(id_, treatment, time_)
+    {
+      
+      
+      if(.in.set(id_comp = id_))
+      {
+        if(treatment)
+        {
+          if(time_ %in% ((time-lag):time))
+          {
+            return(3)  
+          }
+          else
+          {
+            return(1)
+          }
+          
+        }
+        else
+        {
+          if(time_ %in% ((time-lag):time))
+          {
+            return(2)  
+          }
+          else
+          {
+            return(0)
+          }
+        }
+      }
+      else
+      {
+        if(treatment)
+        {
+          return(1)
+        }
+        else
+        {
+          return(0)
+        }
+      }
+    }
+    data$colref <- mapply(FUN = .set.colref, id_ = data$old.index, treatment = data$treatment, time_ = data$time.id)
+    clrs <- sapply(unique(data$old.index), FUN = .in.set)
+    clrs <- ifelse(clrs, "blue", "#eaeaea")
+    clrs[which(unique(data$old.index) == id)] <- "red"
+    title = paste0(title, "\n", "highlighted matched set for unit id: ", id, " at time t = ", t)
+    p <- ggplot(data, aes(unit.id, time.id)) + geom_tile(aes(fill = as.factor(colref)),
+                                                         colour = "white") +
+      scale_fill_manual(values = c("#adc5ff", "#ffadad", "blue", "red"))+
+      theme_bw() +
+      labs(list(title = title, x = ylab, y = xlab, fill = "")) +
+      theme(axis.ticks.x=element_blank(),
+            panel.grid.major = element_blank(), panel.border = element_blank(),
+            legend.position = legend.position,
+            panel.background = element_blank(), 
+            axis.text.x = element_text(angle=x.angle, size = x.size, vjust=0.5),
+            axis.text.y = element_text(size = y.size, angle = y.angle),
+            plot.title = element_text(hjust = 0.5))
+  }
+  else
+  {
+    clrs <- NULL
+    p <- ggplot(data, aes(unit.id, time.id)) + geom_tile(aes(fill = treatment),
+                                                         colour = "white") +
+      scale_fill_gradient(low = color.of.untreated,
+                          high = color.of.treated, guide = "legend", 
+                          breaks = c(0,1), labels = legend.labels) +
+      theme_bw() +
+      labs(list(title = title, x = ylab, y = xlab, fill = "")) +
+      theme(axis.ticks.x=element_blank(),
+            panel.grid.major = element_blank(), panel.border = element_blank(),
+            legend.position = legend.position,
+            panel.background = element_blank(), 
+            axis.text.x = element_text(angle=x.angle, size = x.size, vjust=0.5),
+            axis.text.y = element_text(size = y.size, angle = y.angle),
+            plot.title = element_text(hjust = 0.5))
+  }
+  
   
   if(!is.null(group_on))
   {
@@ -202,8 +319,15 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
     pj <- p
   }
   pjp <- pj + scale_x_discrete(expand = c(0, 0), labels = unique(as.character(data$old.index))) +
-    scale_y_continuous(limits = c(min(data$time.id)-1,max(data$time.id) + 1), expand = c(0,0)) +
+    scale_y_continuous(limits = c(min(data$time.id)-1,max(data$time.id) + 1), expand = c(0,0)) + theme(axis.text.y = element_text(color = clrs)) +
     coord_flip()
   
   return(pjp) # return the plot
 }
+
+#assuming integer t
+find.window <- function(lag,t)
+{
+  return((lag - t):lag)
+}
+

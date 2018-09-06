@@ -312,7 +312,8 @@ List findDDM2stripped(int L, int F, NumericMatrix x1) {
   List out2(nrow1);
   
   for (int i = L; i < (nrow1 - F); i++) {
-    Rcpp::Rcout << "Printing infomration from top conditional:\n";
+    Rcpp::Rcout << "Printing information from top conditional:\n";
+    Rcpp::Rcout << "i" << i << std::endl;
     Rcpp::Rcout << "x1(i,2): " << x1(i,2) << std::endl;
     Rcpp::Rcout << "x1(i-L,1): " << x1(i-L,1) << std::endl;
     Rcpp::Rcout << "x1(i+F,1): " << x1(i+F,1) << std::endl; 
@@ -327,6 +328,7 @@ List findDDM2stripped(int L, int F, NumericMatrix x1) {
       List out(nrow1);
       for (int j = L; j < (nrow1 - F); j++) 
       {
+        Rcpp::Rcout << "j" << j << std::endl;
         Rcpp::Rcout << "x1(j,2): " << x1(j,2) << std::endl;
         Rcpp::Rcout << "x1(j,0): " << x1(j,0) << std::endl;
         Rcpp::Rcout << "x1(i,0): " << x1(i,0) << std::endl;

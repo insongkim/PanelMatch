@@ -9,7 +9,8 @@ DisplayTreatment(unit.id, time.id, treatment, data, color.of.treated = "red",
   title = "Treatment Distribution \\n Across Units and Time", xlab = "time",
   ylab = "unit", x.size = 10, y.size = 5, legend.position = "none",
   x.angle = 45, y.angle = NULL, legend.labels = c("not treated",
-  "treated"), group_on = NULL, sort_by = NULL, decreasing = FALSE)
+  "treated"), group_on = NULL, sort_by = NULL, decreasing = FALSE,
+  matched.set = NULL)
 }
 \arguments{
 \item{unit.id}{A numeric vector of unit identifiers}
