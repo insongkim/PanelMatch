@@ -142,6 +142,8 @@ For more detailed information about working with `matched.set` objects, look at 
 Passing a matched set (one treated unit at a particular time and its corresponding set of controls) to the `DisplayTreatment` function will  highlight the treatment histories used to create the matched set. If you set the `show.set.only` argument to `TRUE`, then only units from the matched set (and the treated unit) will be shown on the plot. This is useful when working with larger data sets.
 
 ```{r}
-DisplayTreatment(unit.id = "wbcode2", time.id = "year", treatment = 'dem', data = dem, matched.set = msets[1], show.set.only = T)
+DisplayTreatment(unit.id = "wbcode2", time.id = "year", treatment = 'dem', 
+                 data = dem, matched.set = msets[1],
+                 show.set.only = T, xlab = "year", ylab = "Country Code")
 ```
-![](https://github.com/adamrauh/panel-data/blob/master/dtpr1.png)
+![](https://github.com/adamrauh/panel-data/blob/master/tweak.png)
