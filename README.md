@@ -124,154 +124,24 @@ Estimate of Average Treatment Effect on the Treated (ATT) by Period:
 |Upper Limit of 95 % Bias-corrected Confidence Interval |  1.9576889|  3.2533181|  4.364411|  5.465850|  6.666370|
 ```
 
-## 9/6 Update Placeholder Title
+## 9/18 Update Placeholder Title
 
-Let's create a small, easy to work with form of our example data set. We'll do this by getting data for only the first 10 countries. 
 
-```{r}
-uid <-unique(dem$wbcode2)[1:10]
-subdem <- dem[dem$wbcode2 %in% uid, ]
-DisplayTreatment(unit.id = "wbcode2", time.id = "year", treatment = 'dem', data = subdem)
-```
-![](https://github.com/adamrauh/panel-data/blob/master/dispt1.png)
+We can use the `findAllTreated` function to figure out which units received a treatment over a time period and the time at which the treatment occurred. We can use the `get.matchedsets` function to find the set of matched control units for each treated unit.
 
-We can use the `findAllTreated` function to figure out which units received a treatment over a time period and the time at which the treatment was "given." 
-We provide a matrix of data we want to search for control units, and the column names that correspond to the treatment, time, and unit identifier variables.
-
-These units might have corresponding sets of matched control units. We can use the `get.matchedsets` function to find this set of matched control units. Each matched set will therefore correspond with a unique identifier of the treated unit, and time (ie. the time at which the treated unit received treatment). You must also specify a lag window, which will be used to match treated units to control units. Treated units receive treatment at time T, whereas control units do not. However, besides this, the control and treated units have identical treatment histories over the time specified by the lag variable, from time T-L, to T-1.
-
-The `get.matchedsets` function will return a "matched.set" object, which is just a named list with some other attributes saved. By default, it prints out like a data frame, but its subsetting behaviors work like those of a list. The names of each entry in the matched.set object will specify relevant information about the treated unit in the format `[unit id variable].[time at which treatment was received]`
+The `get.matchedsets` function will return a `matched.set` object, which is just a named list with some other attributes saved. By default, it prints out like a data frame, but its subsetting behaviors work like those of a list. The names of each entry in the `matched.set` object will specify relevant information about the treated unit in the format `[unit id variable].[time at which treatment was received]`
 
 
 ```{r}
-treateds <- findAllTreated(dmat = subdem, treatedvar = "dem", time.var = "year", unit.var = "wbcode2")
-
-
+treateds <- findAllTreated(dmat = dem, treatedvar = "dem", time.var = "year", unit.var = "wbcode2")
 msets <- get.matchedsets(t = treateds$year, id = treateds$wbcode2, data = subdem, L = 4, t.column = "year", id.column = "wbcode2", treatedvar = "dem")
-
-names(msets)
-
-[1] "4.1992"  "4.1997"  "6.1973"  "6.1983"  "7.1991"  "7.1998"  "12.1992" "13.2003"
 ```
 
-```{r}
-#data frame printing view: better as a summary view
-print(msets)
+For more detailed information about working with `matched.set` objects, look at the [Wiki page](https://github.com/insongkim/PanelMatch/wiki/Matched-Set-Objects) with examples and explanations. 
 
-  wbcode2 year matched.set.size
-1       4 1992                3
-2       4 1997                1
-3       6 1973                5
-4       6 1983                6
-5       7 1991                5
-6       7 1998                0
-7      12 1992                3
-8      13 2003                3
-```
-```{r}
-#prints as a list, shows all data at once
-print(msets, verbose = T)
-
-$`4.1992`
-[1]  2  3 13
-
-$`4.1997`
-[1] 7
-
-$`6.1973`
-[1]  2  4  7 12 13
-
-$`6.1983`
-[1]  2  3  4  7 12 13
-
-$`7.1991`
-[1]  2  3  4 12 13
-
-$`7.1998`
-numeric(0)
-
-$`12.1992`
-[1]  2  3 13
-
-$`13.2003`
-[1]  2  3 12
-
-attr(,"lag")
-[1] 4
-attr(,"t.var")
-[1] "year"
-attr(,"id.var")
-[1] "wbcode2"
-attr(,"treated.var")
-[1] "dem"
-```
-
-```{r}
-#returns a "matched.set" object (list) of length 1
-print(msets[1])
-
-  wbcode2 year matched.set.size
-1       4 1992                3
-```
-
-```{r}
-#prints the control units in this matched set
-print(msets[[1]])
-[1]  2  3 13
-```
-
-Calling `plot` on a `matched.set` object will display a histogram of the sizes of the matched sets. the `summary` function provides a variety of information about the sizes of matched sets, number of empty sets, lag size, and a compact "overview" data frame showing matched set sizes. The `summary` function also has an option to print only the overview data frame. Toggle this by setting the `verbose` argument to `FALSE`.
-```{r}
-plot(msets)
-```
-
-```{r}
-print(summary(msets))
-$overview
-  wbcode2 year matched.set.size
-1       4 1992                3
-2       4 1997                1
-3       6 1973                5
-4       6 1983                6
-5       7 1991                5
-6       7 1998                0
-7      12 1992                3
-8      13 2003                3
-
-$set.size.summary
-   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-   0.00    2.50    3.00    3.25    5.00    6.00 
-
-$number.of.treated.units
-[1] 8
-
-$num.units.empty.set
-[1] 1
-
-$lag
-[1] 4
-
-print(summary(msets, verbose = FALSE))
-
-$overview
-  wbcode2 year matched.set.size
-1       4 1992                3
-2       4 1997                1
-3       6 1973                5
-4       6 1983                6
-5       7 1991                5
-6       7 1998                0
-7      12 1992                3
-8      13 2003                3
-
-```
 Passing a matched set (one treated unit at a particular time and its corresponding set of controls) to the `DisplayTreatment` function will  highlight the treatment histories used to create the matched set. If you set the `show.set.only` argument to `TRUE`, then only units from the matched set (and the treated unit) will be shown on the plot. This is useful when working with larger data sets.
 
 ```{r}
-DisplayTreatment(unit.id = "wbcode2", time.id = "year", treatment = 'dem', data = subdem, matched.set = msets[1])
+DisplayTreatment(unit.id = "wbcode2", time.id = "year", treatment = 'dem', data = dem, matched.set = msets[1], show.set.only = T)
 ```
-![](https://github.com/adamrauh/panel-data/blob/master/dispt2.png)
-```{r}
-DisplayTreatment(unit.id = "wbcode2", time.id = "year", treatment = 'dem', data = subdem, matched.set = msets[1], show.set.only = T)
-```
-![](https://github.com/adamrauh/panel-data/blob/master/dispt3.png)
+![](https://github.com/adamrauh/panel-data/blob/master/dtpr1.png)
