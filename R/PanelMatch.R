@@ -273,7 +273,7 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
         }
         
       }
-      
+      fit0$coefficients[is.na(fit0$coefficients)] <- 0
       even_smaller1 <- lapply(even_smaller1, function (x) {
         if (covariate.only == TRUE|method == "SynthPscore"|method == "SynthCBPS") {
           x <- as.data.frame(x)
@@ -404,7 +404,7 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
           #   return(x)
           # })
           
-          pooled <- data.table::rbindlist(only.t0) # get a dataset for propensity score generation
+          pooled <- rbindlist(only.t0) # get a dataset for propensity score generation
           colnames(pooled) <- c(time.id, unit.id, treatment, dependent, colnames(d2)[5:length(d2)])
           
           # get propensity scores
@@ -427,7 +427,7 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
             }
             
           }
-          
+          fit0$coefficients[is.na(fit0$coefficients)] <- 0
           even_smaller2 <- lapply(even_smaller2, function (x) {
             if (covariate.only == TRUE|method == "SynthPscore"|method == "SynthCBPS") {
               x <- as.data.frame(x)
@@ -547,7 +547,7 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
               #   return(x)
               # })
               
-              pooled <- data.table::rbindlist(only.t0) # get a dataset for propensity score generation
+              pooled <- rbindlist(only.t0) # get a dataset for propensity score generation
               colnames(pooled) <- c(time.id, unit.id, treatment, dependent, colnames(d2)[5:length(d2)])
               
               # get propensity scores
