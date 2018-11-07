@@ -570,7 +570,7 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
                 }
                 
               }
-              
+              fit0$coefficients[is.na(fit0$coefficients)] <- 0
               even_smaller1 <- lapply(even_smaller1, function (x) {
                 if (covariate.only == TRUE|method == "SynthPscore"|method == "SynthCBPS") {
                   x <- as.data.frame(x)
@@ -653,7 +653,7 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
                   }
                   
                 }
-                
+                fit0$coefficients[is.na(fit0$coefficients)] <- 0
                 even_smaller2 <- lapply(even_smaller2, function (x) {
                   if (covariate.only == TRUE|method == "SynthPscore"|method == "SynthCBPS") {
                     x <- as.data.frame(x)
