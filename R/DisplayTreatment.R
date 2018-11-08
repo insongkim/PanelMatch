@@ -266,7 +266,7 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
     clrs <- sapply(unique(data$old.index), FUN = .in.set)
     clrs <- ifelse(clrs, "blue", "#eaeaea")
     clrs[which(unique(data$old.index) == id)] <- "red"
-    title = paste0(title, "\n", "highlighted matched set for unit id: ", id, " at time t = ", t)
+    title = paste0(title, "\n", "highlighted matched set for unit id: ", id, " at time t = ", t, " and lag = ", lag)
     p <- ggplot(data, aes(unit.id, time.id)) + geom_tile(aes(fill = as.factor(colref)),
                                                          colour = "white") +
       scale_fill_manual(values = c("#adc5ff", "#ffadad", "blue", "red"))+

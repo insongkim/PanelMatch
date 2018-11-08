@@ -175,6 +175,7 @@ synth_vit <- function(x, lag, max.lead, method = "Synth") {
 }
 
 Maha_vit <- function(x, lag, max.lead, M = 3, covariate_names) {
+  #browser()
   covariate_names <- covariate_names
   treated.id <- x[x$V3 == 1 & x$V1 == (max(x$V1)-max.lead), ]$V2
   x <- na.omit(x)
@@ -195,7 +196,7 @@ Maha_vit <- function(x, lag, max.lead, M = 3, covariate_names) {
     #   x[miss_idx] <- mean_x
     #   return(x)
     # }))
-    
+    browser()
     MSMDlist <- suppressWarnings(MSMD_each(timeid[1], matched_set = matched_set, testid = testid, 
                           treated.id = treated.id))
     for (i in 2:length(unique(timeid))) {
@@ -278,6 +279,7 @@ Maha_vit <- function(x, lag, max.lead, M = 3, covariate_names) {
 
 MSMD_each <- function(time_id, matched_set, testid, treated.id = treated.id) {
   
+  browser()
   sub_sub <- matched_set[matched_set$V1 == time_id, ]
   # sub_sub[, colSums(is.na(sub_sub)) != 0]
   cov_matrix <- cov(as.matrix(sub_sub[sub_sub$V2 %in% testid[testid != treated.id], 5:length(sub_sub)]))
@@ -393,6 +395,7 @@ PS_vit <- function(x, lag, max.lead, M = M, weighting = FALSE) {
 # }
 
 take_out <- function(matched_set, lag, lead) {
+  if(any(!matched_set$V1 <= (min(matched_set$V1) + lag + max(lead)))) browser()
   matched_set <- matched_set[matched_set$V1 <= (min(matched_set$V1) + lag + max(lead)),]
 }
 

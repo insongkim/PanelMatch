@@ -34,10 +34,18 @@ findAllTreated <- function(dmat, treatedvar, time.var, unit.var, hasbeensorted =
   {
     odf <- dmat[order(dmat[,unit.var], dmat[,time.var]), ]  
   }
-  
+  classes <- sapply(dmat, class)
   # Verifying that time and unit data are integers -- perhaps later shift this to an automatic conversion process?
-  if( any(head(odf[, unit.var]) %% 1 != 0) ) stop("unit data are not integer") # just doing the first few to check for efficiency purposes. 
-  if( any(head(odf[, time.var]) %% 1 != 0) ) stop("time data are not integer") 
+  if(classes[time.var] != "integer")
+  {
+    warning("time variable data provided not integer. Automatic conversion attempted")
+    dmat[, time.var] <- as.integer(dmat[, t.column])
+  }
+  if(classes[unit.var] != "integer")
+  {
+    stop("unit id variable data provided not integer")
+    #dmat[, unit.var] <- as.integer(dmat[, unit.var])
+  }
   
   t.history <- odf[,treatedvar]
   t.idxs <- which(t.history == 1)
@@ -75,24 +83,45 @@ findAllTreated <- function(dmat, treatedvar, time.var, unit.var, hasbeensorted =
 #' @export
 get.matchedsets <- function(t, id, data, L, t.column, id.column, treatedvar, hasbeensorted = FALSE) 
 {
+  if(length(t) == 0 | lenght(id) == 0)
+  {
+    stop("time and/or unit information missing")
+  }
   if(!hasbeensorted)
   {
     data <- data[order(data[,id.column], data[,t.column]), ]  
+    
   }
   # Verifying that time and unit data are integers -- perhaps later shift this to an automatic conversion process?
-  if( any(head(data[, id.column]) %% 1 != 0) ) stop("unit data are not integer") # just doing the first few to check for efficiency purposes. 
-  if( any(head(data[, t.column]) %% 1 != 0) ) stop("time data are not integer") 
+  classes <- sapply(data, class)
+  if(classes[t.column] != "integer")
+  {
+    warning("time variable data provided not integer. Automatic conversion attempted")
+    data[, t.column] <- as.integer(data[, t.column])
+  }
+  if(classes[id.column] != "integer")
+  {
+    stop("unit id variable data provided not integer")
+    #data[, id.column] <- as.integer(data[, id.column])
+  }
   
   d <- data[, c(id.column, t.column, treatedvar)]
   d <- as.matrix(d)
   if(!is.numeric(d)) stop('data in treated, time, or id columns is not numeric')
-  
-  
-  control.histories <- get_comparison_histories(d, t, id, which(colnames(d) == t.column) - 1 , which(colnames(d) == id.column) - 1, L, which(colnames(d) == treatedvar) - 1) #control histories should be a list
+  #CHECK TO MAKE SURE COLUMNS ARE IN ORDER!!!
+  #fix factor conversion to be more smooth and allow for different data types.
   compmat <- data.table::dcast(data.table::as.data.table(d), formula = paste0(id.column, "~", t.column), value.var = treatedvar) #reshape the data so each row corresponds to a unit, columns specify treatment over time
+  d <- reshape2::melt(compmat, id = id.column, variable = t.column, value = treatedvar, variable.factor = FALSE, value.name = treatedvar)
+  d[, t.column] <- as.numeric(as.character(d[, t.column]))
+  d <-  d[order(d[,id.column], d[,t.column]), ] #cast -> melt fills in missing data with NA's but order is not preserved, so second sort necessary
+  d <- data.matrix(d)
+  #browser()
+  #think we want to add the following line
+  #data[is.na(data)] <- -1
+  control.histories <- get_comparison_histories(d, t, id, which(colnames(d) == t.column) - 1 , which(colnames(d) == id.column) - 1, L, which(colnames(d) == treatedvar) - 1) #control histories should be a list
+  
   t.map <- match(t, unique(d[, t.column])) #unique() should preserve orderings
   sets <- get_msets_helper(control.histories, as.matrix(compmat), t.map, id, L)
   named.sets <- matched_set(matchedsets = sets, id = id, t = t, L = L, t.var = t.column, id.var = id.column, treated.var = treatedvar)
   return(named.sets)
 }
-

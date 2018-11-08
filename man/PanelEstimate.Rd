@@ -17,7 +17,7 @@ periods for which the quantity of interest will be estimated}
 is \code{bootstrap}.}
 
 \item{ITER}{An integer value indicating the number of bootstrap
-iteration. The default is 1000.}
+iterations. The default is 1000.}
 
 \item{matched_sets}{A list of class `panelmatch' attained by
 \code{PanelMatch}. @seealso \code{PanelMatch}.}
@@ -34,7 +34,7 @@ calculation. The default is \code{FALSE}.}
 treated) or ``ate'' (average treatment effect) or atc (average
 treatment effect for the control). @seealso \code{PanelMatch}.}
 
-\item{CI}{A numerica value specifying the range of interval
+\item{CI}{A numerical value specifying the range of interval
 estimates for statistical inference. The default is .95.}
 }
 \value{

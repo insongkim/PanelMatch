@@ -45,3 +45,39 @@ get_msets_helper <- function(control_history_list, widemat, t_as_col_nums, ids, 
     .Call('_PanelMatch_get_msets_helper', PACKAGE = 'PanelMatch', control_history_list, widemat, t_as_col_nums, ids, L)
 }
 
+get_vit_index <- function(t_id_key, control_treatment_t_ids, control_treatment_set_nums) {
+    .Call('_PanelMatch_get_vit_index', PACKAGE = 'PanelMatch', t_id_key, control_treatment_t_ids, control_treatment_set_nums)
+}
+
+get_dits <- function(t_id_key, nonempty_t_ids) {
+    .Call('_PanelMatch_get_dits', PACKAGE = 'PanelMatch', t_id_key, nonempty_t_ids)
+}
+
+prep_lead_years <- function(ts, lead_window) {
+    .Call('_PanelMatch_prep_lead_years', PACKAGE = 'PanelMatch', ts, lead_window)
+}
+
+sumwits <- function(nrow, vit_vect) {
+    .Call('_PanelMatch_sumwits', PACKAGE = 'PanelMatch', nrow, vit_vect)
+}
+
+re_norm_index <- function(compmat, compmat_row_units, compmat_cols, lead, sets, control_start_years) {
+    .Call('_PanelMatch_re_norm_index', PACKAGE = 'PanelMatch', compmat, compmat_row_units, compmat_cols, lead, sets, control_start_years)
+}
+
+check_treated_units <- function(compmat, compmat_row_units, compmat_cols, lead, treated_ids, treated_ts) {
+    .Call('_PanelMatch_check_treated_units', PACKAGE = 'PanelMatch', compmat, compmat_row_units, compmat_cols, lead, treated_ids, treated_ts)
+}
+
+needs_renormalization <- function(set_index_list) {
+    .Call('_PanelMatch_needs_renormalization', PACKAGE = 'PanelMatch', set_index_list)
+}
+
+renormalize <- function(control_index, sets_to_be_updated) {
+    .Call('_PanelMatch_renormalize', PACKAGE = 'PanelMatch', control_index, sets_to_be_updated)
+}
+
+equality_four_cpp <- function(Wit_vals, y, z) {
+    .Call('_PanelMatch_equality_four_cpp', PACKAGE = 'PanelMatch', Wit_vals, y, z)
+}
+

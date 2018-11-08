@@ -45,12 +45,27 @@ summary.matched.set <- function(set, verbose = T)
   }
 }
 #' @export
-plot.matched.set <- function(set)
+plot.matched.set <- function(set, border = NA, col = "grey", xlim = NULL, ylim = NULL, ylab = "", xlab ="" , lwd = NULL,
+                             main = "Distribution of matched set sizes", ...)
 {
-  lengthcol <- sapply(set, length)
-  df <- data.frame(Length = lengthcol)
-  ggplot(df, aes(Length)) + geom_histogram(binwidth = 1, color = "black", fill = "blue") + xlab("Length of Matched Set") + ylab("Frequency of Set Length") +
-    ggtitle("Frequency Distribution of Matched Set Sizes") + scale_x_continuous(breaks = 0:max(lengthcol))
+  
+    lvec <- sapply(set, length)
+    if(is.null(xlim))
+    {
+      xlim = c(0, length(lvec))
+    }
+    if(is.null(ylim))
+    {
+      ylim = c(0, max(lvec, max(sum(lvec == 0))))
+    }
+    if(is.null(lwd))
+    {
+      lwd = 4
+    }
+    hist(x = lvec, freq = TRUE, border = border, col = col, xlim = xlim, ylim = ylim, ylab = ylab, xlab = xlab, main = main, ...)
+    lines(x = c(0,0), y = c(0, length(rep(0, sum(lvec == 0) )) ), col = "red", lwd = lwd)
+  
+  
 }
 #' @export
 extract.set <- function(set, id, t)
@@ -80,6 +95,7 @@ print.matched.set <- function(set, verbose = F)
 #' @export
 `[.matched.set` <- function(x, i, j = NULL, drop = NULL)
 {
+
   if(!is.null(j)) stop("matched.set object is a list.")
   class(x) <- "list"
   temp <- x[i]
@@ -94,7 +110,7 @@ print.matched.set <- function(set, verbose = F)
 }
 
 #' #' @export
-#' `[.overview.matched.set` <- function(x, i, j = NULL, drop = NULL)
+# `[.overview.matched.set` <- function(x, i, j = NULL, drop = NULL)
 #' {
 #'   
 #'   # if(is.null(sets)) stop("please specify matched sets")
@@ -107,9 +123,10 @@ print.matched.set <- function(set, verbose = F)
 #'   # class(temp) <- "matched.set"
 #'   # return(temp)
 #' }
-
+#' 
 
 # `[<-.matched.set` <- function(set)
 # {
 #   stop("not implemented yet, use a list")
 # }
+
