@@ -41,6 +41,7 @@ install_github("insongkim/PanelMatch", dependencies=TRUE)
 If you encounter problems during installation, please consult [the wiki page](https://github.com/insongkim/PanelMatch/wiki/Installation-Troubleshooting) that has some ideas for handling common issues. 
 
 If you are a Windows user, make sure to install "Rtools" before attempting the installation. A link to download this software can be found [here](https://cran.r-project.org/bin/windows/Rtools/). Use the download link provided at the top of the chart if you are using the most up to date version of R. The default configuration suggestions made by the Rtools installer should work in almost all cases, unless you know a strong reason to opt for a custom configuration.
+
 Usage Examples
 -------------------------
 
