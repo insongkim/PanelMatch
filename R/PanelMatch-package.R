@@ -36,7 +36,6 @@
 #' @importFrom Rcpp sourceCpp
 #' @importFrom DataCombine slide MoveFront
 #' @importFrom CBPS CBPS
-#' @importFrom lasso2 merge.formula
 #' @importFrom data.table rbindlist
 #' @importFrom plyr rbind.fill
 #' @importFrom reshape2 dcast
