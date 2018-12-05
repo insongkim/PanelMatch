@@ -269,3 +269,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// create_dmats_for_distance
+List create_dmats_for_distance(NumericMatrix expanded_data, NumericVector treated_ids, NumericVector treated_ts, CharacterVector row_key, List matched_sets);
+RcppExport SEXP _PanelMatch_create_dmats_for_distance(SEXP expanded_dataSEXP, SEXP treated_idsSEXP, SEXP treated_tsSEXP, SEXP row_keySEXP, SEXP matched_setsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type expanded_data(expanded_dataSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type treated_ids(treated_idsSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type treated_ts(treated_tsSEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type row_key(row_keySEXP);
+    Rcpp::traits::input_parameter< List >::type matched_sets(matched_setsSEXP);
+    rcpp_result_gen = Rcpp::wrap(create_dmats_for_distance(expanded_data, treated_ids, treated_ts, row_key, matched_sets));
+    return rcpp_result_gen;
+END_RCPP
+}

@@ -81,3 +81,7 @@ equality_four_cpp <- function(Wit_vals, y, z) {
     .Call('_PanelMatch_equality_four_cpp', PACKAGE = 'PanelMatch', Wit_vals, y, z)
 }
 
+create_dmats_for_distance <- function(expanded_data, treated_ids, treated_ts, row_key, matched_sets) {
+    .Call('_PanelMatch_create_dmats_for_distance', PACKAGE = 'PanelMatch', expanded_data, treated_ids, treated_ts, row_key, matched_sets)
+}
+

@@ -39,6 +39,7 @@ extern void XXiSum(void *, void *, void *, void *, void *, void *);
 /* .Call calls */
 extern SEXP _PanelMatch_all_sug(SEXP);
 extern SEXP _PanelMatch_check_treated_units(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP _PanelMatch_create_dmats_for_distance(SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP _PanelMatch_equality_four_cpp(SEXP, SEXP, SEXP);
 extern SEXP _PanelMatch_findDDM2stripped(SEXP, SEXP, SEXP);
 extern SEXP _PanelMatch_findDDmatched2(SEXP, SEXP, SEXP);
@@ -90,26 +91,27 @@ static const R_CMethodDef CEntries[] = {
 };
 
 static const R_CallMethodDef CallEntries[] = {
-  {"_PanelMatch_all_sug",                  (DL_FUNC) &_PanelMatch_all_sug,                  1},
-  {"_PanelMatch_check_treated_units",      (DL_FUNC) &_PanelMatch_check_treated_units,      6},
-  {"_PanelMatch_equality_four_cpp",        (DL_FUNC) &_PanelMatch_equality_four_cpp,        3},
-  {"_PanelMatch_findDDM2stripped",         (DL_FUNC) &_PanelMatch_findDDM2stripped,         3},
-  {"_PanelMatch_findDDmatched2",           (DL_FUNC) &_PanelMatch_findDDmatched2,           3},
-  {"_PanelMatch_findDDNaive",              (DL_FUNC) &_PanelMatch_findDDNaive,              3},
-  {"_PanelMatch_findDDrestricted",         (DL_FUNC) &_PanelMatch_findDDrestricted,         3},
-  {"_PanelMatch_FindMatches",              (DL_FUNC) &_PanelMatch_FindMatches,              3},
-  {"_PanelMatch_get_comparison_histories", (DL_FUNC) &_PanelMatch_get_comparison_histories, 7},
-  {"_PanelMatch_get_dits",                 (DL_FUNC) &_PanelMatch_get_dits,                 2},
-  {"_PanelMatch_get_msets_helper",         (DL_FUNC) &_PanelMatch_get_msets_helper,         5},
-  {"_PanelMatch_get_treated_indices",      (DL_FUNC) &_PanelMatch_get_treated_indices,      4},
-  {"_PanelMatch_get_vit_index",            (DL_FUNC) &_PanelMatch_get_vit_index,            3},
-  {"_PanelMatch_needs_renormalization",    (DL_FUNC) &_PanelMatch_needs_renormalization,    1},
-  {"_PanelMatch_prep_lead_years",          (DL_FUNC) &_PanelMatch_prep_lead_years,          2},
-  {"_PanelMatch_rbind_c",                  (DL_FUNC) &_PanelMatch_rbind_c,                  2},
-  {"_PanelMatch_re_norm_index",            (DL_FUNC) &_PanelMatch_re_norm_index,            6},
-  {"_PanelMatch_renormalize",              (DL_FUNC) &_PanelMatch_renormalize,              2},
-  {"_PanelMatch_sumCpp",                   (DL_FUNC) &_PanelMatch_sumCpp,                   1},
-  {"_PanelMatch_sumwits",                  (DL_FUNC) &_PanelMatch_sumwits,                  2},
+  {"_PanelMatch_all_sug",                   (DL_FUNC) &_PanelMatch_all_sug,                   1},
+  {"_PanelMatch_check_treated_units",       (DL_FUNC) &_PanelMatch_check_treated_units,       6},
+  {"_PanelMatch_create_dmats_for_distance", (DL_FUNC) &_PanelMatch_create_dmats_for_distance, 5},
+  {"_PanelMatch_equality_four_cpp",         (DL_FUNC) &_PanelMatch_equality_four_cpp,         3},
+  {"_PanelMatch_findDDM2stripped",          (DL_FUNC) &_PanelMatch_findDDM2stripped,          3},
+  {"_PanelMatch_findDDmatched2",            (DL_FUNC) &_PanelMatch_findDDmatched2,            3},
+  {"_PanelMatch_findDDNaive",               (DL_FUNC) &_PanelMatch_findDDNaive,               3},
+  {"_PanelMatch_findDDrestricted",          (DL_FUNC) &_PanelMatch_findDDrestricted,          3},
+  {"_PanelMatch_FindMatches",               (DL_FUNC) &_PanelMatch_FindMatches,               3},
+  {"_PanelMatch_get_comparison_histories",  (DL_FUNC) &_PanelMatch_get_comparison_histories,  7},
+  {"_PanelMatch_get_dits",                  (DL_FUNC) &_PanelMatch_get_dits,                  2},
+  {"_PanelMatch_get_msets_helper",          (DL_FUNC) &_PanelMatch_get_msets_helper,          5},
+  {"_PanelMatch_get_treated_indices",       (DL_FUNC) &_PanelMatch_get_treated_indices,       4},
+  {"_PanelMatch_get_vit_index",             (DL_FUNC) &_PanelMatch_get_vit_index,             3},
+  {"_PanelMatch_needs_renormalization",     (DL_FUNC) &_PanelMatch_needs_renormalization,     1},
+  {"_PanelMatch_prep_lead_years",           (DL_FUNC) &_PanelMatch_prep_lead_years,           2},
+  {"_PanelMatch_rbind_c",                   (DL_FUNC) &_PanelMatch_rbind_c,                   2},
+  {"_PanelMatch_re_norm_index",             (DL_FUNC) &_PanelMatch_re_norm_index,             6},
+  {"_PanelMatch_renormalize",               (DL_FUNC) &_PanelMatch_renormalize,               2},
+  {"_PanelMatch_sumCpp",                    (DL_FUNC) &_PanelMatch_sumCpp,                    1},
+  {"_PanelMatch_sumwits",                   (DL_FUNC) &_PanelMatch_sumwits,                   2},
   {NULL, NULL, 0}
 };
 

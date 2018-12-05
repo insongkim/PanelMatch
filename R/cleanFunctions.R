@@ -1,5 +1,6 @@
 Panel_vit <- function(x, lag, max.lead, method, M, weighting, 
                       covariate_names) {
+  #browser()
   if (method == "Synth"|method == "SynthPscore"|method == "SynthCBPS") {
     return(synth_vit(x, lag = lag, max.lead = max.lead, method = method))
   } else if(method == "Maha"){
@@ -196,7 +197,7 @@ Maha_vit <- function(x, lag, max.lead, M = 3, covariate_names) {
     #   x[miss_idx] <- mean_x
     #   return(x)
     # }))
-    browser()
+    
     MSMDlist <- suppressWarnings(MSMD_each(timeid[1], matched_set = matched_set, testid = testid, 
                           treated.id = treated.id))
     for (i in 2:length(unique(timeid))) {
@@ -279,7 +280,7 @@ Maha_vit <- function(x, lag, max.lead, M = 3, covariate_names) {
 
 MSMD_each <- function(time_id, matched_set, testid, treated.id = treated.id) {
   
-  browser()
+  #browser()
   sub_sub <- matched_set[matched_set$V1 == time_id, ]
   # sub_sub[, colSums(is.na(sub_sub)) != 0]
   cov_matrix <- cov(as.matrix(sub_sub[sub_sub$V2 %in% testid[testid != treated.id], 5:length(sub_sub)]))

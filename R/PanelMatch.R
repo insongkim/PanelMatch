@@ -113,7 +113,7 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
   }
   
   # set covariates and dependent
-  browser()
+  
   covariate <- attr(terms(formula),"term.labels")[!attr(terms(formula),"term.labels") == treatment]
   if(length(covariate) == 0) {
     covariate <- NULL # if there is no covariate then it's null

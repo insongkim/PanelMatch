@@ -39,7 +39,7 @@ findAllTreated <- function(dmat, treatedvar, time.var, unit.var, hasbeensorted =
   if(classes[time.var] != "integer")
   {
     warning("time variable data provided not integer. Automatic conversion attempted")
-    dmat[, time.var] <- as.integer(dmat[, t.column])
+    dmat[, time.var] <- as.integer(dmat[, time.var])
   }
   if(classes[unit.var] != "integer")
   {
@@ -69,7 +69,7 @@ findAllTreated <- function(dmat, treatedvar, time.var, unit.var, hasbeensorted =
 #' @param id.column Character string that identifies the name of the column in \code{data} that contains data about the unit id variable. Each specified entry in \code{id} should be somewhere in this column in the data
 #' @param treatedvar Character string that identifies the name of the column in \code{data} that contains data about the binary treatment variable. 
 #' @param hasbeensorted variable that only has internal usage for optimization purposes. There should be no need for a user to toggle this
-#' 
+#' @param match.on.missingness TRUE/FALSE indicating whether or not the user wants to "match on missingness." That is, should units with NAs in their treatment history windows be matched with control units that have NA's in corresponding places?
 #' @return \code{get.matchedsets} returns a "matched set" object, which primarily contains a named list of vectors. Each vector is a "matched set" containing the unit ids included in a matched set. The list names will indicate an i,t pair (formatted as "<i variable>.<t variable>") to which the vector/matched set corresponds.
 #'
 #' @examples \dontrun{
@@ -81,9 +81,9 @@ findAllTreated <- function(dmat, treatedvar, time.var, unit.var, hasbeensorted =
 #' msets <- get.matchedsets(treateds$year, treateds$wbcode2, subdem, 4, "year", "wbcode2", "dem")
 #' }
 #' @export
-get.matchedsets <- function(t, id, data, L, t.column, id.column, treatedvar, hasbeensorted = FALSE) 
+get.matchedsets <- function(t, id, data, L, t.column, id.column, treatedvar, hasbeensorted = FALSE, match.on.missingness = TRUE) 
 {
-  if(length(t) == 0 | lenght(id) == 0)
+  if(length(t) == 0 | length(id) == 0)
   {
     stop("time and/or unit information missing")
   }
@@ -111,13 +111,19 @@ get.matchedsets <- function(t, id, data, L, t.column, id.column, treatedvar, has
   #CHECK TO MAKE SURE COLUMNS ARE IN ORDER!!!
   #fix factor conversion to be more smooth and allow for different data types.
   compmat <- data.table::dcast(data.table::as.data.table(d), formula = paste0(id.column, "~", t.column), value.var = treatedvar) #reshape the data so each row corresponds to a unit, columns specify treatment over time
-  d <- reshape2::melt(compmat, id = id.column, variable = t.column, value = treatedvar, variable.factor = FALSE, value.name = treatedvar)
-  d[, t.column] <- as.numeric(as.character(d[, t.column]))
-  d <-  d[order(d[,id.column], d[,t.column]), ] #cast -> melt fills in missing data with NA's but order is not preserved, so second sort necessary
+  d <- data.table::melt(compmat, id = id.column, variable = t.column, value = treatedvar, variable.factor = FALSE, value.name = treatedvar)
+  #ensuring that we have integers
+  newdata <- as.integer(as.character(unlist(d[, ..t.column])))
+  d[, (t.column) := newdata]
+  d <-  d[order(d[,..id.column], d[,..t.column]), ] #cast -> melt fills in missing data with NA's but order is not preserved, so second sort necessary
   d <- data.matrix(d)
-  #browser()
-  #think we want to add the following line
-  #data[is.na(data)] <- -1
+
+  if(match.on.missingness)
+  {
+    d[is.na(d[,treatedvar]), treatedvar] <- -1
+    compmat[is.na(compmat)] <- -1  
+  }
+  
   control.histories <- get_comparison_histories(d, t, id, which(colnames(d) == t.column) - 1 , which(colnames(d) == id.column) - 1, L, which(colnames(d) == treatedvar) - 1) #control histories should be a list
   
   t.map <- match(t, unique(d[, t.column])) #unique() should preserve orderings
