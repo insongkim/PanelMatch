@@ -123,3 +123,27 @@ Estimate of Average Treatment Effect on the Treated (ATT) by Period:
 |Lower Limit of 95 % Bias-corrected Confidence Interval | -0.5957630| -0.7776321| -1.216798| -1.479350| -2.258106|
 |Upper Limit of 95 % Bias-corrected Confidence Interval |  1.9576889|  3.2533181|  4.364411|  5.465850|  6.666370|
 ```
+
+## 9/18 Update Placeholder Title
+
+
+We can use the `findAllTreated` function to figure out which units received a treatment over a time period and the time at which the treatment occurred. We can use the `get.matchedsets` function to find the set of matched control units for each treated unit.
+
+The `get.matchedsets` function will return a `matched.set` object, which is just a named list with some other attributes saved. By default, it prints out like a data frame, but its subsetting behaviors work like those of a list. The names of each entry in the `matched.set` object will specify relevant information about the treated unit in the format `[unit id variable].[time at which treatment was received]`
+
+
+```{r}
+treateds <- findAllTreated(dmat = dem, treatedvar = "dem", time.var = "year", unit.var = "wbcode2")
+msets <- get.matchedsets(t = treateds$year, id = treateds$wbcode2, data = subdem, L = 4, t.column = "year", id.column = "wbcode2", treatedvar = "dem")
+```
+
+For more detailed information about working with `matched.set` objects, look at the [Wiki page](https://github.com/insongkim/PanelMatch/wiki/Matched-Set-Objects) with examples and explanations. 
+
+Passing a matched set (one treated unit at a particular time and its corresponding set of controls) to the `DisplayTreatment` function will  highlight the treatment histories used to create the matched set. If you set the `show.set.only` argument to `TRUE`, then only units from the matched set (and the treated unit) will be shown on the plot. This is useful when working with larger data sets.
+
+```{r}
+DisplayTreatment(unit.id = "wbcode2", time.id = "year", treatment = 'dem', 
+                 data = dem, matched.set = msets[1],
+                 show.set.only = T, xlab = "year", ylab = "Country Code")
+```
+![](https://github.com/adamrauh/panel-data/blob/master/tweak.png)
