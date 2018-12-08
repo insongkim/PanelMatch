@@ -85,3 +85,7 @@ create_dmats_for_distance <- function(expanded_data, treated_ids, treated_ts, ro
     .Call('_PanelMatch_create_dmats_for_distance', PACKAGE = 'PanelMatch', expanded_data, treated_ids, treated_ts, row_key, matched_sets)
 }
 
+get_yearly_dmats <- function(expanded_data, treated_ids, ts_to_fetch, row_key, matched_sets, lag) {
+    .Call('_PanelMatch_get_yearly_dmats', PACKAGE = 'PanelMatch', expanded_data, treated_ids, ts_to_fetch, row_key, matched_sets, lag)
+}
+

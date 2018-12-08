@@ -106,18 +106,25 @@ PanelMatch2 <- function(lag, time.id, unit.id, treatment, outcome,
   result.index <- create_dmats_for_distance(expanded_data = ordered.data, treated_ids = treated.ids, treated_ts = treated.ts,
                             row_key = paste0(ordered.data[,unit.id], ".", ordered.data[, time.id]), matched_sets = msets)
   #might not need to use lapply + unlist -- maybe just unlist the indices and then store as one giant data frame? might require modification to subset_expanded_data function
-  n.pooled <- subset_expanded.data(ordered.data, result.index)
-  n.pooled <- rbindlist(n.pooled)
-  n.pooled <- n.pooled[complete.cases(n.pooled), ]
+  
   if (qoi == "att") {
 
     #RE IMPLEMENT RESTRICTED OR NAIVE?
-    
-
-      pooled <- data.table::rbindlist(only.t0) # get a dataset for propensity score generation
+    if(refinement.method == "mahalanobis")
+    {
+      tlist <- expand.treated.ts(lag, treated.ts = treated.ts)
+      idx <- create_dmats_for_distance(expanded_data = ordered.data, treated_ids = treated.ids, treated_ts = tlist,
+                                row_key = paste0(ordered.data[,unit.id], ".", ordered.data[, time.id]), matched_sets = msets)
+      dmats <- subset_expanded.data(ordered.data, idx)
+    }
+    n.pooled <- subset_expanded.data(ordered.data, result.index)
+      n.pooled <- rbindlist(n.pooled)
+      n.pooled <- n.pooled[complete.cases(n.pooled), ]
+      browser()
       colnames(pooled) <- c(time.id, unit.id, treatment, dependent, colnames(d2)[5:length(d2)])
       
       # get propensity scores
+      
       if (covariate.only == TRUE|method == "SynthPscore"|method == "SynthCBPS") {
         if (method == "CBPS"|method == "SynthCBPS") {
           fit0 <- suppressMessages(CBPS::CBPS(reformulate(response = treatment, termlabels = covariate), 
