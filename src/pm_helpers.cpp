@@ -53,7 +53,7 @@ List get_yearly_dmats(NumericMatrix expanded_data, NumericVector treated_ids, Li
     indexMap[key] = i;
   } 
   
-  List df_list(matched_sets.size() * (lag + 1));
+  List df_list(matched_sets.size());
   for(int i = 0; i < matched_sets.size(); i++)
   {
     NumericVector matched_set = matched_sets[i];

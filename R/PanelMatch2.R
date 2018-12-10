@@ -96,26 +96,30 @@ PanelMatch2 <- function(lag, time.id, unit.id, treatment, outcome,
   ordered.data <- data[order(data[,unit.id], data[,time.id]), ]
   temp.treateds <- findAllTreated(ordered.data, treatedvar = treatment, time.var = time.id, unit.var = unit.id, hasbeensorted = TRUE)
   msets <- get.matchedsets(temp.treateds[, time.id], temp.treateds[, unit.id], ordered.data, lag, time.id, unit.id, treatment, hasbeensorted = TRUE)
+  msets <- msets[sapply(msets, length) > 0 ]
   treated.ts <- as.numeric(unlist(strsplit(names(msets), split = "[.]"))[c(F,T)])
   treated.ids <- as.numeric(unlist(strsplit(names(msets), split = "[.]"))[c(T,F)])
   
   # compmat <- data.table::dcast(data.table::as.data.table(ordered.data), formula = paste0(unit.id, "~", time.id), value.var = outcome.var)
   
   ordered.data <- as.matrix(parse_and_prep(formula = covs.formula, data = ordered.data, unit.id = unit.id))
-  
-  result.index <- create_dmats_for_distance(expanded_data = ordered.data, treated_ids = treated.ids, treated_ts = treated.ts,
-                            row_key = paste0(ordered.data[,unit.id], ".", ordered.data[, time.id]), matched_sets = msets)
+  ordered.data <- as.matrix(handle.missing.data(ordered.data, 5:ncol(ordered.data)))
+  #result.index <- create_dmats_for_distance(expanded_data = ordered.data, treated_ids = treated.ids, treated_ts = treated.ts,
+  #                          row_key = paste0(ordered.data[,unit.id], ".", ordered.data[, time.id]), matched_sets = msets)
   #might not need to use lapply + unlist -- maybe just unlist the indices and then store as one giant data frame? might require modification to subset_expanded_data function
-  
+  qoi <- "att"
   if (qoi == "att") {
 
     #RE IMPLEMENT RESTRICTED OR NAIVE?
     if(refinement.method == "mahalanobis")
     {
       tlist <- expand.treated.ts(lag, treated.ts = treated.ts)
-      idx <- create_dmats_for_distance(expanded_data = ordered.data, treated_ids = treated.ids, treated_ts = tlist,
-                                row_key = paste0(ordered.data[,unit.id], ".", ordered.data[, time.id]), matched_sets = msets)
-      dmats <- subset_expanded.data(ordered.data, idx)
+      idxlist <- get_yearly_dmats(ordered.data, treated.ids, tlist, paste0(ordered.data[,unit.id], ".", ordered.data[, time.id]), matched_sets = msets, 4)
+      mahalmats <- build_maha_mats(ordered_expanded_data = ordered.data, idx =  idxlist)
+      # idx <- create_dmats_for_distance(expanded_data = ordered.data, treated_ids = treated.ids, treated_ts = tlist,
+      #                           row_key = paste0(ordered.data[,unit.id], ".", ordered.data[, time.id]), matched_sets = msets)
+      #dmats <- subset_expanded.data(ordered.data, idxlist)
+      results.maha <- handle_mahalanobis_calculations(mahalmats)
     }
     n.pooled <- subset_expanded.data(ordered.data, result.index)
       n.pooled <- rbindlist(n.pooled)
@@ -222,38 +226,6 @@ PanelMatch2 <- function(lag, time.id, unit.id, treatment, outcome,
 
 
 
-parse_and_prep <- function(formula, data, unit.id)
-{
-  browser()
-  #check if formula empty or no covariates provided -- error checks
-  terms <- attr(terms(formula),"term.labels")
-  terms <- gsub(" ", "", terms) #remove whitespace
-  lag.calls <- terms[grepl("lag(*)", terms)] #regex to get calls to lag function
-  if(any(grepl("=", lag.calls))) stop("fix lag calls to use only unnamed arguments in the correct positions")
-  data <- data.table::as.data.table(data) #check sorting
-  # lag <- function(var.name, lag.window, data = data, unitid = unit.id)
-  # {
-  #   browser()
-  #   tr <- data[, data.table::shift(.SD, n = lag.window, fill = NA, type = "lag", give.names = TRUE), .SDcols=var.name, by = unitid]
-  #   return(tr[,-1])
-  # }
-  results.unmerged <- mapply(FUN = handle.calls, call.as.string = lag.calls, MoreArgs =  list(.data = data, .unitid = unit.id), SIMPLIFY = FALSE)
-  names(results.unmerged) <- NULL
-  full.data <- cbind(data, do.call("cbind", results.unmerged))
-  return(full.data)
-}
-
-handle.calls <- function(call.as.string, .data, .unitid)
-{
-  lag <- function(var.name, lag.window, data = .data, unitid = .unitid) #want to make sure its being called appropriately
-  {
-    tr <- data[, data.table::shift(.SD, n = lag.window, fill = NA, type = "lag", give.names = TRUE), .SDcols=var.name, by = unitid]
-    tr <- tr[, -1]
-    colnames(tr) <- paste0(var.name, "_l", lag.window)
-    return(tr)
-  }
-  return(eval(parse(text = call.as.string)))
-}
 
 
 
