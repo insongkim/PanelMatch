@@ -741,7 +741,18 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
 # Code taken from lasso2 package function "merge.formula"
 merge_formula <- function (x, y, ...) 
 {
-    if (!is.formula(x) || length(x) != 3) 
+    is.formula <- function(x) 
+    {
+    	if(class(x) == "formula")
+    	{ 
+          return(TRUE)
+    	}
+      else
+      {
+          return(FALSE)
+      }
+	 }
+	if (!is.formula(x) || length(x) != 3) 
         stop("First argument is invalid")
     if (!is.formula(y)) 
         stop("Second argument is invalid")
