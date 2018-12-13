@@ -125,6 +125,7 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
   lagged_names <- apply(covar_combos, 
                         function(x) paste0(x, collapse = "_l"), 
                         MARGIN = 1)
+  lagged_names <- gsub(" ", "", lagged_names)
   # add the lagged covariates to the formula (ugly)
   # formulas converted to strings have length 3: ~, dep, indep_vars
   fc <- as.character(formula)
