@@ -36,8 +36,7 @@ the treatment group).}
 Can specify lags using a function "lag" which takes two positional arguments. The first is the name of the variable which you wish to lag, specified as a string second is the lag window, specified as an integer sequence
 See the example below.}
 
-\item{formula}{A symbolic description of the outcome variable and
-only covariates with contemporaneous effects.}
+\item{verbose}{option to include more information about the matched.set object calculations}
 }
 \value{
 \code{PanelMatch} returns a list of class `matched.set'

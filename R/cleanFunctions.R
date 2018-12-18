@@ -343,7 +343,7 @@ PS_vit <- function(x, lag, max.lead, M = M, weighting = FALSE) {
   } else {
     PS_distance <- abs(treated.set$ps[which(treated.set$V2 == treated.id)] - 
                          treated.set$ps[which(treated.set$V2 != treated.id)])
-    names(PS_distance) <- testid[testidƒ != treated.id]
+    names(PS_distance) <- testid[testid != treated.id]
     if (M < length(testid) - 1) {
       matchid <- as.numeric(names(sort(PS_distance[!names(PS_distance) == treated.id]))[1:M])
       weights <- as.data.frame(rbind(cbind(1/M, matchid), cbind(w.weight = 1, treated.id)))
