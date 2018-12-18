@@ -2,88 +2,50 @@
 % Please edit documentation in R/PanelMatch2.R
 \name{PanelMatch2}
 \alias{PanelMatch2}
-\title{PanelMatch}
+\title{PanelMatch2}
 \usage{
 PanelMatch2(lag, time.id, unit.id, treatment, outcome,
-  refinement.method = c(NULL, ps.weight, ps.match, mahalanobis, CBPS.weight,
-  CBPS.match), size.match = 10, data, match.missing = TRUE, covs.formula)
+  refinement.method = c(NULL, "ps.weight", "ps.match", "mahalanobis",
+  "CBPS.weight", "CBPS.match"), size.match = 10, data, match.missing = TRUE,
+  covs.formula, verbose = FALSE)
 }
 \arguments{
 \item{lag}{An integer value indicating the length of history to be matched}
 
 \item{time.id}{A character string indicating the name of time identifier
-variable in the \code{data}. This variable must be numeric.}
+variable in the \code{data}. currently must be integer.}
 
-\item{unit.id}{A character string indicating the name of unit identifier
-variable in the \code{data}. The variable must be numeric.}
+\item{unit.id}{A character string indicating the name of unit identifier in the data. Currently must be integer.}
 
 \item{treatment}{A character string indicating the name of
 treatment variable in the \code{data}. The treatment should be a
 binary indicator (integer with 0 for the control group and 1 for
 the treatment group).}
 
-\item{data}{The data frame in data.frame class}
+\item{outcome}{Character string of outcome variable.}
+
+\item{refinement.method}{character string of matching method used for refining the matched sets. Currently only mahalanobis is supported}
+
+\item{size.match}{Maximum size of the matched sets after refinement}
+
+\item{data}{Balanced panel data set}
+
+\item{match.missing}{Logical variable indicating whether or not units can be matched on the patterns of missingness in their treatment histories}
+
+\item{covs.formula}{One sided formula indicating which variables should be used for matching and refinement.
+Can specify lags using a function "lag" which takes two positional arguments. The first is the name of the variable which you wish to lag, specified as a string second is the lag window, specified as an integer sequence
+See the example below.}
 
 \item{formula}{A symbolic description of the outcome variable and
 only covariates with contemporaneous effects.}
-
-\item{max.lead}{An optional integer value indicating the length of maximum leads}
-
-\item{covars.lagged}{A character vector with the names of the covariates
-to be lagged.}
-
-\item{qoi}{One of ``att'' (average treatment effect for the
-treated) or ``ate'' (average treatment effect) or atc (average
-treatment effect for the control). The default is ``att.''}
-
-\item{weighting}{A logical value indicating whether refinement
-through weighting should be performed. The default is \code{FALSE}.}
-
-\item{M}{An integer value indicating the maximum number of the
-control units in each matched set. The default is 3.}
-
-\item{covariate.only}{A logical value indicating whether only covariates
-are adjusted for when refining the matched sets, not lagged outcome.
-The default is
-\code{FALSE}.}
-
-\item{method}{An optional character string indicating the matching
-methods for refining the matched set based on covariates. One of
-``Maha'', ``Pscore'', ``CBPS'', ``SynthPscore'', and ``SynthCBPS''.}
-
-\item{naive}{An logical value indicating whether
-the user decides not to match on treatment history. By default 
-it is FALSE. If TRUE, then \code{PanelMatch} will not match on
-treatment history.}
-
-\item{restricted}{A logical value indicating whether the user decides 
-to match with restricted treatment pattern}
-
-\item{refinement}{A logical value indicating whether the user wants to 
-refine matched sets based on lagged outcomes and/or covariates (lagged
-or not lagged). If set to FALSE, then the function will give equal 
-weight to all control units per matched set. By default it is TRUE.}
 }
 \value{
-\code{PanelMatch} returns a list of class `panelmatch'
+\code{PanelMatch} returns a list of class `matched.set'
 containing the following components:
 \item{treatment}{treatment variable name}
-\item{qoi}{the quantity of interest}
-\item{dependent}{the dependent variable}
-\item{covariate}{the covariates}
-\item{unit.id}{the unit id}
-\item{time.id}{the time id}
-\item{M}{the length of history to be matched}
-\item{covariate.only}{the indicator of whether only covariates are adjusted for when refining the matched sets}
-\item{lag}{the length of lags}
-\item{max.lead}{the length of maximum lead}
-\item{data}{the data frame}
-\item{ATT_matches}{the matched set given the att as the quantity of interest}
-\item{ATC_matches}{the matched set given the atc as the quantity of interest}
-\item{covariate_names}{Names of covariates in the user-specified formula}
 }
 \description{
-\code{PanelMatch} identifies a matched set for each treated
+\code{PanelMatch2} identifies a matched set for each treated
 observation. Specifically, for a given treated unit, the matched
 set consists of control observations that have the identical
 treatment history up to a certain number of \code{lag}
@@ -94,11 +56,8 @@ such as past outcomes and covariates via \code{formula}.
 }
 \examples{
 \dontrun{
-matches.cbps <- PanelMatch(lag = 4, max.lead = 4,
-                           time.id = "year", unit.id = "wbcode2",
-                           treatment = "dem", formula = y ~ dem,
-                           method = "CBPS", weighting = FALSE,
-                           qoi = "ate", M = 5, data = dem)
+results <- PanelMatch2(4, "year", "wbcode2", "dem", "y", refinement.method = "mahalanobis", 
+                      data = dem, match.missing = T, covs.formula = ~ lag("tradewb", 1:4) + lag("y", 1:4), size.match = 5, verbose = T)
 }
 }
 \author{

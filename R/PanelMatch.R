@@ -132,7 +132,7 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
   
   formula <- as.formula(paste0(paste0(fc[2], "~"), paste0(c(fc[3], lagged_names), collapse = "+")))
   
-  formula <- suppressWarnings(lasso2::merge.formula(reformulate(termlabels = c(time.id, unit.id), 
+  formula <- suppressWarnings(merge_formula(reformulate(termlabels = c(time.id, unit.id), 
                                                                 response = dependent),
                                                     formula))
   
@@ -570,6 +570,7 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
                   x$ps <- 1 - 1/(1+exp(as.matrix(cbind(1, x[, covariate])) %*% fit0$coefficients))
                   return(x)
                 } else {
+                  #browser()
                   x <- as.data.frame(x)
                   colnames(x)[1:4] <- c("V1", "V2", "V3", "V4")
                   x$ps <- 1 - 1/(1+exp(as.matrix(cbind(1, x[, 5:(length(x))])) %*% fit0$coefficients))
@@ -742,7 +743,42 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
 }
 
 
-
+# Code taken from lasso2 package function "merge.formula"
+merge_formula <- function (x, y, ...) 
+{
+  is.formula <- function(x) 
+  {
+    if(class(x) == "formula")
+    { 
+      return(TRUE)
+    }
+    else
+    {
+      return(FALSE)
+    }
+  }
+  if (!is.formula(x) || length(x) != 3) 
+    stop("First argument is invalid")
+  if (!is.formula(y)) 
+    stop("Second argument is invalid")
+  if (length(list(...))) 
+    warning("extraneous arguments discarded")
+  is.gEnv <- function(e) identical(e, .GlobalEnv)
+  str <- paste(c(deparse(x[[2]]), "~", deparse(x[[3]]), "+", 
+                 deparse(y[[length(y)]])), collapse = "")
+  f <- as.formula(str)
+  ex <- environment(x)
+  ey <- environment(y)
+  if (!is.gEnv(ex)) {
+    environment(f) <- ex
+    if (!is.gEnv(ey) && !identical(ex, ey)) {
+      warning("`x' and `y' have different environments; x's is used")
+    }
+  }
+  else if (!is.gEnv(ey)) 
+    environment(f) <- ey
+  f
+}
 
 
 

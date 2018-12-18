@@ -104,6 +104,7 @@ print.matched.set <- function(set, verbose = F)
   attr(temp, "t.var") <- attr(x, "t.var")
   attr(temp, "id.var" ) <- attr(x, "id.var" )
   attr(temp, "treated.var") <- attr(x, "treated.var")
+  attr(temp, "distances") <- attr(x, "distances")
   class(temp) <- "matched.set"
   
   return(temp)

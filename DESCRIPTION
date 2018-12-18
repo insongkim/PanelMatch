@@ -42,7 +42,6 @@ Imports:
     plyr,
     stats,
     reshape2,
-    lasso2,
     Rsolnp,
     Synth,
     MASS,

@@ -3,7 +3,7 @@ subset_expanded.data <- function(expanded_data, matched_set_indices)
 {
   create_subset <- function(index, expanded.data)
   {
-    return(expanded.data[index, ])
+    return(data.frame(expanded.data[index, ]))
   }
   res <- lapply(matched_set_indices, FUN = create_subset, expanded.data = expanded_data)
   return(res)
@@ -33,24 +33,21 @@ build_maha_mats <- function(idx, ordered_expanded_data)
   return(result)
 }
 
+#needs more error checking, details will also depend on the syntax/mechanics of the covs.formula argument to be determined later.
 parse_and_prep <- function(formula, data, unit.id)
 {
-  #browser()
   #check if formula empty or no covariates provided -- error checks
   terms <- attr(terms(formula),"term.labels")
   terms <- gsub(" ", "", terms) #remove whitespace
   lag.calls <- terms[grepl("lag(*)", terms)] #regex to get calls to lag function
+  other.terms <- terms[!grepl("lag(*)", terms)]
+  sub.data <- data[, c(1:4, which(other.terms == colnames(data)))] #including only what is specified in the formula
+  
   if(any(grepl("=", lag.calls))) stop("fix lag calls to use only unnamed arguments in the correct positions")
   data <- data.table::as.data.table(data) #check sorting
-  # lag <- function(var.name, lag.window, data = data, unitid = unit.id)
-  # {
-  #   browser()
-  #   tr <- data[, data.table::shift(.SD, n = lag.window, fill = NA, type = "lag", give.names = TRUE), .SDcols=var.name, by = unitid]
-  #   return(tr[,-1])
-  # }
   results.unmerged <- mapply(FUN = handle.calls, call.as.string = lag.calls, MoreArgs =  list(.data = data, .unitid = unit.id), SIMPLIFY = FALSE)
   names(results.unmerged) <- NULL
-  full.data <- cbind(data, do.call("cbind", results.unmerged))
+  full.data <- cbind(sub.data, do.call("cbind", results.unmerged))
   return(full.data)
 }
 
@@ -78,27 +75,113 @@ handle.missing.data <- function(data, col.index)
 }
 
 #OPTIMIZATION OPPORTUNITIES HERE
-handle_mahalanobis_calculations <- function(mahal.nested.list)
+handle_mahalanobis_calculations <- function(mahal.nested.list, msets, max.size, verbose)
 {
+  #browser()
   do.calcs <- function(year.df)
-  { #might need to change that index number
-    browser()
+  { 
+    if(nrow(year.df) == 2)
+    {
+      return(1)
+    }
+    
     cov.data <- year.df[1:(nrow(year.df) - 1), 5:ncol(year.df)]
     cov.matrix <- cov(cov.data)
     center.data <- year.df[nrow(year.df), 5:ncol(year.df)]
-    #rolling without all of the error checking stuff for now? hopefully we don't need it anymore for whatever reason
-    return(mahalanobis(x = cov.data, center = center.data, cov = cov.matrix))
+    
+    if( isTRUE(all.equal(det(cov.matrix), 0, tolerance = .00001)) ) #using the default tolerance value
+    {
+      cov.matrix <- ginv(cov.matrix)
+      return(mahalanobis(x = cov.data, center = center.data, cov = cov.matrix, inverted = TRUE))
+    }
+    else
+    {
+      
+      return(mahalanobis(x = cov.data, center = center.data, cov = cov.matrix))
+    }
+    
   }
-  handle_set <- function(sub.list)
+  handle_set <- function(sub.list, max.set.size)
   {
-    return(lapply(sub.list, do.calcs))
+    #browser()
+    results.temp <- lapply(sub.list, do.calcs)
+    tmat <- do.call(rbind, results.temp)
+    colnames(tmat) <- NULL
+    dists <- colMeans(tmat)
+    n.dists <- dists[dists > 0]
+    if(length(n.dists) == 0 ) stop('matched set contains only identical units')
+    if(length(n.dists) < max.set.size)
+    {
+      w <- 1 / length(n.dists)
+      newdists <- dists
+      newdists[newdists > 0 ] <- w
+    }
+    else
+    {
+      ordered.dists <- sort(n.dists)
+      scoretobeat <- max(head(ordered.dists, n = max.set.size + 1))
+      newdists <- ifelse(dists < scoretobeat, 1 / max.set.size, 0)  
+    }
+    names(newdists) <- NULL
+    return(newdists)
+    
   }
-  return(lapply(mahal.nested.list, handle_set))
+  scores <- mapply(FUN = handle_set, sub.list = mahal.nested.list, MoreArgs = list(max.set.size = max.size))
+  for(i in 1:length(msets))
+  {
+    names(scores[[i]]) <- msets[[i]]
+    attr(msets[[i]], "weights") <- scores[[i]]
+  }
+  if(verbose) #in future versions, avoid doing the same calculations twice
+  {
+    handle_set_verbose <- function(sub.list)
+    {
+      results.temp <- lapply(sub.list, do.calcs)
+      dists <- colMeans(do.call(rbind, results.temp))
+      names(dists) <- NULL
+      return(dists)
+    }
+    
+    full.scores <- mapply(FUN = handle_set_verbose, sub.list = mahal.nested.list)
+    
+    for(i in 1:length(msets))
+    {
+      names(full.scores[[i]]) <- msets[[i]]
+      attr(msets[[i]], "distances") <- full.scores[[i]]
+    }
+  }
+  
+  attr(msets, "refinement.method") <- "mahalanobis"
+  return(msets)
 }
 
+build_pooled_data <- function(idxlist, data, lag)
+{
+  obtain.t.rows <- function(idx)
+  {
+    return(idx[length(idx)])
+  }
+  unnest <- function(subidxlist,  lag)
+  {
+    temp <- sapply(subidxlist[[lag + 1]], obtain.t.rows)
+    return(data.frame(data[temp, ]))
+  }
+  results <- lapply(idxlist, unnest, lag = lag)
+  results <- rbindlist(results)
+  results <- results[complete.cases(results), ]
+  return(results)
+}
 
-
-
+build_expanded_sets_for_coef_mult <- function(idxlist, data)
+{
+  unnest <- function(subidxlist)
+  {
+    temp.index <- unlist(subidxlist) #again, need to be sure that the first four columns can be thrown out
+    x <- as.data.frame(cbind(1, data[temp.index, 5:ncol(data)]))
+    return(x)
+  }
+  results <- lapply(idxlist, unnest)
+}
 
 
 
