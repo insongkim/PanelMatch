@@ -47,7 +47,7 @@ PanelMatch2 <- function(lag, time.id, unit.id, treatment, outcome,
                        verbose = FALSE
                        ) 
 {
-  browser()
+  #browser()
   #refinement.method <- "mahalanobis"
   # set covariates and dependent
   if(any(table(data[, unit.id]) != max(table(data[, unit.id]))))
