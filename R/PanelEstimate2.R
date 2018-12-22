@@ -28,28 +28,14 @@ PanelEstimate2 <- function(lead, #probably want to swap the order of these aroun
   method <- attr(sets, "refinement.method")
   restricted <- attr(sets, "restricted") # this doesnt exist yet, not sure what it means.
   #check the leads, update sets, and weights
-  
+  browser()
   if(is.null(restricted)){restricted <- FALSE}
   
-  # if (restricted == TRUE & length(lead) > 1 & min(lead) >= 0)
-  #   stop("When `restricted`` == TRUE in `PanelMatch``, please only supply 1 lead at a time, and
-  #        the lead must be equal to `max.lead` set when calling `PanelMatch`")
-  # 
-  # if (restricted == TRUE & max(lead) != matched_sets$max.lead & min(lead) >= 0)
-  #   stop("When `restricted`` == TRUE in `PanelMatch``, please only supply 1 lead at a time, and
-  #        the lead must be equal to `max.lead` set when calling `PanelMatch`")
-  # 
-  # if (inference == "wfe" & restricted == FALSE) {
-  #   if(length(lead) > 1 | max(lead) != 0)
-  #     stop("When `restricted`` == FALSE in `PanelMatch``, wfe standard errors are only supported 
-  #          when `lead` = 0")
-  # }
   sets <- prep_for_leads(sets, data, max(lead), time.id, unit.id, outcome.variable)
-  
+  sets <- sets[sapply(sets, length) > 0]
+  treated.unit.ids <- as.numeric(unlist(strsplit(names(sets), split = "[.]"))[c(T,F)])
+  browser()
   # WHAT TO DO WHEN EMPTY SETS ARE PRODUCED AS A RESULT OF THIS?? REMOVE THEM I ASSUME?
-  # stop("wfe standard errors are only supported when using restricted == TRUE in PanelMatch")
-  #  inference = inference
-  #  lead = lead
   
   if (is.null(qoi)) {
     qoi = matched_sets$qoi
@@ -60,10 +46,13 @@ PanelEstimate2 <- function(lead, #probably want to swap the order of these aroun
   
   # DONT KNOW WHAT THESE ARE DOING
   if (qoi == "att") {
+    
     data[, paste0("Wit_att", lead)] <- do.call(cbind, lapply(lead, FUN = getWits, data = data, matched_sets = sets))
     data$dit_att <- getDits(matched_sets = sets, data = data)
     colnames(data)[length(data)] <- "dits_att"
     data$`Wit_att-1` <- 0
+    ##NOTE THE COMMENT/ASSUMPTION
+    data[, dependent][is.na(data[, dependent])] <- 0 #replace the NAs with zeroes. I think this is ok because the dits should always be zero for these, so the value is irrelevant. this just makes the implementation a little bit easier 
     if(debug) return(sets)  
   } else if (qoi == "atc") {
     newlist <- lapply(matched_sets$`ATC_matches`, lapply_leads, unit.id = unit.id, 
@@ -124,7 +113,7 @@ PanelEstimate2 <- function(lead, #probably want to swap the order of these aroun
   
   
   # ATT
-  browser()
+  #browser()
   if (qoi == "att") {
     if (inference == "wfe"){
 
@@ -132,7 +121,7 @@ PanelEstimate2 <- function(lead, #probably want to swap the order of these aroun
       data$Wit_att0 <- data[c(paste0("Wit_att", lead))][,1]
 
 
-      browser()
+      #browser()
       if (estimator == "did") {
         fit <- PanelWFE(formula = as.formula(paste(dependent, "~", treatment)), 
                         treat = treatment, unit.index = matched_sets$unit.id,
@@ -153,8 +142,9 @@ PanelEstimate2 <- function(lead, #probably want to swap the order of these aroun
                         data = data)
       }
       
-      browser()
+      #browser()
     } else if (inference == "bootstrap"){
+      
       o.coefs <- sapply(data[, sapply(lead, function(x) paste0("Wit_att", x)), drop = FALSE],
                         equality_four,
                         y = data[c(dependent)][,1],
@@ -175,15 +165,21 @@ PanelEstimate2 <- function(lead, #probably want to swap the order of these aroun
         # make new data
         clusters <- unique(data[, unit.id])
         units <- sample(clusters, size = length(clusters), replace=T)
+        while(all(!units %in% treated.unit.ids)) #while none of the units are treated units, resample
+        {
+          units <- sample(clusters, size = length(clusters), replace=T)
+        }
         # create bootstap sample with sapply
-        df.bs <- lapply(units, function(x) which(data[,unit.id]==x))
-        d.sub1 <- data[unlist(df.bs),]
-        colnames(d.sub1)[3:4] <- c("treatment", "dv")
+        d.sub1 <- data[ data[,unit.id] %in% units, ]
+        #df.bs <- lapply(units, function(x) which(data[,unit.id]==x))
+        #d.sub1 <- data[unlist(df.bs),]
+        #colnames(d.sub1)[3:4] <- c("treatment", "dv")
         att_new <-  sapply(d.sub1[, sapply(lead, function(x) paste0("Wit_att", x)), 
                                   drop = FALSE],
                            equality_four,
-                           y = d.sub1$dv,
+                           y = d.sub1[,outcome.variable],
                            z = d.sub1$dits_att)
+        #if(is.na(att_new)) browser()
         coefs[k,] <- att_new
       }
       # changed return to class

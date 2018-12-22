@@ -43,6 +43,7 @@ pts <- function(sets, lead.in)
 getWits <- function(matched_sets, lead, data)
 {
   #sort the data
+  
   t.var <- attr(matched_sets, "t.var")
   id.var <- attr(matched_sets, "id.var")
   data <- data[order(data[,id.var], data[,t.var]), ]
@@ -71,6 +72,7 @@ getWits <- function(matched_sets, lead, data)
 #' @export
 getDits <- function(matched_sets, data)
 {
+  
   t.var <- attr(matched_sets, "t.var")
   id.var <- attr(matched_sets, "id.var")
   data <- data[order(data[,id.var], data[,t.var]), ]
@@ -110,7 +112,32 @@ getDits <- function(matched_sets, data)
   {
     sub.index <- ll[idx]
     sub.set <- matched_sets[idx]
-    matched_sets[idx] <- renormalize(sub.index, sub.set) #utilize the [.matched.set operator
+    create_new_sets <- function(set, index)
+    {
+      return(set[index])
+    }
+    sub.set.new <- mapply(FUN = create_new_sets, sub.set, sub.index)
+    attributes(sub.set.new) <- attributes(sub.set)
+    all.gone.counter <- sapply(sub.set.new, function(x){sum(x)})
+    if(sum(all.gone.counter == 0) > 0) #case in which all the controls in a particular group were dropped
+    {
+      browser()
+      
+      idx[all.gone.counter == 0] <- FALSE
+      sub.index <- ll[idx]
+      sub.set <- matched_sets[idx]
+      create_new_sets <- function(set, index)
+      {
+        return(set[index])
+      }
+      sub.set.new <- mapply(FUN = create_new_sets, sub.set, sub.index)
+      attributes(sub.set.new) <- attributes(sub.set)
+    }
+    
+    pm2 <- PanelMatch2.matched.set(sub.set.new, ordered.data, outcome.var)
+    browser()
+    matched_sets[idx] <- pm2
+    #matched_sets[idx] <- renormalize(sub.index, sub.set) #utilize the [.matched.set operator
     matched_sets <- matched_sets[sapply(matched_sets, length) > 0]
   }
   return(matched_sets)

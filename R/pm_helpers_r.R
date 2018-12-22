@@ -101,9 +101,9 @@ handle_mahalanobis_calculations <- function(mahal.nested.list, msets, max.size, 
     }
     
   }
-  handle_set <- function(sub.list, max.set.size)
+  handle_set <- function(sub.list, max.set.size, idx)
   {
-    #browser()
+    #if(idx == 55) browser()
     results.temp <- lapply(sub.list, do.calcs)
     tmat <- do.call(rbind, results.temp)
     colnames(tmat) <- NULL
@@ -120,13 +120,13 @@ handle_mahalanobis_calculations <- function(mahal.nested.list, msets, max.size, 
     {
       ordered.dists <- sort(n.dists)
       scoretobeat <- max(head(ordered.dists, n = max.set.size + 1))
-      newdists <- ifelse(dists < scoretobeat, 1 / max.set.size, 0)  
+      newdists <- ifelse(dists < scoretobeat & dists > 0, 1 / max.set.size, 0)
     }
     names(newdists) <- NULL
     return(newdists)
     
   }
-  scores <- mapply(FUN = handle_set, sub.list = mahal.nested.list, MoreArgs = list(max.set.size = max.size))
+  scores <- mapply(FUN = handle_set, sub.list = mahal.nested.list, idx = 1:length(msets), MoreArgs = list(max.set.size = max.size))
   for(i in 1:length(msets))
   {
     names(scores[[i]]) <- msets[[i]]
@@ -198,7 +198,7 @@ find_ps <- function(sets, fitted.model)
 
 handle_ps_weighted <- function(just.ps.sets, msets, refinement.method)
 {
-  browser()
+  #browser()
   handle_set <- function(set)
   {
     control.ps.set <- set[1:(nrow(set) - 1), ncol(set)]
@@ -240,7 +240,7 @@ handle_ps_match <- function(just.ps.sets, msets, refinement.method, verbose, max
       else
       {
         dist.to.beat <- max(head(sort(dists.to.consider), max.size + 1))
-        wts <- ifelse(dists < dist.to.beat, (1 / max.size), 0)  
+        wts <- ifelse(dists < dist.to.beat & dists > 0, (1 / max.size), 0)  
       }
       return(wts)
     }

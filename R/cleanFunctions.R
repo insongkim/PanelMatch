@@ -326,7 +326,7 @@ PS_vit <- function(x, lag, max.lead, M = M, weighting = FALSE) {
   
 #  colnames(x)[1:4] <- c("V1", "V2", "V3", "V4")
   # x <- x[!duplicated(x[c("V2", "V1")]),]
-  browser()
+  #browser()
   x <- x[order(x$V2, x$V1), ]
   treated.id <- x[x$V3 == 1 & x$V1 == (max(x$V1)-max.lead), ]$V2
   testid <- unique(x$V2)

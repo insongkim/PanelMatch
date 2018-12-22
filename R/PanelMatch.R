@@ -184,7 +184,7 @@ PanelMatch <- function(formula = y ~ treat, lag, max.lead,
   ### from zero to 1 ###
   # as.matrix it so that it can work with the cpp function
   dmatrix <- as.matrix(d2)
-  browser()
+  #browser()
   if (qoi == "att") {
     # dmatrix2 <- dmatrix[dmatrix[, 3] == 1, ]
     

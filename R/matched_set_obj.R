@@ -105,6 +105,9 @@ print.matched.set <- function(set, verbose = F)
   attr(temp, "id.var" ) <- attr(x, "id.var" )
   attr(temp, "treated.var") <- attr(x, "treated.var")
   attr(temp, "distances") <- attr(x, "distances")
+  attr(temp, "max.match.size") <- attr(x, "max.match.size")
+  attr(temp, "covs.formula") <- attr(x, "covs.formula")
+  attr(temp, "match.missing") <- attr(x, "match.missing")
   class(temp) <- "matched.set"
   
   return(temp)

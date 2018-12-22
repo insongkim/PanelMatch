@@ -359,6 +359,10 @@ PanelEstimate <- function(lead,
         # make new data
         clusters <- unique(data[, unit.id])
         units <- sample(clusters, size = length(clusters), replace=T)
+        while(all(!units %in% treated.unit.ids)) #while none of the units are treated units, resample
+        {
+          units <- sample(clusters, size = length(clusters), replace=T)
+        }
         # create bootstap sample with sapply
         df.bs <- lapply(units, function(x) which(data[,unit.id]==x))
         d.sub1 <- data[unlist(df.bs),]
