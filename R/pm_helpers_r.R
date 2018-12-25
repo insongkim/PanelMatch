@@ -36,6 +36,7 @@ build_maha_mats <- function(idx, ordered_expanded_data)
 #needs more error checking, details will also depend on the syntax/mechanics of the covs.formula argument to be determined later.
 parse_and_prep <- function(formula, data, unit.id)
 {
+  
   #check if formula empty or no covariates provided -- error checks
   terms <- attr(terms(formula),"term.labels")
   terms <- gsub(" ", "", terms) #remove whitespace
@@ -45,10 +46,18 @@ parse_and_prep <- function(formula, data, unit.id)
   
   if(any(grepl("=", lag.calls))) stop("fix lag calls to use only unnamed arguments in the correct positions")
   data <- data.table::as.data.table(data) #check sorting
-  results.unmerged <- mapply(FUN = handle.calls, call.as.string = lag.calls, MoreArgs =  list(.data = data, .unitid = unit.id), SIMPLIFY = FALSE)
-  names(results.unmerged) <- NULL
-  full.data <- cbind(sub.data, do.call("cbind", results.unmerged))
-  return(full.data)
+  if(length(lag.calls) > 0)
+  {
+    results.unmerged <- mapply(FUN = handle.calls, call.as.string = lag.calls, MoreArgs =  list(.data = data, .unitid = unit.id), SIMPLIFY = FALSE)
+    names(results.unmerged) <- NULL
+    full.data <- cbind(sub.data, do.call("cbind", results.unmerged))
+    return(full.data)
+  }
+  else
+  {
+    return(sub.data)
+  }
+  
 }
 
 handle.calls <- function(call.as.string, .data, .unitid)
@@ -66,10 +75,21 @@ handle.calls <- function(call.as.string, .data, .unitid)
 #use col.index to determine which columns we want to "scan" for missing data
 handle.missing.data <- function(data, col.index)
 {
-  new.names <- paste0(colnames(data)[col.index], "_NA")  
-  missing.mat <- as.data.frame(apply(data[, col.index], 2, is.na)) * 1
-  colnames(missing.mat) <- new.names
-  data <- cbind(data, missing.mat)
+  
+  new.names <- paste0(colnames(data)[col.index], "_NA")
+  if(length(col.index) == 1)
+  {
+    new.col <- is.na(data[, col.index]) * 1
+    data <- cbind(data, new.col)
+    colnames(data)[ncol(data)] <- new.names
+  }
+  else
+  {
+    missing.mat <- as.data.frame(apply(data[, col.index], 2, is.na)) * 1
+    colnames(missing.mat) <- new.names
+    data <- cbind(data, missing.mat)  
+  }
+  
   data[is.na(data)] <- 0
   return(data)
 }

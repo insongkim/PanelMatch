@@ -67,6 +67,7 @@ PanelMatch2 <- function(lag, time.id, unit.id, treatment, outcome,
   treated.ids <- as.numeric(unlist(strsplit(names(msets), split = "[.]"))[c(T,F)])
   
   ordered.data <- as.matrix(parse_and_prep(formula = covs.formula, data = ordered.data, unit.id = unit.id)) #every column > 4 at this point should be used in distance/refinement calculation
+  #browser()
   ordered.data <- as.matrix(handle.missing.data(ordered.data, 5:ncol(ordered.data)))
   #RE IMPLEMENT RESTRICTED OR NAIVE?
   if(refinement.method == "mahalanobis")
