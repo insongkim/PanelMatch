@@ -103,7 +103,6 @@ handle_mahalanobis_calculations <- function(mahal.nested.list, msets, max.size, 
   }
   handle_set <- function(sub.list, max.set.size, idx)
   {
-    #if(idx == 55) browser()
     results.temp <- lapply(sub.list, do.calcs)
     tmat <- do.call(rbind, results.temp)
     colnames(tmat) <- NULL
@@ -120,7 +119,16 @@ handle_mahalanobis_calculations <- function(mahal.nested.list, msets, max.size, 
     {
       ordered.dists <- sort(n.dists)
       scoretobeat <- max(head(ordered.dists, n = max.set.size + 1))
-      newdists <- ifelse(dists < scoretobeat & dists > 0, 1 / max.set.size, 0)
+      if(sum(dists < scoretobeat & dists > 0) < max.set.size) #change this if we want to be more strict about max.set.size enforcements
+      {
+        new.denom <- sum(dists <= scoretobeat & dists > 0)
+        newdists <- ifelse(dists <= scoretobeat & dists > 0, 1 / new.denom, 0)
+      }
+      else
+      {
+        newdists <- ifelse(dists < scoretobeat & dists > 0, 1 / max.set.size, 0)  
+      }
+      
     }
     names(newdists) <- NULL
     return(newdists)

@@ -112,16 +112,20 @@ Rcpp::List re_norm_index(Rcpp::NumericMatrix compmat, Rcpp::NumericVector compma
 			int key;
 			key = controls[j];
 			int idx = rowmap[key];
-			Rcpp::LogicalVector v(lead + 1); 
-			for (int k = 0; k <= lead; ++k)
+			//Rcpp::LogicalVector v(lead + 1); //change this to + 2
+			Rcpp::LogicalVector v(lead + 2); //change this to + 2
+			//for (int k = 0; k <= lead; ++k)
+			for (int k = 1; k <= lead + 1; ++k)// init. k to 1, go to lead + 1, and have first check be for t - 1
 			{
-				// if(i == 12)
-				// {
-				//   Rcpp::Rcout << "checking compmat entry " << idx << " " << st_year_col + k << std::endl;
-				//   Rcpp::Rcout << "checking results for unit " << compmat(idx, 0) << std::endl;
-				//   Rcpp::Rcout << "checking results for t " << compmat_cols[st_year_col + k - 1] << std::endl;//[st_year_col + k] << std::endl;
-				//   //Rcpp::Rcout << "actual entry: " << compmat(idx, st_year_col + k) << std::endl;  
-				// }
+				//add in separate check for t - 1, rest of these checks should still apply then.
+				if(Rcpp::internal::Rcpp_IsNA(compmat(idx, st_year_col - 1)))
+				{
+				  v[0] = false;
+				}
+				else
+				{
+				  v[0] = true;
+				}
 				
 				if(Rcpp::internal::Rcpp_IsNA(compmat(idx, st_year_col + k)))
 				{
@@ -172,9 +176,21 @@ Rcpp::LogicalVector check_treated_units(Rcpp::NumericMatrix compmat, Rcpp::Numer
 		int st_year_col = colmap[key];
 		key = treated_ids[i];
 		int idx = rowmap[key];
-		Rcpp::LogicalVector v(lead + 1); 
-		for (int k = 0; k <= lead; ++k)
+		// Rcpp::LogicalVector v(lead + 1); // to lead + 2
+		Rcpp::LogicalVector v(lead + 2); 
+		//for (int k = 0; k <= lead; ++k) // again, thinking init k to 1, iterate to lead + 1, then first check is for t-1
+		for (int k = 1; k <= lead + 1; ++k)
 		{
+			//checking t-1
+			if(Rcpp::internal::Rcpp_IsNA(compmat(idx, st_year_col - 1))) //assuming that the order holds
+			{
+			  v[0] = false;
+			}
+			else
+			{
+			  v[0] = true;
+			}
+			
 			if( ( (st_year_col + k) > compmat_cols.size() ) || Rcpp::internal::Rcpp_IsNA(compmat(idx, st_year_col + k)))
 			{
 				v[k] = false;

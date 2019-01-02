@@ -34,7 +34,6 @@ PanelEstimate2 <- function(lead, #probably want to swap the order of these aroun
   sets <- prep_for_leads(sets, data, max(lead), time.id, unit.id, outcome.variable)
   sets <- sets[sapply(sets, length) > 0]
   treated.unit.ids <- as.numeric(unlist(strsplit(names(sets), split = "[.]"))[c(T,F)])
-  browser()
   # WHAT TO DO WHEN EMPTY SETS ARE PRODUCED AS A RESULT OF THIS?? REMOVE THEM I ASSUME?
   
   if (is.null(qoi)) {

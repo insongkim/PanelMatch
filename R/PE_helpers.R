@@ -95,6 +95,7 @@ getDits <- function(matched_sets, data)
   tids <- as.numeric(unlist(strsplit(names(matched_sets), split = "[.]"))[c(T,F)])
   class(matched_sets) <- "list" #so that Rcpp::List is accurate when we pass it into cpp functions
   compmat <- data.matrix(compmat)
+  
   idx <- check_treated_units(compmat = compmat, compmat_row_units = as.numeric(compmat[, 1]), compmat_cols = as.numeric(colnames(compmat)[2:ncol(compmat)]), lead = max.lead, treated_ids = tids, treated_ts = ts)
   if(any(!idx))
   {
@@ -135,7 +136,7 @@ getDits <- function(matched_sets, data)
     }
     
     pm2 <- PanelMatch2.matched.set(sub.set.new, ordered.data, outcome.var)
-    browser()
+    
     matched_sets[idx] <- pm2
     #matched_sets[idx] <- renormalize(sub.index, sub.set) #utilize the [.matched.set operator
     matched_sets <- matched_sets[sapply(matched_sets, length) > 0]
