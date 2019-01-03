@@ -36,7 +36,6 @@ build_maha_mats <- function(idx, ordered_expanded_data)
 #needs more error checking, details will also depend on the syntax/mechanics of the covs.formula argument to be determined later.
 parse_and_prep <- function(formula, data, unit.id)
 {
-  
   #check if formula empty or no covariates provided -- error checks
   terms <- attr(terms(formula),"term.labels")
   terms <- gsub(" ", "", terms) #remove whitespace
@@ -97,7 +96,7 @@ handle.missing.data <- function(data, col.index)
 #OPTIMIZATION OPPORTUNITIES HERE
 handle_mahalanobis_calculations <- function(mahal.nested.list, msets, max.size, verbose)
 {
-  #browser()
+  
   do.calcs <- function(year.df)
   { 
     if(nrow(year.df) == 2)
@@ -109,7 +108,7 @@ handle_mahalanobis_calculations <- function(mahal.nested.list, msets, max.size, 
     cov.matrix <- cov(cov.data)
     center.data <- year.df[nrow(year.df), 5:ncol(year.df)]
     
-    if( isTRUE(all.equal(det(cov.matrix), 0, tolerance = .00001)) ) #using the default tolerance value
+    if( isTRUE(all.equal(det(cov.matrix), 0, tolerance = .00001)) ) #we might want to make this smaller, but had some errors here about computationally infeasible problems because of values very close to zero
     {
       cov.matrix <- ginv(cov.matrix)
       return(mahalanobis(x = cov.data, center = center.data, cov = cov.matrix, inverted = TRUE))
@@ -139,6 +138,8 @@ handle_mahalanobis_calculations <- function(mahal.nested.list, msets, max.size, 
     {
       ordered.dists <- sort(n.dists)
       scoretobeat <- max(head(ordered.dists, n = max.set.size + 1))
+      # might have situation where the Mth largest distance is the same as the Mth - 1 distance. This means that we either choose to leave out both and have a matched set smaller than the max, 
+      # or include both of them and relax the size of our maximum set size
       if(sum(dists < scoretobeat & dists > 0) < max.set.size) #change this if we want to be more strict about max.set.size enforcements
       {
         new.denom <- sum(dists <= scoretobeat & dists > 0)
@@ -226,7 +227,7 @@ find_ps <- function(sets, fitted.model)
 
 handle_ps_weighted <- function(just.ps.sets, msets, refinement.method)
 {
-  #browser()
+  
   handle_set <- function(set)
   {
     control.ps.set <- set[1:(nrow(set) - 1), ncol(set)]

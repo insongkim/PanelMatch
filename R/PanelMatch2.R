@@ -123,6 +123,8 @@ PanelMatch2 <- function(lag, time.id, unit.id, treatment, outcome,
 } 
 
 #TODO: update the name, clean this up
+#' This is currently only used inside PE2, where it is used to update the weights of a matched set object after control units that are missing data in the necessary future periods have been identified and taken out.
+#' Function assumes that the units that are included are the only units it needs to consider. Pulls information from matched.set object 
 #' @export
 PanelMatch2.matched.set <- function(mset.object, data, outcome.var)
 {
@@ -188,7 +190,7 @@ PanelMatch2.matched.set <- function(mset.object, data, outcome.var)
       fit0 <- suppressMessages(CBPS::CBPS(reformulate(response = treatment, termlabels = colnames(pooled)[-c(1:4)]), 
                                           family = binomial(link = "logit"), data = pooled))
     }
-    if(refinement.method == "ps.weight" | refinement.method == "ps.score")
+    if(refinement.method == "ps.weight" | refinement.method == "ps.match")
     {
       fit0 <- glm(reformulate(response = treatment, termlabels = colnames(pooled)[-c(1:4)]), 
                   family = binomial(link = "logit"), data = pooled)
