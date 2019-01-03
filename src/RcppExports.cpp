@@ -7,123 +7,6 @@
 
 using namespace Rcpp;
 
-// get_vit_index
-Rcpp::NumericVector get_vit_index(Rcpp::CharacterVector t_id_key, Rcpp::CharacterVector control_treatment_t_ids, Rcpp::NumericVector control_treatment_set_nums);
-RcppExport SEXP _PanelMatch_get_vit_index(SEXP t_id_keySEXP, SEXP control_treatment_t_idsSEXP, SEXP control_treatment_set_numsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type t_id_key(t_id_keySEXP);
-    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type control_treatment_t_ids(control_treatment_t_idsSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type control_treatment_set_nums(control_treatment_set_numsSEXP);
-    rcpp_result_gen = Rcpp::wrap(get_vit_index(t_id_key, control_treatment_t_ids, control_treatment_set_nums));
-    return rcpp_result_gen;
-END_RCPP
-}
-// get_dits
-Rcpp::NumericVector get_dits(Rcpp::CharacterVector t_id_key, Rcpp::CharacterVector nonempty_t_ids);
-RcppExport SEXP _PanelMatch_get_dits(SEXP t_id_keySEXP, SEXP nonempty_t_idsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type t_id_key(t_id_keySEXP);
-    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type nonempty_t_ids(nonempty_t_idsSEXP);
-    rcpp_result_gen = Rcpp::wrap(get_dits(t_id_key, nonempty_t_ids));
-    return rcpp_result_gen;
-END_RCPP
-}
-// prep_lead_years
-Rcpp::List prep_lead_years(Rcpp::NumericVector ts, Rcpp::NumericVector lead_window);
-RcppExport SEXP _PanelMatch_prep_lead_years(SEXP tsSEXP, SEXP lead_windowSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type ts(tsSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type lead_window(lead_windowSEXP);
-    rcpp_result_gen = Rcpp::wrap(prep_lead_years(ts, lead_window));
-    return rcpp_result_gen;
-END_RCPP
-}
-// sumwits
-Rcpp::NumericVector sumwits(int nrow, Rcpp::NumericVector vit_vect);
-RcppExport SEXP _PanelMatch_sumwits(SEXP nrowSEXP, SEXP vit_vectSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< int >::type nrow(nrowSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type vit_vect(vit_vectSEXP);
-    rcpp_result_gen = Rcpp::wrap(sumwits(nrow, vit_vect));
-    return rcpp_result_gen;
-END_RCPP
-}
-// re_norm_index
-Rcpp::List re_norm_index(Rcpp::NumericMatrix compmat, Rcpp::NumericVector compmat_row_units, Rcpp::NumericVector compmat_cols, int lead, Rcpp::List sets, Rcpp::NumericVector control_start_years);
-RcppExport SEXP _PanelMatch_re_norm_index(SEXP compmatSEXP, SEXP compmat_row_unitsSEXP, SEXP compmat_colsSEXP, SEXP leadSEXP, SEXP setsSEXP, SEXP control_start_yearsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type compmat(compmatSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type compmat_row_units(compmat_row_unitsSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type compmat_cols(compmat_colsSEXP);
-    Rcpp::traits::input_parameter< int >::type lead(leadSEXP);
-    Rcpp::traits::input_parameter< Rcpp::List >::type sets(setsSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type control_start_years(control_start_yearsSEXP);
-    rcpp_result_gen = Rcpp::wrap(re_norm_index(compmat, compmat_row_units, compmat_cols, lead, sets, control_start_years));
-    return rcpp_result_gen;
-END_RCPP
-}
-// check_treated_units
-Rcpp::LogicalVector check_treated_units(Rcpp::NumericMatrix compmat, Rcpp::NumericVector compmat_row_units, Rcpp::NumericVector compmat_cols, int lead, Rcpp::NumericVector treated_ids, Rcpp::NumericVector treated_ts);
-RcppExport SEXP _PanelMatch_check_treated_units(SEXP compmatSEXP, SEXP compmat_row_unitsSEXP, SEXP compmat_colsSEXP, SEXP leadSEXP, SEXP treated_idsSEXP, SEXP treated_tsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type compmat(compmatSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type compmat_row_units(compmat_row_unitsSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type compmat_cols(compmat_colsSEXP);
-    Rcpp::traits::input_parameter< int >::type lead(leadSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type treated_ids(treated_idsSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type treated_ts(treated_tsSEXP);
-    rcpp_result_gen = Rcpp::wrap(check_treated_units(compmat, compmat_row_units, compmat_cols, lead, treated_ids, treated_ts));
-    return rcpp_result_gen;
-END_RCPP
-}
-// needs_renormalization
-Rcpp::LogicalVector needs_renormalization(Rcpp::List set_index_list);
-RcppExport SEXP _PanelMatch_needs_renormalization(SEXP set_index_listSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::List >::type set_index_list(set_index_listSEXP);
-    rcpp_result_gen = Rcpp::wrap(needs_renormalization(set_index_list));
-    return rcpp_result_gen;
-END_RCPP
-}
-// renormalize
-Rcpp::List renormalize(Rcpp::List control_index, Rcpp::List sets_to_be_updated);
-RcppExport SEXP _PanelMatch_renormalize(SEXP control_indexSEXP, SEXP sets_to_be_updatedSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::List >::type control_index(control_indexSEXP);
-    Rcpp::traits::input_parameter< Rcpp::List >::type sets_to_be_updated(sets_to_be_updatedSEXP);
-    rcpp_result_gen = Rcpp::wrap(renormalize(control_index, sets_to_be_updated));
-    return rcpp_result_gen;
-END_RCPP
-}
-// equality_four_cpp
-Rcpp::NumericVector equality_four_cpp(Rcpp::NumericMatrix Wit_vals, Rcpp::NumericVector y, Rcpp::NumericVector z);
-RcppExport SEXP _PanelMatch_equality_four_cpp(SEXP Wit_valsSEXP, SEXP ySEXP, SEXP zSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type Wit_vals(Wit_valsSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type y(ySEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type z(zSEXP);
-    rcpp_result_gen = Rcpp::wrap(equality_four_cpp(Wit_vals, y, z));
-    return rcpp_result_gen;
-END_RCPP
-}
 // sumCpp
 int sumCpp(Rcpp::NumericVector x);
 RcppExport SEXP _PanelMatch_sumCpp(SEXP xSEXP) {
@@ -266,6 +149,123 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type ids(idsSEXP);
     Rcpp::traits::input_parameter< int >::type L(LSEXP);
     rcpp_result_gen = Rcpp::wrap(get_msets_helper(control_history_list, widemat, t_as_col_nums, ids, L));
+    return rcpp_result_gen;
+END_RCPP
+}
+// get_vit_index
+Rcpp::NumericVector get_vit_index(Rcpp::CharacterVector t_id_key, Rcpp::CharacterVector control_treatment_t_ids, Rcpp::NumericVector control_treatment_set_nums);
+RcppExport SEXP _PanelMatch_get_vit_index(SEXP t_id_keySEXP, SEXP control_treatment_t_idsSEXP, SEXP control_treatment_set_numsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type t_id_key(t_id_keySEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type control_treatment_t_ids(control_treatment_t_idsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type control_treatment_set_nums(control_treatment_set_numsSEXP);
+    rcpp_result_gen = Rcpp::wrap(get_vit_index(t_id_key, control_treatment_t_ids, control_treatment_set_nums));
+    return rcpp_result_gen;
+END_RCPP
+}
+// get_dits
+Rcpp::NumericVector get_dits(Rcpp::CharacterVector t_id_key, Rcpp::CharacterVector nonempty_t_ids);
+RcppExport SEXP _PanelMatch_get_dits(SEXP t_id_keySEXP, SEXP nonempty_t_idsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type t_id_key(t_id_keySEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type nonempty_t_ids(nonempty_t_idsSEXP);
+    rcpp_result_gen = Rcpp::wrap(get_dits(t_id_key, nonempty_t_ids));
+    return rcpp_result_gen;
+END_RCPP
+}
+// prep_lead_years
+Rcpp::List prep_lead_years(Rcpp::NumericVector ts, Rcpp::NumericVector lead_window);
+RcppExport SEXP _PanelMatch_prep_lead_years(SEXP tsSEXP, SEXP lead_windowSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type ts(tsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type lead_window(lead_windowSEXP);
+    rcpp_result_gen = Rcpp::wrap(prep_lead_years(ts, lead_window));
+    return rcpp_result_gen;
+END_RCPP
+}
+// sumwits
+Rcpp::NumericVector sumwits(int nrow, Rcpp::NumericVector vit_vect);
+RcppExport SEXP _PanelMatch_sumwits(SEXP nrowSEXP, SEXP vit_vectSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type nrow(nrowSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type vit_vect(vit_vectSEXP);
+    rcpp_result_gen = Rcpp::wrap(sumwits(nrow, vit_vect));
+    return rcpp_result_gen;
+END_RCPP
+}
+// re_norm_index
+Rcpp::List re_norm_index(Rcpp::NumericMatrix compmat, Rcpp::NumericVector compmat_row_units, Rcpp::NumericVector compmat_cols, int lead, Rcpp::List sets, Rcpp::NumericVector control_start_years);
+RcppExport SEXP _PanelMatch_re_norm_index(SEXP compmatSEXP, SEXP compmat_row_unitsSEXP, SEXP compmat_colsSEXP, SEXP leadSEXP, SEXP setsSEXP, SEXP control_start_yearsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type compmat(compmatSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type compmat_row_units(compmat_row_unitsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type compmat_cols(compmat_colsSEXP);
+    Rcpp::traits::input_parameter< int >::type lead(leadSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type sets(setsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type control_start_years(control_start_yearsSEXP);
+    rcpp_result_gen = Rcpp::wrap(re_norm_index(compmat, compmat_row_units, compmat_cols, lead, sets, control_start_years));
+    return rcpp_result_gen;
+END_RCPP
+}
+// check_treated_units
+Rcpp::LogicalVector check_treated_units(Rcpp::NumericMatrix compmat, Rcpp::NumericVector compmat_row_units, Rcpp::NumericVector compmat_cols, int lead, Rcpp::NumericVector treated_ids, Rcpp::NumericVector treated_ts);
+RcppExport SEXP _PanelMatch_check_treated_units(SEXP compmatSEXP, SEXP compmat_row_unitsSEXP, SEXP compmat_colsSEXP, SEXP leadSEXP, SEXP treated_idsSEXP, SEXP treated_tsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type compmat(compmatSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type compmat_row_units(compmat_row_unitsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type compmat_cols(compmat_colsSEXP);
+    Rcpp::traits::input_parameter< int >::type lead(leadSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type treated_ids(treated_idsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type treated_ts(treated_tsSEXP);
+    rcpp_result_gen = Rcpp::wrap(check_treated_units(compmat, compmat_row_units, compmat_cols, lead, treated_ids, treated_ts));
+    return rcpp_result_gen;
+END_RCPP
+}
+// needs_renormalization
+Rcpp::LogicalVector needs_renormalization(Rcpp::List set_index_list);
+RcppExport SEXP _PanelMatch_needs_renormalization(SEXP set_index_listSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type set_index_list(set_index_listSEXP);
+    rcpp_result_gen = Rcpp::wrap(needs_renormalization(set_index_list));
+    return rcpp_result_gen;
+END_RCPP
+}
+// renormalize
+Rcpp::List renormalize(Rcpp::List control_index, Rcpp::List sets_to_be_updated);
+RcppExport SEXP _PanelMatch_renormalize(SEXP control_indexSEXP, SEXP sets_to_be_updatedSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type control_index(control_indexSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type sets_to_be_updated(sets_to_be_updatedSEXP);
+    rcpp_result_gen = Rcpp::wrap(renormalize(control_index, sets_to_be_updated));
+    return rcpp_result_gen;
+END_RCPP
+}
+// equality_four_cpp
+Rcpp::NumericVector equality_four_cpp(Rcpp::NumericMatrix Wit_vals, Rcpp::NumericVector y, Rcpp::NumericVector z);
+RcppExport SEXP _PanelMatch_equality_four_cpp(SEXP Wit_valsSEXP, SEXP ySEXP, SEXP zSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type Wit_vals(Wit_valsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type z(zSEXP);
+    rcpp_result_gen = Rcpp::wrap(equality_four_cpp(Wit_vals, y, z));
     return rcpp_result_gen;
 END_RCPP
 }
