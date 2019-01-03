@@ -115,14 +115,15 @@ getDits <- function(matched_sets, data)
     sub.set <- matched_sets[idx]
     create_new_sets <- function(set, index)
     {
+      #browser()
       return(set[index])
     }
-    sub.set.new <- mapply(FUN = create_new_sets, sub.set, sub.index)
+    sub.set.new <- mapply(FUN = create_new_sets, sub.set, sub.index, SIMPLIFY = FALSE)
     attributes(sub.set.new) <- attributes(sub.set)
     all.gone.counter <- sapply(sub.set.new, function(x){sum(x)})
     if(sum(all.gone.counter == 0) > 0) #case in which all the controls in a particular group were dropped
     {
-      browser()
+      stop("what is happening?")
       
       idx[all.gone.counter == 0] <- FALSE
       sub.index <- ll[idx]
@@ -131,7 +132,7 @@ getDits <- function(matched_sets, data)
       {
         return(set[index])
       }
-      sub.set.new <- mapply(FUN = create_new_sets, sub.set, sub.index)
+      sub.set.new <- mapply(FUN = create_new_sets, sub.set, sub.index, SIMPLIFY = FALSE)
       attributes(sub.set.new) <- attributes(sub.set)
     }
     

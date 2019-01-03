@@ -154,7 +154,7 @@ handle_mahalanobis_calculations <- function(mahal.nested.list, msets, max.size, 
     return(newdists)
     
   }
-  scores <- mapply(FUN = handle_set, sub.list = mahal.nested.list, idx = 1:length(msets), MoreArgs = list(max.set.size = max.size))
+  scores <- mapply(FUN = handle_set, sub.list = mahal.nested.list, idx = 1:length(msets), MoreArgs = list(max.set.size = max.size), SIMPLIFY = FALSE)
   for(i in 1:length(msets))
   {
     names(scores[[i]]) <- msets[[i]]
@@ -170,7 +170,7 @@ handle_mahalanobis_calculations <- function(mahal.nested.list, msets, max.size, 
       return(dists)
     }
     
-    full.scores <- mapply(FUN = handle_set_verbose, sub.list = mahal.nested.list)
+    full.scores <- mapply(FUN = handle_set_verbose, sub.list = mahal.nested.list, SIMPLIFY = FALSE)
     
     for(i in 1:length(msets))
     {

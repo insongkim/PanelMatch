@@ -98,7 +98,7 @@ PanelMatch2 <- function(lag, time.id, unit.id, treatment, outcome,
       fit0 <- suppressMessages(CBPS::CBPS(reformulate(response = treatment, termlabels = colnames(pooled)[-c(1:4)]), 
                                           family = binomial(link = "logit"), data = pooled))
     }
-    if(refinement.method == "ps.weight" | refinement.method == "ps.score")
+    if(refinement.method == "ps.weight" | refinement.method == "ps.match")
     {
       fit0 <- glm(reformulate(response = treatment, termlabels = colnames(pooled)[-c(1:4)]), 
                   family = binomial(link = "logit"), data = pooled)
@@ -122,6 +122,7 @@ PanelMatch2 <- function(lag, time.id, unit.id, treatment, outcome,
   return(msets)    
 } 
 
+#TODO: update the name, clean this up
 #' @export
 PanelMatch2.matched.set <- function(mset.object, data, outcome.var)
 {
@@ -160,6 +161,7 @@ PanelMatch2.matched.set <- function(mset.object, data, outcome.var)
   #RE IMPLEMENT RESTRICTED OR NAIVE?
   if(refinement.method == "mahalanobis")
   {
+    
     tlist <- expand.treated.ts(lag, treated.ts = treated.ts)
     idxlist <- get_yearly_dmats(ordered.data, treated.ids, tlist, paste0(ordered.data[,unit.id], ".", 
                                                                          ordered.data[, time.id]), matched_sets = msets, lag)

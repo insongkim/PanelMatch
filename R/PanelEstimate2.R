@@ -7,15 +7,8 @@ PanelEstimate2 <- function(lead, #probably want to swap the order of these aroun
                           CI = .95,
                           sets,
                           data,
-                          outcome.variable, debug = TRUE) {
-  #how to change these when PM gets updated? 
-  #need to filter out the empty set entries
-  # data sorting?
-  ## DO WE NEED THIS NOW??
-  # if (max(lead) > matched_sets$max.lead) 
-  #   stop(paste("The number of leads you choose 
-  #              has exceeded the maximum number you set
-  #              when finding matched sets, which is", matched_sets$max.lead))
+                          outcome.variable) {
+
   if (inference == "wfe" & length(lead) > 1) 
     stop("When inference method is wfe, please only supply 1 lead at a time. 
          For example, please call this function with `lead` = 1 and then call it with `lead` = 2,
@@ -28,7 +21,7 @@ PanelEstimate2 <- function(lead, #probably want to swap the order of these aroun
   method <- attr(sets, "refinement.method")
   restricted <- attr(sets, "restricted") # this doesnt exist yet, not sure what it means.
   #check the leads, update sets, and weights
-  browser()
+  #browser()
   if(is.null(restricted)){restricted <- FALSE}
   
   sets <- prep_for_leads(sets, data, max(lead), time.id, unit.id, outcome.variable)
@@ -52,7 +45,7 @@ PanelEstimate2 <- function(lead, #probably want to swap the order of these aroun
     data$`Wit_att-1` <- 0
     ##NOTE THE COMMENT/ASSUMPTION
     data[, dependent][is.na(data[, dependent])] <- 0 #replace the NAs with zeroes. I think this is ok because the dits should always be zero for these, so the value is irrelevant. this just makes the implementation a little bit easier 
-    if(debug) return(sets)  
+    
   } else if (qoi == "atc") {
     newlist <- lapply(matched_sets$`ATC_matches`, lapply_leads, unit.id = unit.id, 
                       time.id = time.id, lag = lag, estimator = estimator,
@@ -441,7 +434,7 @@ summary.PE <- function(object, verbose = TRUE, bias.corrected = FALSE, ...) {
 plot.PE <- function(pe.object, ylab = "Estimated Effect of Treatment", xlab = "Time", main = "Estimated Effects of Treatment Over Time",...)
 {
   plot.data <- summary(pe.object, verbose = F, bias.corrected = F)
-  plot(x = 1:5,y = plot.data[, 1], ylim = c(min(plot.data[,3]) - 1, max(plot.data[,4]) + 1), pch = 16, 
+  plot(x = 1:5,y = plot.data[, 1], ylim = c(min(plot.data[,3]) - .1, max(plot.data[,4]) + .1), pch = 16, 
        xaxt = "n", ylab = ylab, xlab = xlab, main = main, ...)
   axis(side = 1, at = 1:nrow(plot.data), labels = rownames(plot.data))
   arrows(1:5, plot.data[,3], 1:5, plot.data[,4], length=0.05, angle=90, code=3)
