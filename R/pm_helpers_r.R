@@ -251,6 +251,47 @@ handle_ps_weighted <- function(just.ps.sets, msets, refinement.method)
 
 handle_ps_match <- function(just.ps.sets, msets, refinement.method, verbose, max.set.size)
 {
+  handle_set <- function(set, max.size)
+  {
+    treated.ps <- as.numeric(set[nrow(set), "ps"])
+    control.ps.set <- as.numeric(set[1:(nrow(set) - 1), "ps"])
+    if(length(control.ps.set) == 1)
+    {
+      return(1)
+    }
+    dists <- abs(treated.ps - control.ps.set)
+    dists.to.consider <- dists[dists > 0]
+    if(length(dists.to.consider) < max.size)
+    {
+      dists[ dists > 0 ] <- 1 / length(dists.to.consider)
+      wts <- dists
+    }
+    else
+    {
+      dist.to.beat <- max(head(sort(dists.to.consider), max.size + 1))
+      if(sum(dists < dist.to.beat & dists > 0) < max.set.size)
+      {
+        new.denom <- sum(dists <= dist.to.beat & dists > 0)
+        wts <- ifelse(dists <= dist.to.beat & dists > 0, 1 / new.denom, 0)
+        
+      }
+      else
+      {
+        wts <- ifelse(dists < dist.to.beat & dists > 0, (1 / max.size), 0)    
+      }
+      
+      #wts <- ifelse(dists < dist.to.beat & dists > 0, (1 / max.size), 0)  
+    }
+    return(wts)
+  }
+  wts <- lapply(just.ps.sets, handle_set, max.size = max.set.size)
+  for(i in 1:length(msets))
+  {
+    names(wts[[i]]) <- msets[[i]]
+    attr(msets[[i]], "weights") <- wts[[i]]
+  }
+  if(verbose) #again this is not well designed, would want to avoid having to do everything again, but works for now.
+  {
     handle_set <- function(set, max.size)
     {
       treated.ps <- as.numeric(set[nrow(set), "ps"])
@@ -260,47 +301,17 @@ handle_ps_match <- function(just.ps.sets, msets, refinement.method, verbose, max
         return(1)
       }
       dists <- abs(treated.ps - control.ps.set)
-      dists.to.consider <- dists[dists > 0]
-      if(length(dists.to.consider) < max.size)
-      {
-        dists[ dists > 0 ] <- 1 / length(dists.to.consider)
-        wts <- dists
-      }
-      else
-      {
-        dist.to.beat <- max(head(sort(dists.to.consider), max.size + 1))
-        wts <- ifelse(dists < dist.to.beat & dists > 0, (1 / max.size), 0)  
-      }
-      return(wts)
+      return(dists)
     }
-    wts <- lapply(just.ps.sets, handle_set, max.size = max.set.size)
+    dts <- lapply(just.ps.sets, handle_set, max.size = max.set.size)
     for(i in 1:length(msets))
     {
-      names(wts[[i]]) <- msets[[i]]
-      attr(msets[[i]], "weights") <- wts[[i]]
+      names(dts[[i]]) <- msets[[i]]
+      attr(msets[[i]], "distances") <- dts[[i]]
     }
-    if(verbose) #again this is not well designed, would want to avoid having to do everything again, but works for now.
-    {
-      handle_set <- function(set, max.size)
-      {
-        treated.ps <- as.numeric(set[nrow(set), "ps"])
-        control.ps.set <- as.numeric(set[1:(nrow(set) - 1), "ps"])
-        if(length(control.ps.set) == 1)
-        {
-          return(1)
-        }
-        dists <- abs(treated.ps - control.ps.set)
-        return(dists)
-      }
-      dts <- lapply(just.ps.sets, handle_set, max.size = max.set.size)
-      for(i in 1:length(msets))
-      {
-        names(dts[[i]]) <- msets[[i]]
-        attr(msets[[i]], "distances") <- dts[[i]]
-      }
-    }
-    
-    attr(msets, "refinement.method") <- refinement.method
-    return(msets)
+  }
+  
+  attr(msets, "refinement.method") <- refinement.method
+  return(msets)
 }
 

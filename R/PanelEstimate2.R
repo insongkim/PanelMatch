@@ -34,7 +34,7 @@ PanelEstimate2 <- function(lead, #probably want to swap the order of these aroun
   } else {
     qoi = qoi
   }
-  
+  if(qoi != "att") stop("only att is implemented currently")
   
   # DONT KNOW WHAT THESE ARE DOING
   if (qoi == "att") {

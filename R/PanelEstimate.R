@@ -127,7 +127,7 @@ PanelEstimate <- function(lead,
     }
   }
   
-  browser()
+  
   if (qoi == "att") {
     newlist <- lapply(matched_sets$`ATT_matches`, lapply_leads, unit.id = unit.id, 
                       time.id = time.id, lag = lag, estimator = estimator,
@@ -214,7 +214,7 @@ PanelEstimate <- function(lead,
       data$Wit_att0 <- data[c(paste0("Wit_att", lead))][,1]
      # data$Wit_att0 <- -(data$Wit_att0)
      # return(data)
-      browser()
+      
       if (estimator == "did") {
         fit <- PanelWFE(formula = as.formula(paste(dependent, "~", treatment)), 
                         treat = treatment, unit.index = matched_sets$unit.id,

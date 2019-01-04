@@ -1,4 +1,4 @@
-## anything related to matched set objects
+## anything related to matched set objects, helper functions, etc. should go in this file
 #' @export
 matched_set <- function(matchedsets, id, t, L, t.var, id.var, treated.var)
 {
