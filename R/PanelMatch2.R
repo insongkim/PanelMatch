@@ -25,11 +25,21 @@
 #' @param covs.formula One sided formula indicating which variables should be used for matching and refinement.
 #' Can specify lags using a function "lag" which takes two positional arguments. The first is the name of the variable which you wish to lag, specified as a string second is the lag window, specified as an integer sequence
 #' See the example below. 
-#' @param verbose option to include more information about the matched.set object calculations
-#' @return \code{PanelMatch} returns a list of class `matched.set'
-#' containing the following components:
-#' \item{treatment}{treatment variable name}
-#'
+#' @param verbose option to include more information about the matched.set object calculations, like the distances used to create the refined sets and weights
+#' @return \code{PanelMatch} returns a list of class `matched.set'. Each element in the list is a vector of integers corresponding to the control unit ids in a matched set. Additionally, these vectors might have additional attributes -- "weights" or "distances". 
+#' These correspond to the weights or distances corresponding to each control unit, as determined by the specified refinement method.
+#' Each element also has a name, which corresponds to the unit id and time variable of the treated unit and time of treatment, concatenated together and separated by a period.
+#'  
+#' matched.set objects also have a number of other potential attributes:
+#' \item{lag}{same as lag parameter -- an intege value indicating the length of treatment history to be}
+#' \item{t.var}{time variable name}
+#' \item{id.var}{unit id variable name}
+#' \item{treated.var}{treated variable name}
+#' \item{class}{class of the object: should always be "matched.set"} 
+#' \item{refinement.method}{method used to refine and/or weight the control units in each set}
+#' \item{covs.formula}{see covs.formula argument}
+#' \item{match.missing}{see match.missing argument}
+#' \item{max.match.size}{same as size.match argument}
 #' @author In Song Kim <insong@mit.edu>, Erik Wang
 #' <haixiao@Princeton.edu>, and Kosuke Imai <kimai@Princeton.edu>
 #'
@@ -47,16 +57,11 @@ PanelMatch2 <- function(lag, time.id, unit.id, treatment, outcome,
                        verbose = FALSE
                        ) 
 {
-  #browser()
-  #refinement.method <- "mahalanobis"
-  # set covariates and dependent
+
   if(any(table(data[, unit.id]) != max(table(data[, unit.id]))))
   {
     stop("panel data is not balanced")
   }
-  
-  #order and ensure order does not get violated
-  #convert to data.table?
   othercols <- colnames(data)[!colnames(data) %in% c(time.id, unit.id, treatment, outcome)]
   data <- data[, c(unit.id, time.id, treatment, outcome, othercols)] #reorder columns 
   ordered.data <- data[order(data[,unit.id], data[,time.id]), ]
@@ -67,8 +72,8 @@ PanelMatch2 <- function(lag, time.id, unit.id, treatment, outcome,
   treated.ids <- as.numeric(unlist(strsplit(names(msets), split = "[.]"))[c(T,F)])
   
   ordered.data <- as.matrix(parse_and_prep(formula = covs.formula, data = ordered.data, unit.id = unit.id)) #every column > 4 at this point should be used in distance/refinement calculation
-  #browser()
   ordered.data <- as.matrix(handle.missing.data(ordered.data, 5:ncol(ordered.data)))
+  
   #RE IMPLEMENT RESTRICTED OR NAIVE?
   if(refinement.method == "mahalanobis")
   {
@@ -85,7 +90,6 @@ PanelMatch2 <- function(lag, time.id, unit.id, treatment, outcome,
   
   else
   {
-    
     tlist <- expand.treated.ts(lag, treated.ts = treated.ts)
     idxlist <- get_yearly_dmats(ordered.data, treated.ids, tlist, paste0(ordered.data[,unit.id], ".", 
                                                                          ordered.data[, time.id]), matched_sets = msets, lag)
@@ -122,9 +126,10 @@ PanelMatch2 <- function(lag, time.id, unit.id, treatment, outcome,
   return(msets)    
 } 
 
-#TODO: update the name, clean this up
-#' This is currently only used inside PE2, where it is used to update the weights of a matched set object after control units that are missing data in the necessary future periods have been identified and taken out.
-#' Function assumes that the units that are included are the only units it needs to consider. Pulls information from matched.set object 
+#TODO: update the name to update?, clean this up
+#' This is currently only used inside PE2, where it is used to update the weights of a matched set object after control units that are missing data in the necessary future or past periods have been identified and taken out.
+#' Function assumes that the units that are included are the only units it needs to consider. Pulls argument information from matched.set object 
+#' Major difference between this function and the actual PanelMatch2 function is that this one does not identify matched sets and/or treated units. It merely updates and refines the matched set object provided to it
 #' @export
 PanelMatch2.matched.set <- function(mset.object, data, outcome.var)
 {
@@ -184,6 +189,12 @@ PanelMatch2.matched.set <- function(mset.object, data, outcome.var)
     expanded.sets.t0 <- build_ps_data(idxlist, ordered.data, lag)
     pre.pooled <- rbindlist(expanded.sets.t0)
     pooled <- pre.pooled[complete.cases(pre.pooled), ]
+
+    # Because we need certain data to be present (most notably, outcome variable data over t-1 to t + f), we will likely need to remove
+    # some added columns about missing data because they will all be the same value (0 for instance because all of the data is guaranteed to be present)
+    # Theoretically, we could have a situation where every value in the column is identical and thus cant be used for finding propensity scores
+    # In these situations we end up with NA coefficients which causes a bunch of other code to break. This is a bit of a hack, but works for now.
+
     cols.to.remove <- which(unlist(lapply(pooled, function(x){all(x[1] == x)})))
     if(length(cols.to.remove) > 0)
     {
