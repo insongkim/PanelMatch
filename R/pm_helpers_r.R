@@ -1,14 +1,7 @@
-#' @export
-subset_expanded.data <- function(expanded_data, matched_set_indices)
-{
-  create_subset <- function(index, expanded.data)
-  {
-    return(data.frame(expanded.data[index, ]))
-  }
-  res <- lapply(matched_set_indices, FUN = create_subset, expanded.data = expanded_data)
-  return(res)
-}
+# File contains helper functions written in R for PanelMatch functionality
 
+# builds a list that contains all times in a lag window that correspond to a particular treated unit. This is structured as a list of vectors. Each vector is lag + 1 units long. The overall list will 
+# be the same length as the number of matched sets
 expand.treated.ts <- function(lag, treated.ts)
 {
   helper <- function(treated.t)
@@ -18,7 +11,7 @@ expand.treated.ts <- function(lag, treated.ts)
   lapply(treated.ts, helper)
 }
 
-##OPTIMIZE THIS
+#builds the matrices that we will then use to calculate the mahalanobis distances for each matched set
 build_maha_mats <- function(idx, ordered_expanded_data)
 {
   subset.per.matchedset <- function(sub.idx)
@@ -33,7 +26,9 @@ build_maha_mats <- function(idx, ordered_expanded_data)
   return(result)
 }
 
-#needs more error checking, details will also depend on the syntax/mechanics of the covs.formula argument to be determined later.
+# Will need to be updated if the syntax/implementation of the covs.formula argument is changed
+# Applies necessary transformation to the data based on the specified parameters, including using the covs.formula argument to apply the necessary lags to particular columns.
+# It also will structure the data frame such that every column after the 4th column is used in the following calculations
 parse_and_prep <- function(formula, data, unit.id)
 {
   #check if formula empty or no covariates provided -- error checks
@@ -58,7 +53,8 @@ parse_and_prep <- function(formula, data, unit.id)
   }
   
 }
-
+#helper function that deals with the covs.formula argument. This is what specifically will need to be modified if the format of that argument is changed. It handles the lagging of the various covariates
+# in the process of preparing the data frame for the remaining calculations.
 handle.calls <- function(call.as.string, .data, .unitid)
 {
   lag <- function(var.name, lag.window, data = .data, unitid = .unitid) #want to make sure its being called appropriately
@@ -72,6 +68,10 @@ handle.calls <- function(call.as.string, .data, .unitid)
 }
 
 #use col.index to determine which columns we want to "scan" for missing data
+# Note that in earlier points in the code, we rearrange the columns and prepare the data frame such that cols 1-4 are bookkeeping (unit id, time id, treated variable, unlagged outcome variable)
+# and all remaining columns are used in the calculations after going through parse_and_prep function, so col.index should usually be 5:ncol(data)
+# In practice, this function just looks over the data in the specified columns in the "data" data frame for missing data. Then it creates columns with indicator variables about the missingness of those variables
+# 1 for missing data, 0 for present
 handle.missing.data <- function(data, col.index)
 {
   
@@ -93,7 +93,43 @@ handle.missing.data <- function(data, col.index)
   return(data)
 }
 
-#OPTIMIZATION OPPORTUNITIES HERE
+# prepares the data for calculating propensity scores. Will return a list of length equal to the number of matched sets. Each item is a data frame and each data frame contains information at time = t + 0
+# for each treated unit and their corresponding controls. 
+build_ps_data <- function(idxlist, data, lag)
+{
+  obtain.t.rows <- function(idx)
+  {
+    return(idx[length(idx)])
+  }
+  unnest <- function(subidxlist,  lag)
+  {
+    temp <- sapply(subidxlist[[lag + 1]], obtain.t.rows)
+    return(data.frame(data[temp, ]))
+  }
+  results <- lapply(idxlist, unnest, lag = lag)
+  #results <- rbindlist(results)
+  #results <- results[complete.cases(results), ]
+  return(results)
+}
+
+#returns a list of data frames with propensity scores for each unit in a matched set. Each element in the list is a data frame which corresponds to a matched set of 1 treatment and all
+# matched control units
+find_ps <- function(sets, fitted.model)
+{
+  apply_formula <- function (x, B) 
+  {
+    xx <- cbind(1, as.matrix(x[, 5:ncol(x)]))
+    x[, (ncol(x) + 1)] <- 1 - 1/(1+exp(xx %*% B))
+    names(x)[ncol(x)] <- "ps"
+    return(x[, c(1:4, ncol(x))])
+  }
+  sets_with_ps <- lapply(sets, apply_formula, B = fitted.model$coefficients)
+  return(sets_with_ps)
+}
+
+# Each of the following similarly named functions carry out the refinement procedures -- using either propensity scores or mahalanobis distances according to the paper. Each of these functions
+# will return a matched.set object with the appropriate weights for control units assigned and new, additional attributes (such as refinement method). 
+# These functions could use some work to be better optimized. For instance, when the "verbose" argument is set to true, they will essentially do all of the refinement calculations twice.
 handle_mahalanobis_calculations <- function(mahal.nested.list, msets, max.size, verbose)
 {
   
@@ -184,46 +220,6 @@ handle_mahalanobis_calculations <- function(mahal.nested.list, msets, max.size, 
   return(msets)
 }
 
-build_ps_data <- function(idxlist, data, lag)
-{
-  obtain.t.rows <- function(idx)
-  {
-    return(idx[length(idx)])
-  }
-  unnest <- function(subidxlist,  lag)
-  {
-    temp <- sapply(subidxlist[[lag + 1]], obtain.t.rows)
-    return(data.frame(data[temp, ]))
-  }
-  results <- lapply(idxlist, unnest, lag = lag)
-  #results <- rbindlist(results)
-  #results <- results[complete.cases(results), ]
-  return(results)
-}
-
-build_expanded_sets_for_coef_mult <- function(idxlist, data)
-{
-  unnest <- function(subidxlist)
-  {
-    temp.index <- unlist(subidxlist) #again, need to be sure that the first four columns can be thrown out
-    x <- as.data.frame(cbind(1, data[temp.index, 5:ncol(data)]))
-    return(x)
-  }
-  results <- lapply(idxlist, unnest)
-}
-
-find_ps <- function(sets, fitted.model)
-{
-  apply_formula <- function (x, B) 
-  {
-    xx <- cbind(1, as.matrix(x[, 5:ncol(x)]))
-    x[, (ncol(x) + 1)] <- 1 - 1/(1+exp(xx %*% B))
-    names(x)[ncol(x)] <- "ps"
-    return(x[, c(1:4, ncol(x))])
-  }
-  sets_with_ps <- lapply(sets, apply_formula, B = fitted.model$coefficients)
-  return(sets_with_ps)
-}
 
 handle_ps_weighted <- function(just.ps.sets, msets, refinement.method)
 {

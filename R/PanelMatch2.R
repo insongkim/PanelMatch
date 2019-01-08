@@ -133,8 +133,6 @@ PanelMatch2 <- function(lag, time.id, unit.id, treatment, outcome,
 #' @export
 PanelMatch2.matched.set <- function(mset.object, data, outcome.var)
 {
-  
-  #browser()
   lag = attr(mset.object, "lag")
   time.id = attr(mset.object, "t.var")
   unit.id = attr(mset.object, "id.var")

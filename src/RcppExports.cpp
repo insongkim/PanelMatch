@@ -99,18 +99,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// renormalize
-Rcpp::List renormalize(Rcpp::List control_index, Rcpp::List sets_to_be_updated);
-RcppExport SEXP _PanelMatch_renormalize(SEXP control_indexSEXP, SEXP sets_to_be_updatedSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::List >::type control_index(control_indexSEXP);
-    Rcpp::traits::input_parameter< Rcpp::List >::type sets_to_be_updated(sets_to_be_updatedSEXP);
-    rcpp_result_gen = Rcpp::wrap(renormalize(control_index, sets_to_be_updated));
-    return rcpp_result_gen;
-END_RCPP
-}
 // equality_four_cpp
 Rcpp::NumericVector equality_four_cpp(Rcpp::NumericMatrix Wit_vals, Rcpp::NumericVector y, Rcpp::NumericVector z);
 RcppExport SEXP _PanelMatch_equality_four_cpp(SEXP Wit_valsSEXP, SEXP ySEXP, SEXP zSEXP) {
@@ -121,105 +109,6 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type y(ySEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type z(zSEXP);
     rcpp_result_gen = Rcpp::wrap(equality_four_cpp(Wit_vals, y, z));
-    return rcpp_result_gen;
-END_RCPP
-}
-// sumCpp
-int sumCpp(Rcpp::NumericVector x);
-RcppExport SEXP _PanelMatch_sumCpp(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(sumCpp(x));
-    return rcpp_result_gen;
-END_RCPP
-}
-// FindMatches
-NumericMatrix FindMatches(IntegerVector unitIdx, IntegerVector timeIdx, IntegerVector treat);
-RcppExport SEXP _PanelMatch_FindMatches(SEXP unitIdxSEXP, SEXP timeIdxSEXP, SEXP treatSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< IntegerVector >::type unitIdx(unitIdxSEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type timeIdx(timeIdxSEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type treat(treatSEXP);
-    rcpp_result_gen = Rcpp::wrap(FindMatches(unitIdx, timeIdx, treat));
-    return rcpp_result_gen;
-END_RCPP
-}
-// all_sug
-bool all_sug(LogicalVector x);
-RcppExport SEXP _PanelMatch_all_sug(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< LogicalVector >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(all_sug(x));
-    return rcpp_result_gen;
-END_RCPP
-}
-// rbind_c
-NumericMatrix rbind_c(NumericMatrix x, NumericMatrix y);
-RcppExport SEXP _PanelMatch_rbind_c(SEXP xSEXP, SEXP ySEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericMatrix >::type x(xSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type y(ySEXP);
-    rcpp_result_gen = Rcpp::wrap(rbind_c(x, y));
-    return rcpp_result_gen;
-END_RCPP
-}
-// findDDmatched2
-List findDDmatched2(int L, int F, NumericMatrix x1);
-RcppExport SEXP _PanelMatch_findDDmatched2(SEXP LSEXP, SEXP FSEXP, SEXP x1SEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< int >::type L(LSEXP);
-    Rcpp::traits::input_parameter< int >::type F(FSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type x1(x1SEXP);
-    rcpp_result_gen = Rcpp::wrap(findDDmatched2(L, F, x1));
-    return rcpp_result_gen;
-END_RCPP
-}
-// findDDNaive
-List findDDNaive(int L, int F, NumericMatrix x1);
-RcppExport SEXP _PanelMatch_findDDNaive(SEXP LSEXP, SEXP FSEXP, SEXP x1SEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< int >::type L(LSEXP);
-    Rcpp::traits::input_parameter< int >::type F(FSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type x1(x1SEXP);
-    rcpp_result_gen = Rcpp::wrap(findDDNaive(L, F, x1));
-    return rcpp_result_gen;
-END_RCPP
-}
-// findDDrestricted
-List findDDrestricted(int L, int F, NumericMatrix x1);
-RcppExport SEXP _PanelMatch_findDDrestricted(SEXP LSEXP, SEXP FSEXP, SEXP x1SEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< int >::type L(LSEXP);
-    Rcpp::traits::input_parameter< int >::type F(FSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type x1(x1SEXP);
-    rcpp_result_gen = Rcpp::wrap(findDDrestricted(L, F, x1));
-    return rcpp_result_gen;
-END_RCPP
-}
-// findDDM2stripped
-List findDDM2stripped(int L, int F, NumericMatrix x1);
-RcppExport SEXP _PanelMatch_findDDM2stripped(SEXP LSEXP, SEXP FSEXP, SEXP x1SEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< int >::type L(LSEXP);
-    Rcpp::traits::input_parameter< int >::type F(FSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type x1(x1SEXP);
-    rcpp_result_gen = Rcpp::wrap(findDDM2stripped(L, F, x1));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -266,21 +155,6 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type ids(idsSEXP);
     Rcpp::traits::input_parameter< int >::type L(LSEXP);
     rcpp_result_gen = Rcpp::wrap(get_msets_helper(control_history_list, widemat, t_as_col_nums, ids, L));
-    return rcpp_result_gen;
-END_RCPP
-}
-// create_dmats_for_distance
-List create_dmats_for_distance(NumericMatrix expanded_data, NumericVector treated_ids, NumericVector treated_ts, CharacterVector row_key, List matched_sets);
-RcppExport SEXP _PanelMatch_create_dmats_for_distance(SEXP expanded_dataSEXP, SEXP treated_idsSEXP, SEXP treated_tsSEXP, SEXP row_keySEXP, SEXP matched_setsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericMatrix >::type expanded_data(expanded_dataSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type treated_ids(treated_idsSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type treated_ts(treated_tsSEXP);
-    Rcpp::traits::input_parameter< CharacterVector >::type row_key(row_keySEXP);
-    Rcpp::traits::input_parameter< List >::type matched_sets(matched_setsSEXP);
-    rcpp_result_gen = Rcpp::wrap(create_dmats_for_distance(expanded_data, treated_ids, treated_ts, row_key, matched_sets));
     return rcpp_result_gen;
 END_RCPP
 }

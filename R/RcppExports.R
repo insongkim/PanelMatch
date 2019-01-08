@@ -29,44 +29,8 @@ needs_renormalization <- function(set_index_list) {
     .Call('_PanelMatch_needs_renormalization', PACKAGE = 'PanelMatch', set_index_list)
 }
 
-renormalize <- function(control_index, sets_to_be_updated) {
-    .Call('_PanelMatch_renormalize', PACKAGE = 'PanelMatch', control_index, sets_to_be_updated)
-}
-
 equality_four_cpp <- function(Wit_vals, y, z) {
     .Call('_PanelMatch_equality_four_cpp', PACKAGE = 'PanelMatch', Wit_vals, y, z)
-}
-
-sumCpp <- function(x) {
-    .Call('_PanelMatch_sumCpp', PACKAGE = 'PanelMatch', x)
-}
-
-FindMatches <- function(unitIdx, timeIdx, treat) {
-    .Call('_PanelMatch_FindMatches', PACKAGE = 'PanelMatch', unitIdx, timeIdx, treat)
-}
-
-all_sug <- function(x) {
-    .Call('_PanelMatch_all_sug', PACKAGE = 'PanelMatch', x)
-}
-
-rbind_c <- function(x, y) {
-    .Call('_PanelMatch_rbind_c', PACKAGE = 'PanelMatch', x, y)
-}
-
-findDDmatched2 <- function(L, F, x1) {
-    .Call('_PanelMatch_findDDmatched2', PACKAGE = 'PanelMatch', L, F, x1)
-}
-
-findDDNaive <- function(L, F, x1) {
-    .Call('_PanelMatch_findDDNaive', PACKAGE = 'PanelMatch', L, F, x1)
-}
-
-findDDrestricted <- function(L, F, x1) {
-    .Call('_PanelMatch_findDDrestricted', PACKAGE = 'PanelMatch', L, F, x1)
-}
-
-findDDM2stripped <- function(L, F, x1) {
-    .Call('_PanelMatch_findDDM2stripped', PACKAGE = 'PanelMatch', L, F, x1)
 }
 
 get_treated_indices <- function(ordered_df, treated_indices, treat_col_idx, unit_var_col) {
@@ -79,10 +43,6 @@ get_comparison_histories <- function(compmat, ts, ids, t_col, id_col, L, treat_c
 
 get_msets_helper <- function(control_history_list, widemat, t_as_col_nums, ids, L) {
     .Call('_PanelMatch_get_msets_helper', PACKAGE = 'PanelMatch', control_history_list, widemat, t_as_col_nums, ids, L)
-}
-
-create_dmats_for_distance <- function(expanded_data, treated_ids, treated_ts, row_key, matched_sets) {
-    .Call('_PanelMatch_create_dmats_for_distance', PACKAGE = 'PanelMatch', expanded_data, treated_ids, treated_ts, row_key, matched_sets)
 }
 
 get_yearly_dmats <- function(expanded_data, treated_ids, ts_to_fetch, row_key, matched_sets, lag) {

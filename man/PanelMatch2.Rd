@@ -36,12 +36,23 @@ the treatment group).}
 Can specify lags using a function "lag" which takes two positional arguments. The first is the name of the variable which you wish to lag, specified as a string second is the lag window, specified as an integer sequence
 See the example below.}
 
-\item{verbose}{option to include more information about the matched.set object calculations}
+\item{verbose}{option to include more information about the matched.set object calculations, like the distances used to create the refined sets and weights}
 }
 \value{
-\code{PanelMatch} returns a list of class `matched.set'
-containing the following components:
-\item{treatment}{treatment variable name}
+\code{PanelMatch} returns a list of class `matched.set'. Each element in the list is a vector of integers corresponding to the control unit ids in a matched set. Additionally, these vectors might have additional attributes -- "weights" or "distances". 
+These correspond to the weights or distances corresponding to each control unit, as determined by the specified refinement method.
+Each element also has a name, which corresponds to the unit id and time variable of the treated unit and time of treatment, concatenated together and separated by a period.
+ 
+matched.set objects also have a number of other potential attributes:
+\item{lag}{same as lag parameter -- an intege value indicating the length of treatment history to be}
+\item{t.var}{time variable name}
+\item{id.var}{unit id variable name}
+\item{treated.var}{treated variable name}
+\item{class}{class of the object: should always be "matched.set"} 
+\item{refinement.method}{method used to refine and/or weight the control units in each set}
+\item{covs.formula}{see covs.formula argument}
+\item{match.missing}{see match.missing argument}
+\item{max.match.size}{same as size.match argument}
 }
 \description{
 \code{PanelMatch2} identifies a matched set for each treated

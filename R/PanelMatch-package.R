@@ -32,20 +32,10 @@
 #' "Matching Methods for Causal Inference with Time-Series
 #' Cross-Section Data." Working paper.
 #' @keywords package
-#' @import ggplot2 Synth stats MASS
+#' @import ggplot2 Synth stats MASS data.table
 #' @importFrom Rcpp sourceCpp
-#' @importFrom DataCombine slide MoveFront
 #' @importFrom CBPS CBPS
-#' @importFrom lasso2 merge.formula
-#' @importFrom data.table rbindlist
-#' @importFrom plyr rbind.fill
-#' @importFrom reshape2 dcast
 #' @importFrom utils capture.output
-#' @importFrom MCMCpack rdirichlet
-#' @importFrom nloptr nloptr
-#' @importFrom Rsolnp solnp
-#' @importFrom matrixStats colSds colQuantiles
-#' @importFrom knitr kable
 #' @importFrom Matrix cBind rBind tcrossprod crossprod Diagonal Matrix drop0
 #' @importFrom methods as
 #' @importFrom utils flush.console tail object.size

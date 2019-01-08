@@ -2,6 +2,9 @@
 #include <vector>
 #include <unordered_map>
 #include <string>
+/*
+ * Function that provides the index of treated/control units so we know where to store the vit values in the large vector which we will eventually use for finding Wits
+ */
 // [[Rcpp::export]]
 Rcpp::NumericVector get_vit_index(Rcpp::CharacterVector t_id_key, Rcpp::CharacterVector control_treatment_t_ids, Rcpp::NumericVector control_treatment_set_nums)
 {
@@ -27,7 +30,9 @@ Rcpp::NumericVector get_vit_index(Rcpp::CharacterVector t_id_key, Rcpp::Characte
   }
   return intdex;
 }
-
+/*
+ * This function assigns dits, according to the paper
+ */
 // [[Rcpp::export]]
 Rcpp::NumericVector get_dits(Rcpp::CharacterVector t_id_key, Rcpp::CharacterVector nonempty_t_ids)
 {
@@ -79,7 +84,10 @@ Rcpp::NumericVector sumwits(int nrow, Rcpp::NumericVector vit_vect)
 	return WitVector;
 }
 
-
+/*
+ * Both this function and check_treated_units carry out the dirty work of checking from t-1 to t + lead to see if data is mising. This function looks at control units. 
+ * It returns a list of logical vectors, indicating which control units should be dropped/kept in a particular matched set for the following calculations
+ */
 // [[Rcpp::export]]
 Rcpp::List re_norm_index(Rcpp::NumericMatrix compmat, Rcpp::NumericVector compmat_row_units, Rcpp::NumericVector compmat_cols, int lead, Rcpp::List sets, Rcpp::NumericVector control_start_years)
 {
@@ -87,15 +95,11 @@ Rcpp::List re_norm_index(Rcpp::NumericMatrix compmat, Rcpp::NumericVector compma
 	for (int i = 0; i < compmat_row_units.size(); ++i)
 	{
 		rowmap[compmat_row_units[i]] = i;
-		//Rcpp::Rcout << "compmat_row_units[i]: " <<compmat_row_units[i] << std::endl;
-		//Rcpp::Rcout << "map1 i: " << i << std::endl;
 	}
 	std::unordered_map<int, int> colmap;
 	for (int i = 0; i < compmat_cols.size(); ++i)
 	{
 		colmap[compmat_cols[i]] = i + 1;
-		//Rcpp::Rcout << "compmat_cols[i]: " <<compmat_cols[i] << std::endl;
-		//Rcpp::Rcout << "map2 i: " << i << std::endl;
 	}
 	
 	Rcpp::List set_index_list(sets.size());
@@ -152,6 +156,10 @@ Rcpp::List re_norm_index(Rcpp::NumericMatrix compmat, Rcpp::NumericVector compma
 }
 
 
+/*
+ * A slightly less complicated version of the re_norm_index function, which looks at treated units for missing data. It returns a logical vector, indicating which treated units can/cannot be used.
+ * The entire matched set corresponding with a treated unit with missing data must be dropped entirely from the calculations.
+ */
 
 // [[Rcpp::export]]
 Rcpp::LogicalVector check_treated_units(Rcpp::NumericMatrix compmat, Rcpp::NumericVector compmat_row_units, Rcpp::NumericVector compmat_cols, int lead, Rcpp::NumericVector treated_ids, Rcpp::NumericVector treated_ts)
@@ -211,7 +219,11 @@ Rcpp::LogicalVector check_treated_units(Rcpp::NumericMatrix compmat, Rcpp::Numer
 	}
 	return set_index;
 }
-
+/*
+ * 
+ * this function provides us an index of which matched sets need to have their weights updated. It just iterates over the more detailed index found in earlier functions so that we aren't
+ * pointlessly iterating over matched sets that don't need to be adjusted.
+ */
 // [[Rcpp::export]]
 Rcpp::LogicalVector needs_renormalization(Rcpp::List set_index_list)
 {
@@ -228,28 +240,7 @@ Rcpp::LogicalVector needs_renormalization(Rcpp::List set_index_list)
 	return rewt;
 }
 
-// [[Rcpp::export]]
-Rcpp::List renormalize(Rcpp::List control_index, Rcpp::List sets_to_be_updated)
-{
-  Rcpp::List updated_sets(sets_to_be_updated.size());
-  for(int i = 0; i < sets_to_be_updated.size(); i++)
-  {
-    Rcpp::NumericVector ctls = sets_to_be_updated[i];
-    Rcpp::LogicalVector idx = control_index[i];
-    Rcpp::NumericVector oldwts = ctls.attr("weights");
-    Rcpp::NumericVector subctl = ctls[idx];
-    Rcpp::NumericVector newwts = oldwts[idx];
-    double denom = Rcpp::sum(newwts);
-    Rcpp::NumericVector results = newwts / denom;  //take advantage of the rcpp sugar?
-    subctl.attr("weights") = results;
-    updated_sets[i] = subctl;
-  }
-  return updated_sets;
-}
-
-// equality_four <- function(x, y, z){
-//   return(sum(x*y)/sum(z))
-// }
+//not deprecated necessarily, but is slower than the R implementation currently
 // [[Rcpp::export]]
 Rcpp::NumericVector equality_four_cpp(Rcpp::NumericMatrix Wit_vals, Rcpp::NumericVector y, Rcpp::NumericVector z)
 {

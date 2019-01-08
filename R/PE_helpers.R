@@ -1,3 +1,7 @@
+#pcs and pts create data frames with the time/id combinations--that need to be found so that they can be easily looked up in the data frame via a hash table. The data frame also contains information
+# about the weight of that unit at particular times, so we use the hashtable to look up where to put this data so that we can easily assign the appropriate weights in the original data frame containing the problem data.
+# pcs does this for all control units in a matched set
+# ("Prepare Control unitS)
 #' @export
 pcs <- function(sets, lead.in)
 {
@@ -19,7 +23,7 @@ pcs <- function(sets, lead.in)
   set.nums <- rep(0:(length(sets) - num.empty - 1), (lsets[lsets != 0] * (2)))
   data.frame(t = ts, id = ids, weight = wts, set.number = set.nums)
 }
-
+# refer to the description above -- pts works on treated units ("Prepare Treated unitS)
 #' @export
 pts <- function(sets, lead.in)
 {
@@ -38,7 +42,8 @@ pts <- function(sets, lead.in)
   set.nums <- rep(0:(length(sets) - num.empty -1 ), rep(2, length(sets) - num.empty ))
   data.frame(t = ts, id = tids, weight = wts, set.number = set.nums)
 }
-
+#returns a vector of Wits, as defined in the paper. They should be in the same order as the data frame containing the original problem data. The pts, pcs, and getWits functions act for a specific 
+# lead. So, for instance if our lead window is 0,1,2,3,4, these function must be called for each of those -- so for 0, then for 1, etc.
 #' @export
 getWits <- function(matched_sets, lead, data)
 {
@@ -68,7 +73,7 @@ getWits <- function(matched_sets, lead, data)
   return(Wits)
   
 }
-
+# returns a vector of dit values, as defined in the paper. They should be in the same order as the data frame containing the original problem data.
 #' @export
 getDits <- function(matched_sets, data)
 {
@@ -83,12 +88,13 @@ getDits <- function(matched_sets, data)
   dit.vect <- get_dits(refnames, nms)
 }
 
-
+# this will return a new matched.set object containing only treated/controls that can be used to calculate a point estimate. In particular, this function looks from time = t - 1 to t + lead
+# and verifies that the necessary data is present. If not, those units are removed. The matched.set object that comes out of this function will need to be reweighted
 #' @export
-  prep_for_leads <- function(matched_sets, ordered.data, max.lead, t.var, id.var, outcome.var) #add other columns to check here
+prep_for_leads <- function(matched_sets, ordered.data, max.lead, t.var, id.var, outcome.var) 
 {
   #CHECK TO MAKE SURE COLUMNS ARE IN ORDER
-  #browser()
+  
   ordered.data <- ordered.data[order(ordered.data[,id.var], ordered.data[,t.var]), ]
   compmat <- data.table::dcast(data.table::as.data.table(ordered.data), formula = paste0(id.var, "~", t.var), value.var = outcome.var)
   ts <- as.numeric(unlist(strsplit(names(matched_sets), split = "[.]"))[c(F,T)])
@@ -115,7 +121,6 @@ getDits <- function(matched_sets, data)
     sub.set <- matched_sets[idx]
     create_new_sets <- function(set, index)
     {
-      #browser()
       return(set[index])
     }
     sub.set.new <- mapply(FUN = create_new_sets, sub.set, sub.index, SIMPLIFY = FALSE)
@@ -123,7 +128,7 @@ getDits <- function(matched_sets, data)
     all.gone.counter <- sapply(sub.set.new, function(x){sum(x)})
     if(sum(all.gone.counter == 0) > 0) #case in which all the controls in a particular group were dropped
     {
-      stop("what is happening?")
+      stop("all controls in a particular matched set were removed due to missing data")
       
       idx[all.gone.counter == 0] <- FALSE
       sub.index <- ll[idx]
@@ -145,3 +150,8 @@ getDits <- function(matched_sets, data)
   return(matched_sets)
   
 }
+#function that ultimately calculates the point estimate values
+equality_four <- function(x, y, z){
+    return(sum(x*y)/sum(z))
+  }  
+  
