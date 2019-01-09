@@ -9,6 +9,7 @@ PanelEstimate2 <- function(lead, #probably want to swap the order of these aroun
                           data,
                           outcome.variable) {
 
+  
   if (inference == "wfe" & length(lead) > 1) 
     stop("When inference method is wfe, please only supply 1 lead at a time. 
          For example, please call this function with `lead` = 1 and then call it with `lead` = 2,
@@ -20,8 +21,14 @@ PanelEstimate2 <- function(lead, #probably want to swap the order of these aroun
   time.id <- attr(sets, "t.var")
   method <- attr(sets, "refinement.method")
   restricted <- attr(sets, "restricted") # this doesnt exist yet, not sure what it means.
-  #check the leads, update sets, and weights
-  #browser()
+  
+  if(any(table(data[, unit.id]) != max(table(data[, unit.id]))))
+  {
+    stop("panel data is not balanced") #can be resolved either with a cast + melt, or hacking together something from plm
+  }
+  #do we need to order the data
+  data <- data[order(data[,unit.id], data[,time.id]), ]
+  
   if(is.null(restricted)){restricted <- FALSE}
   
   sets <- prep_for_leads(sets, data, max(lead), time.id, unit.id, outcome.variable)
@@ -433,10 +440,15 @@ summary.PE <- function(object, verbose = TRUE, bias.corrected = FALSE, ...) {
 #' @export
 plot.PE <- function(pe.object, ylab = "Estimated Effect of Treatment", xlab = "Time", main = "Estimated Effects of Treatment Over Time",...)
 {
+  #browser()
   plot.data <- summary(pe.object, verbose = F, bias.corrected = F)
-  plot(x = 1:5,y = plot.data[, 1], ylim = c(min(plot.data[,3]) - .1, max(plot.data[,4]) + .1), pch = 16, 
+  # plot(x = 1:5,y = plot.data[, 1], ylim = c(min(plot.data[,3]) - .1, max(plot.data[,4]) + .1), pch = 16, 
+  #      xaxt = "n", ylab = ylab, xlab = xlab, main = main, ...)
+  plot(x = 1:(nrow(plot.data)),y = plot.data[, 1], pch = 16, 
        xaxt = "n", ylab = ylab, xlab = xlab, main = main, ...)
   axis(side = 1, at = 1:nrow(plot.data), labels = rownames(plot.data))
-  arrows(1:5, plot.data[,3], 1:5, plot.data[,4], length=0.05, angle=90, code=3)
+  arrows(1:(nrow(plot.data)), plot.data[,3], 1:(nrow(plot.data)), plot.data[,4], length=0.05, angle=90, code=3)
   abline(h = 0, lty = "dashed")
 }
+
+
