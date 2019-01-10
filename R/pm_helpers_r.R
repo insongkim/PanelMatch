@@ -36,8 +36,7 @@ parse_and_prep <- function(formula, data, unit.id)
   terms <- gsub(" ", "", terms) #remove whitespace
   lag.calls <- terms[grepl("lag(*)", terms)] #regex to get calls to lag function
   other.terms <- terms[!grepl("lag(*)", terms)]
-  sub.data <- data[, c(1:4, which(other.terms == colnames(data)))] #including only what is specified in the formula
-  
+  sub.data <- data[, c(1:4, which(colnames(data) %in% other.terms) )] #including only what is specified in the formula
   if(any(grepl("=", lag.calls))) stop("fix lag calls to use only unnamed arguments in the correct positions")
   data <- data.table::as.data.table(data) #check sorting
   if(length(lag.calls) > 0)
