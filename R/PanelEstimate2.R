@@ -24,9 +24,9 @@ PanelEstimate2 <- function(lead, #probably want to swap the order of these aroun
   
   if(any(table(data[, unit.id]) != max(table(data[, unit.id]))))
   {
-    stop("panel data is not balanced") #can be resolved either with a cast + melt, or hacking together something from plm
+    data <- make.pbalanced(data, balance.type = "fill", index = c(unit.id, time.id))
   }
-  #do we need to order the data
+  #do we need to order the data?
   data <- data[order(data[,unit.id], data[,time.id]), ]
   
   if(is.null(restricted)){restricted <- FALSE}
@@ -186,7 +186,7 @@ PanelEstimate2 <- function(lead, #probably want to swap the order of these aroun
                 "boots" = coefs, "ITER" = ITER,
                 "method" = method, "lag" = lag,
                 "lead" = lead, "CI" = CI, "qoi" = qoi, "matched.sets" = sets)
-      class(z) <- "PE"
+      class(z) <- "PanelEstimate"
       z
     }
     
@@ -256,7 +256,7 @@ PanelEstimate2 <- function(lead, #probably want to swap the order of these aroun
       z <- list("o.coef" = o.coefs,
                 "boots" = coefs, "ITER" = ITER,
                 "lead" = lead, "CI" = CI, "qoi" = qoi, "matched.sets" = sets)
-      class(z) <- "PE"
+      class(z) <- "PanelEstimate"
       z
 
     }
@@ -347,7 +347,7 @@ PanelEstimate2 <- function(lead, #probably want to swap the order of these aroun
       z <- list("o.coef" = o.coefs_ate,
                 "boots" = coefs, "ITER" = ITER,
                 "lead" = lead, "CI" = CI, "qoi" = qoi, "matched.sets" = sets)
-      class(z) <- "PE"
+      class(z) <- "PanelEstimate"
       return(z)
     }
     
@@ -366,7 +366,7 @@ PanelEstimate2 <- function(lead, #probably want to swap the order of these aroun
 #' @param ... Further arguments to be passed to \code{summary.PanelEstimate()}.
 #' 
 #' @export
-summary.PE <- function(object, verbose = TRUE, bias.corrected = FALSE, ...) {
+summary.PanelEstimate <- function(object, verbose = TRUE, bias.corrected = FALSE, ...) {
   
   if(verbose)
   {
@@ -436,9 +436,11 @@ summary.PE <- function(object, verbose = TRUE, bias.corrected = FALSE, ...) {
   #     sd(object$boots), "\n")
 }
 
-
+#' plot the point estimates and standard errors from a PanelEstimate calculation. The only mandatory argument is an object of the PanelEstimate class
+#' Use standard arguments to the \code{plot} function to modify the plot as needed.
+#' @param pe.object
 #' @export
-plot.PE <- function(pe.object, ylab = "Estimated Effect of Treatment", xlab = "Time", main = "Estimated Effects of Treatment Over Time",...)
+plot.PanelEstimate <- function(pe.object, ylab = "Estimated Effect of Treatment", xlab = "Time", main = "Estimated Effects of Treatment Over Time",...)
 {
   #browser()
   plot.data <- summary(pe.object, verbose = F, bias.corrected = F)

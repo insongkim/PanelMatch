@@ -31,22 +31,11 @@ License: GPL(>= 3)
 Imports:
     Rcpp (>= 0.12.5),
     data.table,
-    dplyr,
     ggplot2,
     CBPS,
-    DataCombine,
-    knitr,
-    matrixStats,
-    MCMCpack,
-    nloptr,
-    plyr,
     stats,
-    reshape2,
-    Rsolnp,
-    Synth,
     MASS,
     Matrix,
-    arm,
     graphics,
     methods
 Depends:

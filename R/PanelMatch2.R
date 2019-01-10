@@ -60,12 +60,13 @@ PanelMatch2 <- function(lag, time.id, unit.id, treatment, outcome,
 
   if(any(table(data[, unit.id]) != max(table(data[, unit.id]))))
   {
-    stop("panel data is not balanced") #can be resolved either with a cast + melt, or hacking together something from plm
+    data <- make.pbalanced(data, balance.type = "fill", index = c(unit.id, time.id))
   }
   othercols <- colnames(data)[!colnames(data) %in% c(time.id, unit.id, treatment, outcome)]
   data <- data[, c(unit.id, time.id, treatment, outcome, othercols)] #reorder columns 
   ordered.data <- data[order(data[,unit.id], data[,time.id]), ]
   temp.treateds <- findAllTreated(ordered.data, treatedvar = treatment, time.var = time.id, unit.var = unit.id, hasbeensorted = TRUE)
+  if(nrow(temp.treateds) == 0) stop("no treated units")
   msets <- get.matchedsets(temp.treateds[, time.id], temp.treateds[, unit.id], ordered.data, lag, time.id, unit.id, treatment, hasbeensorted = TRUE)
   msets <- msets[sapply(msets, length) > 0 ]
   treated.ts <- as.numeric(unlist(strsplit(names(msets), split = "[.]"))[c(F,T)])
