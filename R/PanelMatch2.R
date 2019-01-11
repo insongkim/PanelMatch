@@ -98,6 +98,18 @@ PanelMatch2 <- function(lag, time.id, unit.id, treatment, outcome,
     pre.pooled <- rbindlist(expanded.sets.t0)
     pooled <- pre.pooled[complete.cases(pre.pooled), ]
     
+    cols.to.remove <- which(unlist(lapply(pooled, function(x){all(x[1] == x)})))
+    if(length(cols.to.remove) > 0)
+    {
+      class(pooled) <- c("data.frame")
+      pooled <- pooled[, -cols.to.remove]
+      rmv <- function(x, cols.to.remove_)
+      {
+        return(x[, -cols.to.remove_])
+      }
+      expanded.sets.t0 <- lapply(expanded.sets.t0, rmv, cols.to.remove_ = cols.to.remove)
+    }
+    
     if(refinement.method == "CBPS.weight" | refinement.method == "CBPS.match")
     {
       fit0 <- suppressMessages(CBPS::CBPS(reformulate(response = treatment, termlabels = colnames(pooled)[-c(1:4)]), 
