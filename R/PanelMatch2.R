@@ -18,7 +18,7 @@
 #' binary indicator (integer with 0 for the control group and 1 for
 #' the treatment group).
 #' @param outcome Character string of outcome variable. 
-#' @param refinement.method character string of matching method used for refining the matched sets. Currently only mahalanobis is supported
+#' @param refinement.method character string of matching method used for refining the matched sets. Can choose "mahalanobis", "ps.match", "CBPS.match", "ps.weight", "CBPS.weight". The first three methods will use the size.match argument to create sets of at most size.match closest control units.
 #' @param match.missing Logical variable indicating whether or not units can be matched on the patterns of missingness in their treatment histories
 #' @param data Balanced panel data set
 #' @param size.match Maximum size of the matched sets after refinement
@@ -36,7 +36,7 @@
 #' \item{id.var}{unit id variable name}
 #' \item{treated.var}{treated variable name}
 #' \item{class}{class of the object: should always be "matched.set"} 
-#' \item{refinement.method}{method used to refine and/or weight the control units in each set}
+#' \item{refinement.method}{method used to refine and/or weight the control units in each set.}
 #' \item{covs.formula}{see covs.formula argument}
 #' \item{match.missing}{see match.missing argument}
 #' \item{max.match.size}{same as size.match argument}
