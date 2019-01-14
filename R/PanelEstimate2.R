@@ -19,6 +19,7 @@ PanelEstimate2 <- function(lead, #probably want to swap the order of these aroun
   treatment <- attr(sets, "treated.var")
   unit.id <- attr(sets, "id.var")
   time.id <- attr(sets, "t.var")
+  #method = inference
   method <- attr(sets, "refinement.method")
   restricted <- attr(sets, "restricted") # this doesnt exist yet, not sure what it means.
   
@@ -30,89 +31,60 @@ PanelEstimate2 <- function(lead, #probably want to swap the order of these aroun
   data <- data[order(data[,unit.id], data[,time.id]), ]
   
   if(is.null(restricted)){restricted <- FALSE}
-  
-  sets <- prep_for_leads(sets, data, max(lead), time.id, unit.id, outcome.variable)
-  sets <- sets[sapply(sets, length) > 0]
-  treated.unit.ids <- as.numeric(unlist(strsplit(names(sets), split = "[.]"))[c(T,F)])
-  # WHAT TO DO WHEN EMPTY SETS ARE PRODUCED AS A RESULT OF THIS?? REMOVE THEM I ASSUME?
-  
+  #probably want to move this into the att branch
+  #sets <- prep_for_leads(sets, data, max(lead), time.id, unit.id, outcome.variable)
+  #sets <- sets[sapply(sets, length) > 0]
+  #treated.unit.ids <- as.numeric(unlist(strsplit(names(sets), split = "[.]"))[c(T,F)])
+
   if (is.null(qoi)) {
     qoi = matched_sets$qoi
   } else {
     qoi = qoi
   }
-  if(qoi != "att") stop("only att is implemented currently")
+  # if(qoi != "att") stop("only att is implemented currently")
   
   # DONT KNOW WHAT THESE ARE DOING
-  if (qoi == "att") {
+  if (qoi == "att" | qoi == "ate") 
+  {
+    sets <- prep_for_leads(sets, data, max(lead), time.id, unit.id, outcome.variable)
+    sets <- sets[sapply(sets, length) > 0]
+    treated.unit.ids <- as.numeric(unlist(strsplit(names(sets), split = "[.]"))[c(T,F)])
     
     data[, paste0("Wit_att", lead)] <- do.call(cbind, lapply(lead, FUN = getWits, data = data, matched_sets = sets))
     data$dit_att <- getDits(matched_sets = sets, data = data)
     colnames(data)[length(data)] <- "dits_att"
     data$`Wit_att-1` <- 0
     ##NOTE THE COMMENT/ASSUMPTION
-    data[, dependent][is.na(data[, dependent])] <- 0 #replace the NAs with zeroes. I think this is ok because the dits should always be zero for these, so the value is irrelevant. this just makes the implementation a little bit easier 
+    #data[, dependent][is.na(data[, dependent])] <- 0 #replace the NAs with zeroes. I think this is ok because the dits should always be zero for these, so the value is irrelevant. this just makes the implementation a little bit easier 
     
-  } else if (qoi == "atc") {
-    newlist <- lapply(matched_sets$`ATC_matches`, lapply_leads, unit.id = unit.id, 
-                      time.id = time.id, lag = lag, estimator = estimator,
-                      inference = inference,
-                      data = data, leads = lead)
+  } 
+  if (qoi == "atc" | qoi == "ate") 
+  {
+    #first we need to "flip" the treatment variable, then re-run panelmatch with this as the new treatment variable
+    data$atc_variable <- ifelse(data[, treatment] == 1, 0, 1)
+    sets2 <- PanelMatch2(lag = lag, time.id = time.id, unit.id = unit.id, treatment = "atc_variable", outcome = outcome.variable,
+                                     refinement.method = attr(sets, "refinement.method"),
+                                     size.match = attr(sets, "max.match.size"),
+                                     data = data,
+                                     match.missing = attr(sets, "match.missing"),
+                                     covs.formula = attr(sets, "covs.formula"),
+                                     verbose = FALSE)
+    sets2 <- prep_for_leads(sets2, data, max(lead), time.id, unit.id, outcome.variable)
+    sets2 <- sets2[sapply(sets2, length) > 0]
+    treated.unit.ids2 <- as.numeric(unlist(strsplit(names(sets2), split = "[.]"))[c(T,F)])
     
-    W_it_by_lead <- lapply(newlist, extract_objects, objective = "wit")
-    dits <- lapply(newlist, extract_objects, objective = "dit")
-    dits <- each_lead(dits, lead = 1)
-    lead2 <- 1:length(lead)
-    W_it_by_lead <- lapply(lead2, each_lead, x = W_it_by_lead)
-    W_it_by_lead <- lapply(W_it_by_lead, function(x) Reduce("+", x))
-    
-    data[, (length(data) + 1):(length(data) + length(W_it_by_lead))] <- unlist(W_it_by_lead)
-    colnames(data)[match(tail(colnames(data), n = length(W_it_by_lead)), colnames(data))] <- sapply(lead, function(x) paste0("Wit_atc", x))
-    data[, length(data) +1] <- Reduce("+", dits)
+    data[, paste0("Wit_atc", lead)] <- do.call(cbind, lapply(lead, FUN = getWits, data = data, matched_sets = sets2))
+    data$dit_atc <- getDits(matched_sets = sets2, data = data)
     colnames(data)[length(data)] <- "dits_atc"
     data$`Wit_atc-1` <- 0
-  } else if (qoi == "ate") {
-    # ATT
-    newlist <- lapply(matched_sets$`ATT_matches`, lapply_leads, unit.id = unit.id, 
-                      time.id = time.id, lag = lag, estimator = estimator,
-                      inference = inference,
-                      data = data, leads = lead)
     
-    W_it_by_lead <- lapply(newlist, extract_objects, objective = "wit")
-    dits <- lapply(newlist, extract_objects, objective = "dit")
-    dits <- each_lead(dits, lead = 1)
-    lead2 <- 1:length(lead)
-    W_it_by_lead <- lapply(lead2, each_lead, x = W_it_by_lead)
-    W_it_by_lead <- lapply(W_it_by_lead, function(x) Reduce("+", x))
-    
-    data[, (length(data) + 1):(length(data) + length(W_it_by_lead))] <- unlist(W_it_by_lead)
-    colnames(data)[match(tail(colnames(data), n = length(W_it_by_lead)), colnames(data))] <- sapply(lead, function(x) paste0("Wit_att", x))
-    data[, length(data) +1] <- Reduce("+", dits)
-    colnames(data)[length(data)] <- "dits_att"
-    # ATC
-    newlist <- lapply(matched_sets$`ATC_matches`, lapply_leads, unit.id = unit.id, 
-                      time.id = time.id, lag = lag, estimator = estimator, 
-                      inference = inference,
-                      data = data, leads = lead)
-    
-    W_it_by_lead <- lapply(newlist, extract_objects, objective = "wit")
-    dits <- lapply(newlist, extract_objects, objective = "dit")
-    dits <- each_lead(dits, lead = 1)
-    lead2 <- 1:length(lead)
-    W_it_by_lead <- lapply(lead2, each_lead, x = W_it_by_lead)
-    W_it_by_lead <- lapply(W_it_by_lead, function(x) Reduce("+", x))
-    
-    data[, (length(data) + 1):(length(data) + length(W_it_by_lead))] <- unlist(W_it_by_lead)
-    colnames(data)[match(tail(colnames(data), n = length(W_it_by_lead)), colnames(data))] <- sapply(lead, function(x) paste0("Wit_atc", x))
-    data[, length(data) +1] <- Reduce("+", dits)
-    colnames(data)[length(data)] <- "dits_atc"
-    data$`Wit_att-1` <- 0
-    data$`Wit_atc-1` <- 0
-  }
-  
+    ##NOTE THE COMMENT/ASSUMPTION
+    #data[, dependent][is.na(data[, dependent])] <- 0 #replace the NAs with zeroes. I think this is ok because the dits should always be zero for these, so the value is irrelevant. this just makes the implementation a little bit easier 
+  } 
+  #NOTE THE COMMENT/ASSUMPTION
+  data[, dependent][is.na(data[, dependent])] <- 0 #replace the NAs with zeroes. I think this is ok because the dits should always be zero for these, so the value is irrelevant. this just makes the implementation a little bit easier 
   
   # ATT
-  #browser()
   if (qoi == "att") {
     if (inference == "wfe"){
 
@@ -170,15 +142,11 @@ PanelEstimate2 <- function(lead, #probably want to swap the order of these aroun
         }
         # create bootstap sample with sapply
         d.sub1 <- data[ data[,unit.id] %in% units, ]
-        #df.bs <- lapply(units, function(x) which(data[,unit.id]==x))
-        #d.sub1 <- data[unlist(df.bs),]
-        #colnames(d.sub1)[3:4] <- c("treatment", "dv")
         att_new <-  sapply(d.sub1[, sapply(lead, function(x) paste0("Wit_att", x)), 
                                   drop = FALSE],
                            equality_four,
                            y = d.sub1[,outcome.variable],
                            z = d.sub1$dits_att)
-        #if(is.na(att_new)) browser()
         coefs[k,] <- att_new
       }
       # changed return to class
@@ -233,29 +201,30 @@ PanelEstimate2 <- function(lead, #probably want to swap the order of these aroun
       }
       
       
-      coefs <- matrix(NA, nrow = ITER, ncol = length(W_it_by_lead))
+      coefs <- matrix(NA, nrow = ITER, ncol = length(lead))
       
       for (k in 1:ITER) {  
         # make new data
         clusters <- unique(data[, unit.id])
         units <- sample(clusters, size = length(clusters), replace=T)
-        # create bootstap sample with sapply
-        df.bs <- lapply(units, function(x) which(data[,unit.id]==x))
-        d.sub1 <- data[unlist(df.bs),]
-        colnames(d.sub1)[3:4] <- c("treatment", "dv")
+        while(all(!units %in% treated.unit.ids2)) #while none of the units are treated units, resample
+        {
+          units <- sample(clusters, size = length(clusters), replace=T)
+        }
+        d.sub1 <- data[ data[,unit.id] %in% units, ]
         atc_new <- -sapply(d.sub1[, sapply(lead, function(x) paste0("Wit_atc", x)), 
                                   drop = FALSE],
                            equality_four,
-                           y = d.sub1$dv,
+                           y = d.sub1[,outcome.variable],
                            z = d.sub1$dits_atc)
-       
+      
         coefs[k,] <- atc_new
         
         
       }
       z <- list("o.coef" = o.coefs,
                 "boots" = coefs, "ITER" = ITER,
-                "lead" = lead, "CI" = CI, "qoi" = qoi, "matched.sets" = sets)
+                "lead" = lead, "CI" = CI, "qoi" = qoi, "matched.sets" = sets2)
       class(z) <- "PanelEstimate"
       z
 
@@ -314,28 +283,30 @@ PanelEstimate2 <- function(lead, #probably want to swap the order of these aroun
       }
       
       
-      coefs <- matrix(NA, nrow = ITER, ncol = length(W_it_by_lead))
+      coefs <- matrix(NA, nrow = ITER, ncol = length(lead))
       
       
       for (k in 1:ITER) {
         # make new data
         clusters <- unique(data[, unit.id])
         units <- sample(clusters, size = length(clusters), replace=T)
+        while(all(!units %in% treated.unit.ids) & all(!units %in% treated.unit.ids2)) #while none of the units are treated units (att and atc), resample
+        {
+          units <- sample(clusters, size = length(clusters), replace=T)
+        }
         # create bootstap sample with sapply
-        df.bs <- lapply(units, function(x) which(data[,unit.id]==x))
-        d.sub1 <- data[unlist(df.bs),]
-        colnames(d.sub1)[3:4] <- c("treatment", "dv")
+        d.sub1 <- data[ data[,unit.id] %in% units, ]
         
         att_new <-sapply(d.sub1[, sapply(lead, function(x) paste0("Wit_att", x)), 
                                 drop = FALSE],
                          equality_four,
-                         y = d.sub1$dv,
+                         y = d.sub1[,outcome.variable],
                          z = d.sub1$dits_att)
         
         atc_new <- -sapply(d.sub1[, sapply(lead, function(x) paste0("Wit_atc", x)), 
                                   drop = FALSE],
                            equality_four,
-                           y = d.sub1$dv,
+                           y = d.sub1[,outcome.variable],
                            z = d.sub1$dits_atc)
         
         coefs[k,] <- (att_new*sum(d.sub1$dits_att) + atc_new*sum(d.sub1$dits_atc))/
@@ -346,7 +317,7 @@ PanelEstimate2 <- function(lead, #probably want to swap the order of these aroun
       # return(list("o.coef" = DID_ATE, "boots" = coefs))
       z <- list("o.coef" = o.coefs_ate,
                 "boots" = coefs, "ITER" = ITER,
-                "lead" = lead, "CI" = CI, "qoi" = qoi, "matched.sets" = sets)
+                "lead" = lead, "CI" = CI, "qoi" = qoi, "matched.sets" = list(sets, sets2))
       class(z) <- "PanelEstimate"
       return(z)
     }
