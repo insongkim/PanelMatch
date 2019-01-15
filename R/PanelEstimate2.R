@@ -31,17 +31,13 @@ PanelEstimate2 <- function(lead, #probably want to swap the order of these aroun
   data <- data[order(data[,unit.id], data[,time.id]), ]
   
   if(is.null(restricted)){restricted <- FALSE}
-  #probably want to move this into the att branch
-  #sets <- prep_for_leads(sets, data, max(lead), time.id, unit.id, outcome.variable)
-  #sets <- sets[sapply(sets, length) > 0]
-  #treated.unit.ids <- as.numeric(unlist(strsplit(names(sets), split = "[.]"))[c(T,F)])
+
 
   if (is.null(qoi)) {
     qoi = matched_sets$qoi
   } else {
     qoi = qoi
   }
-  # if(qoi != "att") stop("only att is implemented currently")
   
   # DONT KNOW WHAT THESE ARE DOING
   if (qoi == "att" | qoi == "ate") 
@@ -54,8 +50,6 @@ PanelEstimate2 <- function(lead, #probably want to swap the order of these aroun
     data$dit_att <- getDits(matched_sets = sets, data = data)
     colnames(data)[length(data)] <- "dits_att"
     data$`Wit_att-1` <- 0
-    ##NOTE THE COMMENT/ASSUMPTION
-    #data[, dependent][is.na(data[, dependent])] <- 0 #replace the NAs with zeroes. I think this is ok because the dits should always be zero for these, so the value is irrelevant. this just makes the implementation a little bit easier 
     
   } 
   if (qoi == "atc" | qoi == "ate") 
@@ -78,11 +72,13 @@ PanelEstimate2 <- function(lead, #probably want to swap the order of these aroun
     colnames(data)[length(data)] <- "dits_atc"
     data$`Wit_atc-1` <- 0
     
-    ##NOTE THE COMMENT/ASSUMPTION
-    #data[, dependent][is.na(data[, dependent])] <- 0 #replace the NAs with zeroes. I think this is ok because the dits should always be zero for these, so the value is irrelevant. this just makes the implementation a little bit easier 
   } 
   #NOTE THE COMMENT/ASSUMPTION
-  data[, dependent][is.na(data[, dependent])] <- 0 #replace the NAs with zeroes. I think this is ok because the dits should always be zero for these, so the value is irrelevant. this just makes the implementation a little bit easier 
+  if(inference == "bootstrap")
+  {
+    data[, dependent][is.na(data[, dependent])] <- 0 #replace the NAs with zeroes. I think this is ok because the dits should always be zero for these, so the value is irrelevant. this just makes the implementation a little bit easier   
+  }
+  
   
   # ATT
   if (qoi == "att") {
@@ -95,8 +91,8 @@ PanelEstimate2 <- function(lead, #probably want to swap the order of these aroun
       #browser()
       if (estimator == "did") {
         fit <- PanelWFE(formula = as.formula(paste(dependent, "~", treatment)), 
-                        treat = treatment, unit.index = matched_sets$unit.id,
-                        time.index = matched_sets$time.id, method = "unit", 
+                        treat = treatment, unit.index = unit.id,
+                        time.index = time.id, method = "unit", 
                         qoi = "att", estimator = "did", 
                         df.adjustment = df.adjustment,
                         hetero.se = TRUE, 
@@ -104,8 +100,8 @@ PanelEstimate2 <- function(lead, #probably want to swap the order of these aroun
                         data = data)
       } else {
         fit <- PanelWFE(formula = as.formula(paste(dependent, "~", treatment)), 
-                        treat = treatment, unit.index = matched_sets$unit.id,
-                        time.index = matched_sets$time.id, method = "time", 
+                        treat = treatment, unit.index = unit.id,
+                        time.index = time.id, method = "time", 
                         qoi = "att", estimator = NULL, 
                         df.adjustment = df.adjustment,
                         hetero.se = TRUE, 
@@ -165,8 +161,8 @@ PanelEstimate2 <- function(lead, #probably want to swap the order of these aroun
       data$Wit_atc0 <- data[c(paste0("Wit_atc", lead))][,1]
       if (estimator == "did") {
         fit <- PanelWFE(formula = as.formula(paste(dependent, "~", treatment)), 
-                        treat = treatment, unit.index = matched_sets$unit.id,
-                        time.index = matched_sets$time.id, method = "unit", 
+                        treat = treatment, unit.index = unit.id,
+                        time.index = time.id, method = "unit", 
                         qoi = "atc", estimator = "did", 
                         df.adjustment = df.adjustment,
                         hetero.se = TRUE, 
@@ -174,8 +170,8 @@ PanelEstimate2 <- function(lead, #probably want to swap the order of these aroun
                         data = data)
       } else {
         fit <- PanelWFE(formula = as.formula(paste(dependent, "~", treatment)), 
-                        treat = treatment, unit.index = matched_sets$unit.id,
-                        time.index = matched_sets$time.id, method = "time", 
+                        treat = treatment, unit.index = unit.id,
+                        time.index = time.id, method = "time", 
                         qoi = "atc", estimator = NULL, 
                         df.adjustment = df.adjustment,
                         hetero.se = TRUE, 
@@ -238,8 +234,8 @@ PanelEstimate2 <- function(lead, #probably want to swap the order of these aroun
       
       if (estimator == "did") {
         fit <- PanelWFE(formula = as.formula(paste(dependent, "~", treatment)), 
-                        treat = treatment, unit.index = matched_sets$unit.id,
-                        time.index = matched_sets$time.id, method = "unit", 
+                        treat = treatment, unit.index = unit.id,
+                        time.index = time.id, method = "unit", 
                         qoi = "ate", estimator = "did", 
                         df.adjustment = df.adjustment,
                         hetero.se = TRUE, 
@@ -247,8 +243,8 @@ PanelEstimate2 <- function(lead, #probably want to swap the order of these aroun
                         data = data)
       } else {
         fit <- PanelWFE(formula = as.formula(paste(dependent, "~", treatment)), 
-                        treat = treatment, unit.index = matched_sets$unit.id,
-                        time.index = matched_sets$time.id, method = "time", 
+                        treat = treatment, unit.index = unit.id,
+                        time.index = time.id, method = "time", 
                         qoi = "ate", estimator = NULL, 
                         df.adjustment = df.adjustment,
                         hetero.se = TRUE, 
