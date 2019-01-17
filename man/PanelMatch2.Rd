@@ -24,7 +24,7 @@ the treatment group).}
 
 \item{outcome}{Character string of outcome variable.}
 
-\item{refinement.method}{character string of matching method used for refining the matched sets. Currently only mahalanobis is supported}
+\item{refinement.method}{character string of matching method used for refining the matched sets. Can choose "mahalanobis", "ps.match", "CBPS.match", "ps.weight", "CBPS.weight". The first three methods will use the size.match argument to create sets of at most size.match closest control units.}
 
 \item{size.match}{Maximum size of the matched sets after refinement}
 
@@ -49,7 +49,7 @@ matched.set objects also have a number of other potential attributes:
 \item{id.var}{unit id variable name}
 \item{treated.var}{treated variable name}
 \item{class}{class of the object: should always be "matched.set"} 
-\item{refinement.method}{method used to refine and/or weight the control units in each set}
+\item{refinement.method}{method used to refine and/or weight the control units in each set.}
 \item{covs.formula}{see covs.formula argument}
 \item{match.missing}{see match.missing argument}
 \item{max.match.size}{same as size.match argument}

@@ -32,14 +32,6 @@ PanelEstimate2 <- function(lead, #probably want to swap the order of these aroun
   
   if(is.null(restricted)){restricted <- FALSE}
 
-
-  if (is.null(qoi)) {
-    qoi = matched_sets$qoi
-  } else {
-    qoi = qoi
-  }
-  
-  # DONT KNOW WHAT THESE ARE DOING
   if (qoi == "att" | qoi == "ate") 
   {
     sets <- prep_for_leads(sets, data, max(lead), time.id, unit.id, outcome.variable)
