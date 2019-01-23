@@ -38,7 +38,7 @@ PanelEstimate2 <- function(lead, #probably want to swap the order of these aroun
     sets <- sets[sapply(sets, length) > 0]
     treated.unit.ids <- as.numeric(unlist(strsplit(names(sets), split = "[.]"))[c(T,F)])
     
-    data[, paste0("Wit_att", lead)] <- do.call(cbind, lapply(lead, FUN = getWits, data = data, matched_sets = sets))
+    data[, paste0("Wit_att", lead)] <- do.call(cbind, lapply(lead, FUN = getWits, data = data, matched_sets = sets, estimation.method = inference))
     data$dit_att <- getDits(matched_sets = sets, data = data)
     colnames(data)[length(data)] <- "dits_att"
     data$`Wit_att-1` <- 0
@@ -59,7 +59,7 @@ PanelEstimate2 <- function(lead, #probably want to swap the order of these aroun
     sets2 <- sets2[sapply(sets2, length) > 0]
     treated.unit.ids2 <- as.numeric(unlist(strsplit(names(sets2), split = "[.]"))[c(T,F)])
     
-    data[, paste0("Wit_atc", lead)] <- do.call(cbind, lapply(lead, FUN = getWits, data = data, matched_sets = sets2))
+    data[, paste0("Wit_atc", lead)] <- do.call(cbind, lapply(lead, FUN = getWits, data = data, matched_sets = sets2, estimation.method = inference))
     data$dit_atc <- getDits(matched_sets = sets2, data = data)
     colnames(data)[length(data)] <- "dits_atc"
     data$`Wit_atc-1` <- 0
@@ -397,7 +397,7 @@ summary.PanelEstimate <- function(object, verbose = TRUE, bias.corrected = FALSE
 
 #' plot the point estimates and standard errors from a PanelEstimate calculation. The only mandatory argument is an object of the PanelEstimate class
 #' Use standard arguments to the \code{plot} function to modify the plot as needed.
-#' @param pe.object
+#' @param pe.object a PanelEstimate object
 #' @export
 plot.PanelEstimate <- function(pe.object, ylab = "Estimated Effect of Treatment", xlab = "Time", main = "Estimated Effects of Treatment Over Time",...)
 {

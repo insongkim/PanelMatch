@@ -15,18 +15,6 @@ PanelWFE <- function (formula, data, treat = "treat.name", # line 283!
     data$big_W_it <- data$Wit_att0 + data$Wit_atc0
   }
   
-  
-  # 
-  # if (qoi == "att") {
-  #   data$big_W_it <- data$weights_att
-  # } else if (qoi == "atc"){
-  #   data$big_W_it <- data$weights_atc
-  #   qoi = "att"
-  # } else if (qoi == "ate") {
-  #   data$big_W_it <- data$weights_att + data$weights_atc
-  # }
-  
-  
   wfe.call <- match.call()
   ## set up data frame, with support for standard and modified responses
   mf <- model.frame(formula=formula, data=data)
@@ -281,6 +269,7 @@ PanelWFE <- function (formula, data, treat = "treat.name", # line 283!
         W <- GenWeightsTime(data$t.index, data$u.index, data$TR, data$C.it, tn.row, length(uniq.t), length(uniq.u), ate.n, att.n, length(uniq.t)*length(uniq.u), verbose)
         W <- matrix(W, nrow=length(uniq.t), ncol=length(uniq.u), byrow=T)
         data$W.it <- data$big_W_it
+        #data$W.it <- VectorizeC(as.matrix(W), data$t.index, data$u.index, tn.row)
       }
       
       
@@ -735,6 +724,7 @@ PanelWFE <- function (formula, data, treat = "treat.name", # line 283!
         }
         
         W <- matrix(WDiD, nrow=length(uniq.t), ncol=length(uniq.u), byrow=T)            
+        #data$W.it <- VectorizeC(as.matrix(W), data$t.index, data$u.index, tn.row)
         data$W.it <- data$big_W_it
         
         if (verbose) { 

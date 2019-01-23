@@ -134,3 +134,61 @@ print.matched.set <- function(set, verbose = F)
 #   stop("not implemented yet, use a list")
 # }
 
+#builds the matrices that we will then use to calculate the mahalanobis distances for each matched set
+build_balance_mats <- function(idx, ordered_expanded_data, msets)
+{
+  #browser()
+  subset.per.matchedset <- function(sub.idx, set)
+  {
+    
+    wts <- attr(set, "weights")[which(set == ordered_expanded_data[sub.idx[1:(length(sub.idx) - 1)], attr(msets, "id.var")])]
+    return(cbind(ordered_expanded_data[sub.idx,], data.frame("weights" = c(wts, Inf))))
+  }
+  unnest <- function(mset.idx, mset)
+  {
+    
+    lapply(mset.idx, subset.per.matchedset, set = mset)
+  }
+  result <- mapply(FUN = unnest, mset.idx = idx, mset = msets, SIMPLIFY = FALSE)
+  return(result)
+}
+
+process.balance.mats <- function(balance_matrices, variables)
+{
+  
+}
+
+#' @export
+get_covariate_balance <- function(matched.sets, data, verbose = T, plot = F, variables)
+{
+  #get unit id, time id
+  #figure out how to manage the columns -- specify the covariates? assume all covariates? copy from the covs.formula attribute?
+  if(is.null(variables))
+  {
+    stop("please specify the covariates for which you would like to check the balance")
+  }
+  unit.id <- attr(matched.sets, "id.var")
+  time.id <- attr(matched.sets, "t.var")
+  lag <- attr(matched.sets, "lag")
+  
+  if(any(table(data[, unit.id]) != max(table(data[, unit.id]))))
+  {
+    data <- make.pbalanced(data, balance.type = "fill", index = c(unit.id, time.id))
+  }
+  ordered.data <- data[order(data[,unit.id], data[,time.id]), ]
+  
+  treated.ts <- as.numeric(unlist(strsplit(names(matched.sets), split = "[.]"))[c(F,T)])
+  treated.ids <- as.numeric(unlist(strsplit(names(matched.sets), split = "[.]"))[c(T,F)])
+  tlist <- expand.treated.ts(lag, treated.ts = treated.ts)
+  idxlist <- get_yearly_dmats(as.matrix(ordered.data), treated.ids, tlist, paste0(ordered.data[,unit.id], ".", 
+                                                                       ordered.data[, time.id]), matched_sets = matched.sets, lag)
+  balance_mats <- build_balance_mats(ordered_expanded_data = ordered.data, idx =  idxlist, msets = matched.sets)
+  
+  #once here, we need to calculate the standard deviation of the treatment variable values at each T
+  #access last row of data frames in parallel positions + needed column
+  
+}
+
+
+
+
