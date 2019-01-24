@@ -313,7 +313,7 @@ PanelEstimate2 <- function(lead, #probably want to swap the order of these aroun
         # make new data
         clusters <- unique(data[, unit.id])
         units <- sample(clusters, size = length(clusters), replace=T)
-        while(all(!units %in% treated.unit.ids) & all(!units %in% treated.unit.ids2)) #while none of the units are treated units (att and atc), resample
+        while(all(!units %in% treated.unit.ids) | all(!units %in% treated.unit.ids2)) #while none of the units are treated units (att and atc), resample
         {
           units <- sample(clusters, size = length(clusters), replace=T)
         }
@@ -331,7 +331,8 @@ PanelEstimate2 <- function(lead, #probably want to swap the order of these aroun
                            equality_four,
                            y = d.sub1[,outcome.variable],
                            z = d.sub1$dits_atc)
-        
+        #if(is.na(att_new) | is.na(atc_new) ) browser()
+        #if(any(is.nan(o.coefs_ate))) browser()
         coefs[k,] <- (att_new*sum(d.sub1$dits_att) + atc_new*sum(d.sub1$dits_atc))/
           (sum(d.sub1$dits_att) + sum(d.sub1$dits_atc))
         
