@@ -88,10 +88,12 @@ PanelEstimate2 <- function(lead, #probably want to swap the order of these aroun
                         hetero.se = TRUE, 
                         auto.se = TRUE, White = TRUE,  
                         data = data)
-        z <- list("coefficients" = fit$coefficients,
+        coef <- as.numeric(fit$coefficients)
+        names(coef) <- paste0("t+", lead)
+        z <- list("coefficients" = coef,
                   "method" = method, "lag" = lag,
                   "lead" = lead, "confidence.level" = CI, "qoi" = qoi, 
-                  "standard.error" = fit$se,"matched.sets" = sets)
+                  "standard.error" = fit$se,"matched.sets" = sets, "df" = fit$df)
         class(z) <- "PanelEstimate"
         return(z)
       } else {
@@ -103,10 +105,12 @@ PanelEstimate2 <- function(lead, #probably want to swap the order of these aroun
                         hetero.se = TRUE, 
                         auto.se = TRUE, White = TRUE,  
                         data = data)
-        z <- list("coefficients" = fit$coefficients,
+        coef <- as.numeric(fit$coefficients)
+        names(coef) <- paste0("t+", lead)
+        z <- list("coefficients" = coef,
                   "method" = method, "lag" = lag,
                   "lead" = lead, "confidence.level" = CI, "qoi" = qoi, 
-                  "standard.error" = fit$se,"matched.sets" = sets)
+                  "standard.error" = fit$se,"matched.sets" = sets, "df" = fit$df)
         class(z) <- "PanelEstimate"
         return(z)
       }
@@ -149,7 +153,7 @@ PanelEstimate2 <- function(lead, #probably want to swap the order of these aroun
       }
       # changed return to class
       z <- list("coefficients" = o.coefs,
-                "bootstrapped.coefficients" = coefs, "ITER" = ITER,
+                "bootstrapped.coefficients" = coefs, "bootstrap.iterations" = ITER,
                 "method" = method, "lag" = lag,
                 "lead" = lead, "confidence.level" = CI, "qoi" = qoi, "matched.sets" = sets)
       class(z) <- "PanelEstimate"
@@ -170,10 +174,12 @@ PanelEstimate2 <- function(lead, #probably want to swap the order of these aroun
                         hetero.se = TRUE, 
                         auto.se = TRUE, White = TRUE,  
                         data = data)
-        z <- list("coefficients" = fit$coefficients,
+        coef <- as.numeric(fit$coefficients)
+        names(coef) <- paste0("t+", lead)
+        z <- list("coefficients" = coef,
                   "method" = method, "lag" = lag,
                   "lead" = lead, "confidence.level" = CI, "qoi" = qoi, 
-                  "standard.error" = fit$se,"matched.sets" = sets2)
+                  "standard.error" = fit$se,"matched.sets" = sets2, "df" = fit$df)
         class(z) <- "PanelEstimate"
         return(z)
       } else {
@@ -185,10 +191,12 @@ PanelEstimate2 <- function(lead, #probably want to swap the order of these aroun
                         hetero.se = TRUE, 
                         auto.se = TRUE, White = TRUE,  
                         data = data)
-        z <- list("coefficients" = fit$coefficients,
+        coef <- as.numeric(fit$coefficients)
+        names(coef) <- paste0("t+", lead)
+        z <- list("coefficients" = coef,
                   "method" = method, "lag" = lag,
                   "lead" = lead, "confidence.level" = CI, "qoi" = qoi, 
-                  "standard.error" = fit$se,"matched.sets" = sets2)
+                  "standard.error" = fit$se,"matched.sets" = sets2, "df" = fit$df)
         class(z) <- "PanelEstimate"
         return(z)
       }
@@ -233,7 +241,7 @@ PanelEstimate2 <- function(lead, #probably want to swap the order of these aroun
         
       }
       z <- list("coefficients" = o.coefs,
-                "bootstrapped.coefficients" = coefs, "ITER" = ITER,
+                "bootstrapped.coefficients" = coefs, "bootstrap.iterations" = ITER,
                 "lead" = lead, "confidence.level" = CI, "qoi" = qoi, "matched.sets" = sets2)
       class(z) <- "PanelEstimate"
       return(z)
@@ -256,10 +264,12 @@ PanelEstimate2 <- function(lead, #probably want to swap the order of these aroun
                         auto.se = TRUE, White = TRUE,  
                         data = data)
         
-        z <- list("coefficients" = as.numeric(fit$coefficients),
+        coef <- as.numeric(fit$coefficients)
+        names(coef) <- paste0("t+", lead)
+        z <- list("coefficients" = coef,
                   "method" = method, "lag" = lag,
                   "lead" = lead, "confidence.level" = CI, "qoi" = qoi, 
-                  "standard.error" = fit$se,"matched.sets" = list(sets,sets2))
+                  "standard.error" = fit$se,"matched.sets" = list(sets,sets2), "df" = fit$df)
         class(z) <- "PanelEstimate"
         return(z)
       } else {
@@ -271,10 +281,12 @@ PanelEstimate2 <- function(lead, #probably want to swap the order of these aroun
                         hetero.se = TRUE, 
                         auto.se = TRUE, White = TRUE,  
                         data = data)
-        z <- list("coefficients" = fit$coefficients,
+        coef <- as.numeric(fit$coefficients)
+        names(coef) <- paste0("t+", lead)
+        z <- list("coefficients" = coef,
                   "method" = method, "lag" = lag,
                   "lead" = lead, "confidence.level" = CI, "qoi" = qoi, 
-                  "standard.error" = fit$se,"matched.sets" = list(sets,sets2))
+                  "standard.error" = fit$se,"matched.sets" = list(sets,sets2), "df" = fit$df)
         class(z) <- "PanelEstimate"
         return(z)
       }
@@ -331,8 +343,6 @@ PanelEstimate2 <- function(lead, #probably want to swap the order of these aroun
                            equality_four,
                            y = d.sub1[,outcome.variable],
                            z = d.sub1$dits_atc)
-        #if(is.na(att_new) | is.na(atc_new) ) browser()
-        #if(any(is.nan(o.coefs_ate))) browser()
         coefs[k,] <- (att_new*sum(d.sub1$dits_att) + atc_new*sum(d.sub1$dits_atc))/
           (sum(d.sub1$dits_att) + sum(d.sub1$dits_atc))
         
@@ -340,7 +350,7 @@ PanelEstimate2 <- function(lead, #probably want to swap the order of these aroun
       }
       # return(list("o.coef" = DID_ATE, "boots" = coefs))
       z <- list("coefficients" = o.coefs_ate,
-                "bootstrapped.coefficients" = coefs, "ITER" = ITER,
+                "bootstrapped.coefficients" = coefs, "bootstrap.iterations" = ITER,
                 "lead" = lead, "confidence.level" = CI, "qoi" = qoi, "matched.sets" = list(sets, sets2))
       class(z) <- "PanelEstimate"
       return(z)
@@ -365,24 +375,33 @@ summary.PanelEstimate <- function(object, verbose = TRUE, bias.corrected = FALSE
   
   if(verbose)
   {
-      if(attr(object$matched.sets, "refinement.method") == "Maha")
+    if(object$qoi == "ate")
+    {
+      refinement.method <- attr(object$matched.set[[1]], "refinement.method")
+      lag <- attr(object$matched.set[[1]], "lag")
+    }
+    else
+    {
+      refinement.method <- attr(object$matched.set, "refinement.method")
+      lag <- attr(object$matched.set, "lag")
+    }
+    if(refinement.method == "mahalanobis")
         {
           cat("Weighted Difference-in-Differences with Mahalanobis Distance\n")
         } 
-      else if (attr(object$matched.sets, "refinement.method") == "Pscore") 
+    else if (refinement.method == "ps.weight" | refinement.method == "ps.match") 
         {
           cat("Weighted Difference-in-Differences with Propensity Score\n")
-        } 
-      else if (attr(object$matched.sets, "refinement.method") == "Synth") 
-        {
-          cat("Weighted Difference-in-Differences with Synthetic Control\n")
-        } 
-      else if (attr(object$matched.sets, "refinement.method") == "CBPS") 
+    } else(refinement.method == "CBPS.weight" | refinement.method == "CBPS.match") 
         {
           cat("Weighted Difference-in-Differences with Covariate Balancing Propensity Score\n")
         }
     cat("Matches created with", attr(object$matched.sets, "lag"), "lags\n")
-    cat("\nStandard errors computed with", object$ITER, "Weighted bootstrap samples\n")
+    if(!is.null(object$bootstrap.iterations))
+    {
+      cat("\nStandard errors computed with", object$bootstrap.iterations, "Weighted bootstrap samples\n")  
+    }
+    
     # cat("\nTotal effect in", object$lead, "periods after the treatment:")
     qoi <- ifelse(object$qoi == "ate", "Average Treatment Effect (ATE)", 
                 ifelse(object$qoi == "att", "Average Treatment Effect on the Treated (ATT)", 
@@ -391,44 +410,63 @@ summary.PanelEstimate <- function(object, verbose = TRUE, bias.corrected = FALSE
   }
   if(bias.corrected)
   {
+    if(is.null(object$bootstrap.iterations)) stop("bias corrected estimates only available for bootstrap method currently")
     df <- rbind(t(as.data.frame(object$coefficients)), # point estimate
               
               apply(object$bootstrapped.coefficients, 2, sd, na.rm = T), # bootstrap se
               
               # Efron & Tibshirani 1993 p170 - 171
-              apply(object$bootstrapped.coefficients, 2, quantile, probs = c( (1-object$CI)/2, object$CI+(1-object$CI)/2 ), na.rm = T), # percentile CI
+              apply(object$bootstrapped.coefficients, 2, quantile, probs = c( (1-object$confidence.level)/2, object$confidence.level+(1-object$confidence.level)/2 ), na.rm = T), # percentile CI
               # Efron & Tibshirani 1993 p138
               2*object$coefficients - colMeans(object$bootstrapped.coefficients, na.rm = T), # bc point estimate
               
-              apply( (2*matrix(nrow = object$ITER, ncol = length(object$coefficients), object$coefficients, byrow = TRUE) - object$bootstrapped.coefficients), 2, quantile, 
-                             probs = c((1-object$CI)/2, object$CI+(1-object$CI)/2), 
+              apply( (2*matrix(nrow = object$bootstrap.iterations, ncol = length(object$coefficients), object$coefficients, byrow = TRUE) - object$bootstrapped.coefficients), 2, quantile, 
+                             probs = c((1-object$confidence.level)/2, object$confidence.level+(1-object$confidence.level)/2), 
                              na.rm = T) ) # bc percentile CI)
-  rownames(df) <- c("estimate", "std.error", 
-                    paste0((1-object$CI)/2 * 100, "%"),
-                    paste0( (object$CI+(1-object$CI)/2) * 100, "%"),
+          rownames(df) <- c("estimate", "std.error", 
+                    paste0((1-object$confidence.level)/2 * 100, "%"),
+                    paste0( (object$confidence.level+(1-object$confidence.level)/2) * 100, "%"),
                     "estimate(bias corrected)", 
-                    paste0((1-object$CI)/2 * 100, "%", "(bias corrected)"),
-                    paste0((object$CI+(1-object$CI)/2) * 100, "%", "(bias corrected)"))
+                    paste0((1-object$confidence.level)/2 * 100, "%", "(bias corrected)"),
+                    paste0((object$confidence.level+(1-object$confidence.level)/2) * 100, "%", "(bias corrected)"))
   }
   else
   {
-    df <- rbind(t(as.data.frame(object$coefficients)), # point estimate
-              
-              apply(object$bootstrapped.coefficients, 2, sd, na.rm = T), # bootstrap se
-              
-              # Efron & Tibshirani 1993 p170 - 171
-              apply(object$bootstrapped.coefficients, 2, quantile, probs = c( (1-object$CI)/2, object$CI+(1-object$CI)/2 ), na.rm = T))
-    rownames(df) <- c("estimate", "std.error", 
-                    paste0((1-object$CI)/2 * 100, "%"),
-                    paste0( (object$CI+(1-object$CI)/2) * 100, "%"))
+    if(!is.null(object$bootstrap.iteration))
+    {
+      df <- rbind(t(as.data.frame(object$coefficients)), # point estimate
+                  
+                  apply(object$bootstrapped.coefficients, 2, sd, na.rm = T), # bootstrap se
+                  
+                  # Efron & Tibshirani 1993 p170 - 171
+                  apply(object$bootstrapped.coefficients, 2, quantile, probs = c( (1-object$confidence.level)/2, object$confidence.level+(1-object$confidence.level)/2 ), na.rm = T))
+      rownames(df) <- c("estimate", "std.error", 
+                        paste0((1-object$confidence.level)/2 * 100, "%"),
+                        paste0( (object$confidence.level+(1-object$confidence.level)/2) * 100, "%"))
+      tdf <- t(df)
+      if(!verbose) return(t(df))
+      return(list("summary" = tdf, "lag" = lag, "iterations" = object$bootstrap.iterations, "qoi" = object$qoi) )   
+    }
+    else #wfe method
+    {
+      critical.vals <- rep(qt((1 - object$confidence.level) / 2, object$df), 2) * c(1, -1)
+      quants <- object$coefficients + critical.vals * object$standard.error
+      df <- as.data.frame(c(object$coefficients, # point estimate
+                  object$standard.error,
+                  quants))
+      rownames(df) <- c("estimate", "std.error", 
+                        paste0((1-object$confidence.level)/2 * 100, "%"),
+                        paste0( (object$confidence.level+(1-object$confidence.level)/2) * 100, "%"))
+      tdf <- t(df)
+      rownames(tdf) <- names(object$coefficients)
+      if(!verbose) return(t(df))
+      return(list("summary" = tdf, "lag" = lag, "qoi" = object$qoi) )
+    }
+    
   }
   
-  tdf <- t(df)
-  if(!verbose) return(t(df))
-  return(list("summary" = tdf, "lag" = attr(object$matched.sets, "lag"), "iterations" = object$ITER, "qoi" = object$qoi) ) 
-  # cat("Bias:", object$o.coef - mean(object$boots, na.rm = T), "\n")
-  # cat("Standard Error:", 
-  #     sd(object$boots), "\n")
+   
+  
 }
 
 #' plot the point estimates and standard errors from a PanelEstimate calculation. The only mandatory argument is an object of the PanelEstimate class
@@ -437,7 +475,7 @@ summary.PanelEstimate <- function(object, verbose = TRUE, bias.corrected = FALSE
 #' @export
 plot.PanelEstimate <- function(pe.object, ylab = "Estimated Effect of Treatment", xlab = "Time", main = "Estimated Effects of Treatment Over Time",...)
 {
-  #browser()
+  
   plot.data <- summary(pe.object, verbose = F, bias.corrected = F)
   # plot(x = 1:5,y = plot.data[, 1], ylim = c(min(plot.data[,3]) - .1, max(plot.data[,4]) + .1), pch = 16, 
   #      xaxt = "n", ylab = ylab, xlab = xlab, main = main, ...)
