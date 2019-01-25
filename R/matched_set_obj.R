@@ -159,18 +159,17 @@ process.balance.mats <- function(balance_matrices, variables)
 }
 
 #' @export
-get_covariate_balance <- function(matched.sets, data, verbose = T, plot = F, variables)
+get_covariate_balance <- function(matched.sets, data, verbose = T, plot = F, covariates)
 {
   #get unit id, time id
   #figure out how to manage the columns -- specify the covariates? assume all covariates? copy from the covs.formula attribute?
-  if(is.null(variables))
+  if(is.null(covariates))
   {
     stop("please specify the covariates for which you would like to check the balance")
   }
   unit.id <- attr(matched.sets, "id.var")
   time.id <- attr(matched.sets, "t.var")
   lag <- attr(matched.sets, "lag")
-  
   if(any(table(data[, unit.id]) != max(table(data[, unit.id]))))
   {
     data <- make.pbalanced(data, balance.type = "fill", index = c(unit.id, time.id))
@@ -183,9 +182,35 @@ get_covariate_balance <- function(matched.sets, data, verbose = T, plot = F, var
   idxlist <- get_yearly_dmats(as.matrix(ordered.data), treated.ids, tlist, paste0(ordered.data[,unit.id], ".", 
                                                                        ordered.data[, time.id]), matched_sets = matched.sets, lag)
   balance_mats <- build_balance_mats(ordered_expanded_data = ordered.data, idx =  idxlist, msets = matched.sets)
+  unlistedmats <- unlist(balance_mats, recursive = F)
   
-  #once here, we need to calculate the standard deviation of the treatment variable values at each T
-  #access last row of data frames in parallel positions + needed column
+  plotpoints <- list()
+  for(k in 1:(lag+1))
+  {	
+    var.points <- list()
+    for(i in 1:length(covariates))
+    {
+      variable <- covariates[i]
+      
+      sd.val <- sd(sapply(unlistedmats[seq(from = 1, to = (length(matched.sets) * (lag + 1)), by = lag + 1)], function(x){x[nrow(x), variable]}), na.rm = T)
+      
+      tprd <- unlistedmats[seq(from = k, to = (length(matched.sets) * (lag + 1)), by = lag + 1)] #should represent the same relative period across all matched sets. each df is a matched set
+      
+      get_mean <- function(x, variable) #x is an individual data frame
+      {
+        return(sum(x[1:(nrow(x) -1),"weights"] * x[1:(nrow(x) -1), variable], na.rm = T ))
+      }
+      diffs <- sapply(tprd, get_mean, variable = variable)
+      
+      var.points[[i]] <- mean(diffs / sd.val)
+    }
+    names(var.points) <- covariates
+    plotpoints[[k]] <- var.points
+    
+  }
+  names(plotpoints) <- paste0("t_", lag:0)
+  plotpoints <- lapply(plotpoints, function(x){mean(unlist(x))})
+  return(plotpoints)
   
 }
 
