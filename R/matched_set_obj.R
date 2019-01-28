@@ -159,7 +159,7 @@ process.balance.mats <- function(balance_matrices, variables)
 }
 
 #' @export
-get_covariate_balance <- function(matched.sets, data, verbose = T, plot = F, covariates)
+get_covariate_balance <- function(matched.sets, data, verbose = T, plot = F, covariates, reference.line = TRUE, legend = TRUE, ylab = "SD",...)
 {
   #get unit id, time id
   #figure out how to manage the columns -- specify the covariates? assume all covariates? copy from the covs.formula attribute?
@@ -196,22 +196,31 @@ get_covariate_balance <- function(matched.sets, data, verbose = T, plot = F, cov
       
       tprd <- unlistedmats[seq(from = k, to = (length(matched.sets) * (lag + 1)), by = lag + 1)] #should represent the same relative period across all matched sets. each df is a matched set
       
-      get_mean <- function(x, variable) #x is an individual data frame
+      get_mean_difs <- function(x, variable) #x is an individual data frame
       {
-        return(sum(x[1:(nrow(x) -1),"weights"] * x[1:(nrow(x) -1), variable], na.rm = T ))
+        return( x[nrow(x), variable] - sum(x[1:(nrow(x) -1),"weights"] * x[1:(nrow(x) -1), variable], na.rm = T ))
       }
-      diffs <- sapply(tprd, get_mean, variable = variable)
+      diffs <- sapply(tprd, get_mean_difs, variable = variable)
       
-      var.points[[i]] <- mean(diffs / sd.val)
+      var.points[[i]] <- mean(diffs / sd.val, na.rm = T)
     }
     names(var.points) <- covariates
     plotpoints[[k]] <- var.points
     
   }
   names(plotpoints) <- paste0("t_", lag:0)
-  plotpoints <- lapply(plotpoints, function(x){mean(unlist(x))})
-  return(plotpoints)
+  pointmatrix <- apply((as.matrix(do.call(rbind, plotpoints))), 2, function(x){(as.numeric(x))})
+  rownames(pointmatrix) <- names(plotpoints)
+  if(!plot) return(pointmatrix)
   
+  if(plot)
+  {
+    matplot(pointmatrix, type = "l", col = 1:ncol(pointmatrix), lty =1, ylab = ylab, ...)
+    if(legend) legend("topleft", legend = colnames(pointmatrix), col=1:ncol(pointmatrix), lty = 1)
+    if(reference.line) abline(h = 0, lty = "dashed")
+    
+    #plot(as.numeric(plotpoints), type = "l", ...)
+  }
 }
 
 
