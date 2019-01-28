@@ -98,7 +98,8 @@ PanelMatch2 <- function(lag, time.id, unit.id, treatment, outcome,
     pre.pooled <- rbindlist(expanded.sets.t0)
     pooled <- pre.pooled[complete.cases(pre.pooled), ]
     
-    cols.to.remove <- which(unlist(lapply(pooled, function(x){all(x[1] == x)})))
+    cols.to.remove <- which(unlist(lapply(pooled, function(x){all(x[1] == x)}))) #checking for columns that only have one value
+    cols.to.remove <- unique(c(cols.to.remove, which(!colnames(pooled) %in% colnames(t(unique(t(pooled))))))) #removing columns that are identical to another column 
     if(length(cols.to.remove) > 0)
     {
       class(pooled) <- c("data.frame")
