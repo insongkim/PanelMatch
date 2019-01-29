@@ -239,6 +239,7 @@ reweight <- function(mset.object, data, outcome.var)
     # In these situations we end up with NA coefficients which causes a bunch of other code to break. This is a bit of a hack, but works for now.
     
     cols.to.remove <- which(unlist(lapply(pooled, function(x){all(x[1] == x)})))
+    cols.to.remove <- unique(c(cols.to.remove, which(!colnames(pooled) %in% colnames(t(unique(t(pooled))))))) #removing columns that are identical to another column 
     if(length(cols.to.remove) > 0)
     {
       class(pooled) <- c("data.frame")
