@@ -1,5 +1,5 @@
 #' @export
-PanelEstimate2 <- function(lead, #probably want to swap the order of these around to be more intuitive
+PanelEstimate <- function(lead, #probably want to swap the order of these around to be more intuitive
                           inference = c("wfe", "bootstrap"),
                           ITER = 1000, matched_sets = NULL,
                           estimator = "did",
@@ -48,7 +48,7 @@ PanelEstimate2 <- function(lead, #probably want to swap the order of these aroun
   {
     #first we need to "flip" the treatment variable, then re-run panelmatch with this as the new treatment variable
     data$atc_variable <- ifelse(data[, treatment] == 1, 0, 1)
-    sets2 <- PanelMatch2(lag = lag, time.id = time.id, unit.id = unit.id, treatment = "atc_variable", outcome = outcome.variable,
+    sets2 <- PanelMatch(lag = lag, time.id = time.id, unit.id = unit.id, treatment = "atc_variable", outcome = outcome.variable,
                                      refinement.method = attr(sets, "refinement.method"),
                                      size.match = attr(sets, "max.match.size"),
                                      data = data,

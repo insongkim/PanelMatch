@@ -1,6 +1,6 @@
 #' PanelMatch2
 #' 
-#' \code{PanelMatch2} identifies a matched set for each treated
+#' \code{PanelMatch} identifies a matched set for each treated
 #' observation. Specifically, for a given treated unit, the matched
 #' set consists of control observations that have the identical
 #' treatment history up to a certain number of \code{lag}
@@ -31,7 +31,7 @@
 #' Each element also has a name, which corresponds to the unit id and time variable of the treated unit and time of treatment, concatenated together and separated by a period.
 #'  
 #' matched.set objects also have a number of other potential attributes:
-#' \item{lag}{same as lag parameter -- an intege value indicating the length of treatment history to be}
+#' \item{lag}{same as lag parameter -- an integer value indicating the length of treatment history to be}
 #' \item{t.var}{time variable name}
 #' \item{id.var}{unit id variable name}
 #' \item{treated.var}{treated variable name}
@@ -44,11 +44,11 @@
 #' <haixiao@Princeton.edu>, and Kosuke Imai <kimai@Princeton.edu>
 #'
 #' @examples \dontrun{
-#' results <- PanelMatch2(4, "year", "wbcode2", "dem", "y", refinement.method = "mahalanobis", 
+#' results <- PanelMatch(4, "year", "wbcode2", "dem", "y", refinement.method = "mahalanobis", 
 #'                       data = dem, match.missing = T, covs.formula = ~ lag("tradewb", 1:4) + lag("y", 1:4), size.match = 5, verbose = T)
 #' }
 #' @export
-PanelMatch2 <- function(lag, time.id, unit.id, treatment, outcome,
+PanelMatch <- function(lag, time.id, unit.id, treatment, outcome,
                        refinement.method = c(NULL, "ps.weight", "ps.match", "mahalanobis", "CBPS.weight", "CBPS.match"),
                        size.match = 10,
                        data,
