@@ -2,7 +2,7 @@
 % Please edit documentation in R/PanelMatch.R
 \name{PanelMatch}
 \alias{PanelMatch}
-\title{PanelMatch2}
+\title{PanelMatch}
 \usage{
 PanelMatch(lag, time.id, unit.id, treatment, outcome,
   refinement.method = c(NULL, "ps.weight", "ps.match", "mahalanobis",
@@ -13,9 +13,9 @@ PanelMatch(lag, time.id, unit.id, treatment, outcome,
 \item{lag}{An integer value indicating the length of history to be matched}
 
 \item{time.id}{A character string indicating the name of time identifier
-variable in the \code{data}. currently must be integer.}
+variable in the \code{data}. This data currently must be integer.}
 
-\item{unit.id}{A character string indicating the name of unit identifier in the data. Currently must be integer.}
+\item{unit.id}{A character string indicating the name of unit identifier in the data. This data currently must be integer.}
 
 \item{treatment}{A character string indicating the name of
 treatment variable in the \code{data}. The treatment should be a
@@ -24,27 +24,27 @@ the treatment group).}
 
 \item{outcome}{Character string of outcome variable.}
 
-\item{refinement.method}{character string of matching method used for refining the matched sets. Can choose "mahalanobis", "ps.match", "CBPS.match", "ps.weight", "CBPS.weight". The first three methods will use the size.match argument to create sets of at most size.match closest control units.}
+\item{refinement.method}{character string of matching or weighting method used for refining the matched sets. The user can choose "mahalanobis", "ps.match", "CBPS.match", "ps.weight", "CBPS.weight". The first three methods will use the \code{size.match} argument to create sets of at most \code{size.match} closest control units.}
 
 \item{size.match}{Maximum size of the matched sets after refinement}
 
-\item{data}{Balanced panel data set}
+\item{data}{A data.frame object containing time series cross sectional data}
 
-\item{match.missing}{Logical variable indicating whether or not units can be matched on the patterns of missingness in their treatment histories}
+\item{match.missing}{Logical variable indicating whether or not units should be matched on the patterns of missingness in their treatment histories}
 
 \item{covs.formula}{One sided formula indicating which variables should be used for matching and refinement.
-Can specify lags using a function "lag" which takes two positional arguments. The first is the name of the variable which you wish to lag, specified as a string second is the lag window, specified as an integer sequence
+The user can specify lags using a function "lag" which takes two, unnamed, positional arguments. The first is the name of the variable which you wish to lag, specified as a string. The second is the lag window, specified as an integer sequence
 See the example below.}
 
 \item{verbose}{option to include more information about the matched.set object calculations, like the distances used to create the refined sets and weights}
 }
 \value{
-\code{PanelMatch} returns a list of class `matched.set'. Each element in the list is a vector of integers corresponding to the control unit ids in a matched set. Additionally, these vectors might have additional attributes -- "weights" or "distances". 
-These correspond to the weights or distances corresponding to each control unit, as determined by the specified refinement method.
+\code{PanelMatch} returns a list of class `matched.set'. Each element in the list is a vector of integers corresponding to the control unit ids in a matched set. 
+Additionally, these vectors might have additional attributes -- "weights" or "distances". These correspond to the weights or distances corresponding to each control unit, as determined by the specified refinement method.
 Each element also has a name, which corresponds to the unit id and time variable of the treated unit and time of treatment, concatenated together and separated by a period.
  
 matched.set objects also have a number of other potential attributes:
-\item{lag}{same as lag parameter -- an intege value indicating the length of treatment history to be}
+\item{lag}{same as lag parameter -- an integer value indicating the length of treatment history to be}
 \item{t.var}{time variable name}
 \item{id.var}{unit id variable name}
 \item{treated.var}{treated variable name}
@@ -60,14 +60,15 @@ observation. Specifically, for a given treated unit, the matched
 set consists of control observations that have the identical
 treatment history up to a certain number of \code{lag}
 years. Researchers must specify \code{lag}. A further refinement of
-the matched set will be possible by setting the size of the matched
-set \code{M}, \code{weighting}, and adjusting for other confounders
-such as past outcomes and covariates via \code{formula}.
+the matched set will be possible by setting a maximum size of the matched
+set \code{size.match} (the maximum number of control units that can be matched to a treated unit) and adjusting for other confounders
+such as past outcomes and covariates via \code{covs.formula} and specifying a method of refinement via \code{refinement.method}.
 }
 \examples{
 \dontrun{
-results <- PanelMatch(4, "year", "wbcode2", "dem", "y", refinement.method = "mahalanobis", 
-                      data = dem, match.missing = T, covs.formula = ~ lag("tradewb", 1:4) + lag("y", 1:4), size.match = 5, verbose = T)
+results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", treatment = "dem", outcome = "y", refinement.method = "mahalanobis", 
+                      data = dem, match.missing = T, covs.formula = ~ lag("tradewb", 1:4) + lag("y", 1:4), size.match = 5)
+results[[1]] #to see the control units matched to the first treated units.                     
 }
 }
 \author{

@@ -1,7 +1,73 @@
+#' PanelEstimate
+#'
+#' \code{PanelEstimate} estimates causal quantity of interests, e.g.,
+#' the average treatment effect of for the treated (ATT), by
+#' estimating the counterfactual outcomes for each treated unit using
+#' a matched set. Users will specify matched sets that are obtained by the
+#' \code{PanelMatch} function and obtain point estimates via weighted fixed effects regressions or via
+#' weighted average computation with weighted bootstrap standard errors
+#' 
+#' @param lead An integer vector indicating the sequence of the lead
+#' periods for which the quantity of interest will be estimated. When \code{inference} is "wfe", you can only specify one lead period at a time.
+#' @param inference One of ``wfe'' (weighted fixed effects) or
+#' ``bootstrap'' methods for standard error calculation. The default
+#' is \code{bootstrap}.
+#' @param ITER An integer value indicating the number of bootstrap
+#' iteration. The default is 1000.
+#' @param sets A list of class `matched.set' attained by
+#' \code{PanelMatch}. @seealso \code{PanelMatch}.
+#' @param estimator One of \code{did} (difference-in-differences) or
+#' \code{matching} specifying the estimator for WFE regressions. The default is
+#' \code{did}. 
+#' @param df.adjustment A logical value indicating whether a
+#' degree-of-freedom adjustment should be performed for standard error
+#' calculation. The default is \code{FALSE}.
+#' @param qoi One of ``att'' (average treatment effect for the
+#' treated) or ``ate'' (average treatment effect) or atc (average
+#' treatment effect for the control).
+#' @param CI A numerical value specifying the range of interval
+#' estimates for statistical inference. The default is .95.
+#' @param data The same time series cross sectional data set provided to the PanelMatch function to produce the \code{sets}
+#' 
+#' @return \code{PanelEstimate} returns a list of class
+#' `PanelEstimate' containing the following components:
+#' \item{coefficients}{the point estimates of the quantity of interest}
+#' \item{bootstrapped.coefficients}{the bootstrapped coefficients, if applicable}
+#' \item{bootstrap.iterations}{the number of iterations, if applicable}
+#' \item{method}{refinement method used to create the matched sets from which the estimates were calculated}
+#' \item{lag}{See PanelMatch argument \code{lag} for more information.}
+#' \item{lead}{The lead window sequence for which PanelEstimate is producing point estimates and standard errors.}
+#' \item{confidence.level}{the confidence interval range}
+#' \item{qoi}{the quantity of interest}
+#' \item{matched.sets} the refined matched sets used to produce the estimations. These might be different from the provided 
+#' \code{sets} argument depending on the missingness of data in the lead window and the \code{qoi}
+#' \item{df}{if \code{inference} is "wfe", the degrees of freedom}
+#' \item{standard.error} {the standard error of the point estimates}
+#' @author In Song Kim <insong@mit.edu>, Erik Wang
+#' <haixiao@Princeton.edu>, and Kosuke Imai <kimai@Princeton.edu>
+#'
+#' @examples \dontrun{
+#' 
+#'matches.cbps <- PanelMatch(lag = 4, max.lead = 4, time.id = "year",
+#' unit.id = "wbcode2", treatment = "dem", formula = y ~ dem, method =
+#' "CBPS", weighting = FALSE, qoi = "ate", M = 5, data = dem)
+#'
+#' ## bootstrap
+#'
+#' mod.bootSE <- PanelEstimate(lead = 0:4, inference =
+#' "bootstrap", matched_sets = matches.cbps, qoi = "att", CI = .95,
+#' ITER = 500) summary(mod.bootSE) #'
+#'
+#' ## wfe
+#'
+#' mod.wfeSE <- PanelEstimate(lead = 0, inference = "wfe",
+#' matched_sets = matches.cbps, qoi = "att", CI = .95, ITER = 500)
+#' summary(mod.wfeSE)
+#' }
 #' @export
 PanelEstimate <- function(lead, #probably want to swap the order of these around to be more intuitive
                           inference = c("wfe", "bootstrap"),
-                          ITER = 1000, matched_sets = NULL,
+                          ITER = 1000,
                           estimator = "did",
                           df.adjustment = FALSE, qoi = NULL,
                           CI = .95,
