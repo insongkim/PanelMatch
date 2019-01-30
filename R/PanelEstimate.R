@@ -6,7 +6,6 @@
 #' a matched set. Users will specify matched sets that are obtained by the
 #' \code{PanelMatch} function and obtain point estimates via weighted fixed effects regressions or via
 #' weighted average computation with weighted bootstrap standard errors
-#' 
 #' @param lead An integer vector indicating the sequence of the lead
 #' periods for which the quantity of interest will be estimated. When \code{inference} is "wfe", you can only specify one lead period at a time.
 #' @param inference One of ``wfe'' (weighted fixed effects) or
@@ -28,7 +27,6 @@
 #' @param CI A numerical value specifying the range of interval
 #' estimates for statistical inference. The default is .95.
 #' @param data The same time series cross sectional data set provided to the PanelMatch function to produce the \code{sets}
-#' 
 #' @return \code{PanelEstimate} returns a list of class
 #' `PanelEstimate' containing the following components:
 #' \item{coefficients}{the point estimates of the quantity of interest}
@@ -47,22 +45,9 @@
 #' <haixiao@Princeton.edu>, and Kosuke Imai <kimai@Princeton.edu>
 #'
 #' @examples \dontrun{
-#' 
-#'matches.cbps <- PanelMatch(lag = 4, max.lead = 4, time.id = "year",
-#' unit.id = "wbcode2", treatment = "dem", formula = y ~ dem, method =
-#' "CBPS", weighting = FALSE, qoi = "ate", M = 5, data = dem)
-#'
-#' ## bootstrap
-#'
-#' mod.bootSE <- PanelEstimate(lead = 0:4, inference =
-#' "bootstrap", matched_sets = matches.cbps, qoi = "att", CI = .95,
-#' ITER = 500) summary(mod.bootSE) #'
-#'
-#' ## wfe
-#'
-#' mod.wfeSE <- PanelEstimate(lead = 0, inference = "wfe",
-#' matched_sets = matches.cbps, qoi = "att", CI = .95, ITER = 500)
-#' summary(mod.wfeSE)
+#' pm.obj <- PanelMatch(4, "year", "wbcode2", "dem", "y", refinement.method = "mahalanobis", data = dem, match.missing = T, covs.formula = ~ tradewb + lag("tradewb", 1:4) + lag("y", 1:4), size.match = 5)
+#' res <- PanelEstimate(lead = 0:4, inference = "bootstrap", qoi = "att", sets = pm.obj, data = dem, outcome.variable = "y")
+#' res2 <- PanelEstimate(lead = 0, inference = "wfe", qoi = "att", sets = pm.obj, data = dem, outcome.variable = "y")
 #' }
 #' @export
 PanelEstimate <- function(lead, #probably want to swap the order of these around to be more intuitive

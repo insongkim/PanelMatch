@@ -65,22 +65,9 @@ weighted average computation with weighted bootstrap standard errors
 }
 \examples{
 \dontrun{
-
-matches.cbps <- PanelMatch(lag = 4, max.lead = 4, time.id = "year",
-unit.id = "wbcode2", treatment = "dem", formula = y ~ dem, method =
-"CBPS", weighting = FALSE, qoi = "ate", M = 5, data = dem)
-
-## bootstrap
-
-mod.bootSE <- PanelEstimate(lead = 0:4, inference =
-"bootstrap", matched_sets = matches.cbps, qoi = "att", CI = .95,
-ITER = 500) summary(mod.bootSE) #'
-
-## wfe
-
-mod.wfeSE <- PanelEstimate(lead = 0, inference = "wfe",
-matched_sets = matches.cbps, qoi = "att", CI = .95, ITER = 500)
-summary(mod.wfeSE)
+pm.obj <- PanelMatch(4, "year", "wbcode2", "dem", "y", refinement.method = "mahalanobis", data = dem, match.missing = T, covs.formula = ~ tradewb + lag("tradewb", 1:4) + lag("y", 1:4), size.match = 5)
+res <- PanelEstimate(lead = 0:4, inference = "bootstrap", qoi = "att", sets = pm.obj, data = dem, outcome.variable = "y")
+res2 <- PanelEstimate(lead = 0, inference = "wfe", qoi = "att", sets = pm.obj, data = dem, outcome.variable = "y")
 }
 }
 \author{
