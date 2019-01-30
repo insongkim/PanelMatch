@@ -57,7 +57,7 @@ PanelMatch2 <- function(lag, time.id, unit.id, treatment, outcome,
                        verbose = FALSE
                        ) 
 {
-
+  if(!"data.frame" %in% class(data)) stop("please convert data to data.frame class")
   if(any(table(data[, unit.id]) != max(table(data[, unit.id]))))
   {
     data <- make.pbalanced(data, balance.type = "fill", index = c(unit.id, time.id))
