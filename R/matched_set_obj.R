@@ -26,7 +26,7 @@ summary.matched.set <- function(set, verbose = T)
   df <- data.frame(i = ids, t = ts, matched.set.size = Lengthcol)
   colnames(df)[1:2] <- c(attr(set, "id.var"), attr(set, "t.var"))
   rownames(df) <- NULL
-  #class(df) <- c("overview.matched.set", "data.frame")
+  
   if(verbose)
   {
     summary.result <- list()
@@ -35,37 +35,30 @@ summary.matched.set <- function(set, verbose = T)
     summary.result$number.of.treated.units <- length(set)
     summary.result$num.units.empty.set <- sum(Lengthcol == 0)
     summary.result$lag <- attr(set, "lag")
-    #class(summary.result) <- "summary.matched.set"
     return(summary.result)
   }
   else
   {
-    #class(df) <- "summary.matched.set"
     return(df)
   }
 }
 #' @export
-plot.matched.set <- function(set, border = NA, col = "grey", xlim = NULL, ylim = NULL, ylab = "", xlab ="" , lwd = NULL,
-                             main = "Distribution of matched set sizes", ...)
+plot.matched.set <- function(set, border = NA, col = "grey", ylab = "Frequency of Size", 
+                             xlab ="Matched Set Size" , lwd = NULL,
+                             main = "Distribution of matched set sizes",
+                             ...)
 {
-  
     lvec <- sapply(set, length)
-    if(is.null(xlim))
+    
+    hist(x = lvec, freq = TRUE, border = border, col = col, ylab = ylab, xlab = xlab, main = main, ...)
+    if(sum(lvec == 0) > 0)
     {
-      xlim = c(0, length(lvec))
+      if(is.null(lwd))
+      {
+        lwd = 4
+      }
+      lines(x = c(0,0), y = c(0, length(rep(0, sum(lvec == 0) )) ), col = "red", lwd = lwd)  
     }
-    if(is.null(ylim))
-    {
-      ylim = c(0, max(lvec, max(sum(lvec == 0))))
-    }
-    if(is.null(lwd))
-    {
-      lwd = 4
-    }
-    hist(x = lvec, freq = TRUE, border = border, col = col, xlim = xlim, ylim = ylim, ylab = ylab, xlab = xlab, main = main, ...)
-    lines(x = c(0,0), y = c(0, length(rep(0, sum(lvec == 0) )) ), col = "red", lwd = lwd)
-  
-  
 }
 #' @export
 extract.set <- function(set, id, t)
@@ -73,7 +66,6 @@ extract.set <- function(set, id, t)
   strid <- paste0(id, ".", t)
   subset <- set[names(set) == strid]
   if(length(subset) != 1) stop('t,id pair invalid')
-  #if(class(subset) != 'matched.set') stop("Problem extracting individual matched set")
   class(subset) <- "matched.set"
   return(subset)
 }
@@ -113,31 +105,9 @@ print.matched.set <- function(set, verbose = F)
   return(temp)
 }
 
-#' #' @export
-# `[.overview.matched.set` <- function(x, i, j = NULL, drop = NULL)
-#' {
-#'   
-#'   # if(is.null(sets)) stop("please specify matched sets")
-#'   # class(x) <- "data.frame"
-#'   # ids <- x[i, c("i")]
-#'   # ts <- x[i, c("t")]
-#'   # 
-#'   # attr(temp, "lag") <- attr(x, "lag")
-#'   # attr(temp, "refinement.method") <- attr(x, "refinement.method")
-#'   # class(temp) <- "matched.set"
-#'   # return(temp)
-#' }
-#' 
-
-# `[<-.matched.set` <- function(set)
-# {
-#   stop("not implemented yet, use a list")
-# }
-
-#builds the matrices that we will then use to calculate the mahalanobis distances for each matched set
 build_balance_mats <- function(idx, ordered_expanded_data, msets)
 {
-  #browser()
+  
   subset.per.matchedset <- function(sub.idx, set)
   {
     
@@ -153,16 +123,9 @@ build_balance_mats <- function(idx, ordered_expanded_data, msets)
   return(result)
 }
 
-process.balance.mats <- function(balance_matrices, variables)
-{
-  
-}
-
 #' @export
 get_covariate_balance <- function(matched.sets, data, verbose = T, plot = F, covariates, reference.line = TRUE, legend = TRUE, ylab = "SD",...)
 {
-  #get unit id, time id
-  #figure out how to manage the columns -- specify the covariates? assume all covariates? copy from the covs.formula attribute?
   if(is.null(covariates))
   {
     stop("please specify the covariates for which you would like to check the balance")
@@ -218,8 +181,6 @@ get_covariate_balance <- function(matched.sets, data, verbose = T, plot = F, cov
     matplot(pointmatrix, type = "l", col = 1:ncol(pointmatrix), lty =1, ylab = ylab, ...)
     if(legend) legend("topleft", legend = colnames(pointmatrix), col=1:ncol(pointmatrix), lty = 1)
     if(reference.line) abline(h = 0, lty = "dashed")
-    
-    #plot(as.numeric(plotpoints), type = "l", ...)
   }
 }
 

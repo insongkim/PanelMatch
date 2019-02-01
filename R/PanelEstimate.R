@@ -37,10 +37,10 @@
 #' \item{lead}{The lead window sequence for which PanelEstimate is producing point estimates and standard errors.}
 #' \item{confidence.level}{the confidence interval range}
 #' \item{qoi}{the quantity of interest}
-#' \item{matched.sets} the refined matched sets used to produce the estimations. These might be different from the provided 
-#' \code{sets} argument depending on the missingness of data in the lead window and the \code{qoi}
+#' \item{matched.sets}{the refined matched sets used to produce the estimations. These might be different from the provided}
+#' \code{sets}{argument depending on the missingness of data in the lead window and the \code{qoi}}
 #' \item{df}{if \code{inference} is "wfe", the degrees of freedom}
-#' \item{standard.error} {the standard error of the point estimates}
+#' \item{standard.error}{the standard error of the point estimates}
 #' @author In Song Kim <insong@mit.edu>, Erik Wang
 #' <haixiao@Princeton.edu>, and Kosuke Imai <kimai@Princeton.edu>
 #'
