@@ -111,7 +111,7 @@ PanelMatch <- function(lag, time.id, unit.id, treatment, outcome,
       }
       expanded.sets.t0 <- lapply(expanded.sets.t0, rmv, cols.to.remove_ = cols.to.remove)
     }
-    
+    if(qr(pooled)$rank != ncol(pooled)) stop("Error: Provided data is not linearly independent so calculations cannot be completed. Please check the data set for any redundant, unnecessary, or problematic information.")
     if(refinement.method == "CBPS.weight" | refinement.method == "CBPS.match")
     {
       fit0 <- suppressMessages(CBPS::CBPS(reformulate(response = treatment, termlabels = colnames(pooled)[-c(1:4)]), 

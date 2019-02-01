@@ -204,7 +204,7 @@ PanelEstimate <- function(lead, #probably want to swap the order of these around
       }
       # changed return to class
       z <- list("coefficients" = o.coefs,
-                "bootstrapped.coefficients" = coefs, "bootstrap.iterations" = ITER,
+                "bootstrapped.coefficients" = coefs, "bootstrap.iterations" = ITER, "standard.error" = apply(coefs, 2, sd, na.rm = T),
                 "method" = method, "lag" = lag,
                 "lead" = lead, "confidence.level" = CI, "qoi" = qoi, "matched.sets" = sets)
       class(z) <- "PanelEstimate"
@@ -292,7 +292,7 @@ PanelEstimate <- function(lead, #probably want to swap the order of these around
         
       }
       z <- list("coefficients" = o.coefs,
-                "bootstrapped.coefficients" = coefs, "bootstrap.iterations" = ITER,
+                "bootstrapped.coefficients" = coefs, "bootstrap.iterations" = ITER, "standard.error" = apply(coefs, 2, sd, na.rm = T),
                 "lead" = lead, "confidence.level" = CI, "qoi" = qoi, "matched.sets" = sets2)
       class(z) <- "PanelEstimate"
       return(z)
@@ -401,7 +401,7 @@ PanelEstimate <- function(lead, #probably want to swap the order of these around
       }
       # return(list("o.coef" = DID_ATE, "boots" = coefs))
       z <- list("coefficients" = o.coefs_ate,
-                "bootstrapped.coefficients" = coefs, "bootstrap.iterations" = ITER,
+                "bootstrapped.coefficients" = coefs, "bootstrap.iterations" = ITER, "standard.error" = apply(coefs, 2, sd, na.rm = T),
                 "lead" = lead, "confidence.level" = CI, "qoi" = qoi, "matched.sets" = list(sets, sets2))
       class(z) <- "PanelEstimate"
       return(z)
@@ -524,16 +524,18 @@ summary.PanelEstimate <- function(object, verbose = TRUE, bias.corrected = FALSE
 #' Use standard arguments to the \code{plot} function to modify the plot as needed.
 #' @param pe.object a PanelEstimate object
 #' @export
-plot.PanelEstimate <- function(pe.object, ylab = "Estimated Effect of Treatment", xlab = "Time", main = "Estimated Effects of Treatment Over Time",...)
+plot.PanelEstimate <- function(pe.object, ylab = "Estimated Effect of Treatment", xlab = "Time", main = "Estimated Effects of Treatment Over Time", ylim = NULL, ...)
 {
   
   plot.data <- summary(pe.object, verbose = F, bias.corrected = F)
-  # plot(x = 1:5,y = plot.data[, 1], ylim = c(min(plot.data[,3]) - .1, max(plot.data[,4]) + .1), pch = 16, 
-  #      xaxt = "n", ylab = ylab, xlab = xlab, main = main, ...)
-  plot(x = 1:(nrow(plot.data)),y = plot.data[, 1], pch = 16, 
-       xaxt = "n", ylab = ylab, xlab = xlab, main = main, ...)
+  if(is.null(ylim))
+  {
+    ylim <- c(min(plot.data[, 3]) - abs(mean(plot.data[, 3])), max(plot.data[, 4]) + abs(mean(max(plot.data[, 4]))))
+  }
+  plot(x = 1:(nrow(plot.data)),y = plot.data[, 1], pch = 16, cex = 1.5,
+       xaxt = "n", ylab = ylab, xlab = xlab, main = main, ylim = ylim, ...)
   axis(side = 1, at = 1:nrow(plot.data), labels = rownames(plot.data))
-  arrows(1:(nrow(plot.data)), plot.data[,3], 1:(nrow(plot.data)), plot.data[,4], length=0.05, angle=90, code=3)
+  segments(1:(nrow(plot.data)), plot.data[,3], 1:(nrow(plot.data)), plot.data[,4])#, length=0.05, angle=90, code=3)
   abline(h = 0, lty = "dashed")
 }
 
