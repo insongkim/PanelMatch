@@ -127,4 +127,4 @@ $qoi
 ```r
 plot(PE.results)
 ```
-
+![](https://github.com/adamrauh/panel-data/blob/master/readmeplot.png)
