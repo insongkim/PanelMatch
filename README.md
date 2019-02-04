@@ -89,7 +89,8 @@ long-term effects. In this example, we illustrate the use of
 `PanelEstimate` to estimate the average treatment effect on treated units (att) at time `t` on the outcomes from time `t+0` to `t+4`.
 
 ```r
-PE.results <- PanelEstimate(lead = 0:4, inference = "bootstrap", qoi = "att", sets = PM.results, data = dem, outcome.variable = "y")
+PE.results <- PanelEstimate(lead = 0:4, inference = "bootstrap", qoi = "att", sets = PM.results, 
+                             data = dem, outcome.variable = "y")
 ```
 
 The `PanelEstimate` function returns a `PanelEstimate` object, which is a named list. This object will contain the point estimates, standard errors and other information about the calculations. See the wiki page about PanelEstimate objects for more information. 
