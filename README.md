@@ -99,6 +99,29 @@ Users can easily obtain and visualize important information about esimtates and 
 
 ```r
 summary(PE.results)
+Weighted Difference-in-Differences with Mahalanobis Distance
+Weighted Difference-in-Differences with Covariate Balancing Propensity Score
+Matches created with 4 lags
+
+Standard errors computed with 1000 Weighted bootstrap samples
+
+Estimate of Average Treatment Effect on the Treated (ATT) by Period:
+$summary
+      estimate std.error      2.5%     97.5%
+t+0 -0.7681861 0.6440107 -2.013483 0.5455004
+t+1 -0.2523489 1.1154698 -2.375974 2.0014498
+t+2  0.9621561 1.4521630 -2.001090 3.8658385
+t+3  1.9590396 1.7087395 -1.466386 5.3701010
+t+4  2.0175749 1.8790923 -1.819543 5.6716292
+
+$lag
+[1] 4
+
+$iterations
+[1] 1000
+
+$qoi
+[1] "att"
 ```
 
 ```r
