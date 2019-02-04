@@ -91,7 +91,15 @@ long-term effects. In this example, we illustrate the use of
 ```r
 PE.results <- PanelEstimate(lead = 0:4, inference = "bootstrap", qoi = "att", sets = PM.results, data = dem, outcome.variable = "y")
 
-summary(PE.results)
+The `PanelEstimate` function returns a `PanelEstimate` object, which is a named list. This object will contain the point estimates, standard errors and other information about the calculations. See the wiki page about PanelEstimate objects for more information. 
 
+Users can easily obtain and visualize important information about esimtates and standard errors using the `summary` and `plot` methods for PanelEstimate objects
+
+```r
+summary(PE.results)
+```
+
+```r
+plot(PE.results)
 ```
 
