@@ -9,10 +9,9 @@ practice. Researchers first select a method of matching each treated
 observation from a given unit in a particular time period with control
 observations from other units in the same time period that have a
 similar treatment and covariate history.  These methods include
-standard matching and weighting methods based on propensity score and Mahalanobis
-distance.
+standard matching and weighting methods based on propensity score and Mahalanobis distance.
 Once matching is done, both short-term and long-term average treatment
-effects for the treated can be estimated with standard errors.  The
+effects for the treated can be estimated with standard errors. The
 package also offers a visualization technique that allows researchers
 to assess the quality of matches by examining the resulting covariate
 balance.
@@ -36,7 +35,7 @@ Then, load `devtools` and use the function `install_github()` to install `PanelM
 
 ``` r
 library(devtools)
-install_github("insongkim/PanelMatch", dependencies=TRUE)
+install_github("insongkim/PanelMatch", ref = "development" dependencies=TRUE)
 ```
 If you encounter problems during installation, please consult [the wiki page](https://github.com/insongkim/PanelMatch/wiki/Installation-Troubleshooting) that has some ideas for handling common issues. 
 
@@ -48,7 +47,7 @@ Usage Examples
 
 Users can visualize the variation of treatment across space and
 time. This will help users build an intuition about how comparison of
-treated and control observation can be made.
+treated and control observations can be made.
 
 ```r
 library(PanelMatch)
@@ -63,28 +62,21 @@ DisplayTreatment(unit.id = "wbcode2",
 
 `PanelMatch` identifies a matched set for each treated
  observation. Specifically, for a given treated unit, the matched set
- consists of control observations that have the identical treatment
- history up to a certain number of `lag` years. Researchers must
- specify `lag`. Researchers may also specify `covars.lagged`, a vector
- of covariates to be automatically lagged and included in the model formula.
- A further refinement of the matched set will be
- possible by setting the size of the matched set `M`, and adjusting
- for other confounders such as past outcomes and covariates via
- `formula`. Various matching and weighting methods such as `Mahalanobis distance`
- matching and `CBPS` and `Propensity score` matching and weighting can 
- be used.
+ consists of control observations that have an identical treatment
+ history up to a chosen number (`lag`) of years. This number corresponds with the `lag` parameter, which must
+ be chosen by the user. Users must also consider various parameters regarding the refinement of created matched sets:
+ 1) `refinement.method` -- Users may choose between standard propensity score weighting or matching (`ps.weight`, `ps.match`), covariate balanced propensity score weighting or matching (`CBPS.weight`, `CBPS.match`),  and mahalanobis distance matching (`mahalanobis`).
+ 2) `size.match` -- This sets the maximum number of control units that can be included in a matched set.
+ 3) `covs.formula` -- This sets which variables are considered in creating the refined matched sets. This can be set to include lagged versions of any variable as well. See the `PanelMatch` documentation for more information about this parameter.
 
 ``` r
-matches.cbps <- PanelMatch(lag = 4, max.lead = 4, time.id = "year",
-                           unit.id = "wbcode2", treatment = "dem",
-                           covars.lagged = c("tradewb"),
-                           formula =  y ~ dem, method = "CBPS",
-                           weighting = FALSE,  qoi = "ate",  M = 5, data = dem)
-```							
+PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
+                      treatment = "dem", outcome = "y", refinement.method = "mahalanobis", 
+                      data = dem, match.missing = T, 
+                      covs.formula = ~ lag("tradewb", 1:4) + lag("y", 1:4), size.match = 5)
 
-Users should closely examine the matched sets, and check the balance
-between treated and control units in terms of their observable
-pre-treatment characteristics.
+```							
+The `PanelMatch` function will return a `matched.set` object. Users can extract information about individual matched sets as well as statistics about all created matched sets from this object. Consult the [Wiki page on Matched Set Objects](https://github.com/insongkim/PanelMatch/wiki/Matched-Set-Objects) for a much more detailed walkthrough and description of these objects.
 
 ### PanelEstimate
 
@@ -94,56 +86,12 @@ treatment effect using `PanelEstimate`. Either bootstrap or weighted
 fixed effects methods can be used for standard error
 calculation. Users can estimate the contemporaneous effect as well as
 long-term effects. In this example, we illustrate the use of
-`PanelEstimate` to estimate the ATT of treatment at time `t` on the
-outcomes on `t` through `t+4`.
+`PanelEstimate` to estimate the average treatment effect on treated units (att) at time `t` on the outcomes from time `t+0` to `t+4`.
 
 ```r
+PE.results <- PanelEstimate(lead = 0:4, inference = "bootstrap", qoi = "att", sets = PM.results, data = dem, outcome.variable = "y")
 
-mod.bootSE <- PanelEstimate(lead = 0:4, inference = "bootstrap",
-                            matched_sets = matches.cbps,
-                            qoi = "att", CI = .95,
-                            ITER = 500)
+summary(PE.results)
 
-summary(mod.bootSE)
-
-Weighted Difference-in-Differences with Covariate Balancing Propensity Score
-Matches created with 4 lags
-
-Standard errors computed with 500 Weighted bootstrap samples
-
-Estimate of Average Treatment Effect on the Treated (ATT) by Period:
-
-|                                                       |        t+0|        t+1|       t+2|       t+3|       t+4|
-|:------------------------------------------------------|----------:|----------:|---------:|---------:|---------:|
-|Point Estimate(s)                                      |  0.6882587|  1.1526035|  1.529355|  1.911578|  2.060706|
-|Standard Error(s)                                      |  0.6874394|  1.0909965|  1.441706|  1.812096|  2.229936|
-|Lower Limit of 95 % Regular Confidence Interval        | -0.5811716| -0.9481110| -1.305701| -1.642694| -2.544959|
-|Upper Limit of 95 % Regular Confidence Interval        |  1.9722803|  3.0828392|  4.275508|  5.302505|  6.379517|
-|Bias-corrected Estimate(s)                             |  0.6889523|  1.1386178|  1.509317|  1.921500|  2.091011|
-|Lower Limit of 95 % Bias-corrected Confidence Interval | -0.5957630| -0.7776321| -1.216798| -1.479350| -2.258106|
-|Upper Limit of 95 % Bias-corrected Confidence Interval |  1.9576889|  3.2533181|  4.364411|  5.465850|  6.666370|
 ```
 
-## 9/18 Update Placeholder Title
-
-
-We can use the `findAllTreated` function to figure out which units received a treatment over a time period and the time at which the treatment occurred. We can use the `get.matchedsets` function to find the set of matched control units for each treated unit.
-
-The `get.matchedsets` function will return a `matched.set` object, which is just a named list with some other attributes saved. By default, it prints out like a data frame, but its subsetting behaviors work like those of a list. The names of each entry in the `matched.set` object will specify relevant information about the treated unit in the format `[unit id variable].[time at which treatment was received]`
-
-
-```{r}
-treateds <- findAllTreated(dmat = dem, treatedvar = "dem", time.var = "year", unit.var = "wbcode2")
-msets <- get.matchedsets(t = treateds$year, id = treateds$wbcode2, data = subdem, L = 4, t.column = "year", id.column = "wbcode2", treatedvar = "dem")
-```
-
-For more detailed information about working with `matched.set` objects, look at the [Wiki page](https://github.com/insongkim/PanelMatch/wiki/Matched-Set-Objects) with examples and explanations. 
-
-Passing a matched set (one treated unit at a particular time and its corresponding set of controls) to the `DisplayTreatment` function will  highlight the treatment histories used to create the matched set. If you set the `show.set.only` argument to `TRUE`, then only units from the matched set (and the treated unit) will be shown on the plot. This is useful when working with larger data sets.
-
-```{r}
-DisplayTreatment(unit.id = "wbcode2", time.id = "year", treatment = 'dem', 
-                 data = dem, matched.set = msets[1],
-                 show.set.only = T, xlab = "year", ylab = "Country Code")
-```
-![](https://github.com/adamrauh/panel-data/blob/master/tweak.png)
