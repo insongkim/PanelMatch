@@ -115,7 +115,7 @@ build_ps_data <- function(idxlist, data, lag)
 # matched control units
 find_ps <- function(sets, fitted.model)
 {
-  browser()
+  
   apply_formula <- function (x, B) 
   {
     xx <- cbind(1, as.matrix(x[, 4:ncol(x)]))
