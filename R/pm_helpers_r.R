@@ -28,7 +28,7 @@ build_maha_mats <- function(idx, ordered_expanded_data)
 
 # Will need to be updated if the syntax/implementation of the covs.formula argument is changed
 # Applies necessary transformation to the data based on the specified parameters, including using the covs.formula argument to apply the necessary lags to particular columns.
-# It also will structure the data frame such that every column after the 4th column is used in the following calculations
+# It also will structure the data frame such that every column after the 3rd column is used in the following calculations
 parse_and_prep <- function(formula, data, unit.id)
 {
   #check if formula empty or no covariates provided -- error checks
@@ -36,7 +36,7 @@ parse_and_prep <- function(formula, data, unit.id)
   terms <- gsub(" ", "", terms) #remove whitespace
   lag.calls <- terms[grepl("lag(*)", terms)] #regex to get calls to lag function
   other.terms <- terms[!grepl("lag(*)", terms)]
-  sub.data <- data[, c(1:4, which(colnames(data) %in% other.terms) )] #including only what is specified in the formula
+  sub.data <- data[, c(1:3, which(colnames(data) %in% other.terms) )] #including only what is specified in the formula
   if(any(grepl("=", lag.calls))) stop("fix lag calls to use only unnamed arguments in the correct positions")
   data <- data.table::as.data.table(data) #check sorting
   if(length(lag.calls) > 0)
@@ -115,12 +115,13 @@ build_ps_data <- function(idxlist, data, lag)
 # matched control units
 find_ps <- function(sets, fitted.model)
 {
+  browser()
   apply_formula <- function (x, B) 
   {
-    xx <- cbind(1, as.matrix(x[, 5:ncol(x)]))
+    xx <- cbind(1, as.matrix(x[, 4:ncol(x)]))
     x[, (ncol(x) + 1)] <- 1 - 1/(1+exp(xx %*% B))
     names(x)[ncol(x)] <- "ps"
-    return(x[, c(1:4, ncol(x))])
+    return(x[, c(1:3, ncol(x))])
   }
   sets_with_ps <- lapply(sets, apply_formula, B = fitted.model$coefficients)
   return(sets_with_ps)
@@ -139,9 +140,9 @@ handle_mahalanobis_calculations <- function(mahal.nested.list, msets, max.size, 
       return(1)
     }
     
-    cov.data <- year.df[1:(nrow(year.df) - 1), 5:ncol(year.df)]
+    cov.data <- year.df[1:(nrow(year.df) - 1), 4:ncol(year.df)]
     cov.matrix <- cov(cov.data)
-    center.data <- year.df[nrow(year.df), 5:ncol(year.df)]
+    center.data <- year.df[nrow(year.df), 4:ncol(year.df)]
     
     if( isTRUE(all.equal(det(cov.matrix), 0, tolerance = .00001)) ) #we might want to make this smaller, but had some errors here about computationally infeasible problems because of values very close to zero
     {
@@ -309,4 +310,6 @@ handle_ps_match <- function(just.ps.sets, msets, refinement.method, verbose, max
   attr(msets, "refinement.method") <- refinement.method
   return(msets)
 }
+
+
 

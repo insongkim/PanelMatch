@@ -184,6 +184,72 @@ get_covariate_balance <- function(matched.sets, data, verbose = T, plot = F, cov
   }
 }
 
+decode_index <- function(mset, time.index, unit.index, original.unit.id, original.time.id)
+{
+  decode.control.units <- function(in_, unit.index)
+  {
+    news <- unit.index$original.id[match(in_, unit.index$new.id)]
+    if(!is.null(attr(in_, "distances")))
+    {
+      attr(news, "distances") <- attr(in_, "distances")
+      names(attr(news, "distances")) <- news
+    }
+    if(!is.null(attr(in_, "weights")))
+    {
+      attr(news, "weights") <- attr(in_, "weights")
+      names(attr(news, "weights")) <- news
+    }
+    return(news)
+  }
+  new.mset <- sapply(mset, decode.control.units, unit.index = unit.index)
+  decode.treated.units <- function(ts, ids, unit.index, time.index)
+  {
+    n.ids <- unit.index$original.id[match(ids, unit.index$new.id)]
+    n.ts <- time.index$original.time.id[match(ts, time.index$new.time.id)]
+    return(paste0(n.ids, ".", n.ts))
+  }
+  treated.ts <- as.numeric(unlist(strsplit(names(mset), split = "[.]"))[c(F,T)])
+  treated.ids <- as.numeric(unlist(strsplit(names(mset), split = "[.]"))[c(T,F)])
+  attributes(new.mset) <- attributes(mset)
+  names(new.mset) <- decode.treated.units(treated.ts, treated.ids, unit.index, time.index)
+  attr(new.mset, "id.var") <- original.unit.id
+  attr(new.mset, "t.var") <- original.time.id
+  return(new.mset)
+}
+
+
+encode_index <- function(mset, time.index, unit.index, new.unit.id, new.time.id)
+{
+  encode.control.units <- function(in_, unit.index)
+  {
+    news <- unit.index$new.id[match(in_, unit.index$original.id)]
+    if(!is.null(attr(in_, "distances")))
+    {
+      attr(news, "distances") <- attr(in_, "distances")
+      names(attr(news, "distances")) <- news
+    }
+    if(!is.null(attr(in_, "weights")))
+    {
+      attr(news, "weights") <- attr(in_, "weights")
+      names(attr(news, "weights")) <- news
+    }
+    return(news)
+  }
+  new.mset <- sapply(mset, encode.control.units, unit.index = unit.index)
+  encode.treated.units <- function(ts, ids, unit.index, time.index)
+  {
+    n.ids <- unit.index$new.id[match(ids, unit.index$original.id)]
+    n.ts <- time.index$new.time.id[match(ts, time.index$original.time.id)]
+    return(paste0(n.ids, ".", n.ts))
+  }
+  treated.ts <- (unlist(strsplit(names(mset), split = "[.]"))[c(F,T)])
+  treated.ids <- (unlist(strsplit(names(mset), split = "[.]"))[c(T,F)])
+  attributes(new.mset) <- attributes(mset)
+  names(new.mset) <- encode.treated.units(treated.ts, treated.ids, unit.index, time.index)
+  attr(new.mset, "id.var") <- new.unit.id
+  attr(new.mset, "t.var") <- new.time.id
+  return(new.mset)
+}
 
 
 

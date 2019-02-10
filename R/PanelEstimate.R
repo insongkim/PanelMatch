@@ -80,6 +80,17 @@ PanelEstimate <- function(lead, #probably want to swap the order of these around
   }
   #do we need to order the data?
   data <- data[order(data[,unit.id], data[,time.id]), ]
+  data[, paste0(unit.id, ".int")] <- as.integer(as.factor(data[, unit.id]))
+  data[, paste0(time.id,".int")] <- as.integer(factor(x = as.character(data[, time.id]), levels = as.character(sort(unique(data[, time.id]))), 
+                                                              labels = as.character(1:length(unique(data[, time.id]))), ordered = T))
+  unit.index.map <- data.frame(original.id = make.names(as.character(unique(data[, unit.id]))), new.id = unique(data[, paste0(unit.id, ".int")]), stringsAsFactors = F)
+  time.index.map <- data.frame(original.time.id = make.names(as.character(unique(data[, time.id]))), new.time.id = unique(data[, paste0(time.id, ".int")]), stringsAsFactors = F)
+  og.unit.id <- unit.id
+  og.time.id <- time.id
+  unit.id <- paste0(unit.id, ".int")
+  time.id <- paste0(time.id, ".int")
+  
+  sets <- encode_index(sets, time.index.map, unit.index.map, unit.id, time.id)
   
   if(is.null(restricted)){restricted <- FALSE}
 

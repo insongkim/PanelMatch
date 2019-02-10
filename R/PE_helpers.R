@@ -195,19 +195,27 @@ reweight <- function(mset.object, data, outcome.var)
     stop("panel data is not balanced")
   }
   
-  #order and ensure order does not get violated
-  #convert to data.table?
-  othercols <- colnames(data)[!colnames(data) %in% c(time.id, unit.id, treatment, outcome)]
-  data <- data[, c(unit.id, time.id, treatment, outcome, othercols)] #reorder columns 
   ordered.data <- data[order(data[,unit.id], data[,time.id]), ]
+  #ordered.data[, paste0(unit.id, ".int")] <- as.integer(as.factor(data[, unit.id]))
+  #ordered.data[, paste0(time.id,".int")] <- as.integer(factor(x = as.character(ordered.data[, time.id]), levels = as.character(sort(unique(ordered.data[, time.id]))), 
+  #                                                            labels = as.character(1:length(unique(ordered.data[, time.id]))), ordered = T))
   
+  #unit.index.map <- data.frame(original.id = make.names(as.character(unique(ordered.data[, unit.id]))), new.id = unique(ordered.data[, paste0(unit.id, ".int")]), stringsAsFactors = F)
+  #time.index.map <- data.frame(original.time.id = make.names(as.character(unique(ordered.data[, time.id]))), new.time.id = unique(ordered.data[, paste0(time.id, ".int")]), stringsAsFactors = F)
+  #og.unit.id <- unit.id
+  #og.time.id <- time.id
+  #unit.id <- paste0(unit.id, ".int")
+  #time.id <- paste0(time.id, ".int")
+  
+  othercols <- colnames(ordered.data)[!colnames(ordered.data) %in% c(time.id, unit.id, treatment)]
+  ordered.data <- ordered.data[, c(unit.id, time.id, treatment, othercols)]
   
   msets <- msets[sapply(msets, length) > 0 ]
   treated.ts <- as.numeric(unlist(strsplit(names(msets), split = "[.]"))[c(F,T)])
   treated.ids <- as.numeric(unlist(strsplit(names(msets), split = "[.]"))[c(T,F)])
   
-  ordered.data <- as.matrix(parse_and_prep(formula = covs.formula, data = ordered.data, unit.id = unit.id)) #every column > 4 at this point should be used in distance/refinement calculation
-  ordered.data <- as.matrix(handle.missing.data(ordered.data, 5:ncol(ordered.data)))
+  ordered.data <- as.matrix(parse_and_prep(formula = covs.formula, data = ordered.data, unit.id = unit.id)) #every column > 3 at this point should be used in distance/refinement calculation
+  ordered.data <- as.matrix(handle.missing.data(ordered.data, 4:ncol(ordered.data)))
   #RE IMPLEMENT RESTRICTED OR NAIVE?
   if(refinement.method == "mahalanobis")
   {
@@ -216,16 +224,11 @@ reweight <- function(mset.object, data, outcome.var)
     idxlist <- get_yearly_dmats(ordered.data, treated.ids, tlist, paste0(ordered.data[,unit.id], ".", 
                                                                          ordered.data[, time.id]), matched_sets = msets, lag)
     mahalmats <- build_maha_mats(ordered_expanded_data = ordered.data, idx =  idxlist)
-    weighted.mset <- handle_mahalanobis_calculations(mahalmats, msets, size.match, verbose)
-    attr(weighted.mset, "covs.formula") <- covs.formula
-    attr(weighted.mset, "match.missing") <- match.missing
-    attr(weighted.mset, "max.match.size") <- size.match
-    return(weighted.mset)
+    msets <- handle_mahalanobis_calculations(mahalmats, msets, size.match, verbose)
   }
   
   else
   {
-    
     tlist <- expand.treated.ts(lag, treated.ts = treated.ts)
     idxlist <- get_yearly_dmats(ordered.data, treated.ids, tlist, paste0(ordered.data[,unit.id], ".", 
                                                                          ordered.data[, time.id]), matched_sets = msets, lag)
@@ -250,7 +253,7 @@ reweight <- function(mset.object, data, outcome.var)
       }
       expanded.sets.t0 <- lapply(expanded.sets.t0, rmv, cols.to.remove_ = cols.to.remove)
     }
-    
+    if(qr(pooled)$rank != ncol(pooled)) stop("Error: Provided data is not linearly independent so calculations cannot be completed. Please check the data set for any redundant, unnecessary, or problematic information.")
     if(refinement.method == "CBPS.weight" | refinement.method == "CBPS.match")
     {
       fit0 <- suppressMessages(CBPS::CBPS(reformulate(response = treatment, termlabels = colnames(pooled)[-c(1:4)]), 
@@ -277,6 +280,7 @@ reweight <- function(mset.object, data, outcome.var)
   attr(msets, "covs.formula") <- covs.formula
   attr(msets, "match.missing") <- match.missing
   attr(msets, "max.match.size") <- size.match
+  #msets <- decode_index(msets, time.index.map, unit.index.map, og.unit.id, og.time.id)
   return(msets)    
 }
 
