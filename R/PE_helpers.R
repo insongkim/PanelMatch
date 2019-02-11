@@ -172,7 +172,7 @@ equality_four <- function(x, y, z){
 
 
 #' functions nearly identically to PM
-#' This is currently only used inside PE2, where it is used to update the weights of a matched set object after control units that are missing data in the necessary future or past periods have been identified and taken out.
+#' This is currently only used inside PE, where it is used to update the weights of a matched set object after control units that are missing data in the necessary future or past periods have been identified and taken out.
 #' Function assumes that the units that are included are the only units it needs to consider. Pulls argument information from matched.set object 
 #' Major difference between this function and the actual PanelMatch function is that this one does not identify matched sets and/or treated units. It merely updates and refines the matched set object provided to it
 #' @export
@@ -256,12 +256,12 @@ reweight <- function(mset.object, data, outcome.var)
     if(qr(pooled)$rank != ncol(pooled)) stop("Error: Provided data is not linearly independent so calculations cannot be completed. Please check the data set for any redundant, unnecessary, or problematic information.")
     if(refinement.method == "CBPS.weight" | refinement.method == "CBPS.match")
     {
-      fit0 <- suppressMessages(CBPS::CBPS(reformulate(response = treatment, termlabels = colnames(pooled)[-c(1:4)]), 
+      fit0 <- suppressMessages(CBPS::CBPS(reformulate(response = treatment, termlabels = colnames(pooled)[-c(1:3)]), 
                                           family = binomial(link = "logit"), data = pooled))
     }
     if(refinement.method == "ps.weight" | refinement.method == "ps.match")
     {
-      fit0 <- glm(reformulate(response = treatment, termlabels = colnames(pooled)[-c(1:4)]), 
+      fit0 <- glm(reformulate(response = treatment, termlabels = colnames(pooled)[-c(1:3)]), 
                   family = binomial(link = "logit"), data = pooled)
     }
     
