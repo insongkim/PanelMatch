@@ -65,7 +65,7 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
 {
   # load the dataframe that the user specifies
   #TODO: fix layout here
-
+  
   if(show.set.only & !is.null(matched.set) & length(matched.set) == 1 & class(matched.set) == "matched.set")
   {
     info <- unlist(strsplit(names(matched.set)[1], split = ".", fixed = TRUE))
@@ -176,7 +176,7 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
   data$old.index <- data$unit.id
   data$unit.id <- match(data$unit.id, unique(data$unit.id) ) 
   data$unit.id <- factor(data$unit.id, levels=unique(as.character(data$unit.id)))
-  
+  data$time.id <- factor(x = data$time.id, levels = sort(unique(data$time.id)), ordered = T)
   if(!is.null(group_on))
   {
     lvls <- levels(data[, group_on])
@@ -222,8 +222,6 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
     time <- as.numeric(t)
     .set.colref <- function(id_, treatment, time_)
     {
-      
-      
       if(.in.set(id_comp = id_))
       {
         if(treatment)
@@ -236,7 +234,6 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
           {
             return(1)
           }
-          
         }
         else
         {
@@ -319,8 +316,7 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
     pj <- p
   }
   pjp <- pj + scale_x_discrete(expand = c(0, 0), labels = unique(as.character(data$old.index))) +
-    scale_y_continuous(limits = c(min(data$time.id)-1,max(data$time.id) + 1), expand = c(0,0)) + theme(axis.text.y = element_text(color = clrs)) +
-    coord_flip()
+    theme(axis.text.y = element_text(color = clrs)) + coord_flip()
   
   return(pjp) # return the plot
 }
