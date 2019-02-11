@@ -199,3 +199,20 @@ intersect_index <- function(index, by) {
   keep_entries <- time %in% common_times
   return(keep_entries)
 }
+
+check_time_data <- function(data, time.id)
+{
+  if(class(data[, time.id]) != "integer") stop("time data is not integer")
+  u.times <- unique(data[, time.id])
+  increase.by.one <- all(seq(min(u.times), max(u.times), by = 1) %in% u.times)
+  if(increase.by.one)
+  {
+    return(TRUE)
+  }
+  else
+  {
+    stop("integer represetnation of time data has problematic gaps, as it does not increase by one. Perhaps time data for observations is irregular/not uniform across units?")
+  }
+}
+
+

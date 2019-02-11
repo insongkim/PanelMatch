@@ -74,6 +74,7 @@ PanelEstimate <- function(lead, #probably want to swap the order of these around
   method <- attr(sets, "refinement.method")
   restricted <- attr(sets, "restricted") # this doesnt exist yet, not sure what it means.
   
+  if(!"data.frame" %in% class(data)) stop("please convert data to data.frame class")
   if(any(table(data[, unit.id]) != max(table(data[, unit.id]))))
   {
     data <- make.pbalanced(data, balance.type = "fill", index = c(unit.id, time.id))
