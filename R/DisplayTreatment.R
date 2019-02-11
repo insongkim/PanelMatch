@@ -60,7 +60,9 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
                              sort_by = NULL,
                              decreasing = FALSE,
                              matched.set = NULL,
-                             show.set.only = FALSE)
+                             show.set.only = FALSE,
+                             hide.x.axis.label = FALSE,
+                             hide.y.axis.label = FALSE)
     
 {
   # load the dataframe that the user specifies
@@ -317,7 +319,18 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
   }
   pjp <- pj + scale_x_discrete(expand = c(0, 0), labels = unique(as.character(data$old.index))) +
     theme(axis.text.y = element_text(color = clrs)) + coord_flip()
-  
+  if(hide.x.axis.label & !hide.y.axis.label)
+  {
+    return(pjp + theme(axis.text.x = element_blank(), axis.ticks.x = element_blank()))
+  }
+  if(hide.y.axis.label & !hide.x.axis.label)
+  {
+    return(pjp + theme(axis.text.y = element_blank(), axis.ticks.y = element_blank()))
+  }
+  if(hide.x.axis.label & hide.y.axis.label)
+  {
+    return(pjp + theme(axis.text.y = element_blank(), axis.ticks.y = element_blank()) + theme(axis.text.x = element_blank(), axis.ticks.x = element_blank()))
+  }
   return(pjp) # return the plot
 }
 
