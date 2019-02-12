@@ -54,17 +54,19 @@ PanelEstimate <- function(lead, #probably want to swap the order of these around
                           inference = c("wfe", "bootstrap"),
                           ITER = 1000,
                           estimator = "did",
-                          df.adjustment = FALSE, qoi = NULL,
+                          df.adjustment = FALSE,
                           CI = .95,
                           sets,
                           data,
                           outcome.variable) {
 
-  
+  if(class(sets) != "PanelMatch") stop("sets is not a PanelMatch object")
+  qoi <- attr(sets, "qoi")
   if (inference == "wfe" & length(lead) > 1) 
     stop("When inference method is wfe, please only supply 1 lead at a time. 
          For example, please call this function with `lead` = 1 and then call it with `lead` = 2,
          rather than supplying `lead`` = 1:2")
+  
   lag <- attr(sets, "lag")
   dependent = outcome.variable
   treatment <- attr(sets, "treated.var")
@@ -91,6 +93,19 @@ PanelEstimate <- function(lead, #probably want to swap the order of these around
   unit.id <- paste0(unit.id, ".int")
   time.id <- paste0(time.id, ".int")
   
+  if(qoi == "att")
+  {
+    sets <- encode_index(sets$att, time.index.map, unit.index.map, unit.id, time.id)
+  }
+  if(qoi == "atc")
+  {
+    sets2 <- encode_index(sets$atc, time.index.map, unit.index.map, unit.id, time.id)
+  }
+  if(qoi == "ate")
+  {
+    sets <- encode_index(sets$att, time.index.map, unit.index.map, unit.id, time.id)
+    sets2 <- encode_index(sets$atc, time.index.map, unit.index.map, unit.id, time.id)
+  }
   sets <- encode_index(sets, time.index.map, unit.index.map, unit.id, time.id)
   
   if(is.null(restricted)){restricted <- FALSE}
@@ -110,17 +125,17 @@ PanelEstimate <- function(lead, #probably want to swap the order of these around
   if (qoi == "atc" | qoi == "ate") 
   {
     #first we need to "flip" the treatment variable, then re-run panelmatch with this as the new treatment variable
-    data$atc_variable <- ifelse(data[, treatment] == 1, 0, 1)
-    exclude <- which(colnames(data) %in% c(time.id, unit.id))
+    #data$atc_variable <- ifelse(data[, treatment] == 1, 0, 1)
+    #exclude <- which(colnames(data) %in% c(time.id, unit.id))
     #must be adjusted to use original problem specification bc of encoding/decoding stuff
-    sets2 <- PanelMatch(lag = lag, time.id = og.time.id, unit.id = og.unit.id, treatment = "atc_variable",
-                                     refinement.method = attr(sets, "refinement.method"),
-                                     size.match = attr(sets, "max.match.size"),
-                                     data = data[, -exclude],
-                                     match.missing = attr(sets, "match.missing"),
-                                     covs.formula = attr(sets, "covs.formula"),
-                                     verbose = FALSE)
-    sets2 <- encode_index(sets2, time.index.map, unit.index.map, unit.id, time.id)
+    #sets2 <- PanelMatch(lag = lag, time.id = og.time.id, unit.id = og.unit.id, treatment = "atc_variable",
+                                     # refinement.method = attr(sets, "refinement.method"),
+                                     # size.match = attr(sets, "max.match.size"),
+                                     # data = data[, -exclude],
+                                     # match.missing = attr(sets, "match.missing"),
+                                     # covs.formula = attr(sets, "covs.formula"),
+                                     # verbose = FALSE)
+    #sets2 <- encode_index(sets2, time.index.map, unit.index.map, unit.id, time.id)
     sets2 <- prep_for_leads(sets2, data, max(lead), time.id, unit.id, outcome.variable)
     sets2 <- sets2[sapply(sets2, length) > 0]
     treated.unit.ids2 <- as.numeric(unlist(strsplit(names(sets2), split = "[.]"))[c(T,F)])

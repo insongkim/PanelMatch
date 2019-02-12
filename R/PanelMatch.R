@@ -55,7 +55,8 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
                        data,
                        match.missing = TRUE,
                        covs.formula,
-                       verbose = FALSE
+                       verbose = FALSE,
+                       qoi
                        ) 
 {
   if(!"data.frame" %in% class(data)) stop("please convert data to data.frame class")
@@ -78,74 +79,36 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
   othercols <- colnames(ordered.data)[!colnames(ordered.data) %in% c(time.id, unit.id, treatment)]
   ordered.data <- ordered.data[, c(unit.id, time.id, treatment, othercols)] #reorder columns 
   
-  
-  temp.treateds <- findAllTreated(ordered.data, treatedvar = treatment, time.var = time.id, unit.var = unit.id, hasbeensorted = TRUE)
-  if(nrow(temp.treateds) == 0) stop("no treated units")
-  msets <- get.matchedsets(temp.treateds[, time.id], temp.treateds[, unit.id], ordered.data, lag, time.id, unit.id, treatment, hasbeensorted = TRUE)
-  msets <- msets[sapply(msets, length) > 0 ]
-  treated.ts <- as.numeric(unlist(strsplit(names(msets), split = "[.]"))[c(F,T)])
-  treated.ids <- as.numeric(unlist(strsplit(names(msets), split = "[.]"))[c(T,F)])
-  ordered.data <- as.matrix(parse_and_prep(formula = covs.formula, data = ordered.data, unit.id = unit.id)) #every column > 3 at this point should be used in distance/refinement calculation
-  ordered.data <- as.matrix(handle.missing.data(ordered.data, 4:ncol(ordered.data)))
-  
-  #RE IMPLEMENT RESTRICTED OR NAIVE?
-  if(refinement.method == "mahalanobis")
+  if(qoi == "atc")
   {
-    tlist <- expand.treated.ts(lag, treated.ts = treated.ts)
-    idxlist <- get_yearly_dmats(ordered.data, treated.ids, tlist, paste0(ordered.data[,unit.id], ".", 
-                                                                         ordered.data[, time.id]), matched_sets = msets, lag)
-    mahalmats <- build_maha_mats(ordered_expanded_data = ordered.data, idx =  idxlist)
-    msets <- handle_mahalanobis_calculations(mahalmats, msets, size.match, verbose)
+    ordered.data[, treatment] <- ifelse(ordered.data[, treatment] == 1,0,1) #flip the treatment variables 
+    msets <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data, match.missing, covs.formula, verbose, qoi)
+    msets <- decode_index(msets, time.index.map, unit.index.map, og.unit.id, og.time.id)
+    pm.obj <- list("atc" = msets)
+    class(pm.obj) <- "PanelMatch"
+    attr(pm.obj, "qoi") <- qoi
+    return(msets)
+  }
+  else if(qoi == "att")
+  {
+    msets <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data, match.missing, covs.formula, verbose, qoi)
+    msets <- decode_index(msets, time.index.map, unit.index.map, og.unit.id, og.time.id)
+    pm.obj <- list("att" = msets)
+    class(pm.obj) <- "PanelMatch"
+    attr(pm.obj, "qoi") <- qoi
+    return(pm.obj)
+  }
+  else if(qoi == "ate")
+  {
+    msets <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data, match.missing, covs.formula, verbose, qoi)
+    ordered.data[, treatment] <- ifelse(ordered.data[, treatment] == 1,0,1) #flip the treatment variables 
+    msets2 <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data, match.missing, covs.formula, verbose, qoi)
+    msets <- decode_index(msets, time.index.map, unit.index.map, og.unit.id, og.time.id)
+    msets2 <- decode_index(msets2, time.index.map, unit.index.map, og.unit.id, og.time.id)
+    pm.obj <- list("att" = msets, "atc" = msets2)
+    class(pm.obj) <- "PanelMatch"
+    attr(pm.obj, "qoi") <- qoi
+    return(pm.obj)
   }
   
-  else
-  {
-    tlist <- expand.treated.ts(lag, treated.ts = treated.ts)
-    idxlist <- get_yearly_dmats(ordered.data, treated.ids, tlist, paste0(ordered.data[,unit.id], ".", 
-                                                                         ordered.data[, time.id]), matched_sets = msets, lag)
-    expanded.sets.t0 <- build_ps_data(idxlist, ordered.data, lag)
-    pre.pooled <- rbindlist(expanded.sets.t0)
-    pooled <- pre.pooled[complete.cases(pre.pooled), ]
-    
-    cols.to.remove <- which(unlist(lapply(pooled, function(x){all(x[1] == x)}))) #checking for columns that only have one value
-    cols.to.remove <- unique(c(cols.to.remove, which(!colnames(pooled) %in% colnames(t(unique(t(pooled))))))) #removing columns that are identical to another column 
-    if(length(cols.to.remove) > 0)
-    {
-      class(pooled) <- c("data.frame")
-      pooled <- pooled[, -cols.to.remove]
-      rmv <- function(x, cols.to.remove_)
-      {
-        return(x[, -cols.to.remove_])
-      }
-      expanded.sets.t0 <- lapply(expanded.sets.t0, rmv, cols.to.remove_ = cols.to.remove)
-    }
-    if(qr(pooled)$rank != ncol(pooled)) stop("Error: Provided data is not linearly independent so calculations cannot be completed. Please check the data set for any redundant, unnecessary, or problematic information.")
-    if(refinement.method == "CBPS.weight" | refinement.method == "CBPS.match")
-    {
-      fit0 <- suppressMessages(CBPS::CBPS(reformulate(response = treatment, termlabels = colnames(pooled)[-c(1:3)]), 
-                                          family = binomial(link = "logit"), data = pooled))
-    }
-    if(refinement.method == "ps.weight" | refinement.method == "ps.match")
-    {
-      fit0 <- glm(reformulate(response = treatment, termlabels = colnames(pooled)[-c(1:3)]), 
-                  family = binomial(link = "logit"), data = pooled)
-    }
-    
-    just.ps.sets <- find_ps(expanded.sets.t0, fit0)
-    
-    if(refinement.method == "CBPS.weight" | refinement.method == "ps.weight")
-    {
-      msets <- handle_ps_weighted(just.ps.sets, msets, refinement.method)
-    }
-    if(refinement.method == "CBPS.match" | refinement.method == "ps.match")
-    {
-      msets <- handle_ps_match(just.ps.sets, msets, refinement.method, verbose, size.match)
-    }
-    
-  }
-  attr(msets, "covs.formula") <- covs.formula
-  attr(msets, "match.missing") <- match.missing
-  attr(msets, "max.match.size") <- size.match
-  msets <- decode_index(msets, time.index.map, unit.index.map, og.unit.id, og.time.id)
-  return(msets)    
 } 
