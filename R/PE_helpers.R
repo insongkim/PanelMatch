@@ -117,6 +117,7 @@ prep_for_leads <- function(matched_sets, ordered.data, max.lead, t.var, id.var, 
   compmat <- data.matrix(compmat)
   
   idx <- check_treated_units(compmat = compmat, compmat_row_units = as.numeric(compmat[, 1]), compmat_cols = as.numeric(colnames(compmat)[2:ncol(compmat)]), lead = max.lead, treated_ids = tids, treated_ts = ts)
+  if(all(!idx)) stop("estimation not possible: All treated units are missing data necessary for the calculations to proceed")
   if(any(!idx))
   {
     class(matched_sets) <- c("matched.set", "list") #to get the matched.set subsetting with attributes
@@ -142,7 +143,7 @@ prep_for_leads <- function(matched_sets, ordered.data, max.lead, t.var, id.var, 
     all.gone.counter <- sapply(sub.set.new, function(x){sum(x)})
     if(sum(all.gone.counter == 0) > 0) #case in which all the controls in a particular group were dropped
     {
-      stop("all controls in a particular matched set were removed due to missing data")
+      warning("all controls in a particular matched set were removed due to missing data")
       
       idx[all.gone.counter == 0] <- FALSE
       sub.index <- ll[idx]
@@ -154,7 +155,7 @@ prep_for_leads <- function(matched_sets, ordered.data, max.lead, t.var, id.var, 
       sub.set.new <- mapply(FUN = create_new_sets, sub.set, sub.index, SIMPLIFY = FALSE)
       attributes(sub.set.new) <- attributes(sub.set)
     }
-    
+    if(all(sapply(sub.set.new, length) == 0)) stop('estimation not possible: none of the matched sets have viable control units due to a lack of necessary data')
     pm2 <- reweight(sub.set.new, ordered.data, outcome.var)
     
     matched_sets[idx] <- pm2

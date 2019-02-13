@@ -91,30 +91,31 @@ PanelEstimate <- function(lead, #probably want to swap the order of these around
   {
     data <- make.pbalanced(data, balance.type = "fill", index = c(unit.id, time.id))
   }
+  check_time_data(data, time.id)
   #do we need to order the data?
   data <- data[order(data[,unit.id], data[,time.id]), ]
   data[, paste0(unit.id, ".int")] <- as.integer(as.factor(data[, unit.id]))
-  data[, paste0(time.id,".int")] <- as.integer(factor(x = as.character(data[, time.id]), levels = as.character(sort(unique(data[, time.id]))), 
-                                                              labels = as.character(1:length(unique(data[, time.id]))), ordered = T))
+  #data[, paste0(time.id,".int")] <- as.integer(factor(x = as.character(data[, time.id]), levels = as.character(sort(unique(data[, time.id]))), 
+  #                                                            labels = as.character(1:length(unique(data[, time.id]))), ordered = T))
   unit.index.map <- data.frame(original.id = make.names(as.character(unique(data[, unit.id]))), new.id = unique(data[, paste0(unit.id, ".int")]), stringsAsFactors = F)
-  time.index.map <- data.frame(original.time.id = make.names(as.character(unique(data[, time.id]))), new.time.id = unique(data[, paste0(time.id, ".int")]), stringsAsFactors = F)
+  #time.index.map <- data.frame(original.time.id = make.names(as.character(unique(data[, time.id]))), new.time.id = unique(data[, paste0(time.id, ".int")]), stringsAsFactors = F)
   og.unit.id <- unit.id
-  og.time.id <- time.id
+  #og.time.id <- time.id
   unit.id <- paste0(unit.id, ".int")
-  time.id <- paste0(time.id, ".int")
+  #time.id <- paste0(time.id, ".int")
   
   if(qoi == "att")
   {
-    sets <- encode_index(sets, time.index.map, unit.index.map, unit.id, time.id)
+    sets <- encode_index(sets, unit.index.map, unit.id)
   }
   if(qoi == "atc")
   {
-    sets2 <- encode_index(sets, time.index.map, unit.index.map, unit.id, time.id)
+    sets2 <- encode_index(sets, unit.index.map, unit.id)
   }
   if(qoi == "ate")
   {
-    sets <- encode_index(sets$att, time.index.map, unit.index.map, unit.id, time.id)
-    sets2 <- encode_index(sets$atc, time.index.map, unit.index.map, unit.id, time.id)
+    sets <- encode_index(sets$att, unit.index.map, unit.id)
+    sets2 <- encode_index(sets$atc, unit.index.map, unit.id)
   }
   #sets <- encode_index(sets, time.index.map, unit.index.map, unit.id, time.id)
   
@@ -134,18 +135,6 @@ PanelEstimate <- function(lead, #probably want to swap the order of these around
   } 
   if (qoi == "atc" | qoi == "ate") 
   {
-    #first we need to "flip" the treatment variable, then re-run panelmatch with this as the new treatment variable
-    #data$atc_variable <- ifelse(data[, treatment] == 1, 0, 1)
-    #exclude <- which(colnames(data) %in% c(time.id, unit.id))
-    #must be adjusted to use original problem specification bc of encoding/decoding stuff
-    #sets2 <- PanelMatch(lag = lag, time.id = og.time.id, unit.id = og.unit.id, treatment = "atc_variable",
-                                     # refinement.method = attr(sets, "refinement.method"),
-                                     # size.match = attr(sets, "max.match.size"),
-                                     # data = data[, -exclude],
-                                     # match.missing = attr(sets, "match.missing"),
-                                     # covs.formula = attr(sets, "covs.formula"),
-                                     # verbose = FALSE)
-    #sets2 <- encode_index(sets2, time.index.map, unit.index.map, unit.id, time.id)
     sets2 <- prep_for_leads(sets2, data, max(lead), time.id, unit.id, outcome.variable)
     sets2 <- sets2[sapply(sets2, length) > 0]
     treated.unit.ids2 <- as.numeric(unlist(strsplit(names(sets2), split = "[.]"))[c(T,F)])
@@ -181,7 +170,7 @@ PanelEstimate <- function(lead, #probably want to swap the order of these around
                         data = data)
         coef <- as.numeric(fit$coefficients)
         names(coef) <- paste0("t+", lead)
-        sets <- decode_index(sets, time.index.map, unit.index.map, og.unit.id, og.time.id)
+        sets <- decode_index(sets, unit.index.map, og.unit.id)
         z <- list("coefficients" = coef,
                   "method" = method, "lag" = lag,
                   "lead" = lead, "confidence.level" = CI, "qoi" = qoi, 
@@ -199,7 +188,7 @@ PanelEstimate <- function(lead, #probably want to swap the order of these around
                         data = data)
         coef <- as.numeric(fit$coefficients)
         names(coef) <- paste0("t+", lead)
-        sets <- decode_index(sets, time.index.map, unit.index.map, og.unit.id, og.time.id)
+        sets <- decode_index(sets, unit.index.map, og.unit.id)
         z <- list("coefficients" = coef,
                   "method" = method, "lag" = lag,
                   "lead" = lead, "confidence.level" = CI, "qoi" = qoi, 
@@ -244,7 +233,7 @@ PanelEstimate <- function(lead, #probably want to swap the order of these around
                            z = d.sub1$dits_att)
         coefs[k,] <- att_new
       }
-      sets <- decode_index(sets, time.index.map, unit.index.map, og.unit.id, og.time.id)
+      sets <- decode_index(sets, unit.index.map, og.unit.id)
       # changed return to class
       z <- list("coefficients" = o.coefs,
                 "bootstrapped.coefficients" = coefs, "bootstrap.iterations" = ITER, "standard.error" = apply(coefs, 2, sd, na.rm = T),
@@ -270,7 +259,7 @@ PanelEstimate <- function(lead, #probably want to swap the order of these around
                         data = data)
         coef <- as.numeric(fit$coefficients)
         names(coef) <- paste0("t+", lead)
-        sets2 <- decode_index(sets2, time.index.map, unit.index.map, og.unit.id, og.time.id)
+        sets2 <- decode_index(sets2, unit.index.map, og.unit.id)
         z <- list("coefficients" = coef,
                   "method" = method, "lag" = lag,
                   "lead" = lead, "confidence.level" = CI, "qoi" = qoi, 
@@ -288,7 +277,7 @@ PanelEstimate <- function(lead, #probably want to swap the order of these around
                         data = data)
         coef <- as.numeric(fit$coefficients)
         names(coef) <- paste0("t+", lead)
-        sets2 <- decode_index(sets2, time.index.map, unit.index.map, og.unit.id, og.time.id)
+        sets2 <- decode_index(sets2, unit.index.map, og.unit.id)
         z <- list("coefficients" = coef,
                   "method" = method, "lag" = lag,
                   "lead" = lead, "confidence.level" = CI, "qoi" = qoi, 
@@ -336,7 +325,7 @@ PanelEstimate <- function(lead, #probably want to swap the order of these around
         
         
       }
-      sets2 <- decode_index(sets2, time.index.map, unit.index.map, og.unit.id, og.time.id)
+      sets2 <- decode_index(sets2, unit.index.map, og.unit.id)
       z <- list("coefficients" = o.coefs,
                 "bootstrapped.coefficients" = coefs, "bootstrap.iterations" = ITER, "standard.error" = apply(coefs, 2, sd, na.rm = T),
                 "lead" = lead, "confidence.level" = CI, "qoi" = qoi, "matched.sets" = sets2)
@@ -363,8 +352,8 @@ PanelEstimate <- function(lead, #probably want to swap the order of these around
         
         coef <- as.numeric(fit$coefficients)
         names(coef) <- paste0("t+", lead)
-        sets <- decode_index(sets, time.index.map, unit.index.map, og.unit.id, og.time.id)
-        sets2 <- decode_index(sets2, time.index.map, unit.index.map, og.unit.id, og.time.id)
+        sets <- decode_index(sets, unit.index.map, og.unit.id)
+        sets2 <- decode_index(sets2, unit.index.map, og.unit.id)
         z <- list("coefficients" = coef,
                   "method" = method, "lag" = lag,
                   "lead" = lead, "confidence.level" = CI, "qoi" = qoi, 
@@ -382,8 +371,8 @@ PanelEstimate <- function(lead, #probably want to swap the order of these around
                         data = data)
         coef <- as.numeric(fit$coefficients)
         names(coef) <- paste0("t+", lead)
-        sets <- decode_index(sets, time.index.map, unit.index.map, og.unit.id, og.time.id)
-        sets2 <- decode_index(sets2, time.index.map, unit.index.map, og.unit.id, og.time.id)
+        sets <- decode_index(sets, unit.index.map, og.unit.id)
+        sets2 <- decode_index(sets2, unit.index.map, og.unit.id)
         z <- list("coefficients" = coef,
                   "method" = method, "lag" = lag,
                   "lead" = lead, "confidence.level" = CI, "qoi" = qoi, 
@@ -450,8 +439,8 @@ PanelEstimate <- function(lead, #probably want to swap the order of these around
       
       }
       # return(list("o.coef" = DID_ATE, "boots" = coefs))
-      sets <- decode_index(sets, time.index.map, unit.index.map, og.unit.id, og.time.id)
-      sets2 <- decode_index(sets2, time.index.map, unit.index.map, og.unit.id, og.time.id)
+      sets <- decode_index(sets, unit.index.map, og.unit.id)
+      sets2 <- decode_index(sets2, unit.index.map, og.unit.id)
       z <- list("coefficients" = o.coefs_ate,
                 "bootstrapped.coefficients" = coefs, "bootstrap.iterations" = ITER, "standard.error" = apply(coefs, 2, sd, na.rm = T),
                 "lead" = lead, "confidence.level" = CI, "qoi" = qoi, "matched.sets" = list(sets, sets2))

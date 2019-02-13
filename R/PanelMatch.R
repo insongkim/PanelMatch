@@ -64,17 +64,18 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
   {
     data <- make.pbalanced(data, balance.type = "fill", index = c(unit.id, time.id))
   }
+  check_time_data(data, time.id)
   # can probably add some checks to avoid doing all this stuff when already integer??
   ordered.data <- data[order(data[,unit.id], data[,time.id]), ]
   ordered.data[, paste0(unit.id, ".int")] <- as.integer(as.factor(data[, unit.id]))
-  ordered.data[, paste0(time.id,".int")] <- as.integer(factor(x = as.character(ordered.data[, time.id]), levels = as.character(sort(unique(ordered.data[, time.id]))), 
-                    labels = as.character(1:length(unique(ordered.data[, time.id]))), ordered = T))
+  #ordered.data[, paste0(time.id,".int")] <- as.integer(factor(x = as.character(ordered.data[, time.id]), levels = as.character(sort(unique(ordered.data[, time.id]))), 
+  #                  labels = as.character(1:length(unique(ordered.data[, time.id]))), ordered = T))
   unit.index.map <- data.frame(original.id = make.names(as.character(unique(ordered.data[, unit.id]))), new.id = unique(ordered.data[, paste0(unit.id, ".int")]), stringsAsFactors = F)
-  time.index.map <- data.frame(original.time.id = make.names(as.character(unique(ordered.data[, time.id]))), new.time.id = unique(ordered.data[, paste0(time.id, ".int")]), stringsAsFactors = F)
+  #time.index.map <- data.frame(original.time.id = make.names(as.character(unique(ordered.data[, time.id]))), new.time.id = unique(ordered.data[, paste0(time.id, ".int")]), stringsAsFactors = F)
   og.unit.id <- unit.id
-  og.time.id <- time.id
+  #og.time.id <- time.id
   unit.id <- paste0(unit.id, ".int")
-  time.id <- paste0(time.id, ".int")
+  #time.id <- paste0(time.id, ".int")
   
   othercols <- colnames(ordered.data)[!colnames(ordered.data) %in% c(time.id, unit.id, treatment)]
   ordered.data <- ordered.data[, c(unit.id, time.id, treatment, othercols)] #reorder columns 
@@ -83,7 +84,7 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
   {
     ordered.data[, treatment] <- ifelse(ordered.data[, treatment] == 1,0,1) #flip the treatment variables 
     msets <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data, match.missing, covs.formula, verbose, qoi)
-    msets <- decode_index(msets, time.index.map, unit.index.map, og.unit.id, og.time.id)
+    msets <- decode_index(msets, unit.index.map, og.unit.id)
     pm.obj <- list("atc" = msets)
     class(pm.obj) <- "PanelMatch"
     attr(pm.obj, "qoi") <- qoi
@@ -92,7 +93,7 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
   else if(qoi == "att")
   {
     msets <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data, match.missing, covs.formula, verbose, qoi)
-    msets <- decode_index(msets, time.index.map, unit.index.map, og.unit.id, og.time.id)
+    msets <- decode_index(msets, unit.index.map, og.unit.id)
     pm.obj <- list("att" = msets)
     class(pm.obj) <- "PanelMatch"
     attr(pm.obj, "qoi") <- qoi
@@ -103,8 +104,8 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
     msets <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data, match.missing, covs.formula, verbose, qoi)
     ordered.data[, treatment] <- ifelse(ordered.data[, treatment] == 1,0,1) #flip the treatment variables 
     msets2 <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data, match.missing, covs.formula, verbose, qoi)
-    msets <- decode_index(msets, time.index.map, unit.index.map, og.unit.id, og.time.id)
-    msets2 <- decode_index(msets2, time.index.map, unit.index.map, og.unit.id, og.time.id)
+    msets <- decode_index(msets, unit.index.map, og.unit.id)
+    msets2 <- decode_index(msets2, unit.index.map, og.unit.id)
     pm.obj <- list("att" = msets, "atc" = msets2)
     class(pm.obj) <- "PanelMatch"
     attr(pm.obj, "qoi") <- qoi
