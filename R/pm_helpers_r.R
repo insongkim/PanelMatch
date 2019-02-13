@@ -67,8 +67,8 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
   }
   attr(msets, "covs.formula") <- covs.formula
   attr(msets, "match.missing") <- match.missing
-  attr(msets, "max.match.size") <- size.mat
-  return(msets)  
+  attr(msets, "max.match.size") <- size.match
+  return(msets)
 }
 # builds a list that contains all times in a lag window that correspond to a particular treated unit. This is structured as a list of vectors. Each vector is lag + 1 units long. The overall list will 
 # be the same length as the number of matched sets

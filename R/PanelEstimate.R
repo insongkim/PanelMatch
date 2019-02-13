@@ -62,6 +62,15 @@ PanelEstimate <- function(lead, #probably want to swap the order of these around
 
   if(class(sets) != "PanelMatch") stop("sets is not a PanelMatch object")
   qoi <- attr(sets, "qoi")
+  if(qoi == "ate")
+  {
+    sets <- sets[["att"]] #just picking one of the two because they should be the same
+  }
+  else
+  {
+    sets <- sets[[qoi]]  
+  }
+  
   if (inference == "wfe" & length(lead) > 1) 
     stop("When inference method is wfe, please only supply 1 lead at a time. 
          For example, please call this function with `lead` = 1 and then call it with `lead` = 2,
@@ -74,6 +83,7 @@ PanelEstimate <- function(lead, #probably want to swap the order of these around
   time.id <- attr(sets, "t.var")
   #method = inference
   method <- attr(sets, "refinement.method")
+  
   restricted <- attr(sets, "restricted") # this doesnt exist yet, not sure what it means.
   
   if(!"data.frame" %in% class(data)) stop("please convert data to data.frame class")
@@ -95,18 +105,18 @@ PanelEstimate <- function(lead, #probably want to swap the order of these around
   
   if(qoi == "att")
   {
-    sets <- encode_index(sets$att, time.index.map, unit.index.map, unit.id, time.id)
+    sets <- encode_index(sets, time.index.map, unit.index.map, unit.id, time.id)
   }
   if(qoi == "atc")
   {
-    sets2 <- encode_index(sets$atc, time.index.map, unit.index.map, unit.id, time.id)
+    sets2 <- encode_index(sets, time.index.map, unit.index.map, unit.id, time.id)
   }
   if(qoi == "ate")
   {
     sets <- encode_index(sets$att, time.index.map, unit.index.map, unit.id, time.id)
     sets2 <- encode_index(sets$atc, time.index.map, unit.index.map, unit.id, time.id)
   }
-  sets <- encode_index(sets, time.index.map, unit.index.map, unit.id, time.id)
+  #sets <- encode_index(sets, time.index.map, unit.index.map, unit.id, time.id)
   
   if(is.null(restricted)){restricted <- FALSE}
 
