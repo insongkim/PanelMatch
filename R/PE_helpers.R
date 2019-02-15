@@ -2,7 +2,6 @@
 # about the weight of that unit at particular times, so we use the hashtable to look up where to put this data so that we can easily assign the appropriate weights in the original data frame containing the problem data.
 # pcs does this for all control units in a matched set
 # ("Prepare Control unitS)
-#' @export
 pcs <- function(sets, lead.in, method)
 {
   L <- attr(sets, "lag")
@@ -31,7 +30,6 @@ pcs <- function(sets, lead.in, method)
   data.frame(t = ts, id = ids, weight = wts, set.number = set.nums)
 }
 # refer to the description above -- pts works on treated units ("Prepare Treated unitS)
-#' @export
 pts <- function(sets, lead.in, method)
 {
   include <- sapply(sets, length) > 0
@@ -58,7 +56,6 @@ pts <- function(sets, lead.in, method)
 }
 #returns a vector of Wits, as defined in the paper (equation 25 or equation 23). They should be in the same order as the data frame containing the original problem data. The pts, pcs, and getWits functions act for a specific 
 # lead. So, for instance if our lead window is 0,1,2,3,4, these function must be called for each of those -- so for 0, then for 1, etc.
-#' @export
 getWits <- function(matched_sets, lead, data, estimation.method)
 {
   #sort the data
@@ -88,7 +85,6 @@ getWits <- function(matched_sets, lead, data, estimation.method)
   
 }
 # returns a vector of dit values, as defined in the paper. They should be in the same order as the data frame containing the original problem data.
-#' @export
 getDits <- function(matched_sets, data)
 {
   
@@ -104,7 +100,6 @@ getDits <- function(matched_sets, data)
 
 # this will return a new matched.set object containing only treated/controls that can be used to calculate a point estimate. In particular, this function looks from time = t - 1 to t + lead
 # and verifies that the necessary data is present. If not, those units are removed. The matched.set object that comes out of this function will need to be reweighted
-#' @export
 prep_for_leads <- function(matched_sets, ordered.data, max.lead, t.var, id.var, outcome.var) 
 {
   #CHECK TO MAKE SURE COLUMNS ARE IN ORDER
@@ -156,7 +151,8 @@ prep_for_leads <- function(matched_sets, ordered.data, max.lead, t.var, id.var, 
       attributes(sub.set.new) <- attributes(sub.set)
     }
     if(all(sapply(sub.set.new, length) == 0)) stop('estimation not possible: none of the matched sets have viable control units due to a lack of necessary data')
-    pm2 <- reweight(sub.set.new, ordered.data, outcome.var)
+    pm2 <- perform_refinement(ordered.data = ordered.data, mset.object = sub.set.new)
+    #pm2 <- reweight(sub.set.new, ordered.data)
     
     matched_sets[idx] <- pm2
     #matched_sets[idx] <- renormalize(sub.index, sub.set) #utilize the [.matched.set operator
@@ -169,120 +165,5 @@ prep_for_leads <- function(matched_sets, ordered.data, max.lead, t.var, id.var, 
 equality_four <- function(x, y, z){
     return(sum(x*y)/sum(z))
 } 
-
-
-
-#' functions nearly identically to PM
-#' This is currently only used inside PE, where it is used to update the weights of a matched set object after control units that are missing data in the necessary future or past periods have been identified and taken out.
-#' Function assumes that the units that are included are the only units it needs to consider. Pulls argument information from matched.set object 
-#' Major difference between this function and the actual PanelMatch function is that this one does not identify matched sets and/or treated units. It merely updates and refines the matched set object provided to it
-#' @export
-reweight <- function(mset.object, data, outcome.var)
-{
-  lag = attr(mset.object, "lag")
-  time.id = attr(mset.object, "t.var")
-  unit.id = attr(mset.object, "id.var")
-  treatment = attr(mset.object, "treated.var")
-  outcome = outcome.var
-  refinement.method = attr(mset.object, "refinement.method")
-  size.match = attr(mset.object, "max.match.size")
-  covs.formula = attr(mset.object, "covs.formula")
-  match.missing <- attr(mset.object, "match.missing")
-  verbose = FALSE
-  msets <- mset.object
-  
-  if(any(table(data[, unit.id]) != max(table(data[, unit.id]))))
-  {
-    stop("panel data is not balanced")
-  }
-  
-  ordered.data <- data[order(data[,unit.id], data[,time.id]), ]
-  #ordered.data[, paste0(unit.id, ".int")] <- as.integer(as.factor(data[, unit.id]))
-  #ordered.data[, paste0(time.id,".int")] <- as.integer(factor(x = as.character(ordered.data[, time.id]), levels = as.character(sort(unique(ordered.data[, time.id]))), 
-  #                                                            labels = as.character(1:length(unique(ordered.data[, time.id]))), ordered = T))
-  
-  #unit.index.map <- data.frame(original.id = make.names(as.character(unique(ordered.data[, unit.id]))), new.id = unique(ordered.data[, paste0(unit.id, ".int")]), stringsAsFactors = F)
-  #time.index.map <- data.frame(original.time.id = make.names(as.character(unique(ordered.data[, time.id]))), new.time.id = unique(ordered.data[, paste0(time.id, ".int")]), stringsAsFactors = F)
-  #og.unit.id <- unit.id
-  #og.time.id <- time.id
-  #unit.id <- paste0(unit.id, ".int")
-  #time.id <- paste0(time.id, ".int")
-  
-  othercols <- colnames(ordered.data)[!colnames(ordered.data) %in% c(time.id, unit.id, treatment)]
-  ordered.data <- ordered.data[, c(unit.id, time.id, treatment, othercols)]
-  
-  msets <- msets[sapply(msets, length) > 0 ]
-  treated.ts <- as.numeric(unlist(strsplit(names(msets), split = "[.]"))[c(F,T)])
-  treated.ids <- as.numeric(unlist(strsplit(names(msets), split = "[.]"))[c(T,F)])
-  
-  ordered.data <- as.matrix(parse_and_prep(formula = covs.formula, data = ordered.data, unit.id = unit.id)) #every column > 3 at this point should be used in distance/refinement calculation
-  ordered.data <- as.matrix(handle.missing.data(ordered.data, 4:ncol(ordered.data)))
-  #RE IMPLEMENT RESTRICTED OR NAIVE?
-  if(refinement.method == "mahalanobis")
-  {
-    
-    tlist <- expand.treated.ts(lag, treated.ts = treated.ts)
-    idxlist <- get_yearly_dmats(ordered.data, treated.ids, tlist, paste0(ordered.data[,unit.id], ".", 
-                                                                         ordered.data[, time.id]), matched_sets = msets, lag)
-    mahalmats <- build_maha_mats(ordered_expanded_data = ordered.data, idx =  idxlist)
-    msets <- handle_mahalanobis_calculations(mahalmats, msets, size.match, verbose)
-  }
-  
-  else
-  {
-    tlist <- expand.treated.ts(lag, treated.ts = treated.ts)
-    idxlist <- get_yearly_dmats(ordered.data, treated.ids, tlist, paste0(ordered.data[,unit.id], ".", 
-                                                                         ordered.data[, time.id]), matched_sets = msets, lag)
-    expanded.sets.t0 <- build_ps_data(idxlist, ordered.data, lag)
-    pre.pooled <- rbindlist(expanded.sets.t0)
-    pooled <- pre.pooled[complete.cases(pre.pooled), ]
-    
-    # Because we need certain data to be present (most notably, outcome variable data over t-1 to t + f), we will likely need to remove
-    # some added columns about missing data because they will all be the same value (0 for instance because all of the data is guaranteed to be present)
-    # Theoretically, we could have a situation where every value in the column is identical and thus cant be used for finding propensity scores
-    # In these situations we end up with NA coefficients which causes a bunch of other code to break. This is a bit of a hack, but works for now.
-    
-    cols.to.remove <- which(unlist(lapply(pooled, function(x){all(x[1] == x)})))
-    cols.to.remove <- unique(c(cols.to.remove, which(!colnames(pooled) %in% colnames(t(unique(t(pooled))))))) #removing columns that are identical to another column 
-    if(length(cols.to.remove) > 0)
-    {
-      class(pooled) <- c("data.frame")
-      pooled <- pooled[, -cols.to.remove]
-      rmv <- function(x, cols.to.remove_)
-      {
-        return(x[, -cols.to.remove_])
-      }
-      expanded.sets.t0 <- lapply(expanded.sets.t0, rmv, cols.to.remove_ = cols.to.remove)
-    }
-    if(qr(pooled)$rank != ncol(pooled)) stop("Error: Provided data is not linearly independent so calculations cannot be completed. Please check the data set for any redundant, unnecessary, or problematic information.")
-    if(refinement.method == "CBPS.weight" | refinement.method == "CBPS.match")
-    {
-      fit0 <- suppressMessages(CBPS::CBPS(reformulate(response = treatment, termlabels = colnames(pooled)[-c(1:3)]), 
-                                          family = binomial(link = "logit"), data = pooled))
-    }
-    if(refinement.method == "ps.weight" | refinement.method == "ps.match")
-    {
-      fit0 <- glm(reformulate(response = treatment, termlabels = colnames(pooled)[-c(1:3)]), 
-                  family = binomial(link = "logit"), data = pooled)
-    }
-    
-    just.ps.sets <- find_ps(expanded.sets.t0, fit0)
-    
-    if(refinement.method == "CBPS.weight" | refinement.method == "ps.weight")
-    {
-      msets <- handle_ps_weighted(just.ps.sets, msets, refinement.method)
-    }
-    if(refinement.method == "CBPS.match" | refinement.method == "ps.match")
-    {
-      msets <- handle_ps_match(just.ps.sets, msets, refinement.method, verbose, size.match)
-    }
-    
-  }
-  attr(msets, "covs.formula") <- covs.formula
-  attr(msets, "match.missing") <- match.missing
-  attr(msets, "max.match.size") <- size.match
-  #msets <- decode_index(msets, time.index.map, unit.index.map, og.unit.id, og.time.id)
-  return(msets)    
-}
 
   

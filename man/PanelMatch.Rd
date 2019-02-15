@@ -4,10 +4,10 @@
 \alias{PanelMatch}
 \title{PanelMatch}
 \usage{
-PanelMatch(lag, time.id, unit.id, treatment, outcome,
-  refinement.method = c(NULL, "ps.weight", "ps.match", "mahalanobis",
-  "CBPS.weight", "CBPS.match"), size.match = 10, data, match.missing = TRUE,
-  covs.formula, verbose = FALSE)
+PanelMatch(lag, time.id, unit.id, treatment, refinement.method = c(NULL,
+  "ps.weight", "ps.match", "mahalanobis", "CBPS.weight", "CBPS.match"),
+  size.match = 10, data, match.missing = TRUE, covs.formula,
+  verbose = FALSE, qoi)
 }
 \arguments{
 \item{lag}{An integer value indicating the length of history to be matched}
@@ -22,8 +22,6 @@ treatment variable in the \code{data}. The treatment should be a
 binary indicator (integer with 0 for the control group and 1 for
 the treatment group).}
 
-\item{outcome}{Character string of outcome variable.}
-
 \item{refinement.method}{character string of matching or weighting method used for refining the matched sets. The user can choose "mahalanobis", "ps.match", "CBPS.match", "ps.weight", "CBPS.weight". The first three methods will use the \code{size.match} argument to create sets of at most \code{size.match} closest control units.}
 
 \item{size.match}{Maximum size of the matched sets after refinement}
@@ -37,6 +35,8 @@ The user can specify lags using a function "lag" which takes two, unnamed, posit
 See the example below.}
 
 \item{verbose}{option to include more information about the matched.set object calculations, like the distances used to create the refined sets and weights}
+
+\item{outcome}{Character string of outcome variable.}
 }
 \value{
 \code{PanelMatch} returns a list of class `matched.set'. Each element in the list is a vector of integers corresponding to the control unit ids in a matched set. 

@@ -5,8 +5,8 @@
 \title{PanelEstimate}
 \usage{
 PanelEstimate(lead, inference = c("wfe", "bootstrap"), ITER = 1000,
-  estimator = "did", df.adjustment = FALSE, qoi = NULL, CI = 0.95, sets,
-  data, outcome.variable)
+  estimator = "did", df.adjustment = FALSE, CI = 0.95, sets, data,
+  outcome.variable)
 }
 \arguments{
 \item{lead}{An integer vector indicating the sequence of the lead
@@ -27,10 +27,6 @@ iteration. The default is 1000.}
 degree-of-freedom adjustment should be performed for standard error
 calculation. The default is \code{FALSE}.}
 
-\item{qoi}{One of ``att'' (average treatment effect for the
-treated) or ``ate'' (average treatment effect) or atc (average
-treatment effect for the control).}
-
 \item{CI}{A numerical value specifying the range of interval
 estimates for statistical inference. The default is .95.}
 
@@ -38,6 +34,10 @@ estimates for statistical inference. The default is .95.}
 \code{PanelMatch}. @seealso \code{PanelMatch}.}
 
 \item{data}{The same time series cross sectional data set provided to the PanelMatch function to produce the \code{sets}}
+
+\item{qoi}{One of ``att'' (average treatment effect for the
+treated) or ``ate'' (average treatment effect) or atc (average
+treatment effect for the control).}
 }
 \value{
 \code{PanelEstimate} returns a list of class

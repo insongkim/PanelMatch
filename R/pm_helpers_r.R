@@ -1,10 +1,26 @@
 # File contains helper functions written in R for PanelMatch functionality
-perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data, match.missing, covs.formula, verbose, qoi)
+perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data, match.missing, covs.formula, verbose, mset.object = NULL)
 {
-  temp.treateds <- findAllTreated(ordered.data, treatedvar = treatment, time.var = time.id, unit.var = unit.id, hasbeensorted = TRUE)
-  if(nrow(temp.treateds) == 0) stop("no treated units")
-  msets <- get.matchedsets(temp.treateds[, time.id], temp.treateds[, unit.id], ordered.data, lag, time.id, unit.id, treatment, hasbeensorted = TRUE)
-  msets <- msets[sapply(msets, length) > 0 ]
+  if(!is.null(mset.object))
+  {
+    lag = attr(mset.object, "lag")
+    time.id = attr(mset.object, "t.var")
+    unit.id = attr(mset.object, "id.var")
+    treatment = attr(mset.object, "treated.var")
+    refinement.method = attr(mset.object, "refinement.method")
+    size.match = attr(mset.object, "max.match.size")
+    covs.formula = attr(mset.object, "covs.formula")
+    match.missing <- attr(mset.object, "match.missing")
+    verbose = FALSE
+    msets <- mset.object
+  }
+  else
+  {
+    temp.treateds <- findAllTreated(ordered.data, treatedvar = treatment, time.var = time.id, unit.var = unit.id, hasbeensorted = TRUE)
+    if(nrow(temp.treateds) == 0) stop("no treated units")
+    msets <- get.matchedsets(temp.treateds[, time.id], temp.treateds[, unit.id], ordered.data, lag, time.id, unit.id, treatment, hasbeensorted = TRUE)
+    msets <- msets[sapply(msets, length) > 0 ]  
+  }
   treated.ts <- as.numeric(unlist(strsplit(names(msets), split = "[.]"))[c(F,T)])
   treated.ids <- as.numeric(unlist(strsplit(names(msets), split = "[.]"))[c(T,F)])
   ordered.data <- as.matrix(parse_and_prep(formula = covs.formula, data = ordered.data, unit.id = unit.id)) #every column > 3 at this point should be used in distance/refinement calculation

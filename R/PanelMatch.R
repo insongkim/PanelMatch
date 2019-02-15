@@ -83,7 +83,7 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
   if(qoi == "atc")
   {
     ordered.data[, treatment] <- ifelse(ordered.data[, treatment] == 1,0,1) #flip the treatment variables 
-    msets <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data, match.missing, covs.formula, verbose, qoi)
+    msets <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data, match.missing, covs.formula, verbose)
     msets <- decode_index(msets, unit.index.map, og.unit.id)
     pm.obj <- list("atc" = msets)
     class(pm.obj) <- "PanelMatch"
@@ -92,7 +92,7 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
   }
   else if(qoi == "att")
   {
-    msets <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data, match.missing, covs.formula, verbose, qoi)
+    msets <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data, match.missing, covs.formula, verbose)
     msets <- decode_index(msets, unit.index.map, og.unit.id)
     pm.obj <- list("att" = msets)
     class(pm.obj) <- "PanelMatch"
@@ -101,9 +101,9 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
   }
   else if(qoi == "ate")
   {
-    msets <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data, match.missing, covs.formula, verbose, qoi)
+    msets <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data, match.missing, covs.formula, verbose)
     ordered.data[, treatment] <- ifelse(ordered.data[, treatment] == 1,0,1) #flip the treatment variables 
-    msets2 <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data, match.missing, covs.formula, verbose, qoi)
+    msets2 <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data, match.missing, covs.formula, verbose)
     msets <- decode_index(msets, unit.index.map, og.unit.id)
     msets2 <- decode_index(msets2, unit.index.map, og.unit.id)
     pm.obj <- list("att" = msets, "atc" = msets2)

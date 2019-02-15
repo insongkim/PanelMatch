@@ -103,6 +103,9 @@ PanelEstimate <- function(lead, #probably want to swap the order of these around
   #og.time.id <- time.id
   unit.id <- paste0(unit.id, ".int")
   #time.id <- paste0(time.id, ".int")
+  #maybe??
+  othercols <- colnames(data)[!colnames(data) %in% c(time.id, unit.id, treatment)]
+  data <- data[, c(unit.id, time.id, treatment, othercols)] #reorder columns 
   
   if(qoi == "att")
   {
