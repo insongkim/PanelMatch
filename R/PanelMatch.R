@@ -70,7 +70,22 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
   ordered.data[, paste0(unit.id, ".int")] <- as.integer(as.factor(data[, unit.id]))
   #ordered.data[, paste0(time.id,".int")] <- as.integer(factor(x = as.character(ordered.data[, time.id]), levels = as.character(sort(unique(ordered.data[, time.id]))), 
   #                  labels = as.character(1:length(unique(ordered.data[, time.id]))), ordered = T))
-  unit.index.map <- data.frame(original.id = make.names(as.character(unique(ordered.data[, unit.id]))), new.id = unique(ordered.data[, paste0(unit.id, ".int")]), stringsAsFactors = F)
+  if(class(data[, unit.id]) == "character") {
+    unit.index.map <- data.frame(original.id = make.names(as.character(unique(ordered.data[, unit.id]))), new.id = unique(ordered.data[, paste0(unit.id, ".int")]), stringsAsFactors = F)
+  }
+  else if(class(data[, unit.id]) == "integer") {
+    unit.index.map <- data.frame(original.id = (as.character(unique(ordered.data[, unit.id]))), new.id = unique(ordered.data[, paste0(unit.id, ".int")]), stringsAsFactors = F)
+  }
+  else if(class(data[, unit.id]) == "numeric") {
+    if(all(unique(ordered.data[, unit.id]) == as.integer(unique(ordered.data[, unit.id])))) #actually integers
+    {
+      unit.index.map <- data.frame(original.id = (as.character(unique(ordered.data[, unit.id]))), new.id = unique(ordered.data[, paste0(unit.id, ".int")]), stringsAsFactors = F)
+    }
+  }
+  else {
+  stop("Unit ID Data is not integer, numeric, or character.")
+  }
+  ##### unit.index.map <- data.frame(original.id = make.names(as.character(unique(ordered.data[, unit.id]))), new.id = unique(ordered.data[, paste0(unit.id, ".int")]), stringsAsFactors = F)
   #time.index.map <- data.frame(original.time.id = make.names(as.character(unique(ordered.data[, time.id]))), new.time.id = unique(ordered.data[, paste0(time.id, ".int")]), stringsAsFactors = F)
   og.unit.id <- unit.id
   #og.time.id <- time.id

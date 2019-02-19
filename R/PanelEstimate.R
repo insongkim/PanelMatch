@@ -64,6 +64,7 @@ PanelEstimate <- function(lead, #probably want to swap the order of these around
   qoi <- attr(sets, "qoi")
   if(qoi == "ate")
   {
+    temp.sets <- sets
     sets <- sets[["att"]] #just picking one of the two because they should be the same
   }
   else
@@ -97,7 +98,27 @@ PanelEstimate <- function(lead, #probably want to swap the order of these around
   data[, paste0(unit.id, ".int")] <- as.integer(as.factor(data[, unit.id]))
   #data[, paste0(time.id,".int")] <- as.integer(factor(x = as.character(data[, time.id]), levels = as.character(sort(unique(data[, time.id]))), 
   #                                                            labels = as.character(1:length(unique(data[, time.id]))), ordered = T))
-  unit.index.map <- data.frame(original.id = make.names(as.character(unique(data[, unit.id]))), new.id = unique(data[, paste0(unit.id, ".int")]), stringsAsFactors = F)
+  if(class(data[, unit.id]) == "character") {
+    unit.index.map <- data.frame(original.id = make.names(as.character(unique(data[, unit.id]))), new.id = unique(data[, paste0(unit.id, ".int")]), stringsAsFactors = F)
+  }
+  else if(class(data[, unit.id]) == "integer") {
+    unit.index.map <- data.frame(original.id = (as.character(unique(data[, unit.id]))), new.id = unique(data[, paste0(unit.id, ".int")]), stringsAsFactors = F)
+  }
+  else if(class(data[, unit.id]) == "numeric") {
+    if(all(unique(data[, unit.id]) == as.integer(unique(data[, unit.id])))) #actually integers
+    {
+      unit.index.map <- data.frame(original.id = (as.character(unique(data[, unit.id]))), new.id = unique(data[, paste0(unit.id, ".int")]), stringsAsFactors = F)
+    }
+    else
+    {
+      stop("Unit ID data appears to be a non-integer numeric. Please convert.")
+    }
+  }
+  else {
+    stop("Unit ID Data is not integer, numeric, or character.")
+  }
+  
+  ##unit.index.map <- data.frame(original.id = make.names(as.character(unique(data[, unit.id]))), new.id = unique(data[, paste0(unit.id, ".int")]), stringsAsFactors = F)
   #time.index.map <- data.frame(original.time.id = make.names(as.character(unique(data[, time.id]))), new.time.id = unique(data[, paste0(time.id, ".int")]), stringsAsFactors = F)
   og.unit.id <- unit.id
   #og.time.id <- time.id
@@ -117,8 +138,8 @@ PanelEstimate <- function(lead, #probably want to swap the order of these around
   }
   if(qoi == "ate")
   {
-    sets <- encode_index(sets$att, unit.index.map, unit.id)
-    sets2 <- encode_index(sets$atc, unit.index.map, unit.id)
+    sets <- encode_index(temp.sets$att, unit.index.map, unit.id)
+    sets2 <- encode_index(temp.sets$atc, unit.index.map, unit.id)
   }
   #sets <- encode_index(sets, time.index.map, unit.index.map, unit.id, time.id)
   
