@@ -50,16 +50,16 @@
 #' res2 <- PanelEstimate(lead = 0, inference = "wfe", qoi = "att", sets = pm.obj, data = dem, outcome.variable = "y")
 #' }
 #' @export
-PanelEstimate <- function(lead, #probably want to swap the order of these around to be more intuitive
-                          inference = c("wfe", "bootstrap"),
+PanelEstimate <- function(inference = c("wfe", "bootstrap"),
                           ITER = 1000,
                           estimator = "did",
                           df.adjustment = FALSE,
                           CI = .95,
                           sets,
-                          data,
-                          outcome.variable) {
-
+                          data
+                          ) {
+  lead <- attr(sets, "lead")
+  outcome.variable <- attr(sets, "outcome.var")
   if(class(sets) != "PanelMatch") stop("sets is not a PanelMatch object")
   qoi <- attr(sets, "qoi")
   if(qoi == "ate")
@@ -93,11 +93,10 @@ PanelEstimate <- function(lead, #probably want to swap the order of these around
     data <- make.pbalanced(data, balance.type = "fill", index = c(unit.id, time.id))
   }
   check_time_data(data, time.id)
-  #do we need to order the data?
+  
   data <- data[order(data[,unit.id], data[,time.id]), ]
   data[, paste0(unit.id, ".int")] <- as.integer(as.factor(data[, unit.id]))
-  #data[, paste0(time.id,".int")] <- as.integer(factor(x = as.character(data[, time.id]), levels = as.character(sort(unique(data[, time.id]))), 
-  #                                                            labels = as.character(1:length(unique(data[, time.id]))), ordered = T))
+
   if(class(data[, unit.id]) == "character") {
     unit.index.map <- data.frame(original.id = make.names(as.character(unique(data[, unit.id]))), new.id = unique(data[, paste0(unit.id, ".int")]), stringsAsFactors = F)
   }
@@ -117,14 +116,8 @@ PanelEstimate <- function(lead, #probably want to swap the order of these around
   else {
     stop("Unit ID Data is not integer, numeric, or character.")
   }
-  
-  ##unit.index.map <- data.frame(original.id = make.names(as.character(unique(data[, unit.id]))), new.id = unique(data[, paste0(unit.id, ".int")]), stringsAsFactors = F)
-  #time.index.map <- data.frame(original.time.id = make.names(as.character(unique(data[, time.id]))), new.time.id = unique(data[, paste0(time.id, ".int")]), stringsAsFactors = F)
   og.unit.id <- unit.id
-  #og.time.id <- time.id
   unit.id <- paste0(unit.id, ".int")
-  #time.id <- paste0(time.id, ".int")
-  #maybe??
   othercols <- colnames(data)[!colnames(data) %in% c(time.id, unit.id, treatment)]
   data <- data[, c(unit.id, time.id, treatment, othercols)] #reorder columns 
   
@@ -141,16 +134,12 @@ PanelEstimate <- function(lead, #probably want to swap the order of these around
     sets <- encode_index(temp.sets$att, unit.index.map, unit.id)
     sets2 <- encode_index(temp.sets$atc, unit.index.map, unit.id)
   }
-  #sets <- encode_index(sets, time.index.map, unit.index.map, unit.id, time.id)
-  
+
   if(is.null(restricted)){restricted <- FALSE}
 
   if (qoi == "att" | qoi == "ate") 
   {
-    sets <- prep_for_leads(sets, data, max(lead), time.id, unit.id, outcome.variable)
-    sets <- sets[sapply(sets, length) > 0]
     treated.unit.ids <- as.numeric(unlist(strsplit(names(sets), split = "[.]"))[c(T,F)])
-    
     data[, paste0("Wit_att", lead)] <- do.call(cbind, lapply(lead, FUN = getWits, data = data, matched_sets = sets, estimation.method = inference))
     data$dit_att <- getDits(matched_sets = sets, data = data)
     colnames(data)[length(data)] <- "dits_att"
@@ -159,10 +148,7 @@ PanelEstimate <- function(lead, #probably want to swap the order of these around
   } 
   if (qoi == "atc" | qoi == "ate") 
   {
-    sets2 <- prep_for_leads(sets2, data, max(lead), time.id, unit.id, outcome.variable)
-    sets2 <- sets2[sapply(sets2, length) > 0]
     treated.unit.ids2 <- as.numeric(unlist(strsplit(names(sets2), split = "[.]"))[c(T,F)])
-    
     data[, paste0("Wit_atc", lead)] <- do.call(cbind, lapply(lead, FUN = getWits, data = data, matched_sets = sets2, estimation.method = inference))
     data$dit_atc <- getDits(matched_sets = sets2, data = data)
     colnames(data)[length(data)] <- "dits_atc"
