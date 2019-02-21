@@ -161,10 +161,10 @@ PanelEstimate <- function(inference = c("wfe", "bootstrap"),
   }
   
   
-  # ATT
-  if (qoi == "att") {
-    if (inference == "wfe"){
-
+  if (qoi == "att") 
+  {
+    if (inference == "wfe")
+    {
       data$Wit_att0 <- data[c(paste0("Wit_att", lead))][,1]
       fit <- PanelWFE(formula = as.formula(paste(dependent, "~", treatment)), 
                         treat = treatment, unit.index = unit.id,
@@ -183,28 +183,29 @@ PanelEstimate <- function(inference = c("wfe", "bootstrap"),
                   "standard.error" = fit$se,"matched.sets" = sets, "df" = fit$df)
         class(z) <- "PanelEstimate"
         return(z)
-       
       
-      #browser()
-    } else if (inference == "bootstrap"){
-      
+    } else if (inference == "bootstrap")
+    {
       o.coefs <- sapply(data[, sapply(lead, function(x) paste0("Wit_att", x)), drop = FALSE],
                         equality_four,
                         y = data[c(dependent)][,1],
                         z = data$dits_att)
       
-      if (length(lead[lead<0]) > 1) {
+      if (length(lead[lead<0]) > 1) 
+      {
         names(o.coefs)[(length(o.coefs)-max(lead[lead>=0])):
                          length(o.coefs)] <- sapply(lead[lead>=0], function(x) paste0("t+", x))
         names(o.coefs)[(length(o.coefs)-length(lead) + 1):
                          length(lead[lead<0])] <- sapply(lead[lead<0], function(x) paste0("t", x))
         
-      } else {
+      } else 
+      {
         names(o.coefs) <- sapply(lead, function(x) paste0("t+", x))
       }
       coefs <- matrix(NA, nrow = ITER, ncol = length(lead))
       
-      for (k in 1:ITER) {  
+      for (k in 1:ITER) 
+      {  
         # make new data
         clusters <- unique(data[, unit.id])
         units <- sample(clusters, size = length(clusters), replace=T)
@@ -230,172 +231,173 @@ PanelEstimate <- function(inference = c("wfe", "bootstrap"),
       class(z) <- "PanelEstimate"
       return(z)
     }
-    
-    # ATC
-  } else if (qoi == "atc"){
-    if (inference == "wfe") {
-
-      data$Wit_atc0 <- data[c(paste0("Wit_atc", lead))][,1]
-      fit <- PanelWFE(formula = as.formula(paste(dependent, "~", treatment)), 
-                        treat = treatment, unit.index = unit.id,
-                        time.index = time.id, method = "unit", 
-                        qoi = "atc", estimator = "did", 
-                        df.adjustment = df.adjustment,
-                        hetero.se = TRUE, 
-                        auto.se = TRUE, White = TRUE,  
-                        data = data)
-        coef <- as.numeric(fit$coefficients)
-        names(coef) <- paste0("t+", lead)
-        sets2 <- decode_index(sets2, unit.index.map, og.unit.id)
-        z <- list("coefficients" = coef,
-                  "method" = method, "lag" = lag,
-                  "lead" = lead, "confidence.level" = CI, "qoi" = qoi, 
-                  "standard.error" = fit$se,"matched.sets" = sets2, "df" = fit$df)
-        class(z) <- "PanelEstimate"
-        return(z)
+  } else if (qoi == "atc")
+  {
+    if (inference == "wfe") 
+    {
+        data$Wit_atc0 <- data[c(paste0("Wit_atc", lead))][,1]
+        fit <- PanelWFE(formula = as.formula(paste(dependent, "~", treatment)), 
+                          treat = treatment, unit.index = unit.id,
+                          time.index = time.id, method = "unit", 
+                          qoi = "atc", estimator = "did", 
+                          df.adjustment = df.adjustment,
+                          hetero.se = TRUE, 
+                          auto.se = TRUE, White = TRUE,  
+                          data = data)
+          coef <- as.numeric(fit$coefficients)
+          names(coef) <- paste0("t+", lead)
+          sets2 <- decode_index(sets2, unit.index.map, og.unit.id)
+          z <- list("coefficients" = coef,
+                    "method" = method, "lag" = lag,
+                    "lead" = lead, "confidence.level" = CI, "qoi" = qoi, 
+                    "standard.error" = fit$se,"matched.sets" = sets2, "df" = fit$df)
+          class(z) <- "PanelEstimate"
+          return(z)
        
-    } else if (inference == "bootstrap") {
-      o.coefs <-  -sapply(data[, sapply(lead, function(x) paste0("Wit_atc", x)), drop = FALSE],
-                          equality_four,
-                          y = data[c(dependent)][,1],
-                          z = data$dits_atc)
-      
-      if (length(lead[lead<0]) > 1) {
-        names(o.coefs)[(length(o.coefs)-max(lead[lead>=0])):
-                         length(o.coefs)] <- sapply(lead[lead>=0], function(x) paste0("t+", x))
-        names(o.coefs)[(length(o.coefs)-length(lead) + 1):
-                         length(lead[lead<0])] <- sapply(lead[lead<0], function(x) paste0("t", x))
+      } else if (inference == "bootstrap") 
+    {
+        o.coefs <-  -sapply(data[, sapply(lead, function(x) paste0("Wit_atc", x)), drop = FALSE],
+                            equality_four,
+                            y = data[c(dependent)][,1],
+                            z = data$dits_atc)
         
-      } else {
-        names(o.coefs) <- sapply(lead, function(x) paste0("t+", x))
-      }
-      
-      
-      coefs <- matrix(NA, nrow = ITER, ncol = length(lead))
-      
-      for (k in 1:ITER) {  
-        # make new data
-        clusters <- unique(data[, unit.id])
-        units <- sample(clusters, size = length(clusters), replace=T)
-        while(all(!units %in% treated.unit.ids2)) #while none of the units are treated units, resample
+        if (length(lead[lead<0]) > 1) 
         {
-          units <- sample(clusters, size = length(clusters), replace=T)
+          names(o.coefs)[(length(o.coefs)-max(lead[lead>=0])):
+                           length(o.coefs)] <- sapply(lead[lead>=0], function(x) paste0("t+", x))
+          names(o.coefs)[(length(o.coefs)-length(lead) + 1):
+                           length(lead[lead<0])] <- sapply(lead[lead<0], function(x) paste0("t", x))
+          
+        } else 
+        {
+          names(o.coefs) <- sapply(lead, function(x) paste0("t+", x))
         }
-        d.sub1 <- data[ data[,unit.id] %in% units, ]
-        atc_new <- -sapply(d.sub1[, sapply(lead, function(x) paste0("Wit_atc", x)), 
-                                  drop = FALSE],
-                           equality_four,
-                           y = d.sub1[,outcome.variable],
-                           z = d.sub1$dits_atc)
-      
-        coefs[k,] <- atc_new
         
         
-      }
-      sets2 <- decode_index(sets2, unit.index.map, og.unit.id)
-      z <- list("coefficients" = o.coefs,
-                "bootstrapped.coefficients" = coefs, "bootstrap.iterations" = ITER, "standard.error" = apply(coefs, 2, sd, na.rm = T),
-                "lead" = lead, "confidence.level" = CI, "qoi" = qoi, "matched.sets" = sets2)
-      class(z) <- "PanelEstimate"
-      return(z)
-
-    }
-    
-  } else if (qoi == "ate") {
-    if (inference == "wfe"){
-      
-      data$Wit_att0 <- data[c(paste0("Wit_att", lead))][,1]
-      data$Wit_atc0 <- data[c(paste0("Wit_atc", lead))][,1]
-      
-      fit <- PanelWFE(formula = as.formula(paste(dependent, "~", treatment)), 
-                        treat = treatment, unit.index = unit.id,
-                        time.index = time.id, method = "unit", 
-                        qoi = "ate", estimator = "did", 
-                        df.adjustment = df.adjustment,
-                        hetero.se = TRUE, 
-                        auto.se = TRUE, White = TRUE,  
-                        data = data)
+        coefs <- matrix(NA, nrow = ITER, ncol = length(lead))
         
-        coef <- as.numeric(fit$coefficients)
-        names(coef) <- paste0("t+", lead)
-        sets <- decode_index(sets, unit.index.map, og.unit.id)
-        sets2 <- decode_index(sets2, unit.index.map, og.unit.id)
-        z <- list("coefficients" = coef,
-                  "method" = method, "lag" = lag,
-                  "lead" = lead, "confidence.level" = CI, "qoi" = qoi, 
-                  "standard.error" = fit$se,"matched.sets" = list(sets,sets2), "df" = fit$df)
-        class(z) <- "PanelEstimate"
-        return(z)
-       
-      
-    } else if (inference == "bootstrap"){
-      o.coefs_att <-  sapply(data[, sapply(lead, function(x) paste0("Wit_att", x)), 
-                                  drop = FALSE],
+        for (k in 1:ITER) 
+        {  
+          # make new data
+          clusters <- unique(data[, unit.id])
+          units <- sample(clusters, size = length(clusters), replace=T)
+          while(all(!units %in% treated.unit.ids2)) #while none of the units are treated units, resample
+          {
+            units <- sample(clusters, size = length(clusters), replace=T)
+          }
+          d.sub1 <- data[ data[,unit.id] %in% units, ]
+          atc_new <- -sapply(d.sub1[, sapply(lead, function(x) paste0("Wit_atc", x)), 
+                                    drop = FALSE],
                              equality_four,
-                             y = data[c(dependent)][,1],
-                             z = data$dits_att)
-      
-      o.coefs_atc <-  -sapply(data[, sapply(lead, function(x) paste0("Wit_atc", x)), 
-                                   drop = FALSE],
-                              equality_four,
-                              y = data[c(dependent)][,1],
-                              z = data$dits_atc)
-      
-      o.coefs_ate <- (o.coefs_att*sum(data$dits_att) + o.coefs_atc*sum(data$dits_atc))/
-        (sum(data$dits_att) + sum(data$dits_atc))
-      
-      if (length(lead[lead<0]) > 1) {
-        names(o.coefs_ate)[(length(o.coefs_ate)-max(lead[lead>=0])):
-                             length(o.coefs_ate)] <- sapply(lead[lead>=0], function(x) paste0("t+", x))
-        names(o.coefs_ate)[(length(o.coefs_ate)-length(lead) + 1):
-                             length(lead[lead<0])] <- sapply(lead[lead<0], function(x) paste0("t", x))
+                             y = d.sub1[,outcome.variable],
+                             z = d.sub1$dits_atc)
         
-      } else {
-        names(o.coefs_ate) <- sapply(lead, function(x) paste0("t+", x))
-      }
-      
-      
-      coefs <- matrix(NA, nrow = ITER, ncol = length(lead))
-      
-      
-      for (k in 1:ITER) {
-        # make new data
-        clusters <- unique(data[, unit.id])
-        units <- sample(clusters, size = length(clusters), replace=T)
-        while(all(!units %in% treated.unit.ids) | all(!units %in% treated.unit.ids2)) #while none of the units are treated units (att and atc), resample
-        {
-          units <- sample(clusters, size = length(clusters), replace=T)
+          coefs[k,] <- atc_new
         }
-        # create bootstap sample with sapply
-        d.sub1 <- data[ data[,unit.id] %in% units, ]
-        
-        att_new <-sapply(d.sub1[, sapply(lead, function(x) paste0("Wit_att", x)), 
-                                drop = FALSE],
-                         equality_four,
-                         y = d.sub1[,outcome.variable],
-                         z = d.sub1$dits_att)
-        
-        atc_new <- -sapply(d.sub1[, sapply(lead, function(x) paste0("Wit_atc", x)), 
-                                  drop = FALSE],
-                           equality_four,
-                           y = d.sub1[,outcome.variable],
-                           z = d.sub1$dits_atc)
-        coefs[k,] <- (att_new*sum(d.sub1$dits_att) + atc_new*sum(d.sub1$dits_atc))/
-          (sum(d.sub1$dits_att) + sum(d.sub1$dits_atc))
-        
-      
+        sets2 <- decode_index(sets2, unit.index.map, og.unit.id)
+        z <- list("coefficients" = o.coefs,
+                  "bootstrapped.coefficients" = coefs, "bootstrap.iterations" = ITER, "standard.error" = apply(coefs, 2, sd, na.rm = T),
+                  "lead" = lead, "confidence.level" = CI, "qoi" = qoi, "matched.sets" = sets2)
+        class(z) <- "PanelEstimate"
+        return(z)
+
       }
-      # return(list("o.coef" = DID_ATE, "boots" = coefs))
-      sets <- decode_index(sets, unit.index.map, og.unit.id)
-      sets2 <- decode_index(sets2, unit.index.map, og.unit.id)
-      z <- list("coefficients" = o.coefs_ate,
-                "bootstrapped.coefficients" = coefs, "bootstrap.iterations" = ITER, "standard.error" = apply(coefs, 2, sd, na.rm = T),
-                "lead" = lead, "confidence.level" = CI, "qoi" = qoi, "matched.sets" = list(sets, sets2))
-      class(z) <- "PanelEstimate"
-      return(z)
-    }
-    
-    
+  } else if (qoi == "ate") 
+  {
+    if (inference == "wfe")
+    {
+        
+          data$Wit_att0 <- data[c(paste0("Wit_att", lead))][,1]
+          data$Wit_atc0 <- data[c(paste0("Wit_atc", lead))][,1]
+          
+          fit <- PanelWFE(formula = as.formula(paste(dependent, "~", treatment)), 
+                            treat = treatment, unit.index = unit.id,
+                            time.index = time.id, method = "unit", 
+                            qoi = "ate", estimator = "did", 
+                            df.adjustment = df.adjustment,
+                            hetero.se = TRUE, 
+                            auto.se = TRUE, White = TRUE,  
+                            data = data)
+            
+            coef <- as.numeric(fit$coefficients)
+            names(coef) <- paste0("t+", lead)
+            sets <- decode_index(sets, unit.index.map, og.unit.id)
+            sets2 <- decode_index(sets2, unit.index.map, og.unit.id)
+            z <- list("coefficients" = coef,
+                      "method" = method, "lag" = lag,
+                      "lead" = lead, "confidence.level" = CI, "qoi" = qoi, 
+                      "standard.error" = fit$se,"matched.sets" = list(sets,sets2), "df" = fit$df)
+            class(z) <- "PanelEstimate"
+            return(z)
+        
+        } else if (inference == "bootstrap")
+    {
+            o.coefs_att <-  sapply(data[, sapply(lead, function(x) paste0("Wit_att", x)), 
+                                        drop = FALSE],
+                                   equality_four,
+                                   y = data[c(dependent)][,1],
+                                   z = data$dits_att)
+            
+            o.coefs_atc <-  -sapply(data[, sapply(lead, function(x) paste0("Wit_atc", x)), 
+                                         drop = FALSE],
+                                    equality_four,
+                                    y = data[c(dependent)][,1],
+                                    z = data$dits_atc)
+            
+            o.coefs_ate <- (o.coefs_att*sum(data$dits_att) + o.coefs_atc*sum(data$dits_atc))/
+              (sum(data$dits_att) + sum(data$dits_atc))
+            
+            if (length(lead[lead<0]) > 1) 
+            {
+              names(o.coefs_ate)[(length(o.coefs_ate)-max(lead[lead>=0])):
+                                   length(o.coefs_ate)] <- sapply(lead[lead>=0], function(x) paste0("t+", x))
+              names(o.coefs_ate)[(length(o.coefs_ate)-length(lead) + 1):
+                                   length(lead[lead<0])] <- sapply(lead[lead<0], function(x) paste0("t", x))
+            
+            } else 
+            {
+              names(o.coefs_ate) <- sapply(lead, function(x) paste0("t+", x))
+            }
+          
+            coefs <- matrix(NA, nrow = ITER, ncol = length(lead))
+          
+          
+            for (k in 1:ITER) {
+              # make new data
+              clusters <- unique(data[, unit.id])
+              units <- sample(clusters, size = length(clusters), replace=T)
+              while(all(!units %in% treated.unit.ids) | all(!units %in% treated.unit.ids2)) #while none of the units are treated units (att and atc), resample
+              {
+                units <- sample(clusters, size = length(clusters), replace=T)
+              }
+              # create bootstap sample with sapply
+              d.sub1 <- data[ data[,unit.id] %in% units, ]
+              
+              att_new <-sapply(d.sub1[, sapply(lead, function(x) paste0("Wit_att", x)), 
+                                      drop = FALSE],
+                               equality_four,
+                               y = d.sub1[,outcome.variable],
+                               z = d.sub1$dits_att)
+              
+              atc_new <- -sapply(d.sub1[, sapply(lead, function(x) paste0("Wit_atc", x)), 
+                                        drop = FALSE],
+                                 equality_four,
+                                 y = d.sub1[,outcome.variable],
+                                 z = d.sub1$dits_atc)
+              coefs[k,] <- (att_new*sum(d.sub1$dits_att) + atc_new*sum(d.sub1$dits_atc))/
+                (sum(d.sub1$dits_att) + sum(d.sub1$dits_atc))
+              
+            
+            }
+            # return(list("o.coef" = DID_ATE, "boots" = coefs))
+            sets <- decode_index(sets, unit.index.map, og.unit.id)
+            sets2 <- decode_index(sets2, unit.index.map, og.unit.id)
+            z <- list("coefficients" = o.coefs_ate,
+                      "bootstrapped.coefficients" = coefs, "bootstrap.iterations" = ITER, "standard.error" = apply(coefs, 2, sd, na.rm = T),
+                      "lead" = lead, "confidence.level" = CI, "qoi" = qoi, "matched.sets" = list(sets, sets2))
+            class(z) <- "PanelEstimate"
+            return(z)
+        }
   }
 }
 
