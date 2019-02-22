@@ -45,9 +45,18 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
     idxlist <- get_yearly_dmats(ordered.data, treated.ids, tlist, paste0(ordered.data[,unit.id], ".", 
                                                                          ordered.data[, time.id]), matched_sets = msets, lag)
     expanded.sets.t0 <- build_ps_data(idxlist, ordered.data, lag)
-    pre.pooled <- rbindlist(expanded.sets.t0)
-    pooled <- pre.pooled[complete.cases(pre.pooled), ]
-    
+    if(refinement.method == "ps.msm" | refinement.method == "CBPS.msm")
+    {
+      
+      pre.pooled <- ordered.data[(ordered.data[, time.id] %in% unique(tlist)), ]
+      pooled <- pre.pooled[complete.cases(pre.pooled), ]
+    }
+    else
+    {
+      pre.pooled <- rbindlist(expanded.sets.t0)
+      pooled <- pre.pooled[complete.cases(pre.pooled), ]
+    }
+  
     cols.to.remove <- which(unlist(lapply(pooled, function(x){all(x[1] == x)}))) #checking for columns that only have one value
     cols.to.remove <- unique(c(cols.to.remove, which(!colnames(pooled) %in% colnames(t(unique(t(pooled))))))) #removing columns that are identical to another column 
     if(length(cols.to.remove) > 0)
