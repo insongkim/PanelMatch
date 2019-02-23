@@ -71,9 +71,11 @@ DisplayTreatment(unit.id = "wbcode2",
 
 ``` r
 PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
-                      treatment = "dem", outcome = "y", refinement.method = "mahalanobis", 
-                      data = dem, match.missing = T, 
-                      covs.formula = ~ lag("tradewb", 1:4) + lag("y", 1:4), size.match = 5)
+                         treatment = "dem", refinement.method = "mahalanobis", 
+                         data = dem, match.missing = T, 
+                         covs.formula = ~ lag("tradewb", 1:4) + lag("y", 1:4), size.match = 5, qoi = "att"
+                         ,outcome.var = "y",
+                         lead = 0:4, restricted = TRUE)
 
 ```							
 The `PanelMatch` function will return a `matched.set` object. Users can extract information about individual matched sets as well as statistics about all created matched sets from this object. Consult the [Wiki page on Matched Set Objects](https://github.com/insongkim/PanelMatch/wiki/Matched-Set-Objects) for a much more detailed walkthrough and description of these objects.
@@ -89,8 +91,8 @@ long-term effects. In this example, we illustrate the use of
 `PanelEstimate` to estimate the average treatment effect on treated units (att) at time `t` on the outcomes from time `t+0` to `t+4`.
 
 ```r
-PE.results <- PanelEstimate(lead = 0:4, inference = "bootstrap", qoi = "att", sets = PM.results, 
-                             data = dem, outcome.variable = "y")
+PE.results <- PanelEstimate(inference = "bootstrap", sets = PM.results, 
+                            data = dem)
 ```
 
 The `PanelEstimate` function returns a `PanelEstimate` object, which is a named list. This object will contain the point estimates, standard errors and other information about the calculations. See the wiki page about PanelEstimate objects for more information. 
