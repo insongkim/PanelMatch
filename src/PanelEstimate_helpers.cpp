@@ -89,7 +89,8 @@ Rcpp::NumericVector sumwits(int nrow, Rcpp::NumericVector vit_vect)
  * It returns a list of logical vectors, indicating which control units should be dropped/kept in a particular matched set for the following calculations
  */
 // [[Rcpp::export]]
-Rcpp::List re_norm_index(Rcpp::NumericMatrix compmat, Rcpp::NumericVector compmat_row_units, Rcpp::NumericVector compmat_cols, int lead, Rcpp::List sets, Rcpp::NumericVector control_start_years)
+Rcpp::List re_norm_index(Rcpp::NumericMatrix compmat, Rcpp::NumericVector compmat_row_units, Rcpp::NumericVector compmat_cols, int lead, 
+                         Rcpp::List sets, Rcpp::NumericVector control_start_years)
 {
 	std::unordered_map<int, int> rowmap;
 	for (int i = 0; i < compmat_row_units.size(); ++i)
@@ -119,25 +120,38 @@ Rcpp::List re_norm_index(Rcpp::NumericMatrix compmat, Rcpp::NumericVector compma
 			//Rcpp::LogicalVector v(lead + 1); //change this to + 2
 			Rcpp::LogicalVector v(lead + 2); //change this to + 2
 			//for (int k = 0; k <= lead; ++k)
-			for (int k = 1; k <= lead + 1; ++k)// init. k to 1, go to lead + 1, and have first check be for t - 1
+			for (int k = 0; k <= lead; ++k)// init. k to 1, go to lead + 1, and have first check be for t - 1
 			{
 				//add in separate check for t - 1, rest of these checks should still apply then.
 				if(Rcpp::internal::Rcpp_IsNA(compmat(idx, st_year_col - 1)))
 				{
+				  // Rcpp::Rcout << idx << std::endl;
+				  // Rcpp::Rcout << st_year_col - 1<< std::endl;
+				  // Rcpp::Rcout << compmat(idx, st_year_col - 1)<< std::endl;
 				  v[0] = false;
+				  
 				}
 				else
 				{
+				  // Rcpp::Rcout << idx << std::endl;
+				  // Rcpp::Rcout << st_year_col - 1<< std::endl;
+				  // Rcpp::Rcout << compmat(idx, st_year_col - 1)<< std::endl;
 				  v[0] = true;
 				}
 				
 				if(Rcpp::internal::Rcpp_IsNA(compmat(idx, st_year_col + k)))
 				{
-					v[k] = false;
+				  // Rcpp::Rcout << idx << std::endl;
+				  // Rcpp::Rcout << st_year_col + k<< std::endl;
+				  // Rcpp::Rcout << compmat(idx, st_year_col + k)<< std::endl;
+					v[k + 1] = false;
 				}
 				else
 				{
-					v[k] = true;
+				  // Rcpp::Rcout << idx << std::endl;
+				  // Rcpp::Rcout << st_year_col + k<< std::endl;
+				  // Rcpp::Rcout << compmat(idx, st_year_col + k)<< std::endl;
+					v[k + 1] = true;
 				}
 			}
 			if (Rcpp::is_true(Rcpp::any(v == false)))
@@ -162,7 +176,8 @@ Rcpp::List re_norm_index(Rcpp::NumericMatrix compmat, Rcpp::NumericVector compma
  */
 
 // [[Rcpp::export]]
-Rcpp::LogicalVector check_treated_units(Rcpp::NumericMatrix compmat, Rcpp::NumericVector compmat_row_units, Rcpp::NumericVector compmat_cols, int lead, Rcpp::NumericVector treated_ids, Rcpp::NumericVector treated_ts)
+Rcpp::LogicalVector check_treated_units(Rcpp::NumericMatrix compmat, Rcpp::NumericVector compmat_row_units, 
+                                        Rcpp::NumericVector compmat_cols, int lead, Rcpp::NumericVector treated_ids, Rcpp::NumericVector treated_ts)
 {
 	
 	std::unordered_map<int, int> rowmap;
@@ -187,27 +202,40 @@ Rcpp::LogicalVector check_treated_units(Rcpp::NumericMatrix compmat, Rcpp::Numer
 		// Rcpp::LogicalVector v(lead + 1); // to lead + 2
 		Rcpp::LogicalVector v(lead + 2); 
 		//for (int k = 0; k <= lead; ++k) // again, thinking init k to 1, iterate to lead + 1, then first check is for t-1
-		for (int k = 1; k <= lead + 1; ++k)
+		for (int k = 0; k <= lead; ++k)
 		{
 			//checking t-1
 			if(Rcpp::internal::Rcpp_IsNA(compmat(idx, st_year_col - 1))) //assuming that the order holds
 			{
+			  // Rcpp::Rcout << idx << std::endl;
+			  // Rcpp::Rcout << st_year_col - 1<< std::endl;
+			  // Rcpp::Rcout << compmat(idx, st_year_col - 1)<< std::endl;
 			  v[0] = false;
 			}
 			else
 			{
+			  // Rcpp::Rcout << idx << std::endl;
+			  // Rcpp::Rcout << st_year_col - 1<< std::endl;
+			  // Rcpp::Rcout << compmat(idx, st_year_col - 1)<< std::endl;
 			  v[0] = true;
 			}
 			
 			if( ( (st_year_col + k) > compmat_cols.size() ) || Rcpp::internal::Rcpp_IsNA(compmat(idx, st_year_col + k)))
 			{
-				v[k] = false;
+			  // Rcpp::Rcout << idx << std::endl;
+			  // Rcpp::Rcout << st_year_col + k<< std::endl;
+			  // Rcpp::Rcout << compmat(idx, st_year_col + k)<< std::endl;
+				v[k + 1] = false;
 			}
 			else
 			{
-				v[k] = true;
+			  // Rcpp::Rcout << idx << std::endl;
+			  // Rcpp::Rcout << st_year_col + k<< std::endl;
+			  // Rcpp::Rcout << compmat(idx, st_year_col + k)<< std::endl;
+				v[k + 1] = true;
 			}
 		}
+		
 		if (Rcpp::is_true(Rcpp::any(v == false)))
 		{
 			set_index[i] = false;

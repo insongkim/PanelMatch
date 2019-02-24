@@ -58,7 +58,8 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
                        verbose = FALSE,
                        qoi,
                        lead,
-                       outcome.var
+                       outcome.var,
+                       restricted = FALSE
                        ) 
 {
   if(!"data.frame" %in% class(data)) stop("please convert data to data.frame class")
@@ -100,31 +101,37 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
   if(qoi == "atc")
   {
     ordered.data[, treatment] <- ifelse(ordered.data[, treatment] == 1,0,1) #flip the treatment variables 
-    msets <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data, match.missing, covs.formula, verbose, lead= lead, outcome.var = outcome.var)
+    msets <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data, 
+                                match.missing, covs.formula, verbose, lead= lead, outcome.var = outcome.var, restricted = restricted)
     msets <- decode_index(msets, unit.index.map, og.unit.id)
     pm.obj <- list("atc" = msets)
     class(pm.obj) <- "PanelMatch"
     attr(pm.obj, "qoi") <- qoi
     attr(pm.obj, "outcome.var") <- outcome.var
     attr(pm.obj, "lead") <- lead
+    attr(pm.obj, "restricted") <- restricted
     return(pm.obj)
   }
   else if(qoi == "att")
   {
-    msets <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data, match.missing, covs.formula, verbose, lead = lead, outcome.var = outcome.var)
+    msets <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data,
+                                match.missing, covs.formula, verbose, lead = lead, outcome.var = outcome.var, restricted = restricted)
     msets <- decode_index(msets, unit.index.map, og.unit.id)
     pm.obj <- list("att" = msets)
     class(pm.obj) <- "PanelMatch"
     attr(pm.obj, "qoi") <- qoi
     attr(pm.obj, "outcome.var") <- outcome.var
     attr(pm.obj, "lead") <- lead
+    attr(pm.obj, "restricted") <- restricted
     return(pm.obj)
   }
   else if(qoi == "ate")
   {
-    msets <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data, match.missing, covs.formula, verbose, lead = lead, outcome.var = outcome.var)
+    msets <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data, 
+                                match.missing, covs.formula, verbose, lead = lead, outcome.var = outcome.var, restricted = restricted)
     ordered.data[, treatment] <- ifelse(ordered.data[, treatment] == 1,0,1) #flip the treatment variables 
-    msets2 <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data, match.missing, covs.formula, verbose, lead = lead, outcome.var = outcome.var)
+    msets2 <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data,
+                                 match.missing, covs.formula, verbose, lead = lead, outcome.var = outcome.var, restricted = restricted)
     msets <- decode_index(msets, unit.index.map, og.unit.id)
     msets2 <- decode_index(msets2, unit.index.map, og.unit.id)
     pm.obj <- list("att" = msets, "atc" = msets2)
@@ -132,6 +139,7 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
     attr(pm.obj, "qoi") <- qoi
     attr(pm.obj, "outcome.var") <- outcome.var
     attr(pm.obj, "lead") <- lead
+    attr(pm.obj, "restricted") <- restricted
     return(pm.obj)
   }
   

@@ -1,5 +1,6 @@
 # File contains helper functions written in R for PanelMatch functionality
-perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data, match.missing, covs.formula, verbose, mset.object = NULL, lead = NULL, outcome.var = NULL)
+perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.method, size.match, 
+                               ordered.data, match.missing, covs.formula, verbose, mset.object = NULL, lead = NULL, outcome.var = NULL, restricted = FALSE)
 {
   if(!is.null(mset.object))
   {
@@ -22,6 +23,11 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
     msets <- msets[sapply(msets, length) > 0 ]  
     ##****************************test code***************************
     msets <- clean_leads(msets, ordered.data, max(lead), time.id, unit.id, outcome.var)
+    if(restricted)
+    {
+      browser()
+      msets <- enforce_lead_restrictions(msets, ordered.data, max(lead), time.id, unit.id, treatment.var = treatment)
+    }
     ##****************************test code***************************
   }
   treated.ts <- as.numeric(unlist(strsplit(names(msets), split = "[.]"))[c(F,T)])
@@ -50,6 +56,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
       
       pre.pooled <- ordered.data[(ordered.data[, time.id] %in% unique(tlist)), ]
       pooled <- pre.pooled[complete.cases(pre.pooled), ]
+      #NEED TO MAKE ADJUSTMENTS TO THIS, MUST HAVE MULTIPLE REGRESSIONS + MULTIPLICATION
     }
     else
     {
@@ -210,7 +217,7 @@ build_ps_data <- function(idxlist, data, lag)
 }
 
 #returns a list of data frames with propensity scores for each unit in a matched set. Each element in the list is a data frame which corresponds to a matched set of 1 treatment and all
-# matched control units
+# matched control units #NOTE: NOT THE PROPENSITY SCORE? ACTUALLY THE WEIGHTS...RENAME THIS AT SOME POINT
 find_ps <- function(sets, fitted.model)
 {
   
@@ -432,6 +439,73 @@ clean_leads <- function(matched_sets, ordered.data, max.lead, t.var, id.var, out
   #colnames must be numeric in some form because we must be able to sort them into an ascending column order
   class(matched_sets) <- "list" # for rcpp reasons again
   ll <- re_norm_index(compmat = compmat, compmat_row_units = as.numeric(compmat[, 1]), compmat_cols = as.numeric(colnames(compmat)[2:ncol(compmat)]), lead = max.lead, sets = matched_sets, control_start_years = ts)
+  idx <- needs_renormalization(ll)
+  class(matched_sets) <- c("matched.set", "list")
+  if(any(idx))
+  {
+    sub.index <- ll[idx]
+    sub.set <- matched_sets[idx]
+    create_new_sets <- function(set, index)
+    {
+      return(set[index])
+    }
+    sub.set.new <- mapply(FUN = create_new_sets, sub.set, sub.index, SIMPLIFY = FALSE)
+    attributes(sub.set.new) <- attributes(sub.set)
+    all.gone.counter <- sapply(sub.set.new, function(x){sum(x)})
+    if(sum(all.gone.counter == 0) > 0) #case in which all the controls in a particular group were dropped
+    {
+      warning("all controls in a particular matched set were removed due to missing data")
+      
+      idx[all.gone.counter == 0] <- FALSE
+      sub.index <- ll[idx]
+      sub.set <- matched_sets[idx]
+      create_new_sets <- function(set, index)
+      {
+        return(set[index])
+      }
+      sub.set.new <- mapply(FUN = create_new_sets, sub.set, sub.index, SIMPLIFY = FALSE)
+      attributes(sub.set.new) <- attributes(sub.set)
+    }
+    if(all(sapply(sub.set.new, length) == 0)) stop('estimation not possible: none of the matched sets have viable control units due to a lack of necessary data')
+    #pm2 <- perform_refinement(ordered.data = ordered.data, mset.object = sub.set.new)
+    #matched_sets[idx] <- pm2
+    matched_sets[idx] <- sub.set.new
+    matched_sets <- matched_sets[sapply(matched_sets, length) > 0]
+  }
+  return(matched_sets)
+  
+}
+
+
+enforce_lead_restrictions <- function(matched_sets, ordered.data, max.lead, t.var, id.var, treatment.var) 
+{
+  #CHECK TO MAKE SURE COLUMNS ARE IN ORDER
+  
+  ordered.data <- ordered.data[order(ordered.data[,id.var], ordered.data[,t.var]), ]
+  compmat <- data.table::dcast(data.table::as.data.table(ordered.data), formula = paste0(id.var, "~", t.var), value.var = treatment.var)
+  ts <- as.numeric(unlist(strsplit(names(matched_sets), split = "[.]"))[c(F,T)])
+  tids <- as.numeric(unlist(strsplit(names(matched_sets), split = "[.]"))[c(T,F)])
+  class(matched_sets) <- "list" #so that Rcpp::List is accurate when we pass it into cpp functions
+  compmat <- data.matrix(compmat)
+  
+  idx <- check_treated_units_for_treatment_reversion(compmat = compmat, compmat_row_units = as.numeric(compmat[, 1]), 
+                                                     compmat_cols = as.numeric(colnames(compmat)[2:ncol(compmat)]),
+                                                     lead = max.lead, treated_ids = tids, treated_ts = ts)
+  if(all(!idx)) stop("estimation not possible: All treated units are missing data necessary for the calculations to proceed")
+  if(any(!idx))
+  {
+    class(matched_sets) <- c("matched.set", "list") #to get the matched.set subsetting with attributes
+    matched_sets <- matched_sets[idx]
+    ts <- ts[idx]
+    
+  }
+  #colnames must be numeric in some form because we must be able to sort them into an ascending column order
+  class(matched_sets) <- "list" # for rcpp reasons again
+  ll <- check_control_units_for_treatment_restriction(compmat = compmat, 
+                                                      compmat_row_units = as.numeric(compmat[, 1]), 
+                                                      compmat_cols = as.numeric(colnames(compmat)[2:ncol(compmat)]), 
+                                                      lead = max.lead, sets = matched_sets, control_start_years = ts)
+  #probably should rename this function, but working in a similar context here so seeing if it works
   idx <- needs_renormalization(ll)
   class(matched_sets) <- c("matched.set", "list")
   if(any(idx))

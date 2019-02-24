@@ -56,3 +56,136 @@ List get_yearly_dmats(NumericMatrix expanded_data, NumericVector treated_ids, Li
   return df_list;
 }
 
+// [[Rcpp::export]]
+Rcpp::LogicalVector check_treated_units_for_treatment_reversion(Rcpp::NumericMatrix compmat, Rcpp::NumericVector compmat_row_units, 
+                                                                Rcpp::NumericVector compmat_cols, int lead, Rcpp::NumericVector treated_ids,
+                                                                Rcpp::NumericVector treated_ts)
+{
+  
+  std::unordered_map<int, int> rowmap;
+  for (int i = 0; i < compmat_row_units.size(); ++i)
+  {
+    rowmap[compmat_row_units[i]] = i;
+  }
+  std::unordered_map<int, int> colmap;
+  for (int i = 0; i < compmat_cols.size(); ++i)
+  {
+    colmap[compmat_cols[i]] = i + 1;
+  }
+  
+  Rcpp::LogicalVector set_index(treated_ids.size());
+  for (int i = 0; i < treated_ids.size(); ++i)
+  {
+    int key;
+    key = treated_ts[i];
+    int st_year_col = colmap[key];
+    key = treated_ids[i];
+    int idx = rowmap[key];
+    // Rcpp::LogicalVector v(lead + 1); // to lead + 2
+    Rcpp::LogicalVector v(lead + 2); 
+    //for (int k = 0; k <= lead; ++k) // again, thinking init k to 1, iterate to lead + 1, then first check is for t-1
+    for (int k = 0; k <= lead; ++k)
+    {
+      //checking t-1
+      if(Rcpp::internal::Rcpp_IsNA(compmat(idx, st_year_col - 1)) || 
+         compmat(idx, st_year_col - 1) != 0) //assuming that the order holds
+      {
+        v[0] = false;
+      }
+      else
+      {
+        v[0] = true;
+      }
+      
+      if( ( (st_year_col + k) > compmat_cols.size() ) || Rcpp::internal::Rcpp_IsNA(compmat(idx, st_year_col + k)) 
+            || compmat(idx, st_year_col + k) != 1 )
+      {
+        v[k + 1] = false;
+      }
+      else
+      {
+        v[k + 1] = true;
+      }
+    }
+    if (Rcpp::is_true(Rcpp::any(v == false)))
+    {
+      set_index[i] = false;
+    }
+    else
+    {
+      set_index[i] = true;
+    }
+  }
+  return set_index;
+}
+
+// [[Rcpp::export]]
+Rcpp::List check_control_units_for_treatment_restriction(Rcpp::NumericMatrix compmat, Rcpp::NumericVector compmat_row_units, 
+                                                         Rcpp::NumericVector compmat_cols, int lead, Rcpp::List sets, 
+                                                         Rcpp::NumericVector control_start_years)
+{
+  std::unordered_map<int, int> rowmap;
+  for (int i = 0; i < compmat_row_units.size(); ++i)
+  {
+    rowmap[compmat_row_units[i]] = i;
+  }
+  std::unordered_map<int, int> colmap;
+  for (int i = 0; i < compmat_cols.size(); ++i)
+  {
+    colmap[compmat_cols[i]] = i + 1;
+  }
+  
+  Rcpp::List set_index_list(sets.size());
+  
+  for (int i = 0; i < sets.size(); ++i) //should be same size as control_start_years 
+  {
+    Rcpp::NumericVector controls = sets[i];
+    int key;
+    key = control_start_years[i];
+    int st_year_col = colmap[key];
+    Rcpp::LogicalVector control_index(controls.size());
+    for (int j = 0; j < controls.size(); ++j)
+    {
+      int key;
+      key = controls[j];
+      int idx = rowmap[key];
+      //Rcpp::LogicalVector v(lead + 1); //change this to + 2
+      Rcpp::LogicalVector v(lead + 2); //change this to + 2
+      //for (int k = 0; k <= lead; ++k)
+      for (int k = 0; k <= lead; ++k)// init. k to 1, go to lead + 1, and have first check be for t - 1
+      {
+        //add in separate check for t - 1, rest of these checks should still apply then.
+        if(Rcpp::internal::Rcpp_IsNA(compmat(idx, st_year_col - 1)) || compmat(idx, st_year_col - 1) != 0)
+        {
+          v[0] = false;
+        }
+        else
+        {
+          v[0] = true;
+        }
+        
+        if(Rcpp::internal::Rcpp_IsNA(compmat(idx, st_year_col + k)) ||
+           compmat(idx, st_year_col + k) != 0)
+        {
+          v[k + 1] = false;
+        }
+        else
+        {
+          v[k + 1] = true;
+        }
+      }
+      if (Rcpp::is_true(Rcpp::any(v == false)))
+      {
+        control_index[j] = false;
+      }
+      else
+      {
+        control_index[j] = true;
+      }
+    }
+    set_index_list[i] = control_index;	
+  }
+  
+  return set_index_list;
+}
+

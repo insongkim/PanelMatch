@@ -85,6 +85,7 @@ PanelEstimate <- function(inference = c("wfe", "bootstrap"),
   method <- attr(sets, "refinement.method")
   
   restricted <- attr(sets, "restricted") # this doesnt exist yet, not sure what it means.
+  #add in checks about restricted and wfe, etc. 
   
   if(!"data.frame" %in% class(data)) stop("please convert data to data.frame class")
   if(any(table(data[, unit.id]) != max(table(data[, unit.id]))))
@@ -133,8 +134,6 @@ PanelEstimate <- function(inference = c("wfe", "bootstrap"),
     sets <- encode_index(temp.sets$att, unit.index.map, unit.id)
     sets2 <- encode_index(temp.sets$atc, unit.index.map, unit.id)
   }
-
-  if(is.null(restricted)){restricted <- FALSE}
 
   if (qoi == "att" | qoi == "ate") 
   {
