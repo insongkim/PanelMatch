@@ -50,17 +50,14 @@
 #' }
 #' @export
 PanelMatch <- function(lag, time.id, unit.id, treatment,
-                       refinement.method = c(NULL, "ps.weight", "ps.match", "mahalanobis", 
-                                             "CBPS.weight", "CBPS.match",
-                                             "CBPS.msm.weight", "CBPS.msm.match",
-                                             "ps.msm.weight", "ps.msm.match"),
+                       refinement.method,
                        size.match = 10,
                        data,
                        match.missing = TRUE,
                        covs.formula,
                        verbose = FALSE,
                        qoi,
-                       lead,
+                       lead = 0,
                        outcome.var,
                        restricted = FALSE
                        ) 
@@ -71,12 +68,21 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
     data <- make.pbalanced(data, balance.type = "fill", index = c(unit.id, time.id))
   }
   check_time_data(data, time.id)
-  #####TODO: ADD CHECKS IN FOR RESTRICTIONS ABOUT ADE/RESTRICTED BEING T/F AND THE MSM REFINEMENT METHODS.
+  if(!all(qoi %in% c("att", "atc", "ate", "ade"))) stop("please choose a valid qoi")
+  
+  if(qoi == "ade" & !all(refinement.method %in% c("CBPS.msm.weight", "CBPS.msm.match",
+                                             "ps.msm.weight", "ps.msm.match")))
+  {
+    stop("ade must have one of the following refinement methods: CBPS.msm.weight, CBPS.msm.match, ps.msm.weight, ps.msm.match")
+  }
+  if(!restricted & (qoi == 'ade' | all(refinement.method %in% c("CBPS.msm.weight", "CBPS.msm.match",
+                                                                "ps.msm.weight", "ps.msm.match"))))
+  {
+    stop("please set restricted to TRUE for msm methods")
+  }
   
   ordered.data <- data[order(data[,unit.id], data[,time.id]), ]
   ordered.data[, paste0(unit.id, ".int")] <- as.integer(as.factor(data[, unit.id]))
-  #ordered.data[, paste0(time.id,".int")] <- as.integer(factor(x = as.character(ordered.data[, time.id]), levels = as.character(sort(unique(ordered.data[, time.id]))), 
-  #                  labels = as.character(1:length(unique(ordered.data[, time.id]))), ordered = T))
   if(class(data[, unit.id]) == "character") {
     unit.index.map <- data.frame(original.id = make.names(as.character(unique(ordered.data[, unit.id]))), new.id = unique(ordered.data[, paste0(unit.id, ".int")]), stringsAsFactors = F)
   }
@@ -92,12 +98,8 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
   else {
   stop("Unit ID Data is not integer, numeric, or character.")
   }
-  ##### unit.index.map <- data.frame(original.id = make.names(as.character(unique(ordered.data[, unit.id]))), new.id = unique(ordered.data[, paste0(unit.id, ".int")]), stringsAsFactors = F)
-  #time.index.map <- data.frame(original.time.id = make.names(as.character(unique(ordered.data[, time.id]))), new.time.id = unique(ordered.data[, paste0(time.id, ".int")]), stringsAsFactors = F)
   og.unit.id <- unit.id
-  #og.time.id <- time.id
   unit.id <- paste0(unit.id, ".int")
-  #time.id <- paste0(time.id, ".int")
   
   othercols <- colnames(ordered.data)[!colnames(ordered.data) %in% c(time.id, unit.id, treatment)]
   ordered.data <- ordered.data[, c(unit.id, time.id, treatment, othercols)] #reorder columns 
@@ -115,8 +117,7 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
     attr(pm.obj, "lead") <- lead
     attr(pm.obj, "restricted") <- restricted
     return(pm.obj)
-  }
-  else if(qoi == "att")
+  } else if(qoi == "att")
   {
     msets <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data,
                                 match.missing, covs.formula, verbose, lead = lead, outcome.var = outcome.var, restricted = restricted)
@@ -128,8 +129,7 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
     attr(pm.obj, "lead") <- lead
     attr(pm.obj, "restricted") <- restricted
     return(pm.obj)
-  }
-  else if(qoi == "ate")
+  } else if(qoi == "ate")
   {
     msets <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data, 
                                 match.missing, covs.formula, verbose, lead = lead, outcome.var = outcome.var, restricted = restricted)
@@ -139,6 +139,18 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
     msets <- decode_index(msets, unit.index.map, og.unit.id)
     msets2 <- decode_index(msets2, unit.index.map, og.unit.id)
     pm.obj <- list("att" = msets, "atc" = msets2)
+    class(pm.obj) <- "PanelMatch"
+    attr(pm.obj, "qoi") <- qoi
+    attr(pm.obj, "outcome.var") <- outcome.var
+    attr(pm.obj, "lead") <- lead
+    attr(pm.obj, "restricted") <- restricted
+    return(pm.obj)
+  } else #ade
+  {
+    msets <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data,
+                                match.missing, covs.formula, verbose, lead = lead, outcome.var = outcome.var, restricted = restricted)
+    msets <- decode_index(msets, unit.index.map, og.unit.id)
+    pm.obj <- list("ade" = msets)
     class(pm.obj) <- "PanelMatch"
     attr(pm.obj, "qoi") <- qoi
     attr(pm.obj, "outcome.var") <- outcome.var

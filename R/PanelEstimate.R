@@ -59,6 +59,10 @@ PanelEstimate <- function(inference = c("wfe", "bootstrap"),
                           ) {
   lead <- attr(sets, "lead")
   outcome.variable <- attr(sets, "outcome.var")
+  if(!attr(sets, "restricted") & inference == "wfe")
+  {
+    stop("WFE cannot be used unless treatment stability is guaranteed. Please re-run PanelMatch with restricted = TRUE")
+  }
   if(class(sets) != "PanelMatch") stop("sets is not a PanelMatch object")
   qoi <- attr(sets, "qoi")
   if(qoi == "ate")
