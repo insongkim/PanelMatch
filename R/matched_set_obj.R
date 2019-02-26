@@ -124,8 +124,6 @@ build_balance_mats <- function(idx, ordered_expanded_data, msets)
 }
 
 
-#TODO: ADD IN ABILITY TO PRODUCE PLOTS FOR UNWEIGHTED MATCHED SETS -- WHEN WEIGHTS AREN'T THERE, ASSUME EQUAL WEIGHTS
-#TODO: DO WE NEED THE SAME INDEXING SYSTEM?
 #' Calculate covariate balance for specified covariates across matched sets. Balance is assessed by taking the difference between 
 #' the values of the user specified covariates in the treated unit and the weighted average of that across all matched sets. Furthermore, results are standardized and are expressed in standard deviations. 
 #' @param matched.sets A matched.set object
@@ -177,7 +175,15 @@ get_covariate_balance <- function(matched.sets, data,  covariates, verbose = T, 
   #og.time.id <- time.id
   unit.id <- paste0(unit.id, ".int")
   matched.sets <- encode_index(matched.sets, unit.index.map, unit.id)
-  
+  #they will either all have or not have weights, so we can check the first matched set to see if we need to add equal weighting
+  if(is.null(attr(matched.sets[[1]], "weights")))
+  {
+    for(i in 1:length(matched.sets))
+    {
+      attr(matched.sets[[i]], "weights") <- rep(1/length(matched.sets[[i]]), length(matched.sets[[i]]))
+      names(matched.sets[[i]], "weights") <- matched.sets[[i]]
+    }
+  }
   treated.ts <- as.integer(unlist(strsplit(names(matched.sets), split = "[.]"))[c(F,T)])
   treated.ids <- as.integer(unlist(strsplit(names(matched.sets), split = "[.]"))[c(T,F)])
   tlist <- expand.treated.ts(lag, treated.ts = treated.ts)
