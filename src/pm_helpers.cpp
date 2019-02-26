@@ -189,3 +189,26 @@ Rcpp::List check_control_units_for_treatment_restriction(Rcpp::NumericMatrix com
   return set_index_list;
 }
 
+// [[Rcpp::export]]
+Rcpp::List multiply_weights_msm(Rcpp::List weights, int number_of_sets)
+{
+  Rcpp::List final_weights(number_of_sets);
+  for(int i = 0; i < number_of_sets; i++)
+  {
+    Rcpp::NumericVector base_mult = weights[i];
+    Rcpp::NumericVector temp2;
+    for(int j = i; j < weights.size(); j+=number_of_sets)
+    {
+      if(j != i)
+      {
+        Rcpp::NumericVector temp = weights[j];
+        temp2 = base_mult * temp;
+        base_mult = temp2;
+        //base_mult = base_mult * weights[j];
+      }
+
+    }
+    final_weights[i] = base_mult;
+  }
+  return final_weights;
+}

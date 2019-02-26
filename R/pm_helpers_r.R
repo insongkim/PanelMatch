@@ -21,14 +21,11 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
     if(nrow(temp.treateds) == 0) stop("no treated units")
     msets <- get.matchedsets(temp.treateds[, time.id], temp.treateds[, unit.id], ordered.data, lag, time.id, unit.id, treatment, hasbeensorted = TRUE)
     msets <- msets[sapply(msets, length) > 0 ]  
-    ##****************************test code***************************
     msets <- clean_leads(msets, ordered.data, max(lead), time.id, unit.id, outcome.var)
     if(restricted)
     {
-      browser()
       msets <- enforce_lead_restrictions(msets, ordered.data, max(lead), time.id, unit.id, treatment.var = treatment)
     }
-    ##****************************test code***************************
   }
   treated.ts <- as.numeric(unlist(strsplit(names(msets), split = "[.]"))[c(F,T)])
   treated.ids <- as.numeric(unlist(strsplit(names(msets), split = "[.]"))[c(T,F)])
@@ -47,62 +44,109 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
   
   else
   {
-    tlist <- expand.treated.ts(lag, treated.ts = treated.ts)
-    idxlist <- get_yearly_dmats(ordered.data, treated.ids, tlist, paste0(ordered.data[,unit.id], ".", 
-                                                                         ordered.data[, time.id]), matched_sets = msets, lag)
-    expanded.sets.t0 <- build_ps_data(idxlist, ordered.data, lag)
-    if(refinement.method == "ps.msm" | refinement.method == "CBPS.msm")
+    if(refinement.method == "ps.msm.match" | refinement.method == "CBPS.msm.match" | 
+       refinement.method == "ps.msm.weight" | refinement.method == "CBPS.msm.weight")
     {
+      store.msm.data <- list()
+      for(i in 1:length(lead))
+      {
+        #tf = t + f
+        f <- lead[i]
+        tf <- expand.treated.ts(lag, treated.ts = treated.ts + f)
+        tf.index <- get_yearly_dmats(ordered.data, treated.ids, tf, paste0(ordered.data[,unit.id], ".", 
+                                                                           ordered.data[, time.id]), matched_sets = msets, lag)
+        expanded.sets.tf <- build_ps_data(tf.index, ordered.data, lag)
+        pre.pooled <- ordered.data[ordered.data[, time.id] %in% (treated.ts + f), ]
+        pooled <- pre.pooled[complete.cases(pre.pooled), ]
+        pooled <- as.data.frame(pooled)
+        #do the column removal thing
+        cols.to.remove <- which(unlist(lapply(pooled, function(x){all(x[1] == x)}))) #checking for columns that only have one value
+        cols.to.remove <- unique(c(cols.to.remove, which(!colnames(pooled) %in% colnames(t(unique(t(pooled))))))) #removing columns that are identical to another column 
+        if(length(cols.to.remove) > 0)
+        {
+          class(pooled) <- c("data.frame")
+          pooled <- pooled[, -cols.to.remove]
+          rmv <- function(x, cols.to.remove_)
+          {
+            return(x[, -cols.to.remove_])
+          }
+          expanded.sets.tf <- lapply(expanded.sets.tf, rmv, cols.to.remove_ = cols.to.remove)
+        }
+        if(qr(pooled)$rank != ncol(pooled)) stop("Error: Provided data is not linearly independent so calculations cannot be completed. Please check the data set for any redundant, unnecessary, or problematic information.")
+        
+        if(refinement.method == "CBPS.msm.match" | refinement.method == "CBPS.msm.weight") #obviously update these conditionals
+        {
+          fit.tf <- suppressMessages(CBPS::CBPS(reformulate(response = treatment, termlabels = colnames(pooled)[-c(1:3)]), 
+                                                family = binomial(link = "logit"), data = pooled))
+        }
+        else
+        {
+          fit.tf <- glm(reformulate(response = treatment, termlabels = colnames(pooled)[-c(1:3)]), 
+                        family = binomial(link = "logit"), data = pooled)
+        }
+        store.msm.data[[i]] <- find_ps(expanded.sets.tf, fit.tf)
+        
+      }
       
-      pre.pooled <- ordered.data[(ordered.data[, time.id] %in% unique(tlist)), ]
-      pooled <- pre.pooled[complete.cases(pre.pooled), ]
-      #NEED TO MAKE ADJUSTMENTS TO THIS, MUST HAVE MULTIPLE REGRESSIONS + MULTIPLICATION
+      msm.sets <- gather_msm_sets(store.msm.data)
+      if(refinement.method == "CBPS.msm.match" | refinement.method == "ps.msm.match")
+      {
+        msets <- handle_ps_match(msm.sets, msets = msets, refinement.method, verbose = verbose, max.set.size = size.match)
+        attr(msets, "max.match.size") <- size.match
+      }
+      if(refinement.method == "CBPS.msm.weight" | refinement.method == "ps.msm.weight")
+      {
+        msets <- handle_ps_weighted(msm.sets, msets, refinement.method)
+      }
     }
-    else
+    else #not msm
     {
+      tlist <- expand.treated.ts(lag, treated.ts = treated.ts)
+      idxlist <- get_yearly_dmats(ordered.data, treated.ids, tlist, paste0(ordered.data[,unit.id], ".", 
+                                                                           ordered.data[, time.id]), matched_sets = msets, lag)
+      expanded.sets.t0 <- build_ps_data(idxlist, ordered.data, lag)
       pre.pooled <- rbindlist(expanded.sets.t0)
       pooled <- pre.pooled[complete.cases(pre.pooled), ]
-    }
-  
-    cols.to.remove <- which(unlist(lapply(pooled, function(x){all(x[1] == x)}))) #checking for columns that only have one value
-    cols.to.remove <- unique(c(cols.to.remove, which(!colnames(pooled) %in% colnames(t(unique(t(pooled))))))) #removing columns that are identical to another column 
-    if(length(cols.to.remove) > 0)
-    {
-      class(pooled) <- c("data.frame")
-      pooled <- pooled[, -cols.to.remove]
-      rmv <- function(x, cols.to.remove_)
+    
+      cols.to.remove <- which(unlist(lapply(pooled, function(x){all(x[1] == x)}))) #checking for columns that only have one value
+      cols.to.remove <- unique(c(cols.to.remove, which(!colnames(pooled) %in% colnames(t(unique(t(pooled))))))) #removing columns that are identical to another column 
+      if(length(cols.to.remove) > 0)
       {
-        return(x[, -cols.to.remove_])
+        class(pooled) <- c("data.frame")
+        pooled <- pooled[, -cols.to.remove]
+        rmv <- function(x, cols.to.remove_)
+        {
+          return(x[, -cols.to.remove_])
+        }
+        expanded.sets.t0 <- lapply(expanded.sets.t0, rmv, cols.to.remove_ = cols.to.remove)
       }
-      expanded.sets.t0 <- lapply(expanded.sets.t0, rmv, cols.to.remove_ = cols.to.remove)
+      if(qr(pooled)$rank != ncol(pooled)) stop("Error: Provided data is not linearly independent so calculations cannot be completed. Please check the data set for any redundant, unnecessary, or problematic information.")
+      if(refinement.method == "CBPS.weight" | refinement.method == "CBPS.match")
+      {
+        fit0 <- suppressMessages(CBPS::CBPS(reformulate(response = treatment, termlabels = colnames(pooled)[-c(1:3)]), 
+                                            family = binomial(link = "logit"), data = pooled))
+      }
+      if(refinement.method == "ps.weight" | refinement.method == "ps.match")
+      {
+        fit0 <- glm(reformulate(response = treatment, termlabels = colnames(pooled)[-c(1:3)]), 
+                    family = binomial(link = "logit"), data = pooled)
+      }
+      
+      just.ps.sets <- find_ps(expanded.sets.t0, fit0)
+      
+      if(refinement.method == "CBPS.weight" | refinement.method == "ps.weight")
+      {
+        msets <- handle_ps_weighted(just.ps.sets, msets, refinement.method)
+      }
+      if(refinement.method == "CBPS.match" | refinement.method == "ps.match")
+      {
+        msets <- handle_ps_match(just.ps.sets, msets, refinement.method, verbose, size.match)
+        attr(msets, "max.match.size") <- size.match
+      }
     }
-    if(qr(pooled)$rank != ncol(pooled)) stop("Error: Provided data is not linearly independent so calculations cannot be completed. Please check the data set for any redundant, unnecessary, or problematic information.")
-    if(refinement.method == "CBPS.weight" | refinement.method == "CBPS.match")
-    {
-      fit0 <- suppressMessages(CBPS::CBPS(reformulate(response = treatment, termlabels = colnames(pooled)[-c(1:3)]), 
-                                          family = binomial(link = "logit"), data = pooled))
-    }
-    if(refinement.method == "ps.weight" | refinement.method == "ps.match")
-    {
-      fit0 <- glm(reformulate(response = treatment, termlabels = colnames(pooled)[-c(1:3)]), 
-                  family = binomial(link = "logit"), data = pooled)
-    }
-    
-    just.ps.sets <- find_ps(expanded.sets.t0, fit0)
-    
-    if(refinement.method == "CBPS.weight" | refinement.method == "ps.weight")
-    {
-      msets <- handle_ps_weighted(just.ps.sets, msets, refinement.method)
-    }
-    if(refinement.method == "CBPS.match" | refinement.method == "ps.match")
-    {
-      msets <- handle_ps_match(just.ps.sets, msets, refinement.method, verbose, size.match)
-    }
-    
   }
   attr(msets, "covs.formula") <- covs.formula
   attr(msets, "match.missing") <- match.missing
-  attr(msets, "max.match.size") <- size.match
   return(msets)
 }
 # builds a list that contains all times in a lag window that correspond to a particular treated unit. This is structured as a list of vectors. Each vector is lag + 1 units long. The overall list will 
@@ -543,4 +587,22 @@ enforce_lead_restrictions <- function(matched_sets, ordered.data, max.lead, t.va
   
 }
 
-
+gather_msm_sets <- function(lead.data.list)
+{
+  number.of.sets <- sapply(lead.data.list, length)
+  if(length(unique(number.of.sets)) != 1) stop("error with matched sets in msm calculations")
+  number.of.sets <- unique(number.of.sets)
+  long.data.lead.list <- unlist(lead.data.list, recursive = F)
+  
+  long.weights.list <- lapply(long.data.lead.list, function(x){return(as.vector(x[, 4]))})
+  multiplied.weights <-  multiply_weights_msm(long.weights.list, number.of.sets)
+  reassembled.sets <- long.data.lead.list[1:number.of.sets]
+  reassemble.weights <- function(set, weights)
+  {
+    set[, "ps"] <- weights #again this ps is misleading but for consistency with the other functions lets go with it
+    return(set)
+  }
+  reassembled.sets <- mapply(FUN = reassemble.weights, set = reassembled.sets, weights = multiplied.weights, SIMPLIFY = F)
+  
+  return(reassembled.sets)
+}

@@ -206,3 +206,15 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// multiply_weights_msm
+Rcpp::List multiply_weights_msm(Rcpp::List weights, int number_of_sets);
+RcppExport SEXP _PanelMatch_multiply_weights_msm(SEXP weightsSEXP, SEXP number_of_setsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type weights(weightsSEXP);
+    Rcpp::traits::input_parameter< int >::type number_of_sets(number_of_setsSEXP);
+    rcpp_result_gen = Rcpp::wrap(multiply_weights_msm(weights, number_of_sets));
+    return rcpp_result_gen;
+END_RCPP
+}

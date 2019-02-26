@@ -57,3 +57,7 @@ check_control_units_for_treatment_restriction <- function(compmat, compmat_row_u
     .Call('_PanelMatch_check_control_units_for_treatment_restriction', PACKAGE = 'PanelMatch', compmat, compmat_row_units, compmat_cols, lead, sets, control_start_years)
 }
 
+multiply_weights_msm <- function(weights, number_of_sets) {
+    .Call('_PanelMatch_multiply_weights_msm', PACKAGE = 'PanelMatch', weights, number_of_sets)
+}
+

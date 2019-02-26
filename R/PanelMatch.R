@@ -50,7 +50,10 @@
 #' }
 #' @export
 PanelMatch <- function(lag, time.id, unit.id, treatment,
-                       refinement.method = c(NULL, "ps.weight", "ps.match", "mahalanobis", "CBPS.weight", "CBPS.match"),
+                       refinement.method = c(NULL, "ps.weight", "ps.match", "mahalanobis", 
+                                             "CBPS.weight", "CBPS.match",
+                                             "CBPS.msm.weight", "CBPS.msm.match",
+                                             "ps.msm.weight", "ps.msm.match"),
                        size.match = 10,
                        data,
                        match.missing = TRUE,
@@ -68,7 +71,8 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
     data <- make.pbalanced(data, balance.type = "fill", index = c(unit.id, time.id))
   }
   check_time_data(data, time.id)
-  # can probably add some checks to avoid doing all this stuff when already integer??
+  #####TODO: ADD CHECKS IN FOR RESTRICTIONS ABOUT ADE/RESTRICTED BEING T/F AND THE MSM REFINEMENT METHODS.
+  
   ordered.data <- data[order(data[,unit.id], data[,time.id]), ]
   ordered.data[, paste0(unit.id, ".int")] <- as.integer(as.factor(data[, unit.id]))
   #ordered.data[, paste0(time.id,".int")] <- as.integer(factor(x = as.character(ordered.data[, time.id]), levels = as.character(sort(unique(ordered.data[, time.id]))), 
