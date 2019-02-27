@@ -70,13 +70,11 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
   check_time_data(data, time.id)
   if(!all(qoi %in% c("att", "atc", "ate", "ade"))) stop("please choose a valid qoi")
   
-  if(qoi == "ade" & !all(refinement.method %in% c("CBPS.msm.weight", "CBPS.msm.match",
-                                             "ps.msm.weight", "ps.msm.match")))
+  if(qoi == "ade" & !all(refinement.method %in% c("CBPS.msm.weight", "ps.msm.weight")))
   {
-    stop("ade must have one of the following refinement methods: CBPS.msm.weight, CBPS.msm.match, ps.msm.weight, ps.msm.match")
+    stop("ade must have one of the following refinement methods: CBPS.msm.weight, ps.msm.weight")
   }
-  if(!restricted & (qoi == 'ade' | all(refinement.method %in% c("CBPS.msm.weight", "CBPS.msm.match",
-                                                                "ps.msm.weight", "ps.msm.match"))))
+  if(!restricted & (qoi == 'ade' | all(refinement.method %in% c("CBPS.msm.weight", "ps.msm.weight"))))
   {
     stop("please set restricted to TRUE for msm methods")
   }
