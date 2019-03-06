@@ -54,7 +54,6 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
                              legend.position= "none",
                              x.angle = 45,
                              y.angle = NULL,
-                             # color.for.missing = "grey",
                              legend.labels = c("not treated", "treated"),
                              group_on = NULL,
                              sort_by = NULL,
@@ -62,12 +61,13 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
                              matched.set = NULL,
                              show.set.only = FALSE,
                              hide.x.axis.label = FALSE,
-                             hide.y.axis.label = FALSE)
+                             hide.y.axis.label = FALSE,
+                             gradient.weights = FALSE)
     
 {
   # load the dataframe that the user specifies
   #TODO: fix layout here
-  
+
   if(show.set.only & !is.null(matched.set) & length(matched.set) == 1 & class(matched.set) == "matched.set")
   {
     info <- unlist(strsplit(names(matched.set)[1], split = ".", fixed = TRUE))
@@ -85,7 +85,23 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
         return(FALSE)
       }
     }
+    .has.weight <- function(.id)
+    {
+      if( .id == id | (.in.set(.id) & attr(matched.set[[1]], "weights")[as.character(.id)] > 0))
+      {
+        return(TRUE)
+      }
+      else
+      {
+        return(FALSE)
+      }
+    }
     data <- data[sapply(data[, unit.id], .in.set), ]
+    if(gradient.weights)
+    {
+      data <- data[sapply(data[, unit.id], .has.weight), ]  
+    }
+    
   }
   x.size = NULL
   y.size = NULL
@@ -197,10 +213,7 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
   
   if(!is.null(matched.set) & length(matched.set) == 1 & class(matched.set) == "matched.set")
   {
-    
-    info <- unlist(strsplit(names(matched.set)[1], split = ".", fixed = TRUE))
-    id <- info[1]
-    t <- info[2]
+    lag <- attr(matched.set, "lag")
     .in.set <- function(id_comp)
     {
       
@@ -213,6 +226,11 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
         return(FALSE)
       }
     }
+    info <- unlist(strsplit(names(matched.set)[1], split = ".", fixed = TRUE))
+    id <- info[1]
+    t <- info[2]
+    
+    
     # "#adc5ff" #control, not in set -- this will correspond to 0
     # "#ffadad" #treated, not in set -- corresponds to 1
     # "red" #treated, in set -- 3
@@ -220,7 +238,6 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
     # #data$colref <- NA
     
     
-    lag <- attr(matched.set, "lag")
     time <- as.numeric(t)
     .set.colref <- function(id_, treatment, time_)
     {
@@ -262,22 +279,89 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
       }
     }
     data$colref <- mapply(FUN = .set.colref, id_ = data$old.index, treatment = data$treatment, time_ = data$time.id)
-    clrs <- sapply(unique(data$old.index), FUN = .in.set)
-    clrs <- ifelse(clrs, "blue", "#eaeaea")
-    clrs[which(unique(data$old.index) == id)] <- "red"
+    if(!gradient.weights)
+    {
+      clrs <- sapply(unique(data$old.index), FUN = .in.set)
+      clrs <- ifelse(clrs, color.of.untreated, "#eaeaea")
+      clrs[which(unique(data$old.index) == id)] <- color.of.treated  
+    }
+    
     title = paste0(title, "\n", "highlighted matched set for unit id: ", id, " at time t = ", t, " and lag = ", lag)
-    p <- ggplot(data, aes(unit.id, time.id)) + geom_tile(aes(fill = as.factor(colref)),
-                                                         colour = "white") +
-      scale_fill_manual(values = c("#adc5ff", "#ffadad", "blue", "red"))+
-      theme_bw() +
-      labs(list(title = title, x = ylab, y = xlab, fill = "")) +
-      theme(axis.ticks.x=element_blank(),
-            panel.grid.major = element_blank(), panel.border = element_blank(),
-            legend.position = legend.position,
-            panel.background = element_blank(), 
-            axis.text.x = element_text(angle=x.angle, size = x.size, vjust=0.5),
-            axis.text.y = element_text(size = y.size, angle = y.angle),
-            plot.title = element_text(hjust = 0.5))
+    if(gradient.weights)
+    {
+      info <- unlist(strsplit(names(matched.set)[1], split = ".", fixed = TRUE))
+      id <- info[1]
+      t <- info[2]
+      time <- as.numeric(as.character(t))
+      idx <- (data[, "time.id"] %in% ((time-lag):t)) & (data[, "old.index"] %in% unlist(matched.set)) #control units -- highlighting the periods in the lag window
+      data$weights <- 0 
+      min.non.zero.weight <- min(attr(matched.set[[1]], "weights")[attr(matched.set[[1]], "weights") > 0])
+      
+      top.weight <- max(attr(matched.set[[1]], "weights"))
+      lowest.intensity <- top.weight - (top.weight * .9)
+      data[idx, "weights"] <- attr(matched.set[[1]], "weights")[as.character(data[idx, "old.index"])]
+      idx <- (data[, "time.id"] %in% ((time-lag):t)) & data[, "old.index"] == id
+      data[idx, "weights"] <- top.weight
+      data[data[, 'weights'] == 0, "weights"] <- lowest.intensity
+      .has.weight <- function(.id)
+      {
+        if( .id == id | (.in.set(.id) & attr(matched.set[[1]], "weights")[as.character(.id)] > 0))
+        {
+          return(1)
+        }
+        else
+        {
+          return(0)
+        }
+      }
+      clrs <- sapply(unique(data$old.index), FUN = .has.weight)
+      clrs <- ifelse(clrs, color.of.untreated, "#eaeaea")
+      clrs[which(unique(data$old.index) == id)] <- color.of.treated  
+      
+      setmanualcolor <- function(max.w, intensity.val, treated.val, color.of.t, color.of.unt)
+      {
+        if(treated.val)
+        {
+          return(color.factor(color.of.t, intensity.val, max.w))
+        }
+        else
+        {
+          return(color.factor(color.of.unt, intensity.val, max.w))
+        }
+      }
+      data$color.manual <- mapply(FUN = setmanualcolor, intensity.val = data$weights, treated.val = data$treatment, 
+                                  MoreArgs = list(max.w = top.weight, color.of.t = color.of.treated, color.of.unt = color.of.untreated))
+     
+      p <- ggplot(data, aes(unit.id, time.id)) + geom_tile(aes(fill = color.manual),
+                                                           colour = "white") +
+        scale_fill_identity()+
+        theme_bw() +
+        labs(list(title = title, x = ylab, y = xlab, fill = "")) +
+        theme(axis.ticks.x=element_blank(),
+              panel.grid.major = element_blank(), panel.border = element_blank(),
+              legend.position = legend.position,
+              panel.background = element_blank(), 
+              axis.text.x = element_text(angle=x.angle, size = x.size, vjust=0.5),
+              axis.text.y = element_text(size = y.size, angle = y.angle),
+              plot.title = element_text(hjust = 0.5))
+      
+    }
+    if(!gradient.weights) 
+    {
+      colorvals <- c(color.factor(color.of.untreated, .3, 1), color.factor(color.of.treated, .3, 1), color.of.untreated, color.of.treated)
+      p <- ggplot(data, aes(unit.id, time.id)) + geom_tile(aes(fill = as.factor(colref)),
+                                                           colour = "white") +
+        scale_fill_manual(values = colorvals)+
+        theme_bw() +
+        labs(list(title = title, x = ylab, y = xlab, fill = "")) +
+        theme(axis.ticks.x=element_blank(),
+              panel.grid.major = element_blank(), panel.border = element_blank(),
+              legend.position = legend.position,
+              panel.background = element_blank(), 
+              axis.text.x = element_text(angle=x.angle, size = x.size, vjust=0.5),
+              axis.text.y = element_text(size = y.size, angle = y.angle),
+              plot.title = element_text(hjust = 0.5))
+    }
   }
   else
   {
@@ -339,4 +423,17 @@ find.window <- function(lag,t)
 {
   return((lag - t):lag)
 }
+
+#helper function to set intensity of colors using the weights
+color.factor<-function(color, value, max){
+  l.color<-length(color)
+  t.rgb=rep(col2rgb(color),length(value))
+  t.rgb[is.na(t.rgb)]<-255
+  dim(t.rgb)<-c(3,l.color*length(value))
+  value[is.na(value)]<-0
+  t.rgb<-255-((255-t.rgb)*rep(value, each=3)/max)
+  return(rgb(red=t.rgb[1,], green=t.rgb[2,], blue=t.rgb[3,], maxColorValue=255))
+  
+}
+
 

@@ -125,7 +125,7 @@ PanelEstimate <- function(inference = c("wfe", "bootstrap"),
   othercols <- colnames(data)[!colnames(data) %in% c(time.id, unit.id, treatment)]
   data <- data[, c(unit.id, time.id, treatment, othercols)] #reorder columns 
   
-  if(qoi == "att")
+  if(qoi == "att" | qoi == "ade")
   {
     sets <- encode_index(sets, unit.index.map, unit.id)
   }
@@ -139,7 +139,7 @@ PanelEstimate <- function(inference = c("wfe", "bootstrap"),
     sets2 <- encode_index(temp.sets$atc, unit.index.map, unit.id)
   }
 
-  if (qoi == "att" | qoi == "ate") 
+  if (qoi == "att" | qoi == "ate" | qoi == "ade") 
   {
     treated.unit.ids <- as.numeric(unlist(strsplit(names(sets), split = "[.]"))[c(T,F)])
     data[, paste0("Wit_att", lead)] <- do.call(cbind, lapply(lead, FUN = getWits, data = data, matched_sets = sets, estimation.method = inference))
@@ -164,7 +164,7 @@ PanelEstimate <- function(inference = c("wfe", "bootstrap"),
   }
   
   
-  if (qoi == "att") 
+  if (qoi == "att" | qoi == "ade") 
   {
     if (inference == "wfe")
     {
@@ -446,10 +446,23 @@ summary.PanelEstimate <- function(object, verbose = TRUE, bias.corrected = FALSE
       cat("\nStandard errors computed with", object$bootstrap.iterations, "Weighted bootstrap samples\n")  
     }
     
-    # cat("\nTotal effect in", object$lead, "periods after the treatment:")
-    qoi <- ifelse(object$qoi == "ate", "Average Treatment Effect (ATE)", 
-                ifelse(object$qoi == "att", "Average Treatment Effect on the Treated (ATT)", 
-                       "Average Treatment Effect on the Control (ATC)"))
+    if(object$qoi == "att")
+    {
+      qoi <- "Average Treatment Effect on the Treated (ATT)"
+    }
+    if(object$qoi == "atc")
+    {
+      qoi <- "Average Treatment Effect on the Control (ATC)"
+    }
+    if(object$qoi == "ate")
+    {
+      qoi <- "Average Treatment Effect (ATE)"
+    }
+    if(object$qoi == "ade")
+    {
+      qoi <- "Average Controlled Direct Effect (ADE)"
+    }
+    
     cat("\nEstimate of", qoi, "by Period:\n")
   }
   if(bias.corrected)
