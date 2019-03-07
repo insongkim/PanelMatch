@@ -99,6 +99,7 @@ PanelEstimate <- function(inference = c("wfe", "bootstrap"),
   check_time_data(data, time.id)
   
   data <- data[order(data[,unit.id], data[,time.id]), ]
+  if(any(is.na(data[, unit.id]))) stop("Cannot have NA unit ids")
   data[, paste0(unit.id, ".int")] <- as.integer(as.factor(data[, unit.id]))
 
   if(class(data[, unit.id]) == "character") {

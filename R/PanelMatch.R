@@ -78,8 +78,9 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
   {
     stop("please set restricted to TRUE for msm methods")
   }
-  
+  if(any(is.na(data[, unit.id]))) stop("Cannot have NA unit ids")
   ordered.data <- data[order(data[,unit.id], data[,time.id]), ]
+  
   ordered.data[, paste0(unit.id, ".int")] <- as.integer(as.factor(data[, unit.id]))
   if(class(data[, unit.id]) == "character") {
     unit.index.map <- data.frame(original.id = make.names(as.character(unique(ordered.data[, unit.id]))), new.id = unique(ordered.data[, paste0(unit.id, ".int")]), stringsAsFactors = F)

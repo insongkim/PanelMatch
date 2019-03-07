@@ -67,7 +67,10 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
 {
   # load the dataframe that the user specifies
   #TODO: fix layout here
-
+  
+  
+  if(class(data) != "data.frame") stop("please convert data to data.frame class")
+  if(any(is.na(data[, unit.id]))) stop("Cannot have NA unit ids")
   if(show.set.only & !is.null(matched.set) & length(matched.set) == 1 & class(matched.set) == "matched.set")
   {
     info <- unlist(strsplit(names(matched.set)[1], split = ".", fixed = TRUE))
@@ -75,7 +78,6 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
     t <- info[2]
     .in.set <- function(id_comp)
     {
-      
       if(id_comp == id | id_comp %in% unlist(matched.set))
       {
         return(TRUE)
