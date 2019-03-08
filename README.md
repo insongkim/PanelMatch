@@ -35,7 +35,7 @@ Then, load `devtools` and use the function `install_github()` to install `PanelM
 
 ``` r
 library(devtools)
-install_github("insongkim/PanelMatch", ref = "development" dependencies=TRUE)
+install_github("insongkim/PanelMatch", ref = "arg_changes", dependencies=TRUE)
 ```
 If you encounter problems during installation, please consult [the wiki page](https://github.com/insongkim/PanelMatch/wiki/Installation-Troubleshooting) that has some ideas for handling common issues. 
 
