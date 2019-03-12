@@ -70,18 +70,17 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
   check_time_data(data, time.id)
   if(!all(qoi %in% c("att", "atc", "ate", "ade"))) stop("please choose a valid qoi")
   
-  if(qoi == "ade" & !all(refinement.method %in% c("CBPS.msm.weight", "CBPS.msm.match",
-                                             "ps.msm.weight", "ps.msm.match")))
+  if(qoi == "ade" & !all(refinement.method %in% c("CBPS.msm.weight", "ps.msm.weight")))
   {
-    stop("ade must have one of the following refinement methods: CBPS.msm.weight, CBPS.msm.match, ps.msm.weight, ps.msm.match")
+    stop("ade must have one of the following refinement methods: CBPS.msm.weight, ps.msm.weight")
   }
-  if(!restricted & (qoi == 'ade' | all(refinement.method %in% c("CBPS.msm.weight", "CBPS.msm.match",
-                                                                "ps.msm.weight", "ps.msm.match"))))
+  if(!restricted & (qoi == 'ade' | all(refinement.method %in% c("CBPS.msm.weight", "ps.msm.weight"))))
   {
     stop("please set restricted to TRUE for msm methods")
   }
-  
+  if(any(is.na(data[, unit.id]))) stop("Cannot have NA unit ids")
   ordered.data <- data[order(data[,unit.id], data[,time.id]), ]
+  
   ordered.data[, paste0(unit.id, ".int")] <- as.integer(as.factor(data[, unit.id]))
   if(class(data[, unit.id]) == "character") {
     unit.index.map <- data.frame(original.id = make.names(as.character(unique(ordered.data[, unit.id]))), new.id = unique(ordered.data[, paste0(unit.id, ".int")]), stringsAsFactors = F)

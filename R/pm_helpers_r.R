@@ -44,8 +44,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
     mahalmats <- build_maha_mats(ordered_expanded_data = ordered.data, idx =  idxlist)
     msets <- handle_mahalanobis_calculations(mahalmats, msets, size.match, verbose)
   }
-  if(refinement.method == "ps.msm.match" | refinement.method == "CBPS.msm.match" | 
-     refinement.method == "ps.msm.weight" | refinement.method == "CBPS.msm.weight")
+  if(refinement.method == "ps.msm.weight" | refinement.method == "CBPS.msm.weight")
   {
     store.msm.data <- list()
     for(i in 1:length(lead))
@@ -74,12 +73,12 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
         }
         if(qr(pooled)$rank != ncol(pooled)) stop("Error: Provided data is not linearly independent so calculations cannot be completed. Please check the data set for any redundant, unnecessary, or problematic information.")
         
-        if(refinement.method == "CBPS.msm.match" | refinement.method == "CBPS.msm.weight") #obviously update these conditionals
+        if(refinement.method == "CBPS.msm.weight") #obviously update these conditionals
         {
           fit.tf <- suppressMessages(CBPS::CBPS(reformulate(response = treatment, termlabels = colnames(pooled)[-c(1:3)]), 
                                                 family = binomial(link = "logit"), data = pooled))
         }
-        else
+        if(refinement.method == "ps.msm.weight")
         {
           fit.tf <- glm(reformulate(response = treatment, termlabels = colnames(pooled)[-c(1:3)]), 
                         family = binomial(link = "logit"), data = pooled)
@@ -89,15 +88,8 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
       }
     
     msm.sets <- gather_msm_sets(store.msm.data)
-    if(refinement.method == "CBPS.msm.match" | refinement.method == "ps.msm.match")
-    {
-      msets <- handle_ps_match(msm.sets, msets = msets, refinement.method, verbose = verbose, max.set.size = size.match)
-      attr(msets, "max.match.size") <- size.match
-    }
-    if(refinement.method == "CBPS.msm.weight" | refinement.method == "ps.msm.weight")
-    {
-      msets <- handle_ps_weighted(msm.sets, msets, refinement.method)
-    }
+    #can only have weighting in these situations
+    msets <- handle_ps_weighted(msm.sets, msets, refinement.method)
   } else #not msm
   {
     if(!all(refinement.method %in% c("CBPS.weight", "CBPS.match", "ps.weight", "ps.match"))) stop("please choose valid refinement method")
