@@ -174,6 +174,7 @@ get_covariate_balance <- function(matched.sets, data,  covariates, verbose = T, 
   og.unit.id <- unit.id
   #og.time.id <- time.id
   unit.id <- paste0(unit.id, ".int")
+  matched.sets <- matched.sets[sapply(matched.sets, length) > 0]
   matched.sets <- encode_index(matched.sets, unit.index.map, unit.id)
   #they will either all have or not have weights, so we can check the first matched set to see if we need to add equal weighting
   if(is.null(attr(matched.sets[[1]], "weights")))

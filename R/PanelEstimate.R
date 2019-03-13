@@ -74,7 +74,7 @@ PanelEstimate <- function(inference = c("wfe", "bootstrap"),
   {
     sets <- sets[[qoi]]  
   }
-  
+  sets <- sets[sapply(sets, length) > 0]
   if (inference == "wfe" & length(lead) > 1) 
     stop("When inference method is wfe, please only supply 1 lead at a time. 
          For example, please call this function with `lead` = 1 and then call it with `lead` = 2,

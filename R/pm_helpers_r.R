@@ -20,6 +20,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
     temp.treateds <- findAllTreated(ordered.data, treatedvar = treatment, time.var = time.id, unit.var = unit.id, hasbeensorted = TRUE)
     if(nrow(temp.treateds) == 0) stop("no treated units")
     msets <- get.matchedsets(temp.treateds[, time.id], temp.treateds[, unit.id], ordered.data, lag, time.id, unit.id, treatment, hasbeensorted = TRUE)
+    e.sets <- msets[sapply(msets, length) == 0]
     msets <- msets[sapply(msets, length) > 0 ]
     if(max(lead) > 0)
     {
@@ -136,7 +137,12 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
       attr(msets, "max.match.size") <- size.match
     }
   }
-  
+  t.attributes <- attributes(msets)[names(attributes(msets)) != "names"]
+  msets <- c(msets, e.sets)
+  for(idx in names(t.attributes))
+  {
+    attr(msets, idx) <- t.attributes[[idx]]
+  }
   attr(msets, "covs.formula") <- covs.formula
   attr(msets, "match.missing") <- match.missing
   return(msets)
