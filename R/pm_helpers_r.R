@@ -93,9 +93,10 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
     msm.sets <- gather_msm_sets(store.msm.data)
     #can only have weighting in these situations
     msets <- handle_ps_weighted(msm.sets, msets, refinement.method)
-  } else #not msm
+  }  #not msm
+  if(all(refinement.method %in% c("CBPS.weight", "CBPS.match", "ps.weight", "ps.match")))
   {
-    if(!all(refinement.method %in% c("CBPS.weight", "CBPS.match", "ps.weight", "ps.match", "mahalanobis"))) stop("please choose valid refinement method")
+    if(!all(refinement.method %in% c("CBPS.weight", "CBPS.match", "ps.weight", "ps.match"))) stop("please choose valid refinement method")
     tlist <- expand.treated.ts(lag, treated.ts = treated.ts)
     idxlist <- get_yearly_dmats(ordered.data, treated.ids, tlist, paste0(ordered.data[,unit.id], ".", 
                                                                          ordered.data[, time.id]), matched_sets = msets, lag)
