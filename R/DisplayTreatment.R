@@ -7,12 +7,9 @@
 #' @param time.id A numeric vector of time identifiers
 #' @param treatment Name of the treatment variable in character class
 #' @param data The data frame in data.frame class
-#' @param color.of.treated Color of the treated observations in
-#' character. Default is red, but shade will depend on whether or not \code{group_on} is provided
-#' @param color.of.untreated Color of the untreated observations in
-#' character. Default is blue, but shade will depend on whether or not \code{group_on} is provided
-#' @param title Title of the plot in character
-#' set as in ggplot2
+#' @param color.of.treated Color of the treated observations provided as a character string. Default is red.
+#' @param color.of.untreated Color of the untreated observations provided as a character string. Default is blue.
+#' @param title Title of the plot provided as character string
 #' @param xlab Character label of the x-axis
 #' @param ylab Character label of the y-axis
 #' @param x.size Numeric size of the text for xlab. Default is 10. Assign x.size = NULL to use built in ggplot2 method of determining label size. 
@@ -21,20 +18,14 @@
 #' When the number of units is large, consider setting to NULL and adjusting size and ratio of the plot.
 #' @param x.angle Angle (in degrees) of the tick labels for x-axis
 #' @param y.angle Angle (in degrees) of the tick labels for y-axis
-#' @param legend.position Position of the legend with the same choice
+#' @param legend.position Position of the legend. Provide this according to ggplot2 standards. 
 #' @param legend.labels Character vector of length two describing the
-#' labels of the legend to be shown in the plot
-#' @param group_on Character name of column with a categorical variable that is not time dependent. 
-#' If provided, units with shared values will be grouped together and each group will be highlighted on the resulting plot.
-#' @param sort_by Character name of a column containing data that will be used to help determine the order in which units are displayed on the plot. 
-#' The average value for this variable will be calculated per unit. Units will then be displayed in ascending or descending order, according to that calculated value. 
-#' Default value is the amount of treatment that units receive.
-#' @param decreasing Logical. Determines if display order-- according to either the column specified in the \code{sort_by} argument or amount of treatment that units receive-- should be increasing or decreasing
+#' labels of the legend to be shown in the plot -- again, ggplot2 standards are used.
+#' @param decreasing Logical. Determines if display order should be increasing or decreasing by the amount of treatment received. Default is \code{decreasing} = FALSE.
 #' @return \code{DisplayTreatment} returns a treatment variation plot,
 #' which visualizes the variation of treatment across unit and time.
-#' 
 #' @author In Song Kim <insong@mit.edu>, Erik Wang
-#' <haixiao@Princeton.edu>, and Kosuke Imai <kimai@Princeton.edu>
+#' <haixiao@Princeton.edu>, Adam Rauh <adamrauh@mit.edu>, and Kosuke Imai <kimai@Princeton.edu>
 #'
 #' @examples 
 #' \dontrun{
@@ -55,7 +46,6 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
                              x.angle = 45,
                              y.angle = NULL,
                              legend.labels = c("not treated", "treated"),
-                             group_on = NULL,
                              sort_by = NULL,
                              decreasing = FALSE,
                              matched.set = NULL,
@@ -65,10 +55,15 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
                              gradient.weights = FALSE)
     
 {
-  # load the dataframe that the user specifies
-  #TODO: fix layout here
-  
-  
+  #note: removing group_on and sort_by features for right now:
+  group_on <- NULL
+  sort_by <- NULL
+  # @param sort_by Character name of a column containing data that will be used to help determine the order in which units are displayed on the plot. 
+  # The average value for this variable will be calculated per unit. Units will then be displayed in ascending or descending order, according to that calculated value. 
+  # Default value is the amount of treatment that units receive.
+  # @param group_on Character name of column with a categorical variable that is not time dependent. 
+  # If provided, units with shared values will be grouped together and each group will be highlighted on the resulting plot.
+  ###############
   if(class(data) != "data.frame") stop("please convert data to data.frame class")
   if(any(is.na(data[, unit.id]))) stop("Cannot have NA unit ids")
   if(show.set.only & !is.null(matched.set) & length(matched.set) == 1 & class(matched.set) == "matched.set")

@@ -9,9 +9,9 @@ DisplayTreatment(unit.id, time.id, treatment, data, color.of.treated = "red",
   title = "Treatment Distribution \\n Across Units and Time", xlab = "Time",
   ylab = "Unit", x.size = 10, y.size = 5, legend.position = "none",
   x.angle = 45, y.angle = NULL, legend.labels = c("not treated",
-  "treated"), group_on = NULL, sort_by = NULL, decreasing = FALSE,
-  matched.set = NULL, show.set.only = FALSE, hide.x.axis.label = FALSE,
-  hide.y.axis.label = FALSE)
+  "treated"), sort_by = NULL, decreasing = FALSE, matched.set = NULL,
+  show.set.only = FALSE, hide.x.axis.label = FALSE,
+  hide.y.axis.label = FALSE, gradient.weights = FALSE)
 }
 \arguments{
 \item{unit.id}{A numeric vector of unit identifiers}
@@ -22,14 +22,11 @@ DisplayTreatment(unit.id, time.id, treatment, data, color.of.treated = "red",
 
 \item{data}{The data frame in data.frame class}
 
-\item{color.of.treated}{Color of the treated observations in
-character. Default is red, but shade will depend on whether or not \code{group_on} is provided}
+\item{color.of.treated}{Color of the treated observations provided as a character string. Default is red.}
 
-\item{color.of.untreated}{Color of the untreated observations in
-character. Default is blue, but shade will depend on whether or not \code{group_on} is provided}
+\item{color.of.untreated}{Color of the untreated observations provided as a character string. Default is blue.}
 
-\item{title}{Title of the plot in character
-set as in ggplot2}
+\item{title}{Title of the plot provided as character string}
 
 \item{xlab}{Character label of the x-axis}
 
@@ -41,23 +38,16 @@ When the length of the time period is long, consider setting to NULL and adjusti
 \item{y.size}{Numeric size of the text for ylab. Default is 5. Assign y.size = NULL to use built in ggplot2 method of determining label size. 
 When the number of units is large, consider setting to NULL and adjusting size and ratio of the plot.}
 
-\item{legend.position}{Position of the legend with the same choice}
+\item{legend.position}{Position of the legend. Provide this according to ggplot2 standards.}
 
 \item{x.angle}{Angle (in degrees) of the tick labels for x-axis}
 
 \item{y.angle}{Angle (in degrees) of the tick labels for y-axis}
 
 \item{legend.labels}{Character vector of length two describing the
-labels of the legend to be shown in the plot}
+labels of the legend to be shown in the plot -- again, ggplot2 standards are used.}
 
-\item{group_on}{Character name of column with a categorical variable that is not time dependent. 
-If provided, units with shared values will be grouped together and each group will be highlighted on the resulting plot.}
-
-\item{sort_by}{Character name of a column containing data that will be used to help determine the order in which units are displayed on the plot. 
-The average value for this variable will be calculated per unit. Units will then be displayed in ascending or descending order, according to that calculated value. 
-Default value is the amount of treatment that units receive.}
-
-\item{decreasing}{Logical. Determines if display order-- according to either the column specified in the \code{sort_by} argument or amount of treatment that units receive-- should be increasing or decreasing}
+\item{decreasing}{Logical. Determines if display order should be increasing or decreasing by the amount of treatment received. Default is \code{decreasing} = FALSE.}
 }
 \value{
 \code{DisplayTreatment} returns a treatment variation plot,
@@ -78,5 +68,5 @@ DisplayTreatment(unit.id = "wbcode2",
 }
 \author{
 In Song Kim <insong@mit.edu>, Erik Wang
-<haixiao@Princeton.edu>, and Kosuke Imai <kimai@Princeton.edu>
+<haixiao@Princeton.edu>, Adam Rauh <adamrauh@mit.edu>, and Kosuke Imai <kimai@Princeton.edu>
 }

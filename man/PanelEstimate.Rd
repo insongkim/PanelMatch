@@ -4,24 +4,16 @@
 \alias{PanelEstimate}
 \title{PanelEstimate}
 \usage{
-PanelEstimate(lead, inference = c("wfe", "bootstrap"), ITER = 1000,
-  estimator = "did", df.adjustment = FALSE, CI = 0.95, sets, data,
-  outcome.variable)
+PanelEstimate(inference = c("wfe", "bootstrap"), ITER = 1000,
+  df.adjustment = FALSE, CI = 0.95, sets, data)
 }
 \arguments{
-\item{lead}{An integer vector indicating the sequence of the lead
-periods for which the quantity of interest will be estimated. When \code{inference} is "wfe", you can only specify one lead period at a time.}
-
 \item{inference}{One of ``wfe'' (weighted fixed effects) or
 ``bootstrap'' methods for standard error calculation. The default
 is \code{bootstrap}.}
 
 \item{ITER}{An integer value indicating the number of bootstrap
 iteration. The default is 1000.}
-
-\item{estimator}{One of \code{did} (difference-in-differences) or
-\code{matching} specifying the estimator for WFE regressions. The default is
-\code{did}.}
 
 \item{df.adjustment}{A logical value indicating whether a
 degree-of-freedom adjustment should be performed for standard error
@@ -34,6 +26,13 @@ estimates for statistical inference. The default is .95.}
 \code{PanelMatch}. @seealso \code{PanelMatch}.}
 
 \item{data}{The same time series cross sectional data set provided to the PanelMatch function to produce the \code{sets}}
+
+\item{lead}{An integer vector indicating the sequence of the lead
+periods for which the quantity of interest will be estimated. When \code{inference} is "wfe", you can only specify one lead period at a time.}
+
+\item{estimator}{One of \code{did} (difference-in-differences) or
+\code{matching} specifying the estimator for WFE regressions. The default is
+\code{did}.}
 
 \item{qoi}{One of ``att'' (average treatment effect for the
 treated) or ``ate'' (average treatment effect) or atc (average

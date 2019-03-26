@@ -1,4 +1,22 @@
-## anything related to matched set objects, helper functions, etc. should go in this file
+#' matched_set
+#' 
+#' 
+#' \code{matched_set} is a constructor for the matched.set class. 
+#' matched.set objects are a modified list. Each element in the list is a vector of ids corresponding to the control unit ids in a matched set. 
+#' Additionally, these vectors might have additional attributes -- "weights" or "distances". These correspond to the weights or distances corresponding to each control unit, as determined by the specified refinement method.
+#' Each element also has a name, which corresponds to the unit id and time variable of the treated unit and time of treatment, concatenated together and separated by a period. matched.set objects also have a number of methods defined: \code{summary}, \code{plot}, and \code{`[`}
+#' @return \code{matched.set} objects have additional attributes:
+#' \item{lag}{an integer value indicating the length of treatment history to be used for matching}
+#' \item{t.var}{time variable name}
+#' \item{id.var}{unit id variable name}
+#' \item{treated.var}{treated variable name}
+#' \item{class}{class of the object: should always be "matched.set"}
+#' \item{refinement.method}{method used to refine and/or weight the control units in each set.}
+#' \item{covs.formula}{One sided formula indicating which variables should be used for matching and refinement.}
+#' \item{match.missing}{Logical variable indicating whether or not units should be matched on the patterns of missingness in their treatment histories}
+#' \item{max.match.size}{Maximum size of the matched sets after refinement. This argument only affects results when using a matching method}
+#' @author Adam Rauh <adamrauh@mit.edu>, In Song Kim <insong@mit.edu>, Erik Wang
+#' <haixiao@Princeton.edu>, and Kosuke Imai <kimai@Princeton.edu>
 #' @export
 matched_set <- function(matchedsets, id, t, L, t.var, id.var, treated.var)
 {
@@ -42,6 +60,12 @@ summary.matched.set <- function(set, verbose = T)
     return(df)
   }
 }
+
+#' plot.matched.set
+#' 
+#' Plot the distribution of the sizes of matched sets
+#' 
+#' A plot method for creating histograms of the distribution of the sizes of matched sets. Accepts all standard \code{plot} arguments. Empty sets are excluded from the histogram but are noted in the subtitle by default.
 #' @export
 plot.matched.set <- function(set, border = NA, col = "grey", ylab = "Frequency of Size", 
                              xlab ="Matched Set Size" , lwd = NULL,
@@ -49,26 +73,32 @@ plot.matched.set <- function(set, border = NA, col = "grey", ylab = "Frequency o
                              ...)
 {
     lvec <- sapply(set, length)
+    lvec.nonempty <- lvec[lvec > 0]
     
-    hist(x = lvec, freq = TRUE, border = border, col = col, ylab = ylab, xlab = xlab, main = main, ...)
     if(sum(lvec == 0) > 0)
     {
-      if(is.null(lwd))
-      {
-        lwd = 4
-      }
-      lines(x = c(0,0), y = c(0, length(rep(0, sum(lvec == 0) )) ), col = "red", lwd = lwd)  
+      num.empties <- as.character(sum(lvec == 0))
+      # if(is.null(lwd))
+      # {
+      #   lwd = 4
+      # }
+      # lines(x = c(0,0), y = c(0, length(rep(0, sum(lvec == 0) )) ), col = "red", lwd = lwd)
+      hist(x = lvec.nonempty, freq = TRUE, border = border, col = col, ylab = ylab, xlab = xlab, main = main, sub = paste(num.empties, "empty  matched sets"), ...)
+    }
+    else
+    {
+      hist(x = lvec.nonempty, freq = TRUE, border = border, col = col, ylab = ylab, xlab = xlab, main = main, ...)
     }
 }
-#' @export
-extract.set <- function(set, id, t)
-{
-  strid <- paste0(id, ".", t)
-  subset <- set[names(set) == strid]
-  if(length(subset) != 1) stop('t,id pair invalid')
-  class(subset) <- "matched.set"
-  return(subset)
-}
+#' #' @export
+#' extract.set <- function(set, id, t)
+#' {
+#'   strid <- paste0(id, ".", t)
+#'   subset <- set[names(set) == strid]
+#'   if(length(subset) != 1) stop('t,id pair invalid')
+#'   class(subset) <- "matched.set"
+#'   return(subset)
+#' }
 
 #' @export
 print.matched.set <- function(set, verbose = F)
@@ -123,7 +153,10 @@ build_balance_mats <- function(idx, ordered_expanded_data, msets)
   return(result)
 }
 
-
+#' get_covariate_balance
+#' 
+#' calculating covariate balance and generating balance plots
+#' 
 #' Calculate covariate balance for specified covariates across matched sets. Balance is assessed by taking the difference between 
 #' the values of the user specified covariates in the treated unit and the weighted average of that across all matched sets. Furthermore, results are standardized and are expressed in standard deviations. 
 #' @param matched.sets A matched.set object
@@ -131,9 +164,9 @@ build_balance_mats <- function(idx, ordered_expanded_data, msets)
 #' @param verbose When TRUE, the function will return more information about the calculations/results. When FALSE, a more compact version of the results/calculations are returned.
 #' @param plot When TRUE, a plot showing the covariate balance calculation results will be shown. When FALSE, no plot is made, but the results of the calculations are still returned. 
 #' @param covariates a character vector, specifying the names of the covariates for which the user is interested in calculating balance. 
-#' @param reference.line 
-#' @param legend
-#' @param ... 
+#' @param reference.line logical indicating whether or not a horizontal line should be present on the plot at y = 0
+#' @param legend logical indicating whether or not a legend should be included on the plot
+#' @param ... Additional graphical parameters to be passed to the \code{plot} function in base R.
 #' @export
 get_covariate_balance <- function(matched.sets, data,  covariates, verbose = T, plot = F, reference.line = TRUE, legend = TRUE, ylab = "SD",...)
 {

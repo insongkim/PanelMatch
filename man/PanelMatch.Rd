@@ -2,59 +2,63 @@
 % Please edit documentation in R/PanelMatch.R
 \name{PanelMatch}
 \alias{PanelMatch}
-\title{PanelMatch}
+\title{PanelMatch
+\code{PanelMatch} identifies a matched set for each treated
+observation. Specifically, for a given treated unit, the matched
+set consists of control observations that have the identical
+treatment history up to a certain number of \code{lag}
+years. Researchers must specify \code{lag}. A further refinement of
+the matched set will be possible by setting a maximum size of the matched
+set \code{size.match} (the maximum number of control units that can be matched to a treated unit) and adjusting for other confounders
+such as past outcomes and covariates via \code{covs.formula} and specifying a method of refinement via \code{refinement.method}.}
 \usage{
-PanelMatch(lag, time.id, unit.id, treatment, refinement.method = c(NULL,
-  "ps.weight", "ps.match", "mahalanobis", "CBPS.weight", "CBPS.match"),
+PanelMatch(lag, time.id, unit.id, treatment, refinement.method,
   size.match = 10, data, match.missing = TRUE, covs.formula,
-  verbose = FALSE, qoi)
+  verbose = FALSE, qoi, lead = 0, outcome.var, restricted = FALSE)
 }
 \arguments{
 \item{lag}{An integer value indicating the length of history to be matched}
 
 \item{time.id}{A character string indicating the name of time identifier
-variable in the \code{data}. This data currently must be integer.}
+variable in the \code{data}. This data currently must be integers that increase by one.}
 
 \item{unit.id}{A character string indicating the name of unit identifier in the data. This data currently must be integer.}
 
-\item{treatment}{A character string indicating the name of
-treatment variable in the \code{data}. The treatment should be a
-binary indicator (integer with 0 for the control group and 1 for
-the treatment group).}
+\item{treatment}{A character string indicating the name of treatment variable in the \code{data}. The treatment should be a binary indicator (integer with 0 for the control group and 1 for the treatment group).}
 
-\item{refinement.method}{character string of matching or weighting method used for refining the matched sets. The user can choose "mahalanobis", "ps.match", "CBPS.match", "ps.weight", "CBPS.weight". The first three methods will use the \code{size.match} argument to create sets of at most \code{size.match} closest control units.}
+\item{refinement.method}{character string of matching or weighting method used for refining the matched sets. The user can choose "mahalanobis", "ps.match", "CBPS.match", "ps.weight", "CBPS.weight", "ps.msm.weight", or "CBPS.msm.weight". The first three methods will use the \code{size.match} argument to create sets of at most \code{size.match} closest control units.}
 
-\item{size.match}{Maximum size of the matched sets after refinement}
+\item{size.match}{Maximum size of the matched sets after refinement. This argument only affects results when using a matching method (any of the refinement methods that end in .match). This argument is not needed and will have no impact if included on a weighting method.}
 
-\item{data}{A data.frame object containing time series cross sectional data}
+\item{data}{A data.frame object containing time series cross sectional data. Time data must be integers that increase by 1.}
 
 \item{match.missing}{Logical variable indicating whether or not units should be matched on the patterns of missingness in their treatment histories}
 
 \item{covs.formula}{One sided formula indicating which variables should be used for matching and refinement.
-The user can specify lags using a function "lag" which takes two, unnamed, positional arguments. The first is the name of the variable which you wish to lag, specified as a string. The second is the lag window, specified as an integer sequence
-See the example below.}
+If the user wants to include lagged variables, this can be done using a function, "lag()", which takes two, unnamed, positional arguments. The first is the name of the variable which you wish to lag, specified as a string. The second is the lag window, specified as an integer sequence
+For instance, lag("x", 1:4) will then add new columns to the data for variable "x" for time t-1, t-2, t-3, and t-4.}
 
-\item{verbose}{option to include more information about the matched.set object calculations, like the distances used to create the refined sets and weights}
+\item{verbose}{option to include more information about the matched.set object calculations, like the distances used to create the refined sets and weights.}
 
-\item{outcome}{Character string of outcome variable.}
+\item{qoi}{quantity of interest: att (average treatment effect on treated units), atc (average treatment effect on control units), ate (average treatment effect), or ade (average controlled direct effect). ade should only be used with the ps.msm.weight or CBPS.msm.weight methods.}
+
+\item{lead}{integer sequence specifying the lead window for which qoi estimates will ultimately be produced. Default is 0.}
+
+\item{outcome.var}{Character string of the outcome variable.}
+
+\item{restricted}{Logical indicating whether or not it is permissible for treatment to reverse. This must be set to TRUE for msm methods. When set to TRUE, only matched sets where treatment is applied continuously are included.}
 }
 \value{
-\code{PanelMatch} returns a list of class `matched.set'. Each element in the list is a vector of integers corresponding to the control unit ids in a matched set. 
-Additionally, these vectors might have additional attributes -- "weights" or "distances". These correspond to the weights or distances corresponding to each control unit, as determined by the specified refinement method.
-Each element also has a name, which corresponds to the unit id and time variable of the treated unit and time of treatment, concatenated together and separated by a period.
- 
-matched.set objects also have a number of other potential attributes:
-\item{lag}{same as lag parameter -- an integer value indicating the length of treatment history to be}
-\item{t.var}{time variable name}
-\item{id.var}{unit id variable name}
-\item{treated.var}{treated variable name}
-\item{class}{class of the object: should always be "matched.set"} 
-\item{refinement.method}{method used to refine and/or weight the control units in each set.}
-\item{covs.formula}{see covs.formula argument}
-\item{match.missing}{see match.missing argument}
-\item{max.match.size}{same as size.match argument}
+\code{PanelMatch} returns an object of class "PanelMatch". This is a list that contains a few specific elements: First, a matched.set object(s) that has the same name as the provided qoi if the qoi is "att", "atc", or "ade". 
+If qoi = "ate" then two matched.set objects will be attached, named "att" and "atc." This object also has some additional attributes:
+\item{qoi}{The qoi specified in the original function call}
+\item{lead}{the lead window specified in the original function call}
+\item{restricted}{logial value matching the restricted parameter provided in the function call.}
+\item{outcome.var}{character string matching the outcome variable provided in the original function call.}
+For more information about matched.set objects, see documentation for the "matched_set" function
 }
 \description{
+PanelMatch
 \code{PanelMatch} identifies a matched set for each treated
 observation. Specifically, for a given treated unit, the matched
 set consists of control observations that have the identical
@@ -66,12 +70,14 @@ such as past outcomes and covariates via \code{covs.formula} and specifying a me
 }
 \examples{
 \dontrun{
-results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", treatment = "dem", outcome = "y", refinement.method = "mahalanobis", 
-                      data = dem, match.missing = T, covs.formula = ~ lag("tradewb", 1:4) + lag("y", 1:4), size.match = 5)
-results[[1]] #to see the control units matched to the first treated units.                     
+PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
+                         treatment = "dem", refinement.method = "mahalanobis", 
+                         data = dem, match.missing = T, 
+                         covs.formula = ~ lag("tradewb", 1:4) + lag("y", 1:4), size.match = 5, qoi = "att",
+                         outcome.var = "y", lead = 0:4, restricted = TRUE)
 }
 }
 \author{
-In Song Kim <insong@mit.edu>, Erik Wang
+Adam Rauh <adamrauh@mit.edu>, In Song Kim <insong@mit.edu>, Erik Wang
 <haixiao@Princeton.edu>, and Kosuke Imai <kimai@Princeton.edu>
 }
