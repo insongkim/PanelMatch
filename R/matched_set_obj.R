@@ -83,7 +83,7 @@ plot.matched.set <- function(set, border = NA, col = "grey", ylab = "Frequency o
       #   lwd = 4
       # }
       # lines(x = c(0,0), y = c(0, length(rep(0, sum(lvec == 0) )) ), col = "red", lwd = lwd)
-      hist(x = lvec.nonempty, freq = TRUE, border = border, col = col, ylab = ylab, xlab = xlab, main = main, sub = paste(num.empties, "empty matched sets"), ...)
+      hist(x = lvec.nonempty, freq = TRUE, border = border, col = col, ylab = ylab, xlab = xlab, main = main, sub = paste(num.empties, "empty matched set(s)"), ...)
     }
     else
     {
