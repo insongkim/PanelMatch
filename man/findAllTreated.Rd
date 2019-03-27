@@ -2,8 +2,7 @@
 % Please edit documentation in R/matched_set_R.r
 \name{findAllTreated}
 \alias{findAllTreated}
-\title{\code{findAllTreated} is used to identify t,id pairs of units for which a matched set might exist. 
-More precisely, it finds units for which at time t, the specified treatment has been applied, but at time t - 1, the treatment has not.}
+\title{findAllTreated}
 \usage{
 findAllTreated(dmat, treatedvar, time.var, unit.var, hasbeensorted = FALSE)
 }
@@ -12,9 +11,9 @@ findAllTreated(dmat, treatedvar, time.var, unit.var, hasbeensorted = FALSE)
 
 \item{treatedvar}{Character string that identifies the name of the column in \code{dmat} that provides information about the binary treatment variable}
 
-\item{time.var}{Character string that identifies the name of the column in \code{dmat} that contains data about the time variable}
+\item{time.var}{Character string that identifies the name of the column in \code{dmat} that contains data about the time variable. This data must be integer that increases by one.}
 
-\item{unit.var}{Character string that identifies the name of the column in \code{dmat} that contains data about the variable used as a unit id.}
+\item{unit.var}{Character string that identifies the name of the column in \code{dmat} that contains data about the variable used as a unit id. This data must be integer}
 
 \item{hasbeensorted}{variable that only has internal usage for optimization purposes. There should be no need for a user to toggle this}
 }

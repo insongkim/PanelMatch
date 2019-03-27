@@ -2,15 +2,7 @@
 % Please edit documentation in R/PanelMatch.R
 \name{PanelMatch}
 \alias{PanelMatch}
-\title{PanelMatch
-\code{PanelMatch} identifies a matched set for each treated
-observation. Specifically, for a given treated unit, the matched
-set consists of control observations that have the identical
-treatment history up to a certain number of \code{lag}
-years. Researchers must specify \code{lag}. A further refinement of
-the matched set will be possible by setting a maximum size of the matched
-set \code{size.match} (the maximum number of control units that can be matched to a treated unit) and adjusting for other confounders
-such as past outcomes and covariates via \code{covs.formula} and specifying a method of refinement via \code{refinement.method}.}
+\title{PanelMatch}
 \usage{
 PanelMatch(lag, time.id, unit.id, treatment, refinement.method,
   size.match = 10, data, match.missing = TRUE, covs.formula,
@@ -22,9 +14,9 @@ PanelMatch(lag, time.id, unit.id, treatment, refinement.method,
 \item{time.id}{A character string indicating the name of time identifier
 variable in the \code{data}. This data currently must be integers that increase by one.}
 
-\item{unit.id}{A character string indicating the name of unit identifier in the data. This data currently must be integer.}
+\item{unit.id}{A character string indicating the name of unit identifier in the data. This data must be character, integer, or numeric. However, it is recommended to use integers as ids.}
 
-\item{treatment}{A character string indicating the name of treatment variable in the \code{data}. The treatment should be a binary indicator (integer with 0 for the control group and 1 for the treatment group).}
+\item{treatment}{A character string indicating the name of treatment variable in the \code{data}. The treatment must be a binary indicator (integer with 0 for the control group and 1 for the treatment group).}
 
 \item{refinement.method}{character string of matching or weighting method used for refining the matched sets. The user can choose "mahalanobis", "ps.match", "CBPS.match", "ps.weight", "CBPS.weight", "ps.msm.weight", or "CBPS.msm.weight". The first three methods will use the \code{size.match} argument to create sets of at most \code{size.match} closest control units.}
 
@@ -58,7 +50,9 @@ If qoi = "ate" then two matched.set objects will be attached, named "att" and "a
 For more information about matched.set objects, see documentation for the "matched_set" function
 }
 \description{
-PanelMatch
+Create refined/weighted sets of treated and control units
+}
+\details{
 \code{PanelMatch} identifies a matched set for each treated
 observation. Specifically, for a given treated unit, the matched
 set consists of control observations that have the identical
@@ -74,7 +68,7 @@ PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                          treatment = "dem", refinement.method = "mahalanobis", 
                          data = dem, match.missing = T, 
                          covs.formula = ~ lag("tradewb", 1:4) + lag("y", 1:4), size.match = 5, qoi = "att",
-                         outcome.var = "y", lead = 0:4, restricted = TRUE)
+                         outcome.var = "y", lead = 0:4, restricted = FALSE)
 }
 }
 \author{

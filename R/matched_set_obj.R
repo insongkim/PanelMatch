@@ -1,7 +1,7 @@
 #' matched_set
 #' 
-#' 
 #' \code{matched_set} is a constructor for the matched.set class. 
+#' 
 #' matched.set objects are a modified list. Each element in the list is a vector of ids corresponding to the control unit ids in a matched set. 
 #' Additionally, these vectors might have additional attributes -- "weights" or "distances". These correspond to the weights or distances corresponding to each control unit, as determined by the specified refinement method.
 #' Each element also has a name, which corresponds to the unit id and time variable of the treated unit and time of treatment, concatenated together and separated by a period. matched.set objects also have a number of methods defined: \code{summary}, \code{plot}, and \code{`[`}
@@ -83,22 +83,13 @@ plot.matched.set <- function(set, border = NA, col = "grey", ylab = "Frequency o
       #   lwd = 4
       # }
       # lines(x = c(0,0), y = c(0, length(rep(0, sum(lvec == 0) )) ), col = "red", lwd = lwd)
-      hist(x = lvec.nonempty, freq = TRUE, border = border, col = col, ylab = ylab, xlab = xlab, main = main, sub = paste(num.empties, "empty  matched sets"), ...)
+      hist(x = lvec.nonempty, freq = TRUE, border = border, col = col, ylab = ylab, xlab = xlab, main = main, sub = paste(num.empties, "empty matched sets"), ...)
     }
     else
     {
       hist(x = lvec.nonempty, freq = TRUE, border = border, col = col, ylab = ylab, xlab = xlab, main = main, ...)
     }
 }
-#' #' @export
-#' extract.set <- function(set, id, t)
-#' {
-#'   strid <- paste0(id, ".", t)
-#'   subset <- set[names(set) == strid]
-#'   if(length(subset) != 1) stop('t,id pair invalid')
-#'   class(subset) <- "matched.set"
-#'   return(subset)
-#' }
 
 #' @export
 print.matched.set <- function(set, verbose = F)

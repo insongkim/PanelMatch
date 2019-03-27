@@ -1,12 +1,12 @@
-# Functions related to finding treated units, matched sets
+#' findAllTreated
+#' 
 #' \code{findAllTreated} is used to identify t,id pairs of units for which a matched set might exist. 
 #' More precisely, it finds units for which at time t, the specified treatment has been applied, but at time t - 1, the treatment has not.
 #'
-#'
 #' @param dmat Data frame or matrix containing data used to identify potential treated units. Must be specified in such a way that a combination of time and id variables will correspond to a unique row. Must also contain at least a binary treatment variable column as well. 
 #' @param treatedvar Character string that identifies the name of the column in \code{dmat} that provides information about the binary treatment variable
-#' @param time.var Character string that identifies the name of the column in \code{dmat} that contains data about the time variable
-#' @param unit.var Character string that identifies the name of the column in \code{dmat} that contains data about the variable used as a unit id.
+#' @param time.var Character string that identifies the name of the column in \code{dmat} that contains data about the time variable. This data must be integer that increases by one.
+#' @param unit.var Character string that identifies the name of the column in \code{dmat} that contains data about the variable used as a unit id. This data must be integer
 #' @param hasbeensorted variable that only has internal usage for optimization purposes. There should be no need for a user to toggle this
 #' 
 #' @return \code{findAllTreated} returns a subset of the data in the \code{dmat} data frame, containing only treated units for which a matched set might exist
@@ -60,13 +60,16 @@ findAllTreated <- function(dmat, treatedvar, time.var, unit.var, hasbeensorted =
 }
 
 
+#' get.matchedsets
+#' 
 #' \code{get.matchedsets} is used to identify matched sets for a given unit with a specified i, t.
+#' 
 #' @param t integer vector specifying the times of treated units for which matched sets should be found. This vector should be the same length as the following \code{id} parameter -- the entries at corresponding indices in each vector should form the t,id pair of a specified treatment unit. 
 #' @param id integer vector specifying the unit ids of treated units for which matched sets should be found. note that both \code{t} and \code{id} can be of length 1
 #' @param L An integer value indicating the length of treatment history to be matched
 #' @param data data frame containing the data to be used for finding matched sets.
-#' @param t.column Character string that identifies the name of the column in \code{data} that contains data about the time variable. Each specified entry in \code{t} should be somewhere in this column in the data
-#' @param id.column Character string that identifies the name of the column in \code{data} that contains data about the unit id variable. Each specified entry in \code{id} should be somewhere in this column in the data
+#' @param t.column Character string that identifies the name of the column in \code{data} that contains data about the time variable. Each specified entry in \code{t} should be somewhere in this column in the data. This data must be integer that increases by one.
+#' @param id.column Character string that identifies the name of the column in \code{data} that contains data about the unit id variable. Each specified entry in \code{id} should be somewhere in this column in the data. This data must be integer.
 #' @param treatedvar Character string that identifies the name of the column in \code{data} that contains data about the binary treatment variable. 
 #' @param hasbeensorted variable that only has internal usage for optimization purposes. There should be no need for a user to toggle this
 #' @param match.on.missingness TRUE/FALSE indicating whether or not the user wants to "match on missingness." That is, should units with NAs in their treatment history windows be matched with control units that have NA's in corresponding places?

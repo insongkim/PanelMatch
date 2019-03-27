@@ -1,4 +1,7 @@
 #' PanelMatch
+#' 
+#' Create refined/weighted sets of treated and control units
+#' 
 #' \code{PanelMatch} identifies a matched set for each treated
 #' observation. Specifically, for a given treated unit, the matched
 #' set consists of control observations that have the identical
@@ -10,9 +13,9 @@
 #' @param lag An integer value indicating the length of history to be matched
 #' @param time.id A character string indicating the name of time identifier
 #' variable in the \code{data}. This data currently must be integers that increase by one. 
-#' @param unit.id A character string indicating the name of unit identifier in the data. This data currently must be integer.
-#' @param treatment A character string indicating the name of treatment variable in the \code{data}. The treatment should be a binary indicator (integer with 0 for the control group and 1 for the treatment group).
-#' @param outcome.var Character string of the outcome variable. 
+#' @param unit.id A character string indicating the name of unit identifier in the data. This data must be character, integer, or numeric. However, it is recommended to use integers as ids.
+#' @param treatment A character string indicating the name of treatment variable in the \code{data}. The treatment must be a binary indicator (integer with 0 for the control group and 1 for the treatment group).
+#' @param outcome.var Character string of the outcome variable.
 #' @param refinement.method character string of matching or weighting method used for refining the matched sets. The user can choose "mahalanobis", "ps.match", "CBPS.match", "ps.weight", "CBPS.weight", "ps.msm.weight", or "CBPS.msm.weight". The first three methods will use the \code{size.match} argument to create sets of at most \code{size.match} closest control units.
 #' @param match.missing Logical variable indicating whether or not units should be matched on the patterns of missingness in their treatment histories
 #' @param data A data.frame object containing time series cross sectional data. Time data must be integers that increase by 1.
@@ -39,7 +42,7 @@
 #'                          treatment = "dem", refinement.method = "mahalanobis", 
 #'                          data = dem, match.missing = T, 
 #'                          covs.formula = ~ lag("tradewb", 1:4) + lag("y", 1:4), size.match = 5, qoi = "att",
-#'                          outcome.var = "y", lead = 0:4, restricted = TRUE)
+#'                          outcome.var = "y", lead = 0:4, restricted = FALSE)
 #' }
 #' @export
 PanelMatch <- function(lag, time.id, unit.id, treatment,

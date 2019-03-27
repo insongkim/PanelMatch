@@ -499,7 +499,7 @@ clean_leads <- function(matched_sets, ordered.data, max.lead, t.var, id.var, out
     all.gone.counter <- sapply(sub.set.new, function(x){sum(x)})
     if(sum(all.gone.counter == 0) > 0) #case in which all the controls in a particular group were dropped
     {
-      warning("all controls in a particular matched set were removed due to missing data")
+      #warning("all controls in a particular matched set were removed due to missing data")
       
       idx[all.gone.counter == 0] <- FALSE
       sub.index <- ll[idx]
@@ -566,8 +566,8 @@ enforce_lead_restrictions <- function(matched_sets, ordered.data, max.lead, t.va
     all.gone.counter <- sapply(sub.set.new, function(x){sum(x)})
     if(sum(all.gone.counter == 0) > 0) #case in which all the controls in a particular group were dropped
     {
-      warning("all controls in a particular matched set were removed due to missing data")
-      
+      #warning("all controls in a particular matched set were removed due to missing data")
+      #browser()
       idx[all.gone.counter == 0] <- FALSE
       sub.index <- ll[idx]
       sub.set <- matched_sets[idx]

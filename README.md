@@ -75,7 +75,7 @@ PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                          data = dem, match.missing = T, 
                          covs.formula = ~ lag("tradewb", 1:4) + lag("y", 1:4), size.match = 5, qoi = "att"
                          ,outcome.var = "y",
-                         lead = 0:4, restricted = TRUE)
+                         lead = 0:4, restricted = FALSE)
 
 ```							
 The `PanelMatch` function will return a `matched.set` object. Users can extract information about individual matched sets as well as statistics about all created matched sets from this object. Consult the [Wiki page on Matched Set Objects](https://github.com/insongkim/PanelMatch/wiki/Matched-Set-Objects) for a much more detailed walkthrough and description of these objects.

@@ -2,7 +2,7 @@
 % Please edit documentation in R/matched_set_R.r
 \name{get.matchedsets}
 \alias{get.matchedsets}
-\title{\code{get.matchedsets} is used to identify matched sets for a given unit with a specified i, t.}
+\title{get.matchedsets}
 \usage{
 get.matchedsets(t, id, data, L, t.column, id.column, treatedvar,
   hasbeensorted = FALSE, match.on.missingness = TRUE)
@@ -16,9 +16,9 @@ get.matchedsets(t, id, data, L, t.column, id.column, treatedvar,
 
 \item{L}{An integer value indicating the length of treatment history to be matched}
 
-\item{t.column}{Character string that identifies the name of the column in \code{data} that contains data about the time variable. Each specified entry in \code{t} should be somewhere in this column in the data}
+\item{t.column}{Character string that identifies the name of the column in \code{data} that contains data about the time variable. Each specified entry in \code{t} should be somewhere in this column in the data. This data must be integer that increases by one.}
 
-\item{id.column}{Character string that identifies the name of the column in \code{data} that contains data about the unit id variable. Each specified entry in \code{id} should be somewhere in this column in the data}
+\item{id.column}{Character string that identifies the name of the column in \code{data} that contains data about the unit id variable. Each specified entry in \code{id} should be somewhere in this column in the data. This data must be integer.}
 
 \item{treatedvar}{Character string that identifies the name of the column in \code{data} that contains data about the binary treatment variable.}
 

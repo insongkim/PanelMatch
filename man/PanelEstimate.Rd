@@ -22,21 +22,10 @@ calculation. The default is \code{FALSE}.}
 \item{CI}{A numerical value specifying the range of interval
 estimates for statistical inference. The default is .95.}
 
-\item{sets}{A list of class `matched.set' attained by
-\code{PanelMatch}. @seealso \code{PanelMatch}.}
+\item{sets}{A list of class `PanelMatch' attained by
+\code{PanelMatch}.}
 
 \item{data}{The same time series cross sectional data set provided to the PanelMatch function to produce the \code{sets}}
-
-\item{lead}{An integer vector indicating the sequence of the lead
-periods for which the quantity of interest will be estimated. When \code{inference} is "wfe", you can only specify one lead period at a time.}
-
-\item{estimator}{One of \code{did} (difference-in-differences) or
-\code{matching} specifying the estimator for WFE regressions. The default is
-\code{did}.}
-
-\item{qoi}{One of ``att'' (average treatment effect for the
-treated) or ``ate'' (average treatment effect) or atc (average
-treatment effect for the control).}
 }
 \value{
 \code{PanelEstimate} returns a list of class
@@ -49,27 +38,35 @@ treatment effect for the control).}
 \item{lead}{The lead window sequence for which PanelEstimate is producing point estimates and standard errors.}
 \item{confidence.level}{the confidence interval range}
 \item{qoi}{the quantity of interest}
-\item{matched.sets}{the refined matched sets used to produce the estimations. These might be different from the provided}
-\code{sets}{argument depending on the missingness of data in the lead window and the \code{qoi}}
+\item{matched.sets}{the refined matched sets used to produce the estimations}
 \item{df}{if \code{inference} is "wfe", the degrees of freedom}
 \item{standard.error}{the standard error of the point estimates}
 }
 \description{
-\code{PanelEstimate} estimates causal quantity of interests, e.g.,
-the average treatment effect of for the treated (ATT), by
-estimating the counterfactual outcomes for each treated unit using
-a matched set. Users will specify matched sets that are obtained by the
+\code{PanelEstimate} estimates a causal quantity of interest, including the average treatment effect for treated or control units (att and atc, respectively), average treatment effect (ate), or average controlled direct effect (ade), as specified in \code{PanelMatch}
+This is done by estimating the counterfactual outcomes for each treated unit using
+matched sets. Users will specify matched sets that were obtained by the
 \code{PanelMatch} function and obtain point estimates via weighted fixed effects regressions or via
-weighted average computation with weighted bootstrap standard errors
+weighted average computation with weighted bootstrap standard errors.
 }
 \examples{
 \dontrun{
-pm.obj <- PanelMatch(4, "year", "wbcode2", "dem", "y", refinement.method = "mahalanobis", data = dem, match.missing = T, covs.formula = ~ tradewb + lag("tradewb", 1:4) + lag("y", 1:4), size.match = 5)
-res <- PanelEstimate(lead = 0:4, inference = "bootstrap", qoi = "att", sets = pm.obj, data = dem, outcome.variable = "y")
-res2 <- PanelEstimate(lead = 0, inference = "wfe", qoi = "att", sets = pm.obj, data = dem, outcome.variable = "y")
+PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
+                         treatment = "dem", refinement.method = "mahalanobis", 
+                         data = dem, match.missing = T, 
+                         covs.formula = ~ lag("tradewb", 1:4) + lag("y", 1:4), size.match = 5, qoi = "att",
+                         outcome.var = "y", lead = 0:4, restricted = TRUE)
+PE.results <- PanelEstimate(inference = "bootstrap", sets = PM.results, data = dem)
+
+PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
+                         treatment = "dem", refinement.method = "mahalanobis", 
+                         data = dem, match.missing = T, 
+                         covs.formula = ~ lag("tradewb", 1:4) + lag("y", 1:4), size.match = 5, qoi = "att",
+                         outcome.var = "y", lead = 0, restricted = TRUE)
+PE.results <- PanelEstimate(inference = "wfe", sets = PM.results, data = dem)
 }
 }
 \author{
 In Song Kim <insong@mit.edu>, Erik Wang
-<haixiao@Princeton.edu>, and Kosuke Imai <kimai@Princeton.edu>
+<haixiao@Princeton.edu>, Adam Rauh <adamrauh@mit.edu>, and Kosuke Imai <kimai@Princeton.edu>
 }
