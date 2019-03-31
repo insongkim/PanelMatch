@@ -206,13 +206,14 @@ get_covariate_balance <- function(matched.sets, data,  covariates, verbose = T, 
     for(i in 1:length(matched.sets))
     {
       attr(matched.sets[[i]], "weights") <- rep(1/length(matched.sets[[i]]), length(matched.sets[[i]]))
-      names(matched.sets[[i]], "weights") <- matched.sets[[i]]
+      names(attr(matched.sets[[i]], "weights")) <- matched.sets[[i]]
     }
   }
   treated.ts <- as.integer(unlist(strsplit(names(matched.sets), split = "[.]"))[c(F,T)])
   treated.ids <- as.integer(unlist(strsplit(names(matched.sets), split = "[.]"))[c(T,F)])
   tlist <- expand.treated.ts(lag, treated.ts = treated.ts)
-  idxlist <- get_yearly_dmats(as.matrix(ordered.data), treated.ids, tlist, paste0(ordered.data[,unit.id], ".", 
+  #empty matrix = temporary solution until fix for get_yearly_dmats can be pushed
+  idxlist <- get_yearly_dmats(matrix(nrow = 0, ncol = 0), treated.ids, tlist, paste0(ordered.data[,unit.id], ".", 
                                                                        ordered.data[, time.id]), matched_sets = matched.sets, lag)
   balance_mats <- build_balance_mats(ordered_expanded_data = ordered.data, idx =  idxlist, msets = matched.sets)
   unlistedmats <- unlist(balance_mats, recursive = F)

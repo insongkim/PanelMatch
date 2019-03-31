@@ -59,6 +59,7 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
                        ) 
 {
   if(!"data.frame" %in% class(data)) stop("please convert data to data.frame class")
+  if(!all(refinement.method %in% c("mahalanobis", "ps.weight", "ps.match", "CBPS.weight", "CBPS.match", "ps.msm.weight", "CBPS.msm.weight"))) stop("please choose a valid refinement method")
   if(any(table(data[, unit.id]) != max(table(data[, unit.id]))))
   {
     data <- make.pbalanced(data, balance.type = "fill", index = c(unit.id, time.id))
