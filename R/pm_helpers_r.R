@@ -35,7 +35,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
   }
   treated.ts <- as.numeric(unlist(strsplit(names(msets), split = "[.]"))[c(F,T)])
   treated.ids <- as.numeric(unlist(strsplit(names(msets), split = "[.]"))[c(T,F)])
-  ordered.data <- as.matrix(parse_and_prep(formula = covs.formula, data = ordered.data, unit.id = unit.id)) #every column > 3 at this point should be used in distance/refinement calculation
+  ordered.data <- as.matrix(parse_and_prep(formula = covs.formula, data = ordered.data, unit.id = unit.id, treatment.var = treatment)) #every column > 3 at this point should be used in distance/refinement calculation
   ordered.data <- as.matrix(handle.missing.data(ordered.data, 4:ncol(ordered.data)))
   
   #RE IMPLEMENT RESTRICTED OR NAIVE?
@@ -179,13 +179,14 @@ build_maha_mats <- function(idx, ordered_expanded_data)
 # Will need to be updated if the syntax/implementation of the covs.formula argument is changed
 # Applies necessary transformation to the data based on the specified parameters, including using the covs.formula argument to apply the necessary lags to particular columns.
 # It also will structure the data frame such that every column after the 3rd column is used in the following calculations
-parse_and_prep <- function(formula, data, unit.id)
+parse_and_prep <- function(formula, data, unit.id, treatment.var)
 {
   #check if formula empty or no covariates provided -- error checks
   terms <- attr(terms(formula),"term.labels")
   terms <- gsub(" ", "", terms) #remove whitespace
   lag.calls <- terms[grepl("lag(*)", terms)] #regex to get calls to lag function
   other.terms <- terms[!grepl("lag(*)", terms)]
+  if(any(treatment.var %in% other.terms)) stop("contemporaneous treatment variable cannot be used for matching calculations")
   sub.data <- data[, c(1:3, which(colnames(data) %in% other.terms) )] #including only what is specified in the formula
   if(any(grepl("=", lag.calls))) stop("fix lag calls to use only unnamed arguments in the correct positions")
   data <- data.table::as.data.table(data) #check sorting
@@ -313,7 +314,8 @@ handle_mahalanobis_calculations <- function(mahal.nested.list, msets, max.size, 
     colnames(tmat) <- NULL
     dists <- colMeans(tmat)
     n.dists <- dists[dists > 0]
-    if(length(n.dists) == 0 ) stop('matched set contains only identical units')
+    #if(length(n.dists) == 0 ) browser()
+    if(length(n.dists) == 0 ) stop("a matched set contain only identical units. Please examine the data and remove this set.")
     if(length(n.dists) < max.set.size)
     {
       w <- 1 / length(n.dists)
@@ -341,6 +343,7 @@ handle_mahalanobis_calculations <- function(mahal.nested.list, msets, max.size, 
     return(newdists)
     
   }
+  
   scores <- mapply(FUN = handle_set, sub.list = mahal.nested.list, idx = 1:length(msets), MoreArgs = list(max.set.size = max.size), SIMPLIFY = FALSE)
   for(i in 1:length(msets))
   {
