@@ -16,7 +16,7 @@
 #' @param unit.id A character string indicating the name of unit identifier in the data. This data must be character, integer, or numeric. However, it is recommended to use integers as ids.
 #' @param treatment A character string indicating the name of treatment variable in the \code{data}. The treatment must be a binary indicator (integer with 0 for the control group and 1 for the treatment group).
 #' @param outcome.var Character string of the outcome variable.
-#' @param refinement.method character string of matching or weighting method used for refining the matched sets. The user can choose "mahalanobis", "ps.match", "CBPS.match", "ps.weight", "CBPS.weight", "ps.msm.weight", or "CBPS.msm.weight". The first three methods will use the \code{size.match} argument to create sets of at most \code{size.match} closest control units.
+#' @param refinement.method character string of matching or weighting method used for refining the matched sets. The user can choose "mahalanobis", "ps.match", "CBPS.match", "ps.weight", "CBPS.weight", "ps.msm.weight", "CBPS.msm.weight", or "none". The first three methods will use the \code{size.match} argument to create sets of at most \code{size.match} closest control units. Choosing "none" will assign equal weights to all control units in each matched sets.
 #' @param match.missing Logical variable indicating whether or not units should be matched on the patterns of missingness in their treatment histories
 #' @param data A data.frame object containing time series cross sectional data. Time data must be integers that increase by 1.
 #' @param size.match Maximum size of the matched sets after refinement. This argument only affects results when using a matching method (any of the refinement methods that end in .match). This argument is not needed and will have no impact if included on a weighting method.
@@ -59,7 +59,7 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
                        ) 
 {
   if(!"data.frame" %in% class(data)) stop("please convert data to data.frame class")
-  if(!all(refinement.method %in% c("mahalanobis", "ps.weight", "ps.match", "CBPS.weight", "CBPS.match", "ps.msm.weight", "CBPS.msm.weight"))) stop("please choose a valid refinement method")
+  if(!all(refinement.method %in% c("mahalanobis", "ps.weight", "ps.match", "CBPS.weight", "CBPS.match", "ps.msm.weight", "CBPS.msm.weight", "none"))) stop("please choose a valid refinement method")
   if(any(table(data[, unit.id]) != max(table(data[, unit.id]))))
   {
     data <- make.pbalanced(data, balance.type = "fill", index = c(unit.id, time.id))

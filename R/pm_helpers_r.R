@@ -38,6 +38,15 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
   ordered.data <- as.matrix(parse_and_prep(formula = covs.formula, data = ordered.data, unit.id = unit.id, treatment.var = treatment)) #every column > 3 at this point should be used in distance/refinement calculation
   ordered.data <- as.matrix(handle.missing.data(ordered.data, 4:ncol(ordered.data)))
   
+  if(refinement.method == "none")
+  {
+    for(i in 1:length(msets))
+    {
+      attr(msets[[i]], "weights") <- rep(1/length(msets[[i]]), length(msets[[i]]))
+      names(attr(msets[[i]], "weights")) <- msets[[i]]
+    }
+    attr(msets, "refinement.method") <- refinement.method
+  }
   #RE IMPLEMENT RESTRICTED OR NAIVE?
   if(refinement.method == "mahalanobis")
   {
