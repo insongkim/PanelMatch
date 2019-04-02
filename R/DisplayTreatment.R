@@ -22,7 +22,12 @@
 #' @param legend.labels Character vector of length two describing the
 #' labels of the legend to be shown in the plot -- again, ggplot2 standards are used.
 #' @param decreasing Logical. Determines if display order should be increasing or decreasing by the amount of treatment received. Default is \code{decreasing} = FALSE.
-#' @return \code{DisplayTreatment} returns a treatment variation plot,
+#' @param matched.set a matched.set object (optional) containing a single treated unit and a set of matched controls. If provided, this set will be highlighted on the resulting plot.
+#' @param show.set.only logical. If TRUE, only the treated unit and control units contained in the provided \code{matched.set} object will be shown on the plot. Default is FALSE
+#' @param gradient.weights logical. If TRUE, the "darkness" units in the provided \code{matched.set} object will be displayed according to their weight. Control units with higher weights will appear darker on the resulting plot. Control units with lower weights will appear lighter.
+#' @param hide.x.axis.label logical. If TRUE, x axis labels are not shown. Default is FALSE. 
+#' @param hide.y.axis.label logical. If TRUE, y axis label are not shown. Default is FALSE.
+#' @return \code{DisplayTreatment} returns a treatment variation plot (using ggplot2),
 #' which visualizes the variation of treatment across unit and time.
 #' @author In Song Kim <insong@mit.edu>, Erik Wang
 #' <haixiao@Princeton.edu>, Adam Rauh <adamrauh@mit.edu>, and Kosuke Imai <kimai@Princeton.edu>
@@ -46,7 +51,6 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
                              x.angle = 45,
                              y.angle = NULL,
                              legend.labels = c("not treated", "treated"),
-                             sort_by = NULL,
                              decreasing = FALSE,
                              matched.set = NULL,
                              show.set.only = FALSE,

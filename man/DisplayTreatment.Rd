@@ -9,7 +9,7 @@ DisplayTreatment(unit.id, time.id, treatment, data, color.of.treated = "red",
   title = "Treatment Distribution \\n Across Units and Time", xlab = "Time",
   ylab = "Unit", x.size = 10, y.size = 5, legend.position = "none",
   x.angle = 45, y.angle = NULL, legend.labels = c("not treated",
-  "treated"), sort_by = NULL, decreasing = FALSE, matched.set = NULL,
+  "treated"), decreasing = FALSE, matched.set = NULL,
   show.set.only = FALSE, hide.x.axis.label = FALSE,
   hide.y.axis.label = FALSE, gradient.weights = FALSE)
 }
@@ -48,9 +48,19 @@ When the number of units is large, consider setting to NULL and adjusting size a
 labels of the legend to be shown in the plot -- again, ggplot2 standards are used.}
 
 \item{decreasing}{Logical. Determines if display order should be increasing or decreasing by the amount of treatment received. Default is \code{decreasing} = FALSE.}
+
+\item{matched.set}{a matched.set object (optional) containing a single treated unit and a set of matched controls. If provided, this set will be highlighted on the resulting plot.}
+
+\item{show.set.only}{logical. If TRUE, only the treated unit and control units contained in the provided \code{matched.set} object will be shown on the plot. Default is FALSE}
+
+\item{hide.x.axis.label}{logical. If TRUE, x axis labels are not shown. Default is FALSE.}
+
+\item{hide.y.axis.label}{logical. If TRUE, y axis label are not shown. Default is FALSE.}
+
+\item{gradient.weights}{logical. If TRUE, the "darkness" units in the provided \code{matched.set} object will be displayed according to their weight. Control units with higher weights will appear darker on the resulting plot. Control units with lower weights will appear lighter.}
 }
 \value{
-\code{DisplayTreatment} returns a treatment variation plot,
+\code{DisplayTreatment} returns a treatment variation plot (using ggplot2),
 which visualizes the variation of treatment across unit and time.
 }
 \description{

@@ -1,6 +1,6 @@
 # File contains helper functions written in R for PanelMatch functionality
 perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.method, size.match, 
-                               ordered.data, match.missing, covs.formula, verbose, mset.object = NULL, lead, outcome.var = NULL, restricted = FALSE)
+                               ordered.data, match.missing, covs.formula, verbose, mset.object = NULL, lead, outcome.var = NULL, restricted = FALSE, qoi = "")
 {
   if(!is.null(mset.object))
   {
@@ -20,7 +20,11 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
     temp.treateds <- findAllTreated(ordered.data, treatedvar = treatment, time.var = time.id, unit.var = unit.id, hasbeensorted = TRUE)
     idx <- !((temp.treateds[, time.id] - lag) < min(ordered.data[, time.id]))
     temp.treateds <- temp.treateds[idx, ]
-    if(nrow(temp.treateds) == 0) stop("no treated units")
+    if(nrow(temp.treateds) == 0) 
+    {
+      warn.str <- paste0("no treated units for ", qoi, " specification")
+      stop(warn.str)
+    }
     msets <- get.matchedsets(temp.treateds[, time.id], temp.treateds[, unit.id], ordered.data, lag, time.id, unit.id, treatment, hasbeensorted = TRUE)
     e.sets <- msets[sapply(msets, length) == 0]
     msets <- msets[sapply(msets, length) > 0 ]
@@ -31,6 +35,11 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
     if(restricted)
     {
       msets <- enforce_lead_restrictions(msets, ordered.data, max(lead), time.id, unit.id, treatment.var = treatment)
+    }
+    if(length(msets) == 0)
+    {
+      warn.str <- paste0("no matched sets for ", qoi, " specification")
+      stop(warn.str)
     }
   }
   treated.ts <- as.numeric(unlist(strsplit(names(msets), split = "[.]"))[c(F,T)])
