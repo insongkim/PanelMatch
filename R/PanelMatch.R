@@ -20,7 +20,7 @@
 #' @param match.missing Logical variable indicating whether or not units should be matched on the patterns of missingness in their treatment histories
 #' @param data A data.frame object containing time series cross sectional data. Time data must be integers that increase by 1.
 #' @param size.match Maximum size of the matched sets after refinement. This argument only affects results when using a matching method (any of the refinement methods that end in .match). This argument is not needed and will have no impact if included on a weighting method.
-#' @param covs.formula One sided formula indicating which variables should be used for matching and refinement.
+#' @param covs.formula One sided formula indicating which variables should be used for matching and refinement. Argument is optional if \code{refinement.method} is set to "none"
 #' If the user wants to include lagged variables, this can be done using a function, "lag()", which takes two, unnamed, positional arguments. The first is the name of the variable which you wish to lag, specified as a string. The second is the lag window, specified as an integer sequence
 #' For instance, lag("x", 1:4) will then add new columns to the data for variable "x" for time t-1, t-2, t-3, and t-4.
 #' @param verbose option to include more information about the matched.set object calculations, like the distances used to create the refined sets and weights.
@@ -50,7 +50,7 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
                        size.match = 10,
                        data,
                        match.missing = TRUE,
-                       covs.formula,
+                       covs.formula = NULL,
                        verbose = FALSE,
                        qoi,
                        lead = 0,

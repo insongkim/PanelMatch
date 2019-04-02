@@ -5,7 +5,7 @@
 \title{PanelMatch}
 \usage{
 PanelMatch(lag, time.id, unit.id, treatment, refinement.method,
-  size.match = 10, data, match.missing = TRUE, covs.formula,
+  size.match = 10, data, match.missing = TRUE, covs.formula = NULL,
   verbose = FALSE, qoi, lead = 0, outcome.var, restricted = FALSE)
 }
 \arguments{
@@ -26,7 +26,7 @@ variable in the \code{data}. This data currently must be integers that increase 
 
 \item{match.missing}{Logical variable indicating whether or not units should be matched on the patterns of missingness in their treatment histories}
 
-\item{covs.formula}{One sided formula indicating which variables should be used for matching and refinement.
+\item{covs.formula}{One sided formula indicating which variables should be used for matching and refinement. Argument is optional if \code{refinement.method} is set to "none"
 If the user wants to include lagged variables, this can be done using a function, "lag()", which takes two, unnamed, positional arguments. The first is the name of the variable which you wish to lag, specified as a string. The second is the lag window, specified as an integer sequence
 For instance, lag("x", 1:4) will then add new columns to the data for variable "x" for time t-1, t-2, t-3, and t-4.}
 

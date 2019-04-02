@@ -42,10 +42,6 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
       stop(warn.str)
     }
   }
-  treated.ts <- as.numeric(unlist(strsplit(names(msets), split = "[.]"))[c(F,T)])
-  treated.ids <- as.numeric(unlist(strsplit(names(msets), split = "[.]"))[c(T,F)])
-  ordered.data <- as.matrix(parse_and_prep(formula = covs.formula, data = ordered.data, unit.id = unit.id, treatment.var = treatment)) #every column > 3 at this point should be used in distance/refinement calculation
-  ordered.data <- as.matrix(handle.missing.data(ordered.data, 4:ncol(ordered.data)))
   
   if(refinement.method == "none")
   {
@@ -55,7 +51,22 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
       names(attr(msets[[i]], "weights")) <- msets[[i]]
     }
     attr(msets, "refinement.method") <- refinement.method
+    t.attributes <- attributes(msets)[names(attributes(msets)) != "names"]
+    msets <- c(msets, e.sets)
+    for(idx in names(t.attributes))
+    {
+      attr(msets, idx) <- t.attributes[[idx]]
+    }
+    attr(msets, "covs.formula") <- covs.formula
+    attr(msets, "match.missing") <- match.missing
+    return(msets)
   }
+  
+  treated.ts <- as.numeric(unlist(strsplit(names(msets), split = "[.]"))[c(F,T)])
+  treated.ids <- as.numeric(unlist(strsplit(names(msets), split = "[.]"))[c(T,F)])
+  ordered.data <- as.matrix(parse_and_prep(formula = covs.formula, data = ordered.data, unit.id = unit.id, treatment.var = treatment)) #every column > 3 at this point should be used in distance/refinement calculation
+  ordered.data <- as.matrix(handle.missing.data(ordered.data, 4:ncol(ordered.data)))
+  
   #RE IMPLEMENT RESTRICTED OR NAIVE?
   if(refinement.method == "mahalanobis")
   {
