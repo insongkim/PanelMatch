@@ -5,9 +5,9 @@
 \title{plot the point estimates and standard errors from a PanelEstimate calculation. The only mandatory argument is an object of the PanelEstimate class
 Use standard arguments to the \code{plot} function to modify the plot as needed.}
 \usage{
-\method{plot}{PanelEstimate}(pe.object,
-  ylab = "Estimated Effect of Treatment", xlab = "Time",
-  main = "Estimated Effects of Treatment Over Time", ylim = NULL, ...)
+\method{plot}{PanelEstimate}(x, ylab = "Estimated Effect of Treatment",
+  xlab = "Time", main = "Estimated Effects of Treatment Over Time",
+  ylim = NULL, ...)
 }
 \arguments{
 \item{pe.object}{a PanelEstimate object}

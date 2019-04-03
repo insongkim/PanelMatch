@@ -35,8 +35,9 @@ matched_set <- function(matchedsets, id, t, L, t.var, id.var, treated.var)
 }
 
 #' @export
-summary.matched.set <- function(set, verbose = T)
+summary.matched.set <- function(object, ..., verbose = T)
 {
+  set <- object
   Lengthcol <- sapply(set, length)
   temp <-unlist(strsplit(names(set), split = ".", fixed = TRUE))
   ids <- temp[c(T,F)]
@@ -71,7 +72,8 @@ plot.matched.set <- function(x, ..., border = NA, col = "grey", ylab = "Frequenc
                              xlab ="Matched Set Size" , lwd = NULL,
                              main = "Distribution of matched set sizes")
 {
-    lvec <- sapply(set, length)
+  set <- x  
+  lvec <- sapply(set, length)
     lvec.nonempty <- lvec[lvec > 0]
     
     if(sum(lvec == 0) > 0)
@@ -93,6 +95,7 @@ plot.matched.set <- function(x, ..., border = NA, col = "grey", ylab = "Frequenc
 #' @export
 print.matched.set <- function(x, ..., verbose = F)
 {
+  set <- x
   if(verbose) 
   {
     class(set) <- "list"

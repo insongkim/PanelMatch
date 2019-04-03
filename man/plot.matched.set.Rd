@@ -4,9 +4,9 @@
 \alias{plot.matched.set}
 \title{plot.matched.set}
 \usage{
-\method{plot}{matched.set}(set, border = NA, col = "grey",
+\method{plot}{matched.set}(x, ..., border = NA, col = "grey",
   ylab = "Frequency of Size", xlab = "Matched Set Size", lwd = NULL,
-  main = "Distribution of matched set sizes", ...)
+  main = "Distribution of matched set sizes")
 }
 \description{
 Plot the distribution of the sizes of matched sets
