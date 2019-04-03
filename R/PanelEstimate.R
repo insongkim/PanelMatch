@@ -532,7 +532,7 @@ summary.PanelEstimate <- function(object, verbose = TRUE, bias.corrected = FALSE
 #' Use standard arguments to the \code{plot} function to modify the plot as needed.
 #' @param pe.object a PanelEstimate object
 #' @export
-plot.PanelEstimate <- function(pe.object, ylab = "Estimated Effect of Treatment", xlab = "Time", main = "Estimated Effects of Treatment Over Time", ylim = NULL, ...)
+plot.PanelEstimate <- function(object, ylab = "Estimated Effect of Treatment", xlab = "Time", main = "Estimated Effects of Treatment Over Time", ylim = NULL, ...)
 {
   
   plot.data <- summary(pe.object, verbose = F, bias.corrected = F)

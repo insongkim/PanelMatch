@@ -67,10 +67,9 @@ summary.matched.set <- function(set, verbose = T)
 #' 
 #' A plot method for creating histograms of the distribution of the sizes of matched sets. Accepts all standard \code{plot} arguments. Empty sets are excluded from the histogram but are noted in the subtitle by default.
 #' @export
-plot.matched.set <- function(set, border = NA, col = "grey", ylab = "Frequency of Size", 
+plot.matched.set <- function(x, ..., border = NA, col = "grey", ylab = "Frequency of Size", 
                              xlab ="Matched Set Size" , lwd = NULL,
-                             main = "Distribution of matched set sizes",
-                             ...)
+                             main = "Distribution of matched set sizes")
 {
     lvec <- sapply(set, length)
     lvec.nonempty <- lvec[lvec > 0]
@@ -92,7 +91,7 @@ plot.matched.set <- function(set, border = NA, col = "grey", ylab = "Frequency o
 }
 
 #' @export
-print.matched.set <- function(set, verbose = F)
+print.matched.set <- function(x, ..., verbose = F)
 {
   if(verbose) 
   {
