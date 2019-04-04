@@ -25,7 +25,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
       warn.str <- paste0("no treated units for ", qoi, " specification")
       stop(warn.str)
     }
-    msets <- get.matchedsets(temp.treateds[, time.id], temp.treateds[, unit.id], ordered.data, lag, time.id, unit.id, treatment, hasbeensorted = TRUE)
+    msets <- get.matchedsets(temp.treateds[, time.id], temp.treateds[, unit.id], ordered.data, lag, time.id, unit.id, treatment, hasbeensorted = TRUE, match.on.missingness = match.missing)
     e.sets <- msets[sapply(msets, length) == 0]
     msets <- msets[sapply(msets, length) > 0 ]
     if(max(lead) > 0)

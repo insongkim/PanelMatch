@@ -4,12 +4,16 @@
 \alias{summary.PanelEstimate}
 \title{Get summaries of PanelEstimate objects}
 \usage{
-\method{summary}{PanelEstimate}(object, ...)
+summary.PanelEstimate(object, ..., verbose = TRUE, bias.corrected = FALSE)
 }
 \arguments{
 \item{object}{A PanelEstimate object}
 
 \item{...}{Further arguments to be passed to \code{summary.PanelEstimate()}.}
+
+\item{verbose}{logical indicating whether or not output should be output in an expanded form.}
+
+\item{bias.corrected}{logical indicating whether or not bias corrected estimates should be provided.}
 }
 \description{
 \code{summary.PanelEstimate()} takes an object returned by

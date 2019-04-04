@@ -58,6 +58,7 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
                        restricted = FALSE
                        ) 
 {
+  if(lag < 1) stop("please specify a lag value >= 1")
   if(!"data.frame" %in% class(data)) stop("please convert data to data.frame class")
   if(!all(refinement.method %in% c("mahalanobis", "ps.weight", "ps.match", "CBPS.weight", "CBPS.match", "ps.msm.weight", "CBPS.msm.weight", "none"))) stop("please choose a valid refinement method")
   if(any(table(data[, unit.id]) != max(table(data[, unit.id]))))

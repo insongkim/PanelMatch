@@ -22,6 +22,8 @@ get_covariate_balance(matched.sets, data, covariates, verbose = T, plot = F,
 
 \item{legend}{logical indicating whether or not a legend should be included on the plot}
 
+\item{ylab}{Label for y axis. Default is "SD"}
+
 \item{...}{Additional graphical parameters to be passed to the \code{plot} function in base R.}
 }
 \description{

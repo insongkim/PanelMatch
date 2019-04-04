@@ -10,7 +10,7 @@ Use standard arguments to the \code{plot} function to modify the plot as needed.
   ylim = NULL, ...)
 }
 \arguments{
-\item{pe.object}{a PanelEstimate object}
+\item{x}{a PanelEstimate object}
 }
 \description{
 plot the point estimates and standard errors from a PanelEstimate calculation. The only mandatory argument is an object of the PanelEstimate class

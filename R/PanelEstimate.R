@@ -412,12 +412,13 @@ PanelEstimate <- function(inference = c("wfe", "bootstrap"),
 #' \code{PanelEstimate}, and returns a summary table of point
 #' estimates and the confidence intervales.
 #'
-#' @usage \method{summary}{PanelEstimate}(object, ...)
 #' @param object A PanelEstimate object
+#' @param verbose logical indicating whether or not output should be output in an expanded form.
+#' @param bias.corrected logical indicating whether or not bias corrected estimates should be provided.
 #' @param ... Further arguments to be passed to \code{summary.PanelEstimate()}.
 #' 
 #' @export
-summary.PanelEstimate <- function(object, verbose = TRUE, bias.corrected = FALSE, ...) {
+summary.PanelEstimate <- function(object,..., verbose = TRUE, bias.corrected = FALSE) {
   
   if(verbose)
   {
@@ -530,7 +531,7 @@ summary.PanelEstimate <- function(object, verbose = TRUE, bias.corrected = FALSE
 
 #' plot the point estimates and standard errors from a PanelEstimate calculation. The only mandatory argument is an object of the PanelEstimate class
 #' Use standard arguments to the \code{plot} function to modify the plot as needed.
-#' @param pe.object a PanelEstimate object
+#' @param x a PanelEstimate object
 #' @export
 plot.PanelEstimate <- function(x, ylab = "Estimated Effect of Treatment", xlab = "Time", main = "Estimated Effects of Treatment Over Time", ylim = NULL, ...)
 {

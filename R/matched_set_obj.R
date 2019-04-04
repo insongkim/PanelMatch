@@ -34,6 +34,14 @@ matched_set <- function(matchedsets, id, t, L, t.var, id.var, treated.var)
   return(matchedsets)
 }
 
+
+#' summary.matched.set
+#'
+#' Method for summarizing \code{matched.set} objects.
+#' 
+#' @param object a \code{matched.set} object
+#' @param verbose logical indicating whether or not output should be in expanded form
+#' @param ... additional arguments to be passed to \code{summary}
 #' @export
 summary.matched.set <- function(object, ..., verbose = T)
 {
@@ -92,6 +100,13 @@ plot.matched.set <- function(x, ..., border = NA, col = "grey", ylab = "Frequenc
     }
 }
 
+#' Method for printing \code{matched.set} objects.
+#' @method print matched.set
+#' 
+#'
+#' @param x a \code{matched.set} object
+#' @param verbose logical indicating whether or not output should be printed in expanded form
+#' @param ... additional arguments to be passed to \code{print}
 #' @export
 print.matched.set <- function(x, ..., verbose = F)
 {
@@ -159,6 +174,7 @@ build_balance_mats <- function(idx, ordered_expanded_data, msets)
 #' @param covariates a character vector, specifying the names of the covariates for which the user is interested in calculating balance. 
 #' @param reference.line logical indicating whether or not a horizontal line should be present on the plot at y = 0
 #' @param legend logical indicating whether or not a legend should be included on the plot
+#' @param ylab Label for y axis. Default is "SD"
 #' @param ... Additional graphical parameters to be passed to the \code{plot} function in base R.
 #' @export
 get_covariate_balance <- function(matched.sets, data,  covariates, verbose = T, plot = F, reference.line = TRUE, legend = TRUE, ylab = "SD",...)
