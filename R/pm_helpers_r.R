@@ -28,10 +28,10 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
     msets <- get.matchedsets(temp.treateds[, time.id], temp.treateds[, unit.id], ordered.data, lag, time.id, unit.id, treatment, hasbeensorted = TRUE, match.on.missingness = match.missing)
     e.sets <- msets[sapply(msets, length) == 0]
     msets <- msets[sapply(msets, length) > 0 ]
-    if(max(lead) > 0)
-    {
-      msets <- clean_leads(msets, ordered.data, max(lead), time.id, unit.id, outcome.var)  
-    }
+    #if(max(lead) > 0)
+    #{
+    msets <- clean_leads(msets, ordered.data, max(lead), time.id, unit.id, outcome.var)  
+    #}
     if(restricted)
     {
       msets <- enforce_lead_restrictions(msets, ordered.data, max(lead), time.id, unit.id, treatment.var = treatment)
