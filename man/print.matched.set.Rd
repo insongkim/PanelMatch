@@ -4,7 +4,7 @@
 \alias{print.matched.set}
 \title{Method for printing \code{matched.set} objects.}
 \usage{
-\method{print}{matched.set}(x, ..., verbose = F)
+print.matched.set(x, ..., verbose = F)
 }
 \arguments{
 \item{x}{a \code{matched.set} object}

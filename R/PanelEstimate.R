@@ -39,14 +39,16 @@
 #' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
 #'                          treatment = "dem", refinement.method = "mahalanobis", 
 #'                          data = dem, match.missing = T, 
-#'                          covs.formula = ~ lag("tradewb", 1:4) + lag("y", 1:4), size.match = 5, qoi = "att",
+#'                          covs.formula = ~ lag("tradewb", 1:4) + lag("y", 1:4), 
+#'                          size.match = 5, qoi = "att",
 #'                          outcome.var = "y", lead = 0:4, restricted = TRUE)
 #' PE.results <- PanelEstimate(inference = "bootstrap", sets = PM.results, data = dem)
 #' 
 #' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
 #'                          treatment = "dem", refinement.method = "mahalanobis", 
 #'                          data = dem, match.missing = T, 
-#'                          covs.formula = ~ lag("tradewb", 1:4) + lag("y", 1:4), size.match = 5, qoi = "att",
+#'                          covs.formula = ~ lag("tradewb", 1:4) + lag("y", 1:4), 
+#'                          size.match = 5, qoi = "att",
 #'                          outcome.var = "y", lead = 0, restricted = TRUE)
 #' PE.results <- PanelEstimate(inference = "wfe", sets = PM.results, data = dem)
 #' }
@@ -406,8 +408,8 @@ PanelEstimate <- function(inference = c("wfe", "bootstrap"),
   }
 }
 
+
 #' Get summaries of PanelEstimate objects
-#'
 #' \code{summary.PanelEstimate()} takes an object returned by
 #' \code{PanelEstimate}, and returns a summary table of point
 #' estimates and the confidence intervales.

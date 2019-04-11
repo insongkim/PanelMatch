@@ -34,14 +34,9 @@ matched_set <- function(matchedsets, id, t, L, t.var, id.var, treated.var)
   return(matchedsets)
 }
 
-
-#' summary.matched.set
-#'
-#' Method for summarizing \code{matched.set} objects.
-#' 
-#' @param object a \code{matched.set} object
-#' @param verbose logical indicating whether or not output should be in expanded form
-#' @param ... additional arguments to be passed to \code{summary}
+#' Method for plotting the distribution of the sizes of \code{matched.set} objects.
+#' A plot method for creating histograms of the distribution of the sizes of matched sets. 
+#' Accepts all standard \code{summary} arguments. Empty sets are excluded from the histogram but are noted in the subtitle by default.
 #' @export
 summary.matched.set <- function(object, ..., verbose = T)
 {
@@ -70,11 +65,9 @@ summary.matched.set <- function(object, ..., verbose = T)
   }
 }
 
-#' plot.matched.set
-#' 
-#' Plot the distribution of the sizes of matched sets
-#' 
-#' A plot method for creating histograms of the distribution of the sizes of matched sets. Accepts all standard \code{plot} arguments. Empty sets are excluded from the histogram but are noted in the subtitle by default.
+#' Method for plotting the distribution of the sizes of \code{matched.set} objects.
+#' A plot method for creating histograms of the distribution of the sizes of matched sets. 
+#' Accepts all standard \code{plot} arguments. Empty sets are excluded from the histogram but are noted in the subtitle by default.
 #' @export
 plot.matched.set <- function(x, ..., border = NA, col = "grey", ylab = "Frequency of Size", 
                              xlab ="Matched Set Size" , lwd = NULL,
@@ -101,8 +94,6 @@ plot.matched.set <- function(x, ..., border = NA, col = "grey", ylab = "Frequenc
 }
 
 #' Method for printing \code{matched.set} objects.
-#' @method print matched.set
-#' 
 #'
 #' @param x a \code{matched.set} object
 #' @param verbose logical indicating whether or not output should be printed in expanded form

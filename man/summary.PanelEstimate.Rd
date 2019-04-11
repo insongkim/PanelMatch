@@ -2,7 +2,10 @@
 % Please edit documentation in R/PanelEstimate.R
 \name{summary.PanelEstimate}
 \alias{summary.PanelEstimate}
-\title{Get summaries of PanelEstimate objects}
+\title{Get summaries of PanelEstimate objects
+\code{summary.PanelEstimate()} takes an object returned by
+\code{PanelEstimate}, and returns a summary table of point
+estimates and the confidence intervales.}
 \usage{
 summary.PanelEstimate(object, ..., verbose = TRUE, bias.corrected = FALSE)
 }
@@ -16,6 +19,7 @@ summary.PanelEstimate(object, ..., verbose = TRUE, bias.corrected = FALSE)
 \item{bias.corrected}{logical indicating whether or not bias corrected estimates should be provided.}
 }
 \description{
+Get summaries of PanelEstimate objects
 \code{summary.PanelEstimate()} takes an object returned by
 \code{PanelEstimate}, and returns a summary table of point
 estimates and the confidence intervales.

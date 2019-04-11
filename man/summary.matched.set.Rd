@@ -2,17 +2,14 @@
 % Please edit documentation in R/matched_set_obj.R
 \name{summary.matched.set}
 \alias{summary.matched.set}
-\title{summary.matched.set}
+\title{Method for plotting the distribution of the sizes of \code{matched.set} objects.
+A plot method for creating histograms of the distribution of the sizes of matched sets. 
+Accepts all standard \code{summary} arguments. Empty sets are excluded from the histogram but are noted in the subtitle by default.}
 \usage{
 summary.matched.set(object, ..., verbose = T)
 }
-\arguments{
-\item{object}{a \code{matched.set} object}
-
-\item{...}{additional arguments to be passed to \code{summary}}
-
-\item{verbose}{logical indicating whether or not output should be in expanded form}
-}
 \description{
-Method for summarizing \code{matched.set} objects.
+Method for plotting the distribution of the sizes of \code{matched.set} objects.
+A plot method for creating histograms of the distribution of the sizes of matched sets. 
+Accepts all standard \code{summary} arguments. Empty sets are excluded from the histogram but are noted in the subtitle by default.
 }

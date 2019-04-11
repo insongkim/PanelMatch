@@ -2,15 +2,16 @@
 % Please edit documentation in R/matched_set_obj.R
 \name{plot.matched.set}
 \alias{plot.matched.set}
-\title{plot.matched.set}
+\title{Method for plotting the distribution of the sizes of \code{matched.set} objects.
+A plot method for creating histograms of the distribution of the sizes of matched sets. 
+Accepts all standard \code{plot} arguments. Empty sets are excluded from the histogram but are noted in the subtitle by default.}
 \usage{
 \method{plot}{matched.set}(x, ..., border = NA, col = "grey",
   ylab = "Frequency of Size", xlab = "Matched Set Size", lwd = NULL,
   main = "Distribution of matched set sizes")
 }
 \description{
-Plot the distribution of the sizes of matched sets
-}
-\details{
-A plot method for creating histograms of the distribution of the sizes of matched sets. Accepts all standard \code{plot} arguments. Empty sets are excluded from the histogram but are noted in the subtitle by default.
+Method for plotting the distribution of the sizes of \code{matched.set} objects.
+A plot method for creating histograms of the distribution of the sizes of matched sets. 
+Accepts all standard \code{plot} arguments. Empty sets are excluded from the histogram but are noted in the subtitle by default.
 }
