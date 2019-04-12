@@ -26,6 +26,7 @@
 #' @param verbose option to include more information about the matched.set object calculations, like the distances used to create the refined sets and weights.
 #' @param qoi quantity of interest: att (average treatment effect on treated units), atc (average treatment effect on control units), ate (average treatment effect), or ade (average controlled direct effect). ade should only be used with the ps.msm.weight or CBPS.msm.weight methods.
 #' @param lead integer sequence specifying the lead window for which qoi estimates will ultimately be produced. Default is 0.
+#' @param matching logical indicating whether or not any matching on treatment history should be performed. This is used for diagnostic purposes. Default is TRUE.
 #' @param restricted Logical indicating whether or not it is permissible for treatment to reverse. This must be set to TRUE for msm methods. When set to TRUE, only matched sets where treatment is applied continuously are included.
 #' @return \code{PanelMatch} returns an object of class "PanelMatch". This is a list that contains a few specific elements: First, a matched.set object(s) that has the same name as the provided qoi if the qoi is "att", "atc", or "ade". 
 #' If qoi = "ate" then two matched.set objects will be attached, named "att" and "atc." This object also has some additional attributes:
@@ -56,9 +57,14 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
                        qoi,
                        lead = 0,
                        outcome.var,
-                       restricted = FALSE
+                       restricted = FALSE,
+                       matching = TRUE
                        ) 
 {
+  if(!matching & match.missing)
+  {
+    lag <- 1
+  }
   if(lag < 1) stop("please specify a lag value >= 1")
   if(!"data.frame" %in% class(data)) stop("please convert data to data.frame class")
   if(!all(refinement.method %in% c("mahalanobis", "ps.weight", "ps.match", "CBPS.weight", "CBPS.match", "ps.msm.weight", "CBPS.msm.weight", "none"))) stop("please choose a valid refinement method")
@@ -82,15 +88,18 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
   
   ordered.data[, paste0(unit.id, ".int")] <- as.integer(as.factor(data[, unit.id]))
   if(class(data[, unit.id]) == "character") {
-    unit.index.map <- data.frame(original.id = make.names(as.character(unique(ordered.data[, unit.id]))), new.id = unique(ordered.data[, paste0(unit.id, ".int")]), stringsAsFactors = F)
+    unit.index.map <- data.frame(original.id = make.names(as.character(unique(ordered.data[, unit.id]))), 
+                                 new.id = unique(ordered.data[, paste0(unit.id, ".int")]), stringsAsFactors = F)
   }
   else if(class(data[, unit.id]) == "integer") {
-    unit.index.map <- data.frame(original.id = (as.character(unique(ordered.data[, unit.id]))), new.id = unique(ordered.data[, paste0(unit.id, ".int")]), stringsAsFactors = F)
+    unit.index.map <- data.frame(original.id = (as.character(unique(ordered.data[, unit.id]))),
+                                 new.id = unique(ordered.data[, paste0(unit.id, ".int")]), stringsAsFactors = F)
   }
   else if(class(data[, unit.id]) == "numeric") {
     if(all(unique(ordered.data[, unit.id]) == as.integer(unique(ordered.data[, unit.id])))) #actually integers
     {
-      unit.index.map <- data.frame(original.id = (as.character(unique(ordered.data[, unit.id]))), new.id = unique(ordered.data[, paste0(unit.id, ".int")]), stringsAsFactors = F)
+      unit.index.map <- data.frame(original.id = (as.character(unique(ordered.data[, unit.id]))),
+                                   new.id = unique(ordered.data[, paste0(unit.id, ".int")]), stringsAsFactors = F)
     }
   }
   else {
@@ -106,7 +115,8 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
   {
     ordered.data[, treatment] <- ifelse(ordered.data[, treatment] == 1,0,1) #flip the treatment variables 
     msets <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data, 
-                                match.missing, covs.formula, verbose, lead= lead, outcome.var = outcome.var, restricted = restricted, qoi = qoi)
+                                match.missing, covs.formula, verbose, lead= lead, outcome.var = outcome.var, 
+                                restricted = restricted, qoi = qoi, matching = matching)
     msets <- decode_index(msets, unit.index.map, og.unit.id)
     pm.obj <- list("atc" = msets)
     class(pm.obj) <- "PanelMatch"
@@ -118,7 +128,8 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
   } else if(qoi == "att")
   {
     msets <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data,
-                                match.missing, covs.formula, verbose, lead = lead, outcome.var = outcome.var, restricted = restricted, qoi = qoi)
+                                match.missing, covs.formula, verbose, lead = lead, outcome.var = outcome.var, 
+                                restricted = restricted, qoi = qoi, matching = matching)
     msets <- decode_index(msets, unit.index.map, og.unit.id)
     pm.obj <- list("att" = msets)
     class(pm.obj) <- "PanelMatch"
@@ -130,10 +141,12 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
   } else if(qoi == "ate")
   {
     msets <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data, 
-                                match.missing, covs.formula, verbose, lead = lead, outcome.var = outcome.var, restricted = restricted, qoi = qoi)
+                                match.missing, covs.formula, verbose, lead = lead, outcome.var = outcome.var, 
+                                restricted = restricted, qoi = qoi, matching = matching)
     ordered.data[, treatment] <- ifelse(ordered.data[, treatment] == 1,0,1) #flip the treatment variables 
     msets2 <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data,
-                                 match.missing, covs.formula, verbose, lead = lead, outcome.var = outcome.var, restricted = restricted, qoi = qoi)
+                                 match.missing, covs.formula, verbose, lead = lead, outcome.var = outcome.var, 
+                                 restricted = restricted, qoi = qoi, matching = matching)
     msets <- decode_index(msets, unit.index.map, og.unit.id)
     msets2 <- decode_index(msets2, unit.index.map, og.unit.id)
     pm.obj <- list("att" = msets, "atc" = msets2)
@@ -146,7 +159,8 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
   } else #ade
   {
     msets <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data,
-                                match.missing, covs.formula, verbose, lead = lead, outcome.var = outcome.var, restricted = restricted, qoi = qoi)
+                                match.missing, covs.formula, verbose, lead = lead, outcome.var = outcome.var, 
+                                restricted = restricted, qoi = qoi, matching = matching)
     msets <- decode_index(msets, unit.index.map, og.unit.id)
     pm.obj <- list("ade" = msets)
     class(pm.obj) <- "PanelMatch"

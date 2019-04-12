@@ -84,7 +84,8 @@ findAllTreated <- function(dmat, treatedvar, time.var, unit.var, hasbeensorted =
 #' msets <- get.matchedsets(treateds$year, treateds$wbcode2, subdem, 4, "year", "wbcode2", "dem")
 #' }
 #' @export
-get.matchedsets <- function(t, id, data, L, t.column, id.column, treatedvar, hasbeensorted = FALSE, match.on.missingness = TRUE) 
+get.matchedsets <- function(t, id, data, L, t.column, id.column, treatedvar, 
+                            hasbeensorted = FALSE, match.on.missingness = TRUE, matching = TRUE) 
 {
   if(length(t) == 0 | length(id) == 0)
   {
@@ -113,8 +114,10 @@ get.matchedsets <- function(t, id, data, L, t.column, id.column, treatedvar, has
   if(!is.numeric(d)) stop('data in treated, time, or id columns is not numeric')
   #CHECK TO MAKE SURE COLUMNS ARE IN ORDER!!!
   #fix factor conversion to be more smooth and allow for different data types.
-  compmat <- data.table::dcast(data.table::as.data.table(d), formula = paste0(id.column, "~", t.column), value.var = treatedvar) #reshape the data so each row corresponds to a unit, columns specify treatment over time
-  d <- data.table::melt(compmat, id = id.column, variable = t.column, value = treatedvar, variable.factor = FALSE, value.name = treatedvar)
+  compmat <- data.table::dcast(data.table::as.data.table(d), formula = paste0(id.column, "~", t.column), 
+                               value.var = treatedvar) #reshape the data so each row corresponds to a unit, columns specify treatment over time
+  d <- data.table::melt(compmat, id = id.column, variable = t.column, value = treatedvar, 
+                        variable.factor = FALSE, value.name = treatedvar)
   #ensuring that we have integers
   newdata <- as.integer(as.character(unlist(d[, ..t.column])))
   d[, (t.column) := newdata]
@@ -126,11 +129,33 @@ get.matchedsets <- function(t, id, data, L, t.column, id.column, treatedvar, has
     d[is.na(d[,treatedvar]), treatedvar] <- -1
     compmat[is.na(compmat)] <- -1  
   }
+
+  control.histories <- get_comparison_histories(d, t, id, which(colnames(d) == t.column) - 1 ,
+                                                which(colnames(d) == id.column) - 1, L,
+                                                which(colnames(d) == treatedvar) - 1) #control histories should be a list
   
-  control.histories <- get_comparison_histories(d, t, id, which(colnames(d) == t.column) - 1 , which(colnames(d) == id.column) - 1, L, which(colnames(d) == treatedvar) - 1) #control histories should be a list
+  if(!matching & !match.on.missingness)
+  {
+    tidx <- !unlist(lapply(control.histories, function(x)return(any(is.na(x)))))
+    control.histories <- control.histories[tidx]
+    t2 <- t[!tidx]
+    id2 <- id[!tidx]
+    t <- t[tidx]
+    id <- id[tidx]
+    t.map <- match(t, unique(d[, t.column]))
+    sets <- non_matching_matcher(control.histories, as.matrix(compmat), t.map, id, L = 1, missing_window = L)
+    if(any(!tidx))
+    {
+      l2 <- replicate(sum(!tidx), numeric())
+    }
+    named.sets <- matched_set(matchedsets = c(sets, l2), id = c(id, id2), t = c(t, t2), L = L, t.var = t.column, id.var = id.column, treated.var = treatedvar)
+  }
+  else
+  {
+    t.map <- match(t, unique(d[, t.column]))
+    sets <- get_msets_helper(control.histories, as.matrix(compmat), t.map, id, L)
+    named.sets <- matched_set(matchedsets = sets, id = id, t = t, L = L, t.var = t.column, id.var = id.column, treated.var = treatedvar)  
+  }
   
-  t.map <- match(t, unique(d[, t.column])) #unique() should preserve orderings
-  sets <- get_msets_helper(control.histories, as.matrix(compmat), t.map, id, L)
-  named.sets <- matched_set(matchedsets = sets, id = id, t = t, L = L, t.var = t.column, id.var = id.column, treated.var = treatedvar)
   return(named.sets)
 }

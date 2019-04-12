@@ -1,6 +1,8 @@
 # File contains helper functions written in R for PanelMatch functionality
 perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.method, size.match, 
-                               ordered.data, match.missing, covs.formula, verbose, mset.object = NULL, lead, outcome.var = NULL, restricted = FALSE, qoi = "")
+                               ordered.data, match.missing, covs.formula, verbose, 
+                               mset.object = NULL, lead, outcome.var = NULL, restricted = FALSE, qoi = "",
+                               matching = TRUE)
 {
   if(!is.null(mset.object))
   {
@@ -17,7 +19,8 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
   }
   else
   {
-    temp.treateds <- findAllTreated(ordered.data, treatedvar = treatment, time.var = time.id, unit.var = unit.id, hasbeensorted = TRUE)
+    temp.treateds <- findAllTreated(ordered.data, treatedvar = treatment, time.var = time.id, 
+                                    unit.var = unit.id, hasbeensorted = TRUE)
     idx <- !((temp.treateds[, time.id] - lag) < min(ordered.data[, time.id]))
     temp.treateds <- temp.treateds[idx, ]
     if(nrow(temp.treateds) == 0) 
@@ -25,7 +28,8 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
       warn.str <- paste0("no treated units for ", qoi, " specification")
       stop(warn.str)
     }
-    msets <- get.matchedsets(temp.treateds[, time.id], temp.treateds[, unit.id], ordered.data, lag, time.id, unit.id, treatment, hasbeensorted = TRUE, match.on.missingness = match.missing)
+    msets <- get.matchedsets(temp.treateds[, time.id], temp.treateds[, unit.id], ordered.data, 
+                             lag, time.id, unit.id, treatment, hasbeensorted = TRUE, match.on.missingness = match.missing, matching)
     e.sets <- msets[sapply(msets, length) == 0]
     msets <- msets[sapply(msets, length) > 0 ]
     #if(max(lead) > 0)
@@ -64,7 +68,8 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
   
   treated.ts <- as.numeric(unlist(strsplit(names(msets), split = "[.]"))[c(F,T)])
   treated.ids <- as.numeric(unlist(strsplit(names(msets), split = "[.]"))[c(T,F)])
-  ordered.data <- as.matrix(parse_and_prep(formula = covs.formula, data = ordered.data, unit.id = unit.id, treatment.var = treatment)) #every column > 3 at this point should be used in distance/refinement calculation
+  ordered.data <- as.matrix(parse_and_prep(formula = covs.formula, 
+                                           data = ordered.data, unit.id = unit.id, treatment.var = treatment)) #every column > 3 at this point should be used in distance/refinement calculation
   ordered.data <- as.matrix(handle.missing.data(ordered.data, 4:ncol(ordered.data)))
   
   #RE IMPLEMENT RESTRICTED OR NAIVE?

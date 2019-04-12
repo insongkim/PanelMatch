@@ -49,6 +49,7 @@ extern SEXP _PanelMatch_get_vit_index(SEXP, SEXP, SEXP);
 extern SEXP _PanelMatch_get_yearly_dmats(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP _PanelMatch_multiply_weights_msm(SEXP, SEXP);
 extern SEXP _PanelMatch_needs_renormalization(SEXP);
+extern SEXP _PanelMatch_non_matching_matcher(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP _PanelMatch_prep_lead_years(SEXP, SEXP);
 extern SEXP _PanelMatch_re_norm_index(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP _PanelMatch_sumwits(SEXP, SEXP);
@@ -97,6 +98,7 @@ static const R_CallMethodDef CallEntries[] = {
   {"_PanelMatch_get_yearly_dmats",                              (DL_FUNC) &_PanelMatch_get_yearly_dmats,                              6},
   {"_PanelMatch_multiply_weights_msm",                          (DL_FUNC) &_PanelMatch_multiply_weights_msm,                          2},
   {"_PanelMatch_needs_renormalization",                         (DL_FUNC) &_PanelMatch_needs_renormalization,                         1},
+  {"_PanelMatch_non_matching_matcher",                          (DL_FUNC) &_PanelMatch_non_matching_matcher,                          6},
   {"_PanelMatch_prep_lead_years",                               (DL_FUNC) &_PanelMatch_prep_lead_years,                               2},
   {"_PanelMatch_re_norm_index",                                 (DL_FUNC) &_PanelMatch_re_norm_index,                                 6},
   {"_PanelMatch_sumwits",                                       (DL_FUNC) &_PanelMatch_sumwits,                                       2},
