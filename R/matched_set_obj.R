@@ -166,9 +166,12 @@ build_balance_mats <- function(idx, ordered_expanded_data, msets)
 #' @param reference.line logical indicating whether or not a horizontal line should be present on the plot at y = 0
 #' @param legend logical indicating whether or not a legend should be included on the plot
 #' @param ylab Label for y axis. Default is "SD"
+#' @param use.equal.weights logical. If set to TRUE, then equal weights will be assigned to control units, rather than using whatever calculated weights have been assigned.
 #' @param ... Additional graphical parameters to be passed to the \code{plot} function in base R.
 #' @export
-get_covariate_balance <- function(matched.sets, data,  covariates, verbose = T, plot = F, reference.line = TRUE, legend = TRUE, ylab = "SD",...)
+get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.weights = FALSE,
+                                  verbose = T, plot = F, 
+                                  reference.line = TRUE, legend = TRUE, ylab = "SD",...)
 {
   if(is.null(covariates))
   {
@@ -210,7 +213,8 @@ get_covariate_balance <- function(matched.sets, data,  covariates, verbose = T, 
   matched.sets <- matched.sets[sapply(matched.sets, length) > 0]
   matched.sets <- encode_index(matched.sets, unit.index.map, unit.id)
   #they will either all have or not have weights, so we can check the first matched set to see if we need to add equal weighting
-  if(is.null(attr(matched.sets[[1]], "weights")))
+  #i dont think that its possible for sets to not have any weights now, but don't think it hurts to keep this in
+  if(is.null(attr(matched.sets[[1]], "weights")) | use.equal.weights)
   {
     for(i in 1:length(matched.sets))
     {
