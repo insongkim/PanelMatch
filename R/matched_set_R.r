@@ -147,14 +147,21 @@ get.matchedsets <- function(t, id, data, L, t.column, id.column, treatedvar,
     if(any(!tidx))
     {
       l2 <- replicate(sum(!tidx), numeric())
+      named.sets <- matched_set(matchedsets = c(sets, l2), id = c(id, id2), t = c(t, t2), L = L, 
+                                t.var = t.column, id.var = id.column, treated.var = treatedvar)
+    } else
+    {
+      named.sets <- matched_set(matchedsets = sets, id = id, t = t, L = L, 
+                                t.var = t.column, id.var = id.column, treated.var = treatedvar)
     }
-    named.sets <- matched_set(matchedsets = c(sets, l2), id = c(id, id2), t = c(t, t2), L = L, t.var = t.column, id.var = id.column, treated.var = treatedvar)
-  }
+    
+  } 
   else
   {
     t.map <- match(t, unique(d[, t.column]))
     sets <- get_msets_helper(control.histories, as.matrix(compmat), t.map, id, L)
-    named.sets <- matched_set(matchedsets = sets, id = id, t = t, L = L, t.var = t.column, id.var = id.column, treated.var = treatedvar)  
+    named.sets <- matched_set(matchedsets = sets, id = id, t = t, L = L, 
+                              t.var = t.column, id.var = id.column, treated.var = treatedvar)  
   }
   
   return(named.sets)

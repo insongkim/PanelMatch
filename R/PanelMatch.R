@@ -63,6 +63,7 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
 {
   if(!matching & match.missing)
   {
+    old.lag <- lag
     lag <- 1
   }
   if(lag < 1) stop("please specify a lag value >= 1")
@@ -118,6 +119,10 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
                                 match.missing, covs.formula, verbose, lead= lead, outcome.var = outcome.var, 
                                 restricted = restricted, qoi = qoi, matching = matching)
     msets <- decode_index(msets, unit.index.map, og.unit.id)
+    if(!matching & match.missing)
+    {
+      attr(msets, "lag") <- old.lag
+    }
     pm.obj <- list("atc" = msets)
     class(pm.obj) <- "PanelMatch"
     attr(pm.obj, "qoi") <- qoi
@@ -131,6 +136,10 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
                                 match.missing, covs.formula, verbose, lead = lead, outcome.var = outcome.var, 
                                 restricted = restricted, qoi = qoi, matching = matching)
     msets <- decode_index(msets, unit.index.map, og.unit.id)
+    if(!matching & match.missing)
+    {
+      attr(msets, "lag") <- old.lag
+    }
     pm.obj <- list("att" = msets)
     class(pm.obj) <- "PanelMatch"
     attr(pm.obj, "qoi") <- qoi
@@ -148,7 +157,15 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
                                  match.missing, covs.formula, verbose, lead = lead, outcome.var = outcome.var, 
                                  restricted = restricted, qoi = qoi, matching = matching)
     msets <- decode_index(msets, unit.index.map, og.unit.id)
+    if(!matching & match.missing)
+    {
+      attr(msets, "lag") <- old.lag
+    }
     msets2 <- decode_index(msets2, unit.index.map, og.unit.id)
+    if(!matching & match.missing)
+    {
+      attr(msets2, "lag") <- old.lag
+    }
     pm.obj <- list("att" = msets, "atc" = msets2)
     class(pm.obj) <- "PanelMatch"
     attr(pm.obj, "qoi") <- qoi
@@ -162,6 +179,10 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
                                 match.missing, covs.formula, verbose, lead = lead, outcome.var = outcome.var, 
                                 restricted = restricted, qoi = qoi, matching = matching)
     msets <- decode_index(msets, unit.index.map, og.unit.id)
+    if(!matching & match.missing)
+    {
+      attr(msets, "lag") <- old.lag
+    }
     pm.obj <- list("ade" = msets)
     class(pm.obj) <- "PanelMatch"
     attr(pm.obj, "qoi") <- qoi
