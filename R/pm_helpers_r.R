@@ -107,8 +107,23 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
           }
           expanded.sets.tf <- lapply(expanded.sets.tf, rmv, cols.to.remove_ = cols.to.remove)
         }
-        if(qr(pooled)$rank != ncol(pooled)) stop("Error: Provided data is not linearly independent so calculations cannot be completed. Please check the data set for any redundant, unnecessary, or problematic information.")
-        
+        if(qr(pooled)$rank != ncol(pooled)) 
+        {
+          print("Data used to generate propensity scores is not linearly independent. Calculations cannot be completed.
+                Would you like to save the problematic matrix to file for manual inspection? File and variable will be saved as 'problematic_matrix.rda'. ")
+          inkey <- readline("Press 'y' to save and any other key to do nothing: ")
+          if(inkey == "y")
+          {
+            problematic_matrix <- pooled
+            save(problematic_matrix, file = "problematic_matrix.rda")
+            stop("PanelMatch terminated")
+          }
+          else
+          {
+            stop("Error: Provided data is not linearly independent so calculations cannot be completed. Please check the data set for any redundant, unnecessary, or problematic information.")
+          }
+          
+        }
         if(refinement.method == "CBPS.msm.weight") #obviously update these conditionals
         {
           fit.tf <- suppressMessages(CBPS::CBPS(reformulate(response = treatment, termlabels = colnames(pooled)[-c(1:3)]), 
@@ -149,7 +164,23 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
       }
       expanded.sets.t0 <- lapply(expanded.sets.t0, rmv, cols.to.remove_ = cols.to.remove)
     }
-    if(qr(pooled)$rank != ncol(pooled)) stop("Error: Provided data is not linearly independent so calculations cannot be completed. Please check the data set for any redundant, unnecessary, or problematic information.")
+    if(qr(pooled)$rank != ncol(pooled)) 
+    {
+      print("Data used to generate propensity scores is not linearly independent. Calculations cannot be completed.
+            Would you like to save the problematic matrix to file for manual inspection? File and variable will be saved as 'problematic_matrix.rda'. ")
+      inkey <- readline("Press 'y' to save and any other key to do nothing: ")
+      if(inkey == "y")
+      {
+        problematic_matrix <- pooled
+        save(problematic_matrix, file = "problematic_matrix.rda")
+        stop("PanelMatch terminated")
+      }
+      else
+      {
+        stop("Error: Provided data is not linearly independent so calculations cannot be completed. Please check the data set for any redundant, unnecessary, or problematic information.")
+      }
+      
+    }
     if(refinement.method == "CBPS.weight" | refinement.method == "CBPS.match")
     {
       fit0 <- suppressMessages(CBPS::CBPS(reformulate(response = treatment, termlabels = colnames(pooled)[-c(1:3)]), 
