@@ -1,6 +1,14 @@
 #' matched_set
 #' 
-#' \code{matched_set} is a constructor for the matched.set class. 
+#' \code{matched_set} is a constructor for the matched.set class.
+#' 
+#' @param matchedsets a list of treated units and matched control units. Each element in the list should be a vector of control unit ids.
+#' @param id A vector containing the ids of treated units
+#' @param t A vector containing the times of treatment for treated units.
+#' @param L integer specifying the length of the lag window used in matching
+#' @param t.var string specifying the time variable
+#' @param id.var string specifying the id variable
+#' @param treated.var string specifying the treatement variable.
 #' 
 #' matched.set objects are a modified list. Each element in the list is a vector of ids corresponding to the control unit ids in a matched set. 
 #' Additionally, these vectors might have additional attributes -- "weights" or "distances". These correspond to the weights or distances corresponding to each control unit, as determined by the specified refinement method.
@@ -35,8 +43,14 @@ matched_set <- function(matchedsets, id, t, L, t.var, id.var, treated.var)
 }
 
 #' Method for plotting the distribution of the sizes of \code{matched.set} objects.
-#' A plot method for creating histograms of the distribution of the sizes of matched sets. 
+#' A plot method for creating histograms of the distribution of the sizes of matched sets.
+#' 
 #' Accepts all standard \code{summary} arguments. Empty sets are excluded from the histogram but are noted in the subtitle by default.
+#' 
+#' @param object a \code{matched.set} object
+#' @param ... Optional additional arguments to be passed to the summary function
+#' @param verbose Logical option specifying whether or not a longer, more verbose summary should be calculated and returned.
+#' 
 #' @export
 summary.matched.set <- function(object, ..., verbose = T)
 {
@@ -68,6 +82,16 @@ summary.matched.set <- function(object, ..., verbose = T)
 #' Method for plotting the distribution of the sizes of \code{matched.set} objects.
 #' A plot method for creating histograms of the distribution of the sizes of matched sets. 
 #' Accepts all standard \code{plot} arguments. Empty sets are excluded from the histogram but are noted in the subtitle by default.
+#' 
+#' @param x a \code{matched.set} object
+#' @param ... optional arguments to be passed to \code{plot} 
+#' @param border default is NA. This is the same argument as the standard argument for \code{plot}
+#' @param col default is "grey". This is the same argument as the standard argument for \code{plot}
+#' @param ylab default is "Frequency of Size". This is the same argument as the standard argument for \code{plot}
+#' @param xlab default is "Matched Set Size". This is the same argument as the standard argument for \code{plot}
+#' @param lwd default is NULL. This is the same argument as the standard argument for \code{plot}
+#' @param main default is "Distributioin of matched set sizes". This is the same argument as the standard argument for \code{plot}
+#' 
 #' @export
 plot.matched.set <- function(x, ..., border = NA, col = "grey", ylab = "Frequency of Size", 
                              xlab ="Matched Set Size" , lwd = NULL,
@@ -85,11 +109,11 @@ plot.matched.set <- function(x, ..., border = NA, col = "grey", ylab = "Frequenc
       #   lwd = 4
       # }
       # lines(x = c(0,0), y = c(0, length(rep(0, sum(lvec == 0) )) ), col = "red", lwd = lwd)
-      hist(x = lvec.nonempty, freq = TRUE, border = border, col = col, ylab = ylab, xlab = xlab, main = main, sub = paste(num.empties, "empty matched set(s)"), ...)
+      graphics::hist(x = lvec.nonempty, freq = TRUE, border = border, col = col, ylab = ylab, xlab = xlab, main = main, sub = paste(num.empties, "empty matched set(s)"), ...)
     }
     else
     {
-      hist(x = lvec.nonempty, freq = TRUE, border = border, col = col, ylab = ylab, xlab = xlab, main = main, ...)
+      graphics::hist(x = lvec.nonempty, freq = TRUE, border = border, col = col, ylab = ylab, xlab = xlab, main = main, ...)
     }
 }
 
@@ -189,15 +213,18 @@ get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.wei
   ordered.data[, paste0(unit.id, ".int")] <- as.integer(as.factor(data[, unit.id]))
   
   if(class(ordered.data[, unit.id]) == "character") {
-    unit.index.map <- data.frame(original.id = make.names(as.character(unique(ordered.data[, unit.id]))), new.id = unique(ordered.data[, paste0(unit.id, ".int")]), stringsAsFactors = F)
+    unit.index.map <- data.frame(original.id = make.names(as.character(unique(ordered.data[, unit.id]))), 
+                                 new.id = unique(ordered.data[, paste0(unit.id, ".int")]), stringsAsFactors = F)
   }
   else if(class(ordered.data[, unit.id]) == "integer") {
-    unit.index.map <- data.frame(original.id = (as.character(unique(ordered.data[, unit.id]))), new.id = unique(ordered.data[, paste0(unit.id, ".int")]), stringsAsFactors = F)
+    unit.index.map <- data.frame(original.id = (as.character(unique(ordered.data[, unit.id]))), 
+                                 new.id = unique(ordered.data[, paste0(unit.id, ".int")]), stringsAsFactors = F)
   }
   else if(class(ordered.data[, unit.id]) == "numeric") {
     if(all(unique(ordered.data[, unit.id]) == as.integer(unique(ordered.data[, unit.id])))) #actually integers
     {
-      unit.index.map <- data.frame(original.id = (as.character(unique(ordered.data[, unit.id]))), new.id = unique(ordered.data[, paste0(unit.id, ".int")]), stringsAsFactors = F)
+      unit.index.map <- data.frame(original.id = (as.character(unique(ordered.data[, unit.id]))),
+                                   new.id = unique(ordered.data[, paste0(unit.id, ".int")]), stringsAsFactors = F)
     }
     else
     {
@@ -240,7 +267,8 @@ get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.wei
     {
       variable <- covariates[i]
       
-      sd.val <- sd(sapply(unlistedmats[seq(from = 1, to = (length(matched.sets) * (lag + 1)), by = lag + 1)], function(x){x[nrow(x), variable]}), na.rm = T)
+      sd.val <- sd(sapply(unlistedmats[seq(from = 1, to = (length(matched.sets) * (lag + 1)), by = lag + 1)], 
+                          function(x){x[nrow(x), variable]}), na.rm = T)
       
       tprd <- unlistedmats[seq(from = k, to = (length(matched.sets) * (lag + 1)), by = lag + 1)] #should represent the same relative period across all matched sets. each df is a matched set
       
@@ -263,9 +291,9 @@ get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.wei
   
   if(plot)
   {
-    matplot(pointmatrix, type = "l", col = 1:ncol(pointmatrix), lty =1, ylab = ylab, ...)
+    graphics::matplot(pointmatrix, type = "l", col = 1:ncol(pointmatrix), lty =1, ylab = ylab, ...)
     if(legend) legend("topleft", legend = colnames(pointmatrix), col=1:ncol(pointmatrix), lty = 1)
-    if(reference.line) abline(h = 0, lty = "dashed")
+    if(reference.line) graphics::abline(h = 0, lty = "dashed")
   }
 }
 

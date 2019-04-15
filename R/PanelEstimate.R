@@ -533,9 +533,17 @@ summary.PanelEstimate <- function(object,..., verbose = TRUE, bias.corrected = F
 
 #' plot the point estimates and standard errors from a PanelEstimate calculation. The only mandatory argument is an object of the PanelEstimate class
 #' Use standard arguments to the \code{plot} function to modify the plot as needed.
+
 #' @param x a PanelEstimate object
+#' @param ylab default is "Estimated Effect of Treatment. This is the same argument as the standard argument for \code{plot}
+#' @param xlab default is "Time". This is the same argument as the standard argument for \code{plot}
+#' @param main default is "Estimated Effects of Treatment Over Time". This is the same argument as the standard argument for \code{plot}
+#' @param ylim default is NULL. This is the same argument as the standard argument for \code{plot}
+#' @param ... Additional optional arguments to \code{plot}.
+
 #' @export
-plot.PanelEstimate <- function(x, ylab = "Estimated Effect of Treatment", xlab = "Time", main = "Estimated Effects of Treatment Over Time", ylim = NULL, ...)
+plot.PanelEstimate <- function(x, ylab = "Estimated Effect of Treatment", 
+                               xlab = "Time", main = "Estimated Effects of Treatment Over Time", ylim = NULL, ...)
 {
   
   pe.object <- x
@@ -544,11 +552,11 @@ plot.PanelEstimate <- function(x, ylab = "Estimated Effect of Treatment", xlab =
   {
     ylim <- c(min(plot.data[, 3]) - abs(mean(plot.data[, 3])), max(plot.data[, 4]) + abs(mean(max(plot.data[, 4]))))
   }
-  plot(x = 1:(nrow(plot.data)),y = plot.data[, 1], pch = 16, cex = 1.5,
+  graphics::plot(x = 1:(nrow(plot.data)),y = plot.data[, 1], pch = 16, cex = 1.5,
        xaxt = "n", ylab = ylab, xlab = xlab, main = main, ylim = ylim, ...)
-  axis(side = 1, at = 1:nrow(plot.data), labels = rownames(plot.data))
-  segments(1:(nrow(plot.data)), plot.data[,3], 1:(nrow(plot.data)), plot.data[,4])#, length=0.05, angle=90, code=3)
-  abline(h = 0, lty = "dashed")
+  graphics::axis(side = 1, at = 1:nrow(plot.data), labels = rownames(plot.data))
+  graphics::segments(1:(nrow(plot.data)), plot.data[,3], 1:(nrow(plot.data)), plot.data[,4])#, length=0.05, angle=90, code=3)
+  graphics::abline(h = 0, lty = "dashed")
 }
 
 

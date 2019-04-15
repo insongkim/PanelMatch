@@ -312,7 +312,7 @@ Wdemean <- function (x, w, unit.index, time.index, data) {
       names(out) <- c("Type", "Size", "Rows", "Columns")
       out <- out[order(out[[order.by]], decreasing=decreasing), ]
       if (head)
-            out <- head(out, n)
+            out <- utils::head(out, n)
       out
   }
 

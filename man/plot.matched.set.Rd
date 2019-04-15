@@ -10,6 +10,23 @@ Accepts all standard \code{plot} arguments. Empty sets are excluded from the his
   ylab = "Frequency of Size", xlab = "Matched Set Size", lwd = NULL,
   main = "Distribution of matched set sizes")
 }
+\arguments{
+\item{x}{a \code{matched.set} object}
+
+\item{...}{optional arguments to be passed to \code{plot}}
+
+\item{border}{default is NA. This is the same argument as the standard argument for \code{plot}}
+
+\item{col}{default is "grey". This is the same argument as the standard argument for \code{plot}}
+
+\item{ylab}{default is "Frequency of Size". This is the same argument as the standard argument for \code{plot}}
+
+\item{xlab}{default is "Matched Set Size". This is the same argument as the standard argument for \code{plot}}
+
+\item{lwd}{default is NULL. This is the same argument as the standard argument for \code{plot}}
+
+\item{main}{default is "Distributioin of matched set sizes". This is the same argument as the standard argument for \code{plot}}
+}
 \description{
 Method for plotting the distribution of the sizes of \code{matched.set} objects.
 A plot method for creating histograms of the distribution of the sizes of matched sets. 

@@ -4,7 +4,8 @@
 \alias{get_covariate_balance}
 \title{get_covariate_balance}
 \usage{
-get_covariate_balance(matched.sets, data, covariates, verbose = T, plot = F,
+get_covariate_balance(matched.sets, data, covariates,
+  use.equal.weights = FALSE, verbose = T, plot = F,
   reference.line = TRUE, legend = TRUE, ylab = "SD", ...)
 }
 \arguments{
@@ -13,6 +14,8 @@ get_covariate_balance(matched.sets, data, covariates, verbose = T, plot = F,
 \item{data}{The data set used to produce the matched.set object. Please make sure this data set is identical to the one passed to PanelMatch/PanelEstimate to ensure consistent results}
 
 \item{covariates}{a character vector, specifying the names of the covariates for which the user is interested in calculating balance.}
+
+\item{use.equal.weights}{logical. If set to TRUE, then equal weights will be assigned to control units, rather than using whatever calculated weights have been assigned.}
 
 \item{verbose}{When TRUE, the function will return more information about the calculations/results. When FALSE, a more compact version of the results/calculations are returned.}
 

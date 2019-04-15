@@ -3,13 +3,17 @@
 \name{summary.matched.set}
 \alias{summary.matched.set}
 \title{Method for plotting the distribution of the sizes of \code{matched.set} objects.
-A plot method for creating histograms of the distribution of the sizes of matched sets. 
-Accepts all standard \code{summary} arguments. Empty sets are excluded from the histogram but are noted in the subtitle by default.}
+A plot method for creating histograms of the distribution of the sizes of matched sets.}
 \usage{
-summary.matched.set(object, ..., verbose = T)
+\method{summary}{matched.set}(object, ..., verbose = T)
+}
+\arguments{
+\item{object}{a \code{matched.set} object}
+
+\item{...}{Optional additional arguments to be passed to the summary function}
+
+\item{verbose}{Logical option specifying whether or not a longer, more verbose summary should be calculated and returned.}
 }
 \description{
-Method for plotting the distribution of the sizes of \code{matched.set} objects.
-A plot method for creating histograms of the distribution of the sizes of matched sets. 
 Accepts all standard \code{summary} arguments. Empty sets are excluded from the histogram but are noted in the subtitle by default.
 }

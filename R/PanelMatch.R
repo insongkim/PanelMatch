@@ -84,6 +84,10 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
   {
     stop("please set restricted to TRUE for msm methods")
   }
+  if(refinement.method %in% c("CBPS.msm.weight", "ps.msm.weight") & qoi != "ade")
+  {
+    stop("please specify qoi = ade for msm methods")
+  }
   if(any(is.na(data[, unit.id]))) stop("Cannot have NA unit ids")
   ordered.data <- data[order(data[,unit.id], data[,time.id]), ]
   

@@ -6,6 +6,25 @@
 \usage{
 matched_set(matchedsets, id, t, L, t.var, id.var, treated.var)
 }
+\arguments{
+\item{matchedsets}{a list of treated units and matched control units. Each element in the list should be a vector of control unit ids.}
+
+\item{id}{A vector containing the ids of treated units}
+
+\item{t}{A vector containing the times of treatment for treated units.}
+
+\item{L}{integer specifying the length of the lag window used in matching}
+
+\item{t.var}{string specifying the time variable}
+
+\item{id.var}{string specifying the id variable}
+
+\item{treated.var}{string specifying the treatement variable.
+
+matched.set objects are a modified list. Each element in the list is a vector of ids corresponding to the control unit ids in a matched set. 
+Additionally, these vectors might have additional attributes -- "weights" or "distances". These correspond to the weights or distances corresponding to each control unit, as determined by the specified refinement method.
+Each element also has a name, which corresponds to the unit id and time variable of the treated unit and time of treatment, concatenated together and separated by a period. matched.set objects also have a number of methods defined: \code{summary}, \code{plot}, and \code{`[`}}
+}
 \value{
 \code{matched.set} objects have additional attributes:
 \item{lag}{an integer value indicating the length of treatment history to be used for matching}
@@ -20,11 +39,6 @@ matched_set(matchedsets, id, t, L, t.var, id.var, treated.var)
 }
 \description{
 \code{matched_set} is a constructor for the matched.set class.
-}
-\details{
-matched.set objects are a modified list. Each element in the list is a vector of ids corresponding to the control unit ids in a matched set. 
-Additionally, these vectors might have additional attributes -- "weights" or "distances". These correspond to the weights or distances corresponding to each control unit, as determined by the specified refinement method.
-Each element also has a name, which corresponds to the unit id and time variable of the treated unit and time of treatment, concatenated together and separated by a period. matched.set objects also have a number of methods defined: \code{summary}, \code{plot}, and \code{`[`}
 }
 \author{
 Adam Rauh <adamrauh@mit.edu>, In Song Kim <insong@mit.edu>, Erik Wang

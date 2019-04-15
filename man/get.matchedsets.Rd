@@ -5,7 +5,7 @@
 \title{get.matchedsets}
 \usage{
 get.matchedsets(t, id, data, L, t.column, id.column, treatedvar,
-  hasbeensorted = FALSE, match.on.missingness = TRUE)
+  hasbeensorted = FALSE, match.on.missingness = TRUE, matching = TRUE)
 }
 \arguments{
 \item{t}{integer vector specifying the times of treated units for which matched sets should be found. This vector should be the same length as the following \code{id} parameter -- the entries at corresponding indices in each vector should form the t,id pair of a specified treatment unit.}
@@ -25,6 +25,8 @@ get.matchedsets(t, id, data, L, t.column, id.column, treatedvar,
 \item{hasbeensorted}{variable that only has internal usage for optimization purposes. There should be no need for a user to toggle this}
 
 \item{match.on.missingness}{TRUE/FALSE indicating whether or not the user wants to "match on missingness." That is, should units with NAs in their treatment history windows be matched with control units that have NA's in corresponding places?}
+
+\item{matching}{logical indicating whether or not the treatment history should be used for matching. This should almost always be set to TRUE, except for specific situations where the user is interested in particular diagnostic questions.}
 }
 \value{
 \code{get.matchedsets} returns a "matched set" object, which primarily contains a named list of vectors. Each vector is a "matched set" containing the unit ids included in a matched set. The list names will indicate an i,t pair (formatted as "<i variable>.<t variable>") to which the vector/matched set corresponds.

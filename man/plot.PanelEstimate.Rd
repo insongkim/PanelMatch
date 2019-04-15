@@ -11,6 +11,16 @@ Use standard arguments to the \code{plot} function to modify the plot as needed.
 }
 \arguments{
 \item{x}{a PanelEstimate object}
+
+\item{ylab}{default is "Estimated Effect of Treatment. This is the same argument as the standard argument for \code{plot}}
+
+\item{xlab}{default is "Time". This is the same argument as the standard argument for \code{plot}}
+
+\item{main}{default is "Estimated Effects of Treatment Over Time". This is the same argument as the standard argument for \code{plot}}
+
+\item{ylim}{default is NULL. This is the same argument as the standard argument for \code{plot}}
+
+\item{...}{Additional optional arguments to \code{plot}.}
 }
 \description{
 plot the point estimates and standard errors from a PanelEstimate calculation. The only mandatory argument is an object of the PanelEstimate class

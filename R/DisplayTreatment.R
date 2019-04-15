@@ -62,6 +62,8 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
   #note: removing group_on and sort_by features for right now:
   group_on <- NULL
   sort_by <- NULL
+  colref <- NULL #for some reason --as-cran checks need this
+  color.manual <- NULL
   # @param sort_by Character name of a column containing data that will be used to help determine the order in which units are displayed on the plot. 
   # The average value for this variable will be calculated per unit. Units will then be displayed in ascending or descending order, according to that calculated value. 
   # Default value is the amount of treatment that units receive.
@@ -279,7 +281,7 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
         }
       }
     }
-    data$colref <- mapply(FUN = .set.colref, id_ = data$old.index, treatment = data$treatment, time_ = data$time.id)
+    data[, "colref"] <- mapply(FUN = .set.colref, id_ = data$old.index, treatment = data$treatment, time_ = data$time.id)
     if(!gradient.weights)
     {
       clrs <- sapply(unique(data$old.index), FUN = .in.set)
@@ -330,7 +332,7 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
           return(color.factor(color.of.unt, intensity.val, max.w))
         }
       }
-      data$color.manual <- mapply(FUN = setmanualcolor, intensity.val = data$weights, treated.val = data$treatment, 
+      data[, "color.manual"] <- mapply(FUN = setmanualcolor, intensity.val = data$weights, treated.val = data$treatment, 
                                   MoreArgs = list(max.w = top.weight, color.of.t = color.of.treated, color.of.unt = color.of.untreated))
      
       p <- ggplot(data, aes(unit.id, time.id)) + geom_tile(aes(fill = color.manual),
@@ -428,12 +430,12 @@ find.window <- function(lag,t)
 #helper function to set intensity of colors using the weights
 color.factor<-function(color, value, max){
   l.color<-length(color)
-  t.rgb=rep(col2rgb(color),length(value))
+  t.rgb=rep(grDevices::col2rgb(color),length(value))
   t.rgb[is.na(t.rgb)]<-255
   dim(t.rgb)<-c(3,l.color*length(value))
   value[is.na(value)]<-0
   t.rgb<-255-((255-t.rgb)*rep(value, each=3)/max)
-  return(rgb(red=t.rgb[1,], green=t.rgb[2,], blue=t.rgb[3,], maxColorValue=255))
+  return(grDevices::rgb(red=t.rgb[1,], green=t.rgb[2,], blue=t.rgb[3,], maxColorValue=255))
   
 }
 

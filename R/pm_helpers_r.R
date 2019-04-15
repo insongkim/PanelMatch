@@ -86,7 +86,6 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
     store.msm.data <- list()
     for(i in 1:length(lead))
     {
-        #tf = t + f
         f <- lead[i]
         tf <- expand.treated.ts(lag, treated.ts = treated.ts + f)
         tf.index <- get_yearly_dmats(ordered.data, treated.ids, tf, paste0(ordered.data[,unit.id], ".", 
@@ -359,7 +358,7 @@ handle_mahalanobis_calculations <- function(mahal.nested.list, msets, max.size, 
     else
     {
       ordered.dists <- sort(n.dists)
-      scoretobeat <- max(head(ordered.dists, n = max.set.size + 1))
+      scoretobeat <- max(utils::head(ordered.dists, n = max.set.size + 1))
       # might have situation where the Mth largest distance is the same as the Mth - 1 distance. This means that we either choose to leave out both and have a matched set smaller than the max, 
       # or include both of them and relax the size of our maximum set size
       if(sum(dists < scoretobeat & dists > 0) < max.set.size) #change this if we want to be more strict about max.set.size enforcements
@@ -451,7 +450,7 @@ handle_ps_match <- function(just.ps.sets, msets, refinement.method, verbose, max
     }
     else
     {
-      dist.to.beat <- max(head(sort(dists.to.consider), max.size + 1))
+      dist.to.beat <- max(utils::head(sort(dists.to.consider), max.size + 1))
       if(sum(dists < dist.to.beat & dists > 0) < max.set.size)
       {
         new.denom <- sum(dists <= dist.to.beat & dists > 0)
