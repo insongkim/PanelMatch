@@ -59,7 +59,6 @@ pts <- function(sets, lead.in, method)
 getWits <- function(matched_sets, lead, data, estimation.method)
 {
   #sort the data
-  
   t.var <- attr(matched_sets, "t.var")
   id.var <- attr(matched_sets, "id.var")
   data <- data[order(data[,id.var], data[,t.var]), ]
