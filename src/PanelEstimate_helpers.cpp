@@ -67,8 +67,8 @@ Rcpp::List prep_lead_years(Rcpp::NumericVector ts, Rcpp::NumericVector lead_wind
 }
 
 
-// [[Rcpp::export()]]
-Rcpp::NumericVector sumwits(int nrow, Rcpp::NumericVector vit_vect)
+//Rcpp::NumericVector sumwits(int nrow, Rcpp::NumericVector vit_vect)
+Rcpp::NumericVector sumwits(int nrow, std::vector<double> &vit_vect)
 {
 	Rcpp::NumericVector WitVector(nrow);
 
@@ -279,5 +279,29 @@ Rcpp::NumericVector equality_four_cpp(Rcpp::NumericMatrix Wit_vals, Rcpp::Numeri
     results[i] = Rcpp::sum(x * y) / Rcpp::sum(z);
   }
   return results;
+}
+
+
+// [[Rcpp::export]]
+Rcpp::NumericVector handle_vits(Rcpp::NumericVector idxs, unsigned int nrow_data, unsigned int mset_size, 
+                                unsigned int num_empty, Rcpp::NumericVector weights)
+{
+  unsigned vec_size = (nrow_data * mset_size) - num_empty;
+  // Rcpp::Rcout << vec_size << std::endl;
+  // Rcpp::Rcout << nrow_data << std::endl;
+  // Rcpp::Rcout << mset_size << std::endl;
+  // Rcpp::Rcout << num_empty << std::endl;
+  std::vector<double> vit_vect(vec_size);
+  Rcpp::Rcout << vit_vect.size() << std::endl;
+  for(int i = 0; i < idxs.size(); i++)
+  {
+    Rcpp::Rcout << i << std::endl;
+    Rcpp::Rcout << idxs[i] - 1 << std::endl;
+    Rcpp::Rcout << weights[i] << std::endl;
+    vit_vect[idxs[i] - 1] = weights[i];
+  }
+  Rcpp::Rcout << "exited loop" << std::endl;
+  // vit_vect[idxs] = weights;
+  return sumwits(nrow_data, vit_vect);
 }
 

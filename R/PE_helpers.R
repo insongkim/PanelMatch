@@ -65,7 +65,7 @@ getWits <- function(matched_sets, lead, data, estimation.method)
   include <- sapply(matched_sets, length) > 0
   num.empty <- sum(!include)
   
-  vit.vect <- numeric(nrow(data) * (length(matched_sets) - num.empty))
+  
   #prep control sets, prep treatment sets for search/summation vector
   p.df <- pcs(matched_sets, lead, estimation.method)
   t.df <- pts(matched_sets, lead, estimation.method)
@@ -73,13 +73,16 @@ getWits <- function(matched_sets, lead, data, estimation.method)
   t.idvector <- paste0(c(p.df$id, t.df$id), ".", c(p.df$t, t.df$t))
   setnums <- c(p.df$set.num, t.df$set.num)
   #function to figure out where to put each weight
-  idxes <- get_vit_index(paste0(data[, id.var], ".", data[, t.var]), t.idvector, setnums)
+  idxes <- get_vit_index(paste0(data[, id.var], ".", data[, t.var]), t.idvector, setnums) #should be ok to leave this in R
+  browser()
+  Wits <- handle_vits(idxes, nrow(data), length(matched_sets), num.empty, c(p.df$weight, t.df$weight))
   
-  vit.vect[idxes] <- c(p.df$weight, t.df$weight)
+  ##############################should be wrapped into handle_vits###########################
+  #vit.vect <- numeric(nrow(data) * (length(matched_sets) - num.empty))
+  #vit.vect[idxes] <- c(p.df$weight, t.df$weight)
   #summing the weights
-  Wits <- sumwits(nrow(data), vit_vect = vit.vect) 
-  #Wits <- sapply(1:nrow(data), function(i){sum(vit.vect[seq(i, length(vit.vect), by = nrow(data))])}) #also to be converted to c++ later more than likely
-  
+  #Wits <- sumwits(nrow(data), vit_vect = vit.vect) 
+  ##########################################################################################
   return(Wits)
   
 }

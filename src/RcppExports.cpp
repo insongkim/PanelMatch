@@ -44,18 +44,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// sumwits
-Rcpp::NumericVector sumwits(int nrow, Rcpp::NumericVector vit_vect);
-RcppExport SEXP _PanelMatch_sumwits(SEXP nrowSEXP, SEXP vit_vectSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< int >::type nrow(nrowSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type vit_vect(vit_vectSEXP);
-    rcpp_result_gen = Rcpp::wrap(sumwits(nrow, vit_vect));
-    return rcpp_result_gen;
-END_RCPP
-}
 // re_norm_index
 Rcpp::List re_norm_index(Rcpp::NumericMatrix compmat, Rcpp::NumericVector compmat_row_units, Rcpp::NumericVector compmat_cols, int lead, Rcpp::List sets, Rcpp::NumericVector control_start_years);
 RcppExport SEXP _PanelMatch_re_norm_index(SEXP compmatSEXP, SEXP compmat_row_unitsSEXP, SEXP compmat_colsSEXP, SEXP leadSEXP, SEXP setsSEXP, SEXP control_start_yearsSEXP) {
@@ -109,6 +97,21 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type y(ySEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type z(zSEXP);
     rcpp_result_gen = Rcpp::wrap(equality_four_cpp(Wit_vals, y, z));
+    return rcpp_result_gen;
+END_RCPP
+}
+// handle_vits
+Rcpp::NumericVector handle_vits(Rcpp::NumericVector idxs, unsigned int nrow_data, unsigned int mset_size, unsigned int num_empty, Rcpp::NumericVector weights);
+RcppExport SEXP _PanelMatch_handle_vits(SEXP idxsSEXP, SEXP nrow_dataSEXP, SEXP mset_sizeSEXP, SEXP num_emptySEXP, SEXP weightsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type idxs(idxsSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type nrow_data(nrow_dataSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type mset_size(mset_sizeSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type num_empty(num_emptySEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type weights(weightsSEXP);
+    rcpp_result_gen = Rcpp::wrap(handle_vits(idxs, nrow_data, mset_size, num_empty, weights));
     return rcpp_result_gen;
 END_RCPP
 }

@@ -13,10 +13,6 @@ prep_lead_years <- function(ts, lead_window) {
     .Call('_PanelMatch_prep_lead_years', PACKAGE = 'PanelMatch', ts, lead_window)
 }
 
-sumwits <- function(nrow, vit_vect) {
-    .Call('_PanelMatch_sumwits', PACKAGE = 'PanelMatch', nrow, vit_vect)
-}
-
 re_norm_index <- function(compmat, compmat_row_units, compmat_cols, lead, sets, control_start_years) {
     .Call('_PanelMatch_re_norm_index', PACKAGE = 'PanelMatch', compmat, compmat_row_units, compmat_cols, lead, sets, control_start_years)
 }
@@ -31,6 +27,10 @@ needs_renormalization <- function(set_index_list) {
 
 equality_four_cpp <- function(Wit_vals, y, z) {
     .Call('_PanelMatch_equality_four_cpp', PACKAGE = 'PanelMatch', Wit_vals, y, z)
+}
+
+handle_vits <- function(idxs, nrow_data, mset_size, num_empty, weights) {
+    .Call('_PanelMatch_handle_vits', PACKAGE = 'PanelMatch', idxs, nrow_data, mset_size, num_empty, weights)
 }
 
 get_treated_indices <- function(ordered_df, treated_indices, treat_col_idx, unit_var_col) {
