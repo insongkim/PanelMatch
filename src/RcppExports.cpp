@@ -7,6 +7,68 @@
 
 using namespace Rcpp;
 
+// get_treated_indices
+Rcpp::LogicalVector get_treated_indices(const Rcpp::NumericMatrix& ordered_df, const Rcpp::NumericVector& treated_indices, int treat_col_idx, int unit_var_col);
+RcppExport SEXP _PanelMatch_get_treated_indices(SEXP ordered_dfSEXP, SEXP treated_indicesSEXP, SEXP treat_col_idxSEXP, SEXP unit_var_colSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::NumericMatrix& >::type ordered_df(ordered_dfSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type treated_indices(treated_indicesSEXP);
+    Rcpp::traits::input_parameter< int >::type treat_col_idx(treat_col_idxSEXP);
+    Rcpp::traits::input_parameter< int >::type unit_var_col(unit_var_colSEXP);
+    rcpp_result_gen = Rcpp::wrap(get_treated_indices(ordered_df, treated_indices, treat_col_idx, unit_var_col));
+    return rcpp_result_gen;
+END_RCPP
+}
+// get_comparison_histories
+Rcpp::List get_comparison_histories(const Rcpp::NumericMatrix& compmat, const Rcpp::NumericVector& ts, const Rcpp::NumericVector& ids, int t_col, int id_col, int L, int treat_col);
+RcppExport SEXP _PanelMatch_get_comparison_histories(SEXP compmatSEXP, SEXP tsSEXP, SEXP idsSEXP, SEXP t_colSEXP, SEXP id_colSEXP, SEXP LSEXP, SEXP treat_colSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::NumericMatrix& >::type compmat(compmatSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type ts(tsSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type ids(idsSEXP);
+    Rcpp::traits::input_parameter< int >::type t_col(t_colSEXP);
+    Rcpp::traits::input_parameter< int >::type id_col(id_colSEXP);
+    Rcpp::traits::input_parameter< int >::type L(LSEXP);
+    Rcpp::traits::input_parameter< int >::type treat_col(treat_colSEXP);
+    rcpp_result_gen = Rcpp::wrap(get_comparison_histories(compmat, ts, ids, t_col, id_col, L, treat_col));
+    return rcpp_result_gen;
+END_RCPP
+}
+// get_msets_helper
+Rcpp:: List get_msets_helper(const Rcpp::List& control_history_list, const Rcpp::NumericMatrix& widemat, const Rcpp::NumericVector& t_as_col_nums, const Rcpp::NumericVector& ids, int L);
+RcppExport SEXP _PanelMatch_get_msets_helper(SEXP control_history_listSEXP, SEXP widematSEXP, SEXP t_as_col_numsSEXP, SEXP idsSEXP, SEXP LSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::List& >::type control_history_list(control_history_listSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericMatrix& >::type widemat(widematSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type t_as_col_nums(t_as_col_numsSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type ids(idsSEXP);
+    Rcpp::traits::input_parameter< int >::type L(LSEXP);
+    rcpp_result_gen = Rcpp::wrap(get_msets_helper(control_history_list, widemat, t_as_col_nums, ids, L));
+    return rcpp_result_gen;
+END_RCPP
+}
+// non_matching_matcher
+Rcpp:: List non_matching_matcher(const Rcpp::List& control_history_list, const Rcpp::NumericMatrix& widemat, const Rcpp::NumericVector& t_as_col_nums, const Rcpp::NumericVector& ids, int L, int missing_window);
+RcppExport SEXP _PanelMatch_non_matching_matcher(SEXP control_history_listSEXP, SEXP widematSEXP, SEXP t_as_col_numsSEXP, SEXP idsSEXP, SEXP LSEXP, SEXP missing_windowSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::List& >::type control_history_list(control_history_listSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericMatrix& >::type widemat(widematSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type t_as_col_nums(t_as_col_numsSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type ids(idsSEXP);
+    Rcpp::traits::input_parameter< int >::type L(LSEXP);
+    Rcpp::traits::input_parameter< int >::type missing_window(missing_windowSEXP);
+    rcpp_result_gen = Rcpp::wrap(non_matching_matcher(control_history_list, widemat, t_as_col_nums, ids, L, missing_window));
+    return rcpp_result_gen;
+END_RCPP
+}
 // get_vit_index
 Rcpp::NumericVector get_vit_index(Rcpp::CharacterVector t_id_key, Rcpp::CharacterVector control_treatment_t_ids, Rcpp::NumericVector control_treatment_set_nums);
 RcppExport SEXP _PanelMatch_get_vit_index(SEXP t_id_keySEXP, SEXP control_treatment_t_idsSEXP, SEXP control_treatment_set_numsSEXP) {
@@ -100,80 +162,33 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// handle_vits
-Rcpp::NumericVector handle_vits(Rcpp::NumericVector idxs, unsigned int nrow_data, unsigned int mset_size, unsigned int num_empty, Rcpp::NumericVector weights);
-RcppExport SEXP _PanelMatch_handle_vits(SEXP idxsSEXP, SEXP nrow_dataSEXP, SEXP mset_sizeSEXP, SEXP num_emptySEXP, SEXP weightsSEXP) {
+// get_vit_index_unsigned
+std::vector<unsigned int> get_vit_index_unsigned(Rcpp::CharacterVector t_id_key, Rcpp::CharacterVector control_treatment_t_ids, Rcpp::NumericVector control_treatment_set_nums);
+RcppExport SEXP _PanelMatch_get_vit_index_unsigned(SEXP t_id_keySEXP, SEXP control_treatment_t_idsSEXP, SEXP control_treatment_set_numsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type idxs(idxsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type t_id_key(t_id_keySEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type control_treatment_t_ids(control_treatment_t_idsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type control_treatment_set_nums(control_treatment_set_numsSEXP);
+    rcpp_result_gen = Rcpp::wrap(get_vit_index_unsigned(t_id_key, control_treatment_t_ids, control_treatment_set_nums));
+    return rcpp_result_gen;
+END_RCPP
+}
+// handle_vits
+Rcpp::NumericVector handle_vits(unsigned int nrow_data, unsigned int mset_size, unsigned int num_empty, Rcpp::NumericVector weights, Rcpp::CharacterVector tidkey, Rcpp::CharacterVector control_treatment_tids, Rcpp::NumericVector ct_set_nums);
+RcppExport SEXP _PanelMatch_handle_vits(SEXP nrow_dataSEXP, SEXP mset_sizeSEXP, SEXP num_emptySEXP, SEXP weightsSEXP, SEXP tidkeySEXP, SEXP control_treatment_tidsSEXP, SEXP ct_set_numsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< unsigned int >::type nrow_data(nrow_dataSEXP);
     Rcpp::traits::input_parameter< unsigned int >::type mset_size(mset_sizeSEXP);
     Rcpp::traits::input_parameter< unsigned int >::type num_empty(num_emptySEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type weights(weightsSEXP);
-    rcpp_result_gen = Rcpp::wrap(handle_vits(idxs, nrow_data, mset_size, num_empty, weights));
-    return rcpp_result_gen;
-END_RCPP
-}
-// get_treated_indices
-Rcpp::LogicalVector get_treated_indices(const Rcpp::NumericMatrix& ordered_df, const Rcpp::NumericVector& treated_indices, int treat_col_idx, int unit_var_col);
-RcppExport SEXP _PanelMatch_get_treated_indices(SEXP ordered_dfSEXP, SEXP treated_indicesSEXP, SEXP treat_col_idxSEXP, SEXP unit_var_colSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const Rcpp::NumericMatrix& >::type ordered_df(ordered_dfSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type treated_indices(treated_indicesSEXP);
-    Rcpp::traits::input_parameter< int >::type treat_col_idx(treat_col_idxSEXP);
-    Rcpp::traits::input_parameter< int >::type unit_var_col(unit_var_colSEXP);
-    rcpp_result_gen = Rcpp::wrap(get_treated_indices(ordered_df, treated_indices, treat_col_idx, unit_var_col));
-    return rcpp_result_gen;
-END_RCPP
-}
-// get_comparison_histories
-Rcpp::List get_comparison_histories(const Rcpp::NumericMatrix& compmat, const Rcpp::NumericVector& ts, const Rcpp::NumericVector& ids, int t_col, int id_col, int L, int treat_col);
-RcppExport SEXP _PanelMatch_get_comparison_histories(SEXP compmatSEXP, SEXP tsSEXP, SEXP idsSEXP, SEXP t_colSEXP, SEXP id_colSEXP, SEXP LSEXP, SEXP treat_colSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const Rcpp::NumericMatrix& >::type compmat(compmatSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type ts(tsSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type ids(idsSEXP);
-    Rcpp::traits::input_parameter< int >::type t_col(t_colSEXP);
-    Rcpp::traits::input_parameter< int >::type id_col(id_colSEXP);
-    Rcpp::traits::input_parameter< int >::type L(LSEXP);
-    Rcpp::traits::input_parameter< int >::type treat_col(treat_colSEXP);
-    rcpp_result_gen = Rcpp::wrap(get_comparison_histories(compmat, ts, ids, t_col, id_col, L, treat_col));
-    return rcpp_result_gen;
-END_RCPP
-}
-// get_msets_helper
-Rcpp:: List get_msets_helper(const Rcpp::List& control_history_list, const Rcpp::NumericMatrix& widemat, const Rcpp::NumericVector& t_as_col_nums, const Rcpp::NumericVector& ids, int L);
-RcppExport SEXP _PanelMatch_get_msets_helper(SEXP control_history_listSEXP, SEXP widematSEXP, SEXP t_as_col_numsSEXP, SEXP idsSEXP, SEXP LSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const Rcpp::List& >::type control_history_list(control_history_listSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericMatrix& >::type widemat(widematSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type t_as_col_nums(t_as_col_numsSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type ids(idsSEXP);
-    Rcpp::traits::input_parameter< int >::type L(LSEXP);
-    rcpp_result_gen = Rcpp::wrap(get_msets_helper(control_history_list, widemat, t_as_col_nums, ids, L));
-    return rcpp_result_gen;
-END_RCPP
-}
-// non_matching_matcher
-Rcpp:: List non_matching_matcher(const Rcpp::List& control_history_list, const Rcpp::NumericMatrix& widemat, const Rcpp::NumericVector& t_as_col_nums, const Rcpp::NumericVector& ids, int L, int missing_window);
-RcppExport SEXP _PanelMatch_non_matching_matcher(SEXP control_history_listSEXP, SEXP widematSEXP, SEXP t_as_col_numsSEXP, SEXP idsSEXP, SEXP LSEXP, SEXP missing_windowSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const Rcpp::List& >::type control_history_list(control_history_listSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericMatrix& >::type widemat(widematSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type t_as_col_nums(t_as_col_numsSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type ids(idsSEXP);
-    Rcpp::traits::input_parameter< int >::type L(LSEXP);
-    Rcpp::traits::input_parameter< int >::type missing_window(missing_windowSEXP);
-    rcpp_result_gen = Rcpp::wrap(non_matching_matcher(control_history_list, widemat, t_as_col_nums, ids, L, missing_window));
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type tidkey(tidkeySEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type control_treatment_tids(control_treatment_tidsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type ct_set_nums(ct_set_numsSEXP);
+    rcpp_result_gen = Rcpp::wrap(handle_vits(nrow_data, mset_size, num_empty, weights, tidkey, control_treatment_tids, ct_set_nums));
     return rcpp_result_gen;
 END_RCPP
 }

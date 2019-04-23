@@ -6,7 +6,9 @@
  * Function that provides the index of treated/control units so we know where to store the vit values in the large vector which we will eventually use for finding Wits
  */
 // [[Rcpp::export]]
-Rcpp::NumericVector get_vit_index(Rcpp::CharacterVector t_id_key, Rcpp::CharacterVector control_treatment_t_ids, Rcpp::NumericVector control_treatment_set_nums)
+Rcpp::NumericVector get_vit_index(Rcpp::CharacterVector t_id_key, 
+                                  Rcpp::CharacterVector control_treatment_t_ids, 
+                                  Rcpp::NumericVector control_treatment_set_nums)
 {
   std::unordered_map<std::string, int> indexMap;
   for (int i = 0; i < t_id_key.size(); ++i)
@@ -282,26 +284,59 @@ Rcpp::NumericVector equality_four_cpp(Rcpp::NumericMatrix Wit_vals, Rcpp::Numeri
 }
 
 
+
+
+/*
+ * Function that provides the index of treated/control units so we know where to store the vit values in the large vector which we will eventually use for finding Wits
+ */
 // [[Rcpp::export]]
-Rcpp::NumericVector handle_vits(Rcpp::NumericVector idxs, unsigned int nrow_data, unsigned int mset_size, 
-                                unsigned int num_empty, Rcpp::NumericVector weights)
+std::vector<unsigned int> get_vit_index_unsigned(Rcpp::CharacterVector t_id_key, 
+                                                 Rcpp::CharacterVector control_treatment_t_ids, 
+                                                 Rcpp::NumericVector control_treatment_set_nums)
 {
+  std::unordered_map<std::string, int> indexMap;
+  for (int i = 0; i < t_id_key.size(); ++i)
+  {
+    std::string key;
+    key = t_id_key[i];
+    indexMap[key] = i + 1;
+  }
+  std::vector<unsigned int> intdex(control_treatment_t_ids.size());
+  for (int i = 0; i < control_treatment_t_ids.size(); ++i)
+  {
+    std::string key;
+    key = control_treatment_t_ids[i];
+    int idx = indexMap[key];
+    int addnum = 0;
+    if(control_treatment_set_nums[i])
+    {
+      addnum = control_treatment_set_nums[i] * t_id_key.size();
+    }
+    intdex[i] = idx + addnum;
+  }
+  return intdex;
+}
+
+
+// [[Rcpp::export]]
+Rcpp::NumericVector handle_vits(unsigned int nrow_data, unsigned int mset_size, 
+                                unsigned int num_empty, Rcpp::NumericVector weights,
+                                Rcpp::CharacterVector tidkey,
+                                Rcpp::CharacterVector control_treatment_tids,
+                                Rcpp::NumericVector ct_set_nums)
+{
+  
+  std::vector<unsigned int> idxs = get_vit_index_unsigned(tidkey, control_treatment_tids, ct_set_nums);
   unsigned vec_size = (nrow_data * mset_size) - num_empty;
-  // Rcpp::Rcout << vec_size << std::endl;
-  // Rcpp::Rcout << nrow_data << std::endl;
-  // Rcpp::Rcout << mset_size << std::endl;
-  // Rcpp::Rcout << num_empty << std::endl;
   std::vector<double> vit_vect(vec_size);
-  Rcpp::Rcout << vit_vect.size() << std::endl;
   for(int i = 0; i < idxs.size(); i++)
   {
-    Rcpp::Rcout << i << std::endl;
-    Rcpp::Rcout << idxs[i] - 1 << std::endl;
-    Rcpp::Rcout << weights[i] << std::endl;
     vit_vect[idxs[i] - 1] = weights[i];
   }
-  Rcpp::Rcout << "exited loop" << std::endl;
   // vit_vect[idxs] = weights;
   return sumwits(nrow_data, vit_vect);
 }
+
+
+
 
