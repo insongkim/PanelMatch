@@ -24,11 +24,11 @@
 #' If the user wants to include lagged variables, this can be done using a function, "lag()", which takes two, unnamed, positional arguments. The first is the name of the variable which you wish to lag, specified as a string. The second is the lag window, specified as an integer sequence
 #' For instance, lag("x", 1:4) will then add new columns to the data for variable "x" for time t-1, t-2, t-3, and t-4.
 #' @param verbose option to include more information about the matched.set object calculations, like the distances used to create the refined sets and weights.
-#' @param qoi quantity of interest: att (average treatment effect on treated units), atc (average treatment effect on control units), ate (average treatment effect), or ade (average controlled direct effect). ade should only be used with the ps.msm.weight or CBPS.msm.weight methods.
+#' @param qoi quantity of interest: att (average treatment effect on treated units), atc (average treatment effect on control units), ate (average treatment effect). Note that the qoi for MSM methods will give the estimated average treatment effect of being treated for a chosen F time periods. This differs slightly from the non-MSM methods -- treatment is not required for F periods for those methods.
 #' @param lead integer sequence specifying the lead window for which qoi estimates will ultimately be produced. Default is 0.
 #' @param matching logical indicating whether or not any matching on treatment history should be performed. This is used for diagnostic purposes. Default is TRUE.
 #' @param restricted Logical indicating whether or not it is permissible for treatment to reverse. This must be set to TRUE for msm methods. When set to TRUE, only matched sets where treatment is applied continuously are included.
-#' @return \code{PanelMatch} returns an object of class "PanelMatch". This is a list that contains a few specific elements: First, a matched.set object(s) that has the same name as the provided qoi if the qoi is "att", "atc", or "ade". 
+#' @return \code{PanelMatch} returns an object of class "PanelMatch". This is a list that contains a few specific elements: First, a matched.set object(s) that has the same name as the provided qoi if the qoi is "att" or "atc". 
 #' If qoi = "ate" then two matched.set objects will be attached, named "att" and "atc." This object also has some additional attributes:
 #' \item{qoi}{The qoi specified in the original function call}
 #' \item{lead}{the lead window specified in the original function call}
@@ -66,6 +66,10 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
     old.lag <- lag
     lag <- 1
   }
+  if(refinement.method == "CBPS.msm.weight" | refinement.method == "ps.msm.weight")
+  {
+    warning("Note that for msm methods, PanelMatch will attempt to find the estimated average treatment effect of being treated for the entire specified 'lead' time periods.")
+  }
   if(lag < 1) stop("please specify a lag value >= 1")
   if(!"data.frame" %in% class(data)) stop("please convert data to data.frame class")
   if(!all(refinement.method %in% c("mahalanobis", "ps.weight", "ps.match", "CBPS.weight", "CBPS.match", "ps.msm.weight", "CBPS.msm.weight", "none"))) stop("please choose a valid refinement method")
@@ -75,20 +79,13 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
     data <- make.pbalanced(data, balance.type = "fill", index = c(unit.id, time.id))
   }
   check_time_data(data, time.id)
-  if(!all(qoi %in% c("att", "atc", "ate", "ade"))) stop("please choose a valid qoi")
+  if(!all(qoi %in% c("att", "atc", "ate"))) stop("please choose a valid qoi")
   
-  if(qoi == "ade" & !all(refinement.method %in% c("CBPS.msm.weight", "ps.msm.weight")))
-  {
-    stop("ade must have one of the following refinement methods: CBPS.msm.weight, ps.msm.weight")
-  }
-  if(!restricted & (qoi == 'ade' | all(refinement.method %in% c("CBPS.msm.weight", "ps.msm.weight"))))
+  if(!restricted & all(refinement.method %in% c("CBPS.msm.weight", "ps.msm.weight")))
   {
     stop("please set restricted to TRUE for msm methods")
   }
-  if(refinement.method %in% c("CBPS.msm.weight", "ps.msm.weight") & qoi != "ade")
-  {
-    stop("please specify qoi = ade for msm methods")
-  }
+
   if(any(is.na(data[, unit.id]))) stop("Cannot have NA unit ids")
   ordered.data <- data[order(data[,unit.id], data[,time.id]), ]
   
@@ -178,23 +175,9 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
     attr(pm.obj, "lead") <- lead
     attr(pm.obj, "restricted") <- restricted
     return(pm.obj)
-  } else #ade
+  } else
   {
-    msets <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data,
-                                match.missing, covs.formula, verbose, lead = lead, outcome.var = outcome.var, 
-                                restricted = restricted, qoi = qoi, matching = matching)
-    msets <- decode_index(msets, unit.index.map, og.unit.id)
-    if(!matching & match.missing)
-    {
-      attr(msets, "lag") <- old.lag
-    }
-    pm.obj <- list("ade" = msets)
-    class(pm.obj) <- "PanelMatch"
-    attr(pm.obj, "qoi") <- qoi
-    attr(pm.obj, "outcome.var") <- outcome.var
-    attr(pm.obj, "lead") <- lead
-    attr(pm.obj, "restricted") <- restricted
-    return(pm.obj)
+    stop("qoi not specified correctly!")
   }
   
 } 

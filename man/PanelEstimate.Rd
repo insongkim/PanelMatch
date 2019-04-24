@@ -43,7 +43,7 @@ estimates for statistical inference. The default is .95.}
 \item{standard.error}{the standard error of the point estimates}
 }
 \description{
-\code{PanelEstimate} estimates a causal quantity of interest, including the average treatment effect for treated or control units (att and atc, respectively), average treatment effect (ate), or average controlled direct effect (ade), as specified in \code{PanelMatch}
+\code{PanelEstimate} estimates a causal quantity of interest, including the average treatment effect for treated or control units (att and atc, respectively), or average treatment effect (ate), as specified in \code{PanelMatch}
 This is done by estimating the counterfactual outcomes for each treated unit using
 matched sets. Users will specify matched sets that were obtained by the
 \code{PanelMatch} function and obtain point estimates via weighted fixed effects regressions or via

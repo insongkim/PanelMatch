@@ -33,7 +33,7 @@ For instance, lag("x", 1:4) will then add new columns to the data for variable "
 
 \item{verbose}{option to include more information about the matched.set object calculations, like the distances used to create the refined sets and weights.}
 
-\item{qoi}{quantity of interest: att (average treatment effect on treated units), atc (average treatment effect on control units), ate (average treatment effect), or ade (average controlled direct effect). ade should only be used with the ps.msm.weight or CBPS.msm.weight methods.}
+\item{qoi}{quantity of interest: att (average treatment effect on treated units), atc (average treatment effect on control units), ate (average treatment effect). Note that the qoi for MSM methods will give the estimated average treatment effect of being treated for a chosen F time periods. This differs slightly from the non-MSM methods -- treatment is not required for F periods for those methods.}
 
 \item{lead}{integer sequence specifying the lead window for which qoi estimates will ultimately be produced. Default is 0.}
 
@@ -44,7 +44,7 @@ For instance, lag("x", 1:4) will then add new columns to the data for variable "
 \item{matching}{logical indicating whether or not any matching on treatment history should be performed. This is used for diagnostic purposes. Default is TRUE.}
 }
 \value{
-\code{PanelMatch} returns an object of class "PanelMatch". This is a list that contains a few specific elements: First, a matched.set object(s) that has the same name as the provided qoi if the qoi is "att", "atc", or "ade". 
+\code{PanelMatch} returns an object of class "PanelMatch". This is a list that contains a few specific elements: First, a matched.set object(s) that has the same name as the provided qoi if the qoi is "att" or "atc". 
 If qoi = "ate" then two matched.set objects will be attached, named "att" and "atc." This object also has some additional attributes:
 \item{qoi}{The qoi specified in the original function call}
 \item{lead}{the lead window specified in the original function call}
