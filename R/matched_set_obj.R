@@ -192,6 +192,13 @@ build_balance_mats <- function(idx, ordered_expanded_data, msets)
 #' @param ylab Label for y axis. Default is "SD"
 #' @param use.equal.weights logical. If set to TRUE, then equal weights will be assigned to control units, rather than using whatever calculated weights have been assigned.
 #' @param ... Additional graphical parameters to be passed to the \code{plot} function in base R.
+#' @examples \dontrun{
+#' dem$rdata <- runif(runif(nrow(dem)))
+#' pm.obj <- PanelMatch(lead = 0:3, lag = 4, time.id = "year", unit.id = "wbcode2", treatment = "dem",
+#'                     outcome.var ="y", refinement.method = "mahalanobis", data = dem, match.missing = T,
+#'                     covs.formula = ~ tradewb + rdata + lag("tradewb", 1:4) + lag("y", 1:4), size.match = 5, qoi = "att")
+#' get_covariate_balance(pm.obj$att, dem, covariates = c("tradewb", "rdata"), plot = T, ylim = c(-2,2))
+#' } 
 #' @export
 get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.weights = FALSE,
                                   verbose = T, plot = F, 
