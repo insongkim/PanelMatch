@@ -201,6 +201,10 @@ get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.wei
   {
     stop("please specify the covariates for which you would like to check the balance")
   }
+  if(!all(covariates %in% colnames(data)))
+  {
+    stop("Some of the specified covariates are not columns in the data set.")
+  }
   if(class(matched.sets) != "matched.set") stop("Please pass a matched.set object")
   unit.id <- attr(matched.sets, "id.var")
   time.id <- attr(matched.sets, "t.var")
