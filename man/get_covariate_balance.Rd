@@ -36,3 +36,12 @@ calculating covariate balance and generating balance plots
 Calculate covariate balance for specified covariates across matched sets. Balance is assessed by taking the difference between 
 the values of the user specified covariates in the treated unit and the weighted average of that across all matched sets. Furthermore, results are standardized and are expressed in standard deviations.
 }
+\examples{
+\dontrun{
+dem$rdata <- runif(runif(nrow(dem)))
+pm.obj <- PanelMatch(lead = 0:3, lag = 4, time.id = "year", unit.id = "wbcode2", treatment = "dem",
+                    outcome.var ="y", refinement.method = "mahalanobis", data = dem, match.missing = T,
+                    covs.formula = ~ tradewb + rdata + lag("tradewb", 1:4) + lag("y", 1:4), size.match = 5, qoi = "att")
+get_covariate_balance(pm.obj$att, dem, covariates = c("tradewb", "rdata"), plot = T, ylim = c(-2,2))
+} 
+}
