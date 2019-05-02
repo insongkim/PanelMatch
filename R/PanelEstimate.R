@@ -41,7 +41,7 @@
 #'                          data = dem, match.missing = T, 
 #'                          covs.formula = ~ lag("tradewb", 1:4) + lag("y", 1:4), 
 #'                          size.match = 5, qoi = "att",
-#'                          outcome.var = "y", lead = 0:4, restricted = TRUE)
+#'                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = TRUE)
 #' PE.results <- PanelEstimate(inference = "bootstrap", sets = PM.results, data = dem)
 #' 
 #' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
@@ -49,7 +49,7 @@
 #'                          data = dem, match.missing = T, 
 #'                          covs.formula = ~ lag("tradewb", 1:4) + lag("y", 1:4), 
 #'                          size.match = 5, qoi = "att",
-#'                          outcome.var = "y", lead = 0, restricted = TRUE)
+#'                          outcome.var = "y", lead = 0, forbid.treatment.reversal = TRUE)
 #' PE.results <- PanelEstimate(inference = "wfe", sets = PM.results, data = dem)
 #' }
 #' @export
@@ -62,9 +62,9 @@ PanelEstimate <- function(inference = c("wfe", "bootstrap"),
                           ) {
   lead <- attr(sets, "lead")
   outcome.variable <- attr(sets, "outcome.var")
-  if(!attr(sets, "restricted") & inference == "wfe")
+  if(!attr(sets, "forbid.treatment.reversal") & inference == "wfe")
   {
-    stop("WFE cannot be used unless treatment stability is guaranteed. Please re-run PanelMatch with restricted = TRUE")
+    stop("WFE cannot be used unless treatment stability is guaranteed. Please re-run PanelMatch with forbid.treatment.reversal = TRUE")
   }
   if(class(sets) != "PanelMatch") stop("sets is not a PanelMatch object")
   qoi <- attr(sets, "qoi")
@@ -91,8 +91,8 @@ PanelEstimate <- function(inference = c("wfe", "bootstrap"),
   #method = inference
   method <- attr(sets, "refinement.method")
   
-  restricted <- attr(sets, "restricted") # this doesnt exist yet, not sure what it means.
-  #add in checks about restricted and wfe, etc. 
+  forbid.treatment.reversal <- attr(sets, "forbid.treatment.reversal") # this doesnt exist yet, not sure what it means.
+  #add in checks about forbid.treatment.reversal and wfe, etc. 
   
   if(!"data.frame" %in% class(data)) stop("please convert data to data.frame class")
   if(any(table(data[, unit.id]) != max(table(data[, unit.id]))))

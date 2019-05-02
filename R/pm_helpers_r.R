@@ -1,7 +1,7 @@
 # File contains helper functions written in R for PanelMatch functionality
 perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.method, size.match, 
                                ordered.data, match.missing, covs.formula, verbose, 
-                               mset.object = NULL, lead, outcome.var = NULL, restricted = FALSE, qoi = "",
+                               mset.object = NULL, lead, outcome.var = NULL, forbid.treatment.reversal = FALSE, qoi = "",
                                matching = TRUE)
 {
   if(!is.null(mset.object))
@@ -36,7 +36,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
     #{
     msets <- clean_leads(msets, ordered.data, max(lead), time.id, unit.id, outcome.var)  
     #}
-    if(restricted)
+    if(forbid.treatment.reversal)
     {
       msets <- enforce_lead_restrictions(msets, ordered.data, max(lead), time.id, unit.id, treatment.var = treatment)
     }
@@ -72,7 +72,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
                                            data = ordered.data, unit.id = unit.id, treatment.var = treatment)) #every column > 3 at this point should be used in distance/refinement calculation
   ordered.data <- as.matrix(handle.missing.data(ordered.data, 4:ncol(ordered.data)))
   
-  #RE IMPLEMENT RESTRICTED OR NAIVE?
+  #RE IMPLEMENT forbid.treatment.reversal OR NAIVE?
   if(refinement.method == "mahalanobis")
   {
     tlist <- expand.treated.ts(lag, treated.ts = treated.ts)

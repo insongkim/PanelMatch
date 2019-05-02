@@ -7,8 +7,7 @@
 \code{PanelEstimate}, and returns a summary table of point
 estimates and the confidence intervales.}
 \usage{
-\method{summary}{PanelEstimate}(object, ..., verbose = TRUE,
-  bias.corrected = FALSE)
+summary.PanelEstimate(object, ..., verbose = TRUE, bias.corrected = FALSE)
 }
 \arguments{
 \item{object}{A PanelEstimate object}

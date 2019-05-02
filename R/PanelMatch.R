@@ -27,12 +27,12 @@
 #' @param qoi quantity of interest: att (average treatment effect on treated units), atc (average treatment effect on control units), ate (average treatment effect). Note that the qoi for MSM methods will give the estimated average treatment effect of being treated for a chosen F time periods. This differs slightly from the non-MSM methods -- treatment is not required for F periods for those methods.
 #' @param lead integer sequence specifying the lead window for which qoi estimates will ultimately be produced. Default is 0.
 #' @param matching logical indicating whether or not any matching on treatment history should be performed. This is used for diagnostic purposes. Default is TRUE.
-#' @param restricted Logical indicating whether or not it is permissible for treatment to reverse. This must be set to TRUE for msm methods. When set to TRUE, only matched sets where treatment is applied continuously are included.
+#' @param forbid.treatment.reversal Logical indicating whether or not it is permissible for treatment to reverse. This must be set to TRUE for msm methods. When set to TRUE, only matched sets where treatment is applied continuously are included.
 #' @return \code{PanelMatch} returns an object of class "PanelMatch". This is a list that contains a few specific elements: First, a matched.set object(s) that has the same name as the provided qoi if the qoi is "att" or "atc". 
 #' If qoi = "ate" then two matched.set objects will be attached, named "att" and "atc." This object also has some additional attributes:
 #' \item{qoi}{The qoi specified in the original function call}
 #' \item{lead}{the lead window specified in the original function call}
-#' \item{restricted}{logial value matching the restricted parameter provided in the function call.}
+#' \item{forbid.treatment.reversal}{logial value matching the forbid.treatment.reversal parameter provided in the function call.}
 #' \item{outcome.var}{character string matching the outcome variable provided in the original function call.}
 #' For more information about matched.set objects, see documentation for the "matched_set" function
 #' @author Adam Rauh <adamrauh@mit.edu>, In Song Kim <insong@mit.edu>, Erik Wang
@@ -44,7 +44,7 @@
 #'                          data = dem, match.missing = T, 
 #'                          covs.formula = ~ lag("tradewb", 1:4) + lag("y", 1:4), 
 #'                          size.match = 5, qoi = "att",
-#'                          outcome.var = "y", lead = 0:4, restricted = FALSE)
+#'                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
 #' }
 #' @export
 PanelMatch <- function(lag, time.id, unit.id, treatment,
@@ -57,7 +57,7 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
                        qoi,
                        lead = 0,
                        outcome.var,
-                       restricted = FALSE,
+                       forbid.treatment.reversal = FALSE,
                        matching = TRUE
                        ) 
 {
@@ -81,9 +81,9 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
   check_time_data(data, time.id)
   if(!all(qoi %in% c("att", "atc", "ate"))) stop("please choose a valid qoi")
   
-  if(!restricted & all(refinement.method %in% c("CBPS.msm.weight", "ps.msm.weight")))
+  if(!forbid.treatment.reversal & all(refinement.method %in% c("CBPS.msm.weight", "ps.msm.weight")))
   {
-    stop("please set restricted to TRUE for msm methods")
+    stop("please set forbid.treatment.reversal to TRUE for msm methods")
   }
 
   if(any(is.na(data[, unit.id]))) stop("Cannot have NA unit ids")
@@ -119,7 +119,7 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
     ordered.data[, treatment] <- ifelse(ordered.data[, treatment] == 1,0,1) #flip the treatment variables 
     msets <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data, 
                                 match.missing, covs.formula, verbose, lead= lead, outcome.var = outcome.var, 
-                                restricted = restricted, qoi = qoi, matching = matching)
+                                forbid.treatment.reversal = forbid.treatment.reversal, qoi = qoi, matching = matching)
     msets <- decode_index(msets, unit.index.map, og.unit.id)
     if(!matching & match.missing)
     {
@@ -130,13 +130,13 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
     attr(pm.obj, "qoi") <- qoi
     attr(pm.obj, "outcome.var") <- outcome.var
     attr(pm.obj, "lead") <- lead
-    attr(pm.obj, "restricted") <- restricted
+    attr(pm.obj, "forbid.treatment.reversal") <- forbid.treatment.reversal
     return(pm.obj)
   } else if(qoi == "att")
   {
     msets <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data,
                                 match.missing, covs.formula, verbose, lead = lead, outcome.var = outcome.var, 
-                                restricted = restricted, qoi = qoi, matching = matching)
+                                forbid.treatment.reversal = forbid.treatment.reversal, qoi = qoi, matching = matching)
     msets <- decode_index(msets, unit.index.map, og.unit.id)
     if(!matching & match.missing)
     {
@@ -147,17 +147,17 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
     attr(pm.obj, "qoi") <- qoi
     attr(pm.obj, "outcome.var") <- outcome.var
     attr(pm.obj, "lead") <- lead
-    attr(pm.obj, "restricted") <- restricted
+    attr(pm.obj, "forbid.treatment.reversal") <- forbid.treatment.reversal
     return(pm.obj)
   } else if(qoi == "ate")
   {
     msets <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data, 
                                 match.missing, covs.formula, verbose, lead = lead, outcome.var = outcome.var, 
-                                restricted = restricted, qoi = qoi, matching = matching)
+                                forbid.treatment.reversal = forbid.treatment.reversal, qoi = qoi, matching = matching)
     ordered.data[, treatment] <- ifelse(ordered.data[, treatment] == 1,0,1) #flip the treatment variables 
     msets2 <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data,
                                  match.missing, covs.formula, verbose, lead = lead, outcome.var = outcome.var, 
-                                 restricted = restricted, qoi = qoi, matching = matching)
+                                 forbid.treatment.reversal = forbid.treatment.reversal, qoi = qoi, matching = matching)
     msets <- decode_index(msets, unit.index.map, og.unit.id)
     if(!matching & match.missing)
     {
@@ -173,7 +173,7 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
     attr(pm.obj, "qoi") <- qoi
     attr(pm.obj, "outcome.var") <- outcome.var
     attr(pm.obj, "lead") <- lead
-    attr(pm.obj, "restricted") <- restricted
+    attr(pm.obj, "forbid.treatment.reversal") <- forbid.treatment.reversal
     return(pm.obj)
   } else
   {

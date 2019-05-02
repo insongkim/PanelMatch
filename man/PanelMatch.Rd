@@ -6,8 +6,8 @@
 \usage{
 PanelMatch(lag, time.id, unit.id, treatment, refinement.method,
   size.match = 10, data, match.missing = TRUE, covs.formula = NULL,
-  verbose = FALSE, qoi, lead = 0, outcome.var, restricted = FALSE,
-  matching = TRUE)
+  verbose = FALSE, qoi, lead = 0, outcome.var,
+  forbid.treatment.reversal = FALSE, matching = TRUE)
 }
 \arguments{
 \item{lag}{An integer value indicating the length of history to be matched}
@@ -39,7 +39,7 @@ For instance, lag("x", 1:4) will then add new columns to the data for variable "
 
 \item{outcome.var}{Character string of the outcome variable.}
 
-\item{restricted}{Logical indicating whether or not it is permissible for treatment to reverse. This must be set to TRUE for msm methods. When set to TRUE, only matched sets where treatment is applied continuously are included.}
+\item{forbid.treatment.reversal}{Logical indicating whether or not it is permissible for treatment to reverse. This must be set to TRUE for msm methods. When set to TRUE, only matched sets where treatment is applied continuously are included.}
 
 \item{matching}{logical indicating whether or not any matching on treatment history should be performed. This is used for diagnostic purposes. Default is TRUE.}
 }
@@ -48,7 +48,7 @@ For instance, lag("x", 1:4) will then add new columns to the data for variable "
 If qoi = "ate" then two matched.set objects will be attached, named "att" and "atc." This object also has some additional attributes:
 \item{qoi}{The qoi specified in the original function call}
 \item{lead}{the lead window specified in the original function call}
-\item{restricted}{logial value matching the restricted parameter provided in the function call.}
+\item{forbid.treatment.reversal}{logial value matching the forbid.treatment.reversal parameter provided in the function call.}
 \item{outcome.var}{character string matching the outcome variable provided in the original function call.}
 For more information about matched.set objects, see documentation for the "matched_set" function
 }
@@ -72,7 +72,7 @@ PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                          data = dem, match.missing = T, 
                          covs.formula = ~ lag("tradewb", 1:4) + lag("y", 1:4), 
                          size.match = 5, qoi = "att",
-                         outcome.var = "y", lead = 0:4, restricted = FALSE)
+                         outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
 }
 }
 \author{
