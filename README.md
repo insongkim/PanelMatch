@@ -82,6 +82,19 @@ The `PanelMatch` function will return an object of class "PanelMatch". This is a
 
 The `PanelMatch` object also has some additional attributes: "qoi", "lead", "forbid.treatment.reversal" (a logical value that is the same as what was specified in the function call), and "outcome.var" (character value that is the same as what was specified in the function call)
 
+You can check covariate balance using the `get_covariate_balance` function:
+
+```{r}
+get_covariate_balance(PM.results$att, dem, covariates = c("tradewb"), plot = F, ylim = c(-2,2))
+      tradewb
+t_4 0.2095181
+t_3 0.1711747
+t_2 0.1234327
+t_1 0.1172117
+t_0 0.1189729
+```
+See the documentation for more information about this function.
+
 ### PanelEstimate
 
 Once proper matched sets are attained by `PanelMatch`, users can
