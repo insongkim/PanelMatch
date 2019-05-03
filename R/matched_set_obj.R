@@ -302,7 +302,8 @@ get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.wei
   
   if(plot)
   {
-    graphics::matplot(pointmatrix, type = "l", col = 1:ncol(pointmatrix), lty =1, ylab = ylab, ...)
+    graphics::matplot(pointmatrix, type = "l", col = 1:ncol(pointmatrix), lty =1, ylab = ylab, xaxt = "n", ...)
+    graphics::axis(side = 1, labels = paste0("t-", (nrow(pointmatrix) - 1):0), at = 1:nrow(pointmatrix))
     if(legend) legend("topleft", legend = colnames(pointmatrix), col=1:ncol(pointmatrix), lty = 1)
     if(reference.line) graphics::abline(h = 0, lty = "dashed")
   }
