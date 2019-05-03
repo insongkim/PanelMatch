@@ -405,7 +405,7 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
     pj <- p
   }
   pjp <- pj + scale_x_discrete(expand = c(0, 0), labels = unique(as.character(data$old.index))) +
-    theme(axis.text.y = element_text(color = clrs)) + coord_flip()
+    theme(axis.text.y = element_text(color = clrs)) + coord_flip() + ggtitle(title) + xlab(ylab) + ylab(xlab) #flip them because of how the plot is generated, should probably fix this
   if(hide.x.axis.label & !hide.y.axis.label)
   {
     return(pjp + theme(axis.text.x = element_blank(), axis.ticks.x = element_blank()))
