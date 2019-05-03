@@ -76,13 +76,6 @@ getWits <- function(matched_sets, lead, data, estimation.method)
   #idxes <- get_vit_index(paste0(data[, id.var], ".", data[, t.var]), t.idvector, setnums) #should be ok to leave this in R
   Wits <- handle_vits(nrow(data), length(matched_sets), num.empty, c(p.df$weight, t.df$weight),
                       paste0(data[, id.var], ".", data[, t.var]), t.idvector, setnums)
-  
-  ##############################should be wrapped into handle_vits###########################
-  #vit.vect <- numeric(nrow(data) * (length(matched_sets) - num.empty))
-  #vit.vect[idxes] <- c(p.df$weight, t.df$weight)
-  #summing the weights
-  #Wits <- sumwits(nrow(data), vit_vect = vit.vect) 
-  ##########################################################################################
   return(Wits)
   
 }
