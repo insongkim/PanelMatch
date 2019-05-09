@@ -359,14 +359,13 @@ handle_mahalanobis_calculations <- function(mahal.nested.list, msets, max.size, 
     cov.matrix <- cov(cov.data)
     center.data <- year.df[nrow(year.df), 4:ncol(year.df)]
     
+
     if( isTRUE(all.equal(det(cov.matrix), 0, tolerance = .00001)) ) #we might want to make this smaller, but had some errors here about computationally infeasible problems because of values very close to zero
     {
       cov.matrix <- ginv(cov.matrix)
       return(mahalanobis(x = cov.data, center = center.data, cov = cov.matrix, inverted = TRUE))
-    }
-    else
+    } else
     {
-      
       return(mahalanobis(x = cov.data, center = center.data, cov = cov.matrix))
     }
     
