@@ -2,7 +2,7 @@
 perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.method, size.match, 
                                ordered.data, match.missing, covs.formula, verbose, 
                                mset.object = NULL, lead, outcome.var = NULL, forbid.treatment.reversal = FALSE, qoi = "",
-                               matching = TRUE)
+                               matching = TRUE, exact.matching.variables = NULL)
 {
   if(!is.null(mset.object))
   {
@@ -364,9 +364,13 @@ handle_mahalanobis_calculations <- function(mahal.nested.list, msets, max.size, 
     {
       cols.to.remove <- which(apply(cov.data, 2, function(x) isTRUE(length(unique(x)) == 1))) #checking for columns that only have one value
       cols.to.remove <- unique(c(cols.to.remove, which(!colnames(cov.data) %in% colnames(t(unique(t(cov.data))))))) #removing columns that are identical to another column
-      cov.data <- cov.data[, -cols.to.remove]
-      center.data <- center.data[-cols.to.remove]
-      cov.matrix <- diag(apply(cov.data, 2, var), ncol(cov.data), ncol(cov.data))
+      if(length(cols.to.remove) > 0)
+      {
+        cov.data <- cov.data[, -cols.to.remove]
+        center.data <- center.data[-cols.to.remove]
+        cov.matrix <- diag(apply(cov.data, 2, var), ncol(cov.data), ncol(cov.data))  
+      }
+      
       if( isTRUE(all.equal(det(cov.matrix), 0, tolerance = .00001)) ) #we might want to make this smaller, but had some errors here about computationally infeasible problems because of values very close to zero
       {
         cov.matrix <- ginv(cov.matrix)

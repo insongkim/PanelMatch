@@ -57,6 +57,7 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
                        qoi,
                        lead = 0,
                        outcome.var,
+                       exact.match.variables = NULL,
                        forbid.treatment.reversal = FALSE,
                        matching = TRUE
                        ) 
@@ -119,7 +120,8 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
     ordered.data[, treatment] <- ifelse(ordered.data[, treatment] == 1,0,1) #flip the treatment variables 
     msets <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data, 
                                 match.missing, covs.formula, verbose, lead= lead, outcome.var = outcome.var, 
-                                forbid.treatment.reversal = forbid.treatment.reversal, qoi = qoi, matching = matching)
+                                forbid.treatment.reversal = forbid.treatment.reversal, qoi = qoi, matching = matching,
+                                exact.matching.variables = exact.match.variables)
     msets <- decode_index(msets, unit.index.map, og.unit.id)
     if(!matching & match.missing)
     {
@@ -136,7 +138,8 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
   {
     msets <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data,
                                 match.missing, covs.formula, verbose, lead = lead, outcome.var = outcome.var, 
-                                forbid.treatment.reversal = forbid.treatment.reversal, qoi = qoi, matching = matching)
+                                forbid.treatment.reversal = forbid.treatment.reversal, qoi = qoi, matching = matching,
+                                exact.matching.variables = exact.match.variables)
     msets <- decode_index(msets, unit.index.map, og.unit.id)
     if(!matching & match.missing)
     {
@@ -153,11 +156,13 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
   {
     msets <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data, 
                                 match.missing, covs.formula, verbose, lead = lead, outcome.var = outcome.var, 
-                                forbid.treatment.reversal = forbid.treatment.reversal, qoi = qoi, matching = matching)
+                                forbid.treatment.reversal = forbid.treatment.reversal, qoi = qoi, matching = matching,
+                                exact.matching.variables = exact.match.variables)
     ordered.data[, treatment] <- ifelse(ordered.data[, treatment] == 1,0,1) #flip the treatment variables 
     msets2 <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data,
                                  match.missing, covs.formula, verbose, lead = lead, outcome.var = outcome.var, 
-                                 forbid.treatment.reversal = forbid.treatment.reversal, qoi = qoi, matching = matching)
+                                 forbid.treatment.reversal = forbid.treatment.reversal, qoi = qoi, matching = matching,
+                                 exact.matching.variables = exact.match.variables)
     msets <- decode_index(msets, unit.index.map, og.unit.id)
     if(!matching & match.missing)
     {
