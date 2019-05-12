@@ -40,6 +40,7 @@ extern void XXiSum(void *, void *, void *, void *, void *, void *);
 extern SEXP _PanelMatch_check_control_units_for_treatment_restriction(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP _PanelMatch_check_treated_units(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP _PanelMatch_check_treated_units_for_treatment_reversion(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP _PanelMatch_do_exact_matching_refinement(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP _PanelMatch_equality_four_cpp(SEXP, SEXP, SEXP);
 extern SEXP _PanelMatch_get_comparison_histories(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP _PanelMatch_get_dits(SEXP, SEXP);
@@ -90,6 +91,7 @@ static const R_CallMethodDef CallEntries[] = {
   {"_PanelMatch_check_control_units_for_treatment_restriction", (DL_FUNC) &_PanelMatch_check_control_units_for_treatment_restriction, 6},
   {"_PanelMatch_check_treated_units",                           (DL_FUNC) &_PanelMatch_check_treated_units,                           6},
   {"_PanelMatch_check_treated_units_for_treatment_reversion",   (DL_FUNC) &_PanelMatch_check_treated_units_for_treatment_reversion,   6},
+  {"_PanelMatch_do_exact_matching_refinement",                  (DL_FUNC) &_PanelMatch_do_exact_matching_refinement,                  6},
   {"_PanelMatch_equality_four_cpp",                             (DL_FUNC) &_PanelMatch_equality_four_cpp,                             3},
   {"_PanelMatch_get_comparison_histories",                      (DL_FUNC) &_PanelMatch_get_comparison_histories,                      7},
   {"_PanelMatch_get_dits",                                      (DL_FUNC) &_PanelMatch_get_dits,                                      2},

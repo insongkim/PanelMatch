@@ -114,7 +114,14 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
   
   othercols <- colnames(ordered.data)[!colnames(ordered.data) %in% c(time.id, unit.id, treatment)]
   ordered.data <- ordered.data[, c(unit.id, time.id, treatment, othercols)] #reorder columns 
-
+  if(!is.null(exact.match.variables))
+  {
+    for(variable in exact.match.variables)
+    {
+      ordered.data[, variable] <- as.numeric(as.factor(ordered.data[, variable]))
+    }  
+  }
+  
   if(qoi == "atc")
   {
     ordered.data[, treatment] <- ifelse(ordered.data[, treatment] == 1,0,1) #flip the treatment variables 

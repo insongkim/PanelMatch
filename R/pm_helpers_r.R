@@ -32,10 +32,9 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
                              lag, time.id, unit.id, treatment, hasbeensorted = TRUE, match.on.missingness = match.missing, matching)
     e.sets <- msets[sapply(msets, length) == 0]
     msets <- msets[sapply(msets, length) > 0 ]
-    #if(max(lead) > 0)
-    #{
+    
     msets <- clean_leads(msets, ordered.data, max(lead), time.id, unit.id, outcome.var)  
-    #}
+    
     if(forbid.treatment.reversal)
     {
       msets <- enforce_lead_restrictions(msets, ordered.data, max(lead), time.id, unit.id, treatment.var = treatment)
@@ -46,7 +45,13 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
       stop(warn.str)
     }
   }
-  
+  if(!is.null(exact.matching.variables))
+  {
+    msets <- do_exact_matching(msets, ordered.data, exact.matching.variables)
+    
+    e.sets <- c(e.sets, msets[sapply(msets, length) == 0])
+    msets <- msets[sapply(msets, length) > 0 ]
+  }
   if(refinement.method == "none")
   {
     for(i in 1:length(msets))

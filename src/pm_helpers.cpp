@@ -212,3 +212,76 @@ Rcpp::List multiply_weights_msm(Rcpp::List weights, int number_of_sets)
   }
   return final_weights;
 }
+
+
+// [[Rcpp::export]]
+Rcpp::List do_exact_matching_refinement(Rcpp::NumericMatrix balanced_data, 
+                                        int lag, Rcpp::CharacterVector row_key,
+                                        Rcpp::List control_data, Rcpp::CharacterVector treatment_data,
+                                        Rcpp::IntegerVector exact_match_variable_column_index)
+{
+  
+  std::unordered_map<std::string, int> indexMap;
+  for(int i = 0; i < row_key.size(); i++)
+  {
+    std::string key;
+    key = row_key[i];
+    indexMap[key] = i;
+  }
+  Rcpp::List exact_match_control_lists(exact_match_variable_column_index.size());
+  for(int i = 0; i < exact_match_variable_column_index.size(); i++)
+  {
+    int idx = exact_match_variable_column_index[i];
+    Rcpp::List control_idx(treatment_data.size());
+    for(int j = 0; j < treatment_data.size(); j ++)
+    {
+      std::string key;
+      key = treatment_data[j];
+      int endpoint = indexMap[key];
+      Rcpp::NumericVector temptreatmentdata(lag + 1);
+      for(int k = 0; k < lag + 1; k++)
+      {
+        int idxcheck = endpoint - k;
+        // Rcpp::Rcout << idxcheck << std::endl;
+        // Rcpp::Rcout << idx << std::endl;
+        temptreatmentdata[k] = balanced_data(idxcheck, idx);
+        //Rcpp::Rcout << balanced_data[idxcheck, 0] << std::endl <<balanced_data[idxcheck, 1] <<std::endl;
+      }
+      Rcpp::CharacterVector control_strings = control_data[j];
+      Rcpp::LogicalVector keep_control_idx(control_strings.size());
+      for(int z = 0; z < control_strings.size(); z++)
+      {
+        std::string ckey;
+        ckey = control_strings[z];
+        int cendpoint = indexMap[ckey];
+        Rcpp::NumericVector tempcontroldata(lag+1);
+        for(int a = 0; a < lag + 1; a++)
+        {
+          int cidxcheck = cendpoint - a;
+          // Rcpp::Rcout << balanced_data[cidxcheck, idx] << std::endl;
+          tempcontroldata[a] = balanced_data(cidxcheck, idx);
+          //Rcpp::Rcout << balanced_data(cidxcheck, 0) << std::endl << balanced_data(cidxcheck, 1) << std::endl << balanced_data(cidxcheck, 2) << std::endl;
+        }
+        // for(int q = 0; q < tempcontroldata.size(); q++)
+        // {
+        //   Rcpp::Rcout << tempcontroldata[q];
+        // }
+        // Rcpp::Rcout << std::endl;
+        // for(int q = 0; q < tempcontroldata.size(); q++)
+        // {
+        //   Rcpp::Rcout << temptreatmentdata[q];
+        // }
+        //Rcpp::Rcout << std::endl;
+        keep_control_idx[z] = Rcpp::is_true(Rcpp::all(tempcontroldata == temptreatmentdata));
+      }
+      // Rcpp::Rcout << keep_control_idx.size() << std::endl;
+      control_idx[j] = keep_control_idx;
+    }
+    exact_match_control_lists[i] = control_idx;
+  }
+  return(exact_match_control_lists); //then will need to take the combination of all of these (everything in corresponding indices must be TRUE)
+}
+
+
+
+
