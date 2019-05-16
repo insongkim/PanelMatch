@@ -28,7 +28,7 @@
 #' @param lead integer sequence specifying the lead window for which qoi estimates will ultimately be produced. Default is 0.
 #' @param matching logical indicating whether or not any matching on treatment history should be performed. This is used for diagnostic purposes. Default is TRUE.
 #' @param forbid.treatment.reversal Logical indicating whether or not it is permissible for treatment to reverse. This must be set to TRUE for msm methods. When set to TRUE, only matched sets where treatment is applied continuously are included.
-#' @param exact.match.variables character vector giving the names of variables to be exactly matched on.
+#' @param exact.match.variables character vector giving the names of variables to be exactly matched on. These should be time invariant variables.
 #' @return \code{PanelMatch} returns an object of class "PanelMatch". This is a list that contains a few specific elements: First, a matched.set object(s) that has the same name as the provided qoi if the qoi is "att" or "atc". 
 #' If qoi = "ate" then two matched.set objects will be attached, named "att" and "atc." This object also has some additional attributes:
 #' \item{qoi}{The qoi specified in the original function call}

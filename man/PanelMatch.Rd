@@ -40,7 +40,7 @@ For instance, lag("x", 1:4) will then add new columns to the data for variable "
 
 \item{outcome.var}{Character string of the outcome variable.}
 
-\item{exact.match.variables}{character vector giving the names of variables to be exactly matched on.}
+\item{exact.match.variables}{character vector giving the names of variables to be exactly matched on. These should be time invariant variables.}
 
 \item{forbid.treatment.reversal}{Logical indicating whether or not it is permissible for treatment to reverse. This must be set to TRUE for msm methods. When set to TRUE, only matched sets where treatment is applied continuously are included.}
 

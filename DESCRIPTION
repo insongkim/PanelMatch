@@ -6,6 +6,7 @@ Date: 2018-03-08
 Authors@R: c(
   person("In Song", "Kim", email = "insong@mit.edu", role = c("aut", "cre")),
   person("Erik", "Wang", email = "haixiaow@Princeton.edu", role = c("aut")),
+  person("Adam", "Rauh", email = "adamrauh@mit.edu", role = c("aut")),
   person("Kosuke", "Imai", email = "kimai@Princeton.edu", role = c("aut"))
   )
 Description: This R package provides a set of methodological tools
