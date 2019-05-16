@@ -18,9 +18,9 @@ DisplayTreatment(unit.id, time.id, treatment, data, color.of.treated = "red",
 
 \item{time.id}{A numeric vector of time identifiers}
 
-\item{treatment}{Name of the treatment variable in character class}
+\item{treatment}{Name of the treatment variable as a character string}
 
-\item{data}{The data frame in data.frame class}
+\item{data}{data.frame that contains the time series cross sectional data used for matching and estimation.}
 
 \item{color.of.treated}{Color of the treated observations provided as a character string. Default is red.}
 

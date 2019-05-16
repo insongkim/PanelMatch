@@ -5,8 +5,8 @@
 #'
 #' @param unit.id A numeric vector of unit identifiers
 #' @param time.id A numeric vector of time identifiers
-#' @param treatment Name of the treatment variable in character class
-#' @param data The data frame in data.frame class
+#' @param treatment Name of the treatment variable as a character string
+#' @param data data.frame that contains the time series cross sectional data used for matching and estimation.
 #' @param color.of.treated Color of the treated observations provided as a character string. Default is red.
 #' @param color.of.untreated Color of the untreated observations provided as a character string. Default is blue.
 #' @param title Title of the plot provided as character string

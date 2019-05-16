@@ -7,7 +7,8 @@
 PanelMatch(lag, time.id, unit.id, treatment, refinement.method,
   size.match = 10, data, match.missing = TRUE, covs.formula = NULL,
   verbose = FALSE, qoi, lead = 0, outcome.var,
-  forbid.treatment.reversal = FALSE, matching = TRUE)
+  exact.match.variables = NULL, forbid.treatment.reversal = FALSE,
+  matching = TRUE)
 }
 \arguments{
 \item{lag}{An integer value indicating the length of history to be matched}
@@ -38,6 +39,8 @@ For instance, lag("x", 1:4) will then add new columns to the data for variable "
 \item{lead}{integer sequence specifying the lead window for which qoi estimates will ultimately be produced. Default is 0.}
 
 \item{outcome.var}{Character string of the outcome variable.}
+
+\item{exact.match.variables}{character vector giving the names of variables to be exactly matched on.}
 
 \item{forbid.treatment.reversal}{Logical indicating whether or not it is permissible for treatment to reverse. This must be set to TRUE for msm methods. When set to TRUE, only matched sets where treatment is applied continuously are included.}
 
