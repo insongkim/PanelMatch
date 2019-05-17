@@ -216,9 +216,21 @@ get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.wei
   unit.id <- attr(matched.sets, "id.var")
   time.id <- attr(matched.sets, "t.var")
   lag <- attr(matched.sets, "lag")
+  
+  if(class(data[, unit.id]) == "factor") stop("please convert unit id column to character, integer, or numeric")
+  if(class(data[, time.id]) != "integer") stop("please convert time id to consecutive integers")
+  
   if(any(table(data[, unit.id]) != max(table(data[, unit.id]))))
   {
-    data <- make.pbalanced(data, balance.type = "fill", index = c(unit.id, time.id))
+    testmat <- data.table::dcast(data.table::as.data.table(data), formula = paste0(unit.id, "~", time.id),
+                                 value.var = treatment)
+    d <- data.table::melt(data.table(testmat), id = unit.id, variable = time.id, value = treatment,
+                          variable.factor = FALSE, value.name = treatment)
+    d <- data.frame(d)[,c(1,2)]
+    class(d[, 2]) <- "integer"
+    data <- merge(data.table(d), data.table(data), all.x = TRUE, by = c(unit.id, time.id))
+    data <- as.data.frame(data)
+    #data <- make.pbalanced(data, balance.type = "fill", index = c(unit.id, time.id))
   }
   ordered.data <- data[order(data[,unit.id], data[,time.id]), ]
   ordered.data[, paste0(unit.id, ".int")] <- as.integer(as.factor(data[, unit.id]))

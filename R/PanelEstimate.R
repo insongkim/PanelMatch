@@ -95,9 +95,21 @@ PanelEstimate <- function(inference = c("wfe", "bootstrap"),
   #add in checks about forbid.treatment.reversal and wfe, etc. 
   
   if(!"data.frame" %in% class(data)) stop("please convert data to data.frame class")
+  
+  if(class(data[, unit.id]) == "factor") stop("please convert unit id column to character, integer, or numeric")
+  if(class(data[, time.id]) != "integer") stop("please convert time id to consecutive integers")
+  
   if(any(table(data[, unit.id]) != max(table(data[, unit.id]))))
   {
-    data <- make.pbalanced(data, balance.type = "fill", index = c(unit.id, time.id))
+    testmat <- data.table::dcast(data.table::as.data.table(data), formula = paste0(unit.id, "~", time.id),
+                                 value.var = treatment)
+    d <- data.table::melt(data.table(testmat), id = unit.id, variable = time.id, value = treatment,
+                          variable.factor = FALSE, value.name = treatment)
+    d <- data.frame(d)[,c(1,2)]
+    class(d[, 2]) <- "integer"
+    data <- merge(data.table(d), data.table(data), all.x = TRUE, by = c(unit.id, time.id))
+    data <- as.data.frame(data)
+    #data <- make.pbalanced(data, balance.type = "fill", index = c(unit.id, time.id))
   }
   check_time_data(data, time.id)
   

@@ -211,7 +211,7 @@ check_time_data <- function(data, time.id)
   }
   else
   {
-    stop("integer represetnation of time data has problematic gaps, as it does not increase by one. Perhaps time data for observations is irregular/not uniform across units?")
+    stop("integer representation of time data has problematic gaps, as it does not increase by one. Perhaps time data for observations is irregular/not uniform across units?")
   }
 }
 
