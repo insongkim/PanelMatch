@@ -25,7 +25,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
     temp.treateds <- temp.treateds[idx, ]
     if(nrow(temp.treateds) == 0) 
     {
-      warn.str <- paste0("no treated units for ", qoi, " specification")
+      warn.str <- paste0("no viable treated units for ", qoi, " specification")
       stop(warn.str)
     }
     msets <- get.matchedsets(temp.treateds[, time.id], temp.treateds[, unit.id], ordered.data, 
