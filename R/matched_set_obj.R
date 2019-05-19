@@ -216,7 +216,7 @@ get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.wei
   unit.id <- attr(matched.sets, "id.var")
   time.id <- attr(matched.sets, "t.var")
   lag <- attr(matched.sets, "lag")
-  
+  treatment <- attr(matched.sets, "treated.var")
   if(class(data[, unit.id]) == "factor") stop("please convert unit id column to character, integer, or numeric")
   if(class(data[, time.id]) != "integer") stop("please convert time id to consecutive integers")
   
