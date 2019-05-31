@@ -1,3 +1,7 @@
+prepare_listwise_deletion <- function(data, unit.id, covs.formula)
+{
+  
+}
 # File contains helper functions written in R for PanelMatch functionality
 perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.method, size.match, 
                                ordered.data, match.missing, covs.formula, verbose, 
@@ -359,7 +363,6 @@ handle_mahalanobis_calculations <- function(mahal.nested.list, msets, max.size, 
     {
       return(1)
     }
-    
     cov.data <- year.df[1:(nrow(year.df) - 1), 4:ncol(year.df)]
     cov.matrix <- cov(cov.data)
     center.data <- year.df[nrow(year.df), 4:ncol(year.df)]
@@ -399,7 +402,7 @@ handle_mahalanobis_calculations <- function(mahal.nested.list, msets, max.size, 
     dists <- colMeans(tmat)
     n.dists <- dists[dists > 0]
     #if(length(n.dists) == 0 ) browser()
-    if(length(n.dists) == 0 ) stop("a matched set contain only identical units. Please examine the data and remove this set.")
+    if(length(n.dists) == 0 ) stop("a matched set contains only identical units. Please examine the data and remove this set.")
     if(length(n.dists) < max.set.size)
     {
       w <- 1 / length(n.dists)
