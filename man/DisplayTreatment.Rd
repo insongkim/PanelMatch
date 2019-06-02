@@ -4,14 +4,15 @@
 \alias{DisplayTreatment}
 \title{DisplayTreatment}
 \usage{
-DisplayTreatment(unit.id, time.id, treatment, data, color.of.treated = "red",
-  color.of.untreated = "blue",
-  title = "Treatment Distribution \\n Across Units and Time", xlab = "Time",
-  ylab = "Unit", x.size = 10, y.size = 5, legend.position = "none",
-  x.angle = 45, y.angle = NULL, legend.labels = c("not treated",
-  "treated"), decreasing = FALSE, matched.set = NULL,
-  show.set.only = FALSE, hide.x.axis.label = FALSE,
-  hide.y.axis.label = FALSE, gradient.weights = FALSE)
+DisplayTreatment(unit.id, time.id, treatment, data,
+  color.of.treated = "red", color.of.untreated = "blue",
+  title = "Treatment Distribution \\n Across Units and Time",
+  xlab = "Time", ylab = "Unit", x.size = 10, y.size = 5,
+  legend.position = "none", x.angle = 45, y.angle = NULL,
+  legend.labels = c("not treated", "treated"), decreasing = FALSE,
+  matched.set = NULL, show.set.only = FALSE,
+  hide.x.axis.label = FALSE, hide.y.axis.label = FALSE,
+  gradient.weights = FALSE)
 }
 \arguments{
 \item{unit.id}{A numeric vector of unit identifiers}
