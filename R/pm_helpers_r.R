@@ -8,6 +8,7 @@ prepare_listwise_deletion <- function(data, unit.id, formula, treatment.var, tim
   lag.calls <- terms[grepl("lag(*)", terms)] #regex to get calls to lag function
   if(any(grepl("=", lag.calls))) stop("fix lag calls to use only unnamed arguments in the correct positions")
   lag.calls <- gsub(pattern = "\"", replacement = "", lag.calls, fixed = T)
+  lag.calls <- gsub(pattern = "\'", replacement = "", lag.calls, fixed = T)
   lag.calls <- gsub(pattern = "lag(", replacement = "", lag.calls, fixed = T)
   lag.vars <- unlist(strsplit(lag.calls, split = ","))[c(T,F)]
   other.terms <- terms[!grepl("lag(*)", terms)]
@@ -53,7 +54,8 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
     {
       ordered.data <- (parse_and_prep(formula = covs.formula, 
                                                data = ordered.data, unit.id = unit.id, treatment.var = treatment,
-                                               listwise.delete = listwise.deletion, time.var = time.id, outcomevar = outcome.var)) #every column > 3 at this point should be used in distance/refinement calculation
+                                               listwise.delete = listwise.deletion, 
+                                               time.var = time.id, outcomevar = outcome.var)) #every column > 3 at this point should be used in distance/refinement calculation
     }
     temp.treateds <- findAllTreated(ordered.data, treatedvar = treatment, time.var = time.id, 
                                     unit.var = unit.id, hasbeensorted = TRUE)
@@ -116,7 +118,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
                                              listwise.delete = listwise.deletion)) #every column > 3 at this point should be used in distance/refinement calculation
   } else
   {
-    dropidx <- which(colnames(ordered.data) %in% c(treatment, outcome.var))
+    dropidx <- which(colnames(ordered.data) == outcome.var) #believe this should always be 4th column 
     ordered.data <- as.matrix(ordered.data[, -dropidx])
   }
   if(!listwise.deletion)
@@ -305,8 +307,11 @@ parse_and_prep <- function(formula, data, unit.id, treatment.var, listwise.delet
   if(any(treatment.var %in% other.terms)) stop("contemporaneous treatment variable cannot be used for matching calculations")
   if(listwise.delete)
   {
-    keepidx <- which(colnames(data) %in% c(unit.id, treatment.var, time.var, outcomevar))
-    sub.data <- data[, unique(c(keepidx, which(colnames(data) %in% other.terms))) ] #including only what is specified in the formula
+    unit.idx <- which(colnames(data) == unit.id)
+    time.idx <- which(colnames(data) == time.var)
+    t.idx <- which(colnames(data) == treatment.var)
+    o.idx <- which(colnames(data) == outcomevar)
+    sub.data <- data[, unique(c(unit.idx, time.idx, t.idx, o.idx, which(colnames(data) %in% other.terms))) ] #including only what is specified in the formula
   }
   else {
     sub.data <- data[, c(1:3, which(colnames(data) %in% other.terms) )] #including only what is specified in the formula  
@@ -428,10 +433,9 @@ handle_mahalanobis_calculations <- function(mahal.nested.list, msets, max.size, 
     {
       return(1)
     }
-    
-    cov.data <- year.df[1:(nrow(year.df) - 1), 4:ncol(year.df)]
+    cov.data <- year.df[1:(nrow(year.df) - 1), 4:ncol(year.df), drop = FALSE]
     cov.matrix <- cov(cov.data)
-    center.data <- year.df[nrow(year.df), 4:ncol(year.df)]
+    center.data <- year.df[nrow(year.df), 4:ncol(year.df), drop = FALSE]
     
 
     if(isTRUE(all.equal(det(cov.matrix), 0, tolerance = .00001))) #might not be the conditions we want precisely
@@ -440,8 +444,8 @@ handle_mahalanobis_calculations <- function(mahal.nested.list, msets, max.size, 
       cols.to.remove <- unique(c(cols.to.remove, which(!colnames(cov.data) %in% colnames(t(unique(t(cov.data))))))) #removing columns that are identical to another column
       if(length(cols.to.remove) > 0)
       {
-        cov.data <- cov.data[, -cols.to.remove]
-        center.data <- center.data[-cols.to.remove]
+        cov.data <- cov.data[, -cols.to.remove, drop = FALSE]
+        center.data <- center.data[-cols.to.remove, drop = FALSE]
         cov.matrix <- diag(apply(cov.data, 2, var), ncol(cov.data), ncol(cov.data))  
       }
       
