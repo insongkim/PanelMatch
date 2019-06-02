@@ -1,8 +1,38 @@
 # File contains helper functions written in R for PanelMatch functionality
+prepare_listwise_deletion <- function(data, unit.id, formula, treatment.var, time.var, outcomevar)
+{
+  
+  #check if formula empty or no covariates provided -- error checks
+  terms <- attr(terms(formula),"term.labels")
+  terms <- gsub(" ", "", terms) #remove whitespace
+  lag.calls <- terms[grepl("lag(*)", terms)] #regex to get calls to lag function
+  if(any(grepl("=", lag.calls))) stop("fix lag calls to use only unnamed arguments in the correct positions")
+  lag.calls <- gsub(pattern = "\"", replacement = "", lag.calls, fixed = T)
+  lag.calls <- gsub(pattern = "lag(", replacement = "", lag.calls, fixed = T)
+  lag.vars <- unlist(strsplit(lag.calls, split = ","))[c(T,F)]
+  other.terms <- terms[!grepl("lag(*)", terms)]
+  keepidx <- which(colnames(data) %in% c(unit.id, treatment.var, time.var, outcomevar))
+  sub.data <- data[, unique(c(keepidx, which(colnames(data) %in% c(other.terms, lag.vars)))) ] #including only what is specified in the formula
+  return(data[complete.cases(sub.data), ])  
+
+  # idx <- unlist(by(data, as.factor(data[, unit.id]), FUN = function(x) any(!complete.cases(x))))
+  # units.to.remove <- as.numeric(names(idx)[idx])
+  # sub.data <- subset(data, !data[, unit.id] %in% units.to.remove)
+  # return(sub.data)
+}
+
+listwise.delete.units <- function(data, unit.id)
+{
+  idx <- unlist(by(data, as.factor(data[, unit.id]), FUN = function(x) any(!complete.cases(x))))
+  units.to.remove <- as.numeric(names(idx)[idx])
+  sub.data <- subset(data, !data[, unit.id] %in% units.to.remove)
+  return(sub.data)
+}
+
 perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.method, size.match, 
                                ordered.data, match.missing, covs.formula, verbose, 
                                mset.object = NULL, lead, outcome.var = NULL, forbid.treatment.reversal = FALSE, qoi = "",
-                               matching = TRUE, exact.matching.variables = NULL)
+                               matching = TRUE, exact.matching.variables = NULL, listwise.deletion)
 {
   if(!is.null(mset.object))
   {
@@ -19,6 +49,12 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
   }
   else
   {
+    if(listwise.deletion)
+    {
+      ordered.data <- (parse_and_prep(formula = covs.formula, 
+                                               data = ordered.data, unit.id = unit.id, treatment.var = treatment,
+                                               listwise.delete = listwise.deletion, time.var = time.id, outcomevar = outcome.var)) #every column > 3 at this point should be used in distance/refinement calculation
+    }
     temp.treateds <- findAllTreated(ordered.data, treatedvar = treatment, time.var = time.id, 
                                     unit.var = unit.id, hasbeensorted = TRUE)
     idx <- !((temp.treateds[, time.id] - lag) < min(ordered.data[, time.id]))
@@ -73,9 +109,20 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
   
   treated.ts <- as.numeric(unlist(strsplit(names(msets), split = "[.]"))[c(F,T)])
   treated.ids <- as.numeric(unlist(strsplit(names(msets), split = "[.]"))[c(T,F)])
-  ordered.data <- as.matrix(parse_and_prep(formula = covs.formula, 
-                                           data = ordered.data, unit.id = unit.id, treatment.var = treatment)) #every column > 3 at this point should be used in distance/refinement calculation
-  ordered.data <- as.matrix(handle.missing.data(ordered.data, 4:ncol(ordered.data)))
+  if(!listwise.deletion)
+  {
+    ordered.data <- as.matrix(parse_and_prep(formula = covs.formula, 
+                                             data = ordered.data, unit.id = unit.id, treatment.var = treatment,
+                                             listwise.delete = listwise.deletion)) #every column > 3 at this point should be used in distance/refinement calculation
+  } else
+  {
+    dropidx <- which(colnames(ordered.data) %in% c(treatment, outcome.var))
+    ordered.data <- as.matrix(ordered.data[, -dropidx])
+  }
+  if(!listwise.deletion)
+  {
+    ordered.data <- as.matrix(handle.missing.data(ordered.data, 4:ncol(ordered.data)))  
+  }
   
   #RE IMPLEMENT forbid.treatment.reversal OR NAIVE?
   if(refinement.method == "mahalanobis")
@@ -248,7 +295,7 @@ build_maha_mats <- function(idx, ordered_expanded_data)
 # Will need to be updated if the syntax/implementation of the covs.formula argument is changed
 # Applies necessary transformation to the data based on the specified parameters, including using the covs.formula argument to apply the necessary lags to particular columns.
 # It also will structure the data frame such that every column after the 3rd column is used in the following calculations
-parse_and_prep <- function(formula, data, unit.id, treatment.var)
+parse_and_prep <- function(formula, data, unit.id, treatment.var, listwise.delete = FALSE, time.var = NULL, outcomevar = NULL)
 {
   #check if formula empty or no covariates provided -- error checks
   terms <- attr(terms(formula),"term.labels")
@@ -256,7 +303,15 @@ parse_and_prep <- function(formula, data, unit.id, treatment.var)
   lag.calls <- terms[grepl("lag(*)", terms)] #regex to get calls to lag function
   other.terms <- terms[!grepl("lag(*)", terms)]
   if(any(treatment.var %in% other.terms)) stop("contemporaneous treatment variable cannot be used for matching calculations")
-  sub.data <- data[, c(1:3, which(colnames(data) %in% other.terms) )] #including only what is specified in the formula
+  if(listwise.delete)
+  {
+    keepidx <- which(colnames(data) %in% c(unit.id, treatment.var, time.var, outcomevar))
+    sub.data <- data[, unique(c(keepidx, which(colnames(data) %in% other.terms))) ] #including only what is specified in the formula
+  }
+  else {
+    sub.data <- data[, c(1:3, which(colnames(data) %in% other.terms) )] #including only what is specified in the formula  
+  }
+  
   if(any(grepl("=", lag.calls))) stop("fix lag calls to use only unnamed arguments in the correct positions")
   data <- data.table::as.data.table(data) #check sorting
   if(length(lag.calls) > 0)
@@ -264,11 +319,25 @@ parse_and_prep <- function(formula, data, unit.id, treatment.var)
     results.unmerged <- mapply(FUN = handle.calls, call.as.string = lag.calls, MoreArgs =  list(.data = data, .unitid = unit.id), SIMPLIFY = FALSE)
     names(results.unmerged) <- NULL
     full.data <- cbind(sub.data, do.call("cbind", results.unmerged))
-    return(full.data)
+    if(listwise.delete)
+    {
+      return(na.omit(full.data))  
+    } else 
+    {
+      return(full.data)  
+    }
+    
   }
   else
   {
-    return(sub.data)
+    if(listwise.delete)
+    {
+      return(na.omit(sub.data))
+    } else 
+    {
+      return(sub.data)  
+    }
+    
   }
   
 }

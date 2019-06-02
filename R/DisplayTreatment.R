@@ -372,17 +372,31 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
     p <- ggplot(data, aes(unit.id, time.id)) + geom_tile(aes(fill = treatment),
                                                          colour = "white") +
       scale_fill_gradient(low = color.of.untreated,
-                          high = color.of.treated, guide = "legend", 
+                          high = color.of.treated, guide = "legend",
                           breaks = c(0,1), labels = legend.labels) +
       theme_bw() +
       labs(list(title = title, x = ylab, y = xlab, fill = "")) +
       theme(axis.ticks.x=element_blank(),
             panel.grid.major = element_blank(), panel.border = element_blank(),
             legend.position = legend.position,
-            panel.background = element_blank(), 
+            panel.background = element_blank(),
             axis.text.x = element_text(angle=x.angle, size = x.size, vjust=0.5),
             axis.text.y = element_text(size = y.size, angle = y.angle),
             plot.title = element_text(hjust = 0.5))
+    
+    # p <- ggplot(data, aes(unit.id, time.id)) + geom_raster(aes(fill = treatment), hjust = 0, vjust = .5) +
+    #   scale_fill_gradient(low = color.of.untreated,
+    #                       high = color.of.treated, guide = "legend", 
+    #                       breaks = c(0,1), labels = legend.labels) +
+    #   theme_bw() +
+    #   labs(list(title = title, x = ylab, y = xlab, fill = "")) +
+    #   theme(axis.ticks.x=element_blank(),
+    #         panel.grid.major = element_blank(), panel.border = element_blank(),
+    #         legend.position = legend.position,
+    #         panel.background = element_blank(), 
+    #         axis.text.x = element_text(angle=x.angle, size = x.size, vjust=0.5),
+    #         axis.text.y = element_text(size = y.size, angle = y.angle),
+    #         plot.title = element_text(hjust = 0.5))
   }
   
   
