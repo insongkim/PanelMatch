@@ -79,14 +79,14 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
   if(any(duplicated(data[, c(unit.id, time.id)]))) stop("Time, unit combinations should uniquely identify rows. Please remove duplicates")
   if(class(data[, unit.id]) == "factor") stop("please convert unit id column to character, integer, or numeric")
   if(class(data[, time.id]) != "integer") stop("please convert time id to consecutive integers")
-  ########################
+  ########################################################################################################################
   if(listwise.delete)
   { #at this point, unit id's should be numeric, as should year data by assumption
     othercols <- colnames(data)[!colnames(data) %in% c(time.id, unit.id, treatment)]
     data <- data[, c(unit.id, time.id, treatment, othercols)]
     data <- prepare_listwise_deletion(data, unit.id, covs.formula, treatment, time.id, outcome.var)   
   }
-  ########################
+  ########################################################################################################################
   if(any(table(data[, unit.id]) != max(table(data[, unit.id]))))
   {
     testmat <- data.table::dcast(data.table::as.data.table(data), formula = paste0(unit.id, "~", time.id),
@@ -142,12 +142,12 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
     }  
   }
 
-  ####################
+  ############################################################################################################################################
   if(listwise.delete)
   {
-    ordered.data <- listwise.delete.units(ordered.data, unit.id)  
+    ordered.data <- listwise.delete.units(ordered.data, unit.id, covs.formula, treatment, time.id, outcome.var)  
   }
-  ####################
+  ############################################################################################################################################
   if(qoi == "atc")
   {
     ordered.data[, treatment] <- ifelse(ordered.data[, treatment] == 1,0,1) #flip the treatment variables 

@@ -22,9 +22,21 @@ prepare_listwise_deletion <- function(data, unit.id, formula, treatment.var, tim
   # return(sub.data)
 }
 
-listwise.delete.units <- function(data, unit.id)
+listwise.delete.units <- function(data, unit.id, formula, treatment.var, time.var, outcomevar)
 {
-  idx <- unlist(by(data, as.factor(data[, unit.id]), FUN = function(x) any(!complete.cases(x))))
+  terms <- attr(terms(formula),"term.labels")
+  terms <- gsub(" ", "", terms) #remove whitespace
+  lag.calls <- terms[grepl("lag(*)", terms)] #regex to get calls to lag function
+  if(any(grepl("=", lag.calls))) stop("fix lag calls to use only unnamed arguments in the correct positions")
+  lag.calls <- gsub(pattern = "\"", replacement = "", lag.calls, fixed = T)
+  lag.calls <- gsub(pattern = "\'", replacement = "", lag.calls, fixed = T)
+  lag.calls <- gsub(pattern = "lag(", replacement = "", lag.calls, fixed = T)
+  lag.vars <- unlist(strsplit(lag.calls, split = ","))[c(T,F)]
+  other.terms <- terms[!grepl("lag(*)", terms)]
+  keepidx <- which(colnames(data) %in% c(unit.id, treatment.var, time.var, outcomevar))
+  data2 <- data[, unique(c(keepidx, which(colnames(data) %in% c(other.terms, lag.vars)))) ]
+  
+  idx <- unlist(by(data2, as.factor(data2[, unit.id]), FUN = function(x) any(!complete.cases(x))))
   units.to.remove <- as.numeric(names(idx)[idx])
   sub.data <- subset(data, !data[, unit.id] %in% units.to.remove)
   return(sub.data)
