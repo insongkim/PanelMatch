@@ -454,7 +454,7 @@ handle_mahalanobis_calculations <- function(mahal.nested.list, msets, max.size, 
     {
       cols.to.remove <- which(apply(cov.data, 2, function(x) isTRUE(length(unique(x)) == 1))) #checking for columns that only have one value
       cols.to.remove <- unique(c(cols.to.remove, which(!colnames(cov.data) %in% colnames(t(unique(t(cov.data))))))) #removing columns that are identical to another column
-      if(length(cols.to.remove) > 0)
+      if(length(cols.to.remove) > 0 & length(cols.to.remove) < ncol(cov.data))
       {
         cov.data <- cov.data[, -cols.to.remove, drop = FALSE]
         center.data <- center.data[-cols.to.remove, drop = FALSE]
