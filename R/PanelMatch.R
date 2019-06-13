@@ -82,6 +82,7 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
   ########################################################################################################################
   if(listwise.delete)
   { #at this point, unit id's should be numeric, as should year data by assumption
+    
     othercols <- colnames(data)[!colnames(data) %in% c(time.id, unit.id, treatment)]
     data <- data[, c(unit.id, time.id, treatment, othercols)]
     data <- prepare_listwise_deletion(data, unit.id, covs.formula, treatment, time.id, outcome.var)   
@@ -89,6 +90,7 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
   ########################################################################################################################
   if(any(table(data[, unit.id]) != max(table(data[, unit.id]))))
   {
+    
     testmat <- data.table::dcast(data.table::as.data.table(data), formula = paste0(unit.id, "~", time.id),
                                  value.var = treatment)
     d <- data.table::melt(data.table(testmat), id = unit.id, variable = time.id, value = treatment,
@@ -141,12 +143,11 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
       ordered.data[, variable] <- as.numeric(as.factor(ordered.data[, variable]))
     }  
   }
-
   ############################################################################################################################################
-  if(listwise.delete)
-  {
-    ordered.data <- listwise.delete.units(ordered.data, unit.id, covs.formula, treatment, time.id, outcome.var)  
-  }
+  #if(listwise.delete)
+  #{
+  #  ordered.data <- listwise.delete.units(ordered.data, unit.id, covs.formula, treatment, time.id, outcome.var)  
+  #}
   ############################################################################################################################################
   if(qoi == "atc")
   {

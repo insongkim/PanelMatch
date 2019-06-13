@@ -11,10 +11,16 @@ prepare_listwise_deletion <- function(data, unit.id, formula, treatment.var, tim
   lag.calls <- gsub(pattern = "\'", replacement = "", lag.calls, fixed = T)
   lag.calls <- gsub(pattern = "lag(", replacement = "", lag.calls, fixed = T)
   lag.vars <- unlist(strsplit(lag.calls, split = ","))[c(T,F)]
+  # lag.nums <- unlist(strsplit(lag.calls, split = ","))[c(F,T)]
+  # lag.nums <- as.numeric(unlist(strsplit(lag.nums, split = ":"))[c(T,F)])
   other.terms <- terms[!grepl("lag(*)", terms)]
   keepidx <- which(colnames(data) %in% c(unit.id, treatment.var, time.var, outcomevar))
   sub.data <- data[, unique(c(keepidx, which(colnames(data) %in% c(other.terms, lag.vars)))) ] #including only what is specified in the formula
-  return(data[complete.cases(sub.data), ])  
+  rangedata <- data[complete.cases(sub.data), time.var]
+  #max(rangedata)
+  #min(rangedata)
+  ret.data <- subset(sub.data, sub.data[, time.var] %in% min(rangedata):max(rangedata))
+  return(ret.data)
 
   # idx <- unlist(by(data, as.factor(data[, unit.id]), FUN = function(x) any(!complete.cases(x))))
   # units.to.remove <- as.numeric(names(idx)[idx])
@@ -69,6 +75,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
                                                listwise.delete = listwise.deletion, 
                                                time.var = time.id, outcomevar = outcome.var)) #every column > 3 at this point should be used in distance/refinement calculation
     }
+    
     temp.treateds <- findAllTreated(ordered.data, treatedvar = treatment, time.var = time.id, 
                                     unit.var = unit.id, hasbeensorted = TRUE)
     idx <- !((temp.treateds[, time.id] - lag) < min(ordered.data[, time.id]))
@@ -333,12 +340,19 @@ parse_and_prep <- function(formula, data, unit.id, treatment.var, listwise.delet
   data <- data.table::as.data.table(data) #check sorting
   if(length(lag.calls) > 0)
   {
+    
     results.unmerged <- mapply(FUN = handle.calls, call.as.string = lag.calls, MoreArgs =  list(.data = data, .unitid = unit.id), SIMPLIFY = FALSE)
     names(results.unmerged) <- NULL
     full.data <- cbind(sub.data, do.call("cbind", results.unmerged))
     if(listwise.delete)
     {
-      return(na.omit(full.data))  
+      lagged_na_year.start <- max(as.numeric(unlist(strsplit(colnames(full.data)[grepl("_l", colnames(full.data))], split = "_l"))[c(F,T)])) + 1
+      
+      idx <- unlist(by(full.data, as.factor(full.data[, unit.id]), FUN = function(x) any(!complete.cases(x[lagged_na_year.start:nrow(x), ]))))
+      units.to.remove <- as.numeric(names(idx)[idx])
+      sub.data <- subset(full.data, !full.data[, unit.id] %in% units.to.remove)
+      
+      return(na.omit(sub.data))  
     } else 
     {
       return(full.data)  
@@ -349,6 +363,11 @@ parse_and_prep <- function(formula, data, unit.id, treatment.var, listwise.delet
   {
     if(listwise.delete)
     {
+      
+      idx <- unlist(by(sub.data, as.factor(sub.data[, unit.id]), FUN = function(x) any(!complete.cases(x))))
+      units.to.remove <- as.numeric(names(idx)[idx])
+      sub.data <- subset(sub.data, !sub.data[, unit.id] %in% units.to.remove)
+      #might not need the na.omit piece here now.
       return(na.omit(sub.data))
     } else 
     {
