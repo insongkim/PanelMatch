@@ -143,7 +143,6 @@ lwd_refinement <- function(msets, global.data, treated.ts,
       uid <- treated.ids[i]
       localdata <- global.data[ global.data[, time.id]  %in% ((time - lag):time), ]
       localdata <- lwd_units(localdata, unit.id, covs.formula)
-      
       viable.units <- unique(localdata[, unit.id])
       if(uid %in% viable.units)
       {
@@ -171,7 +170,7 @@ lwd_refinement <- function(msets, global.data, treated.ts,
     }
     
   }
-  #browser() #need to stitch everything back together as matched.set object
+  
   t.newsets <- unlist(new.msets, recursive = F)
   idx <- sapply(t.newsets, function(x) !any(is.na(x)))
   t.newsets <- t.newsets[idx]

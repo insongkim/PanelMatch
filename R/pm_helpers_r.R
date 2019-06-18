@@ -102,7 +102,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
   
   if(listwise.deletion) #code will just return from here when listwise.deletion = T
   {
-    browser()
+    
     msets <- lwd_refinement(msets, ordered.data, treated.ts, treated.ids, lag, 
                             time.id, unit.id, lead, refinement.method, treatment, size.match,
                             match.missing, covs.formula, verbose, outcome.var, e.sets)
