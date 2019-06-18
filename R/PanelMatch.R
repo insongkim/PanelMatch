@@ -73,6 +73,7 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
   {
     warning("Note that for msm methods, PanelMatch will attempt to find the estimated average treatment effect of being treated for the entire specified 'lead' time periods.")
   }
+  if(listwise.delete & match.missing) stop("set match.missing = F when listwise.delete = TRUE")
   if(lag < 1) stop("please specify a lag value >= 1")
   if(!"data.frame" %in% class(data)) stop("please convert data to data.frame class")
   if(!all(refinement.method %in% c("mahalanobis", "ps.weight", "ps.match", "CBPS.weight", "CBPS.match", "ps.msm.weight", "CBPS.msm.weight", "none"))) stop("please choose a valid refinement method")
@@ -80,13 +81,13 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
   if(class(data[, unit.id]) == "factor") stop("please convert unit id column to character, integer, or numeric")
   if(class(data[, time.id]) != "integer") stop("please convert time id to consecutive integers")
   ########################################################################################################################
-  if(listwise.delete)
-  { #at this point, unit id's should be numeric, as should year data by assumption
-    
-    othercols <- colnames(data)[!colnames(data) %in% c(time.id, unit.id, treatment)]
-    data <- data[, c(unit.id, time.id, treatment, othercols)]
-    data <- prepare_listwise_deletion(data, unit.id, covs.formula, treatment, time.id, outcome.var)   
-  }
+  # if(listwise.delete)
+  # { #at this point, unit id's should be numeric, as should year data by assumption
+  #   
+  #   othercols <- colnames(data)[!colnames(data) %in% c(time.id, unit.id, treatment)]
+  #   data <- data[, c(unit.id, time.id, treatment, othercols)]
+  #   data <- prepare_listwise_deletion(data, unit.id, covs.formula, treatment, time.id, outcome.var)   
+  # }
   ########################################################################################################################
   if(any(table(data[, unit.id]) != max(table(data[, unit.id]))))
   {

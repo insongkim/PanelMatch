@@ -1,53 +1,4 @@
 # File contains helper functions written in R for PanelMatch functionality
-prepare_listwise_deletion <- function(data, unit.id, formula, treatment.var, time.var, outcomevar)
-{
-  
-  #check if formula empty or no covariates provided -- error checks
-  terms <- attr(terms(formula),"term.labels")
-  terms <- gsub(" ", "", terms) #remove whitespace
-  lag.calls <- terms[grepl("lag(*)", terms)] #regex to get calls to lag function
-  if(any(grepl("=", lag.calls))) stop("fix lag calls to use only unnamed arguments in the correct positions")
-  lag.calls <- gsub(pattern = "\"", replacement = "", lag.calls, fixed = T)
-  lag.calls <- gsub(pattern = "\'", replacement = "", lag.calls, fixed = T)
-  lag.calls <- gsub(pattern = "lag(", replacement = "", lag.calls, fixed = T)
-  lag.vars <- unlist(strsplit(lag.calls, split = ","))[c(T,F)]
-  # lag.nums <- unlist(strsplit(lag.calls, split = ","))[c(F,T)]
-  # lag.nums <- as.numeric(unlist(strsplit(lag.nums, split = ":"))[c(T,F)])
-  other.terms <- terms[!grepl("lag(*)", terms)]
-  keepidx <- which(colnames(data) %in% c(unit.id, treatment.var, time.var, outcomevar))
-  sub.data <- data[, unique(c(keepidx, which(colnames(data) %in% c(other.terms, lag.vars)))) ] #including only what is specified in the formula
-  rangedata <- data[complete.cases(sub.data), time.var]
-  #max(rangedata)
-  #min(rangedata)
-  ret.data <- subset(sub.data, sub.data[, time.var] %in% min(rangedata):max(rangedata))
-  return(ret.data)
-
-  # idx <- unlist(by(data, as.factor(data[, unit.id]), FUN = function(x) any(!complete.cases(x))))
-  # units.to.remove <- as.numeric(names(idx)[idx])
-  # sub.data <- subset(data, !data[, unit.id] %in% units.to.remove)
-  # return(sub.data)
-}
-
-listwise.delete.units <- function(data, unit.id, formula, treatment.var, time.var, outcomevar)
-{
-  terms <- attr(terms(formula),"term.labels")
-  terms <- gsub(" ", "", terms) #remove whitespace
-  lag.calls <- terms[grepl("lag(*)", terms)] #regex to get calls to lag function
-  if(any(grepl("=", lag.calls))) stop("fix lag calls to use only unnamed arguments in the correct positions")
-  lag.calls <- gsub(pattern = "\"", replacement = "", lag.calls, fixed = T)
-  lag.calls <- gsub(pattern = "\'", replacement = "", lag.calls, fixed = T)
-  lag.calls <- gsub(pattern = "lag(", replacement = "", lag.calls, fixed = T)
-  lag.vars <- unlist(strsplit(lag.calls, split = ","))[c(T,F)]
-  other.terms <- terms[!grepl("lag(*)", terms)]
-  keepidx <- which(colnames(data) %in% c(unit.id, treatment.var, time.var, outcomevar))
-  data2 <- data[, unique(c(keepidx, which(colnames(data) %in% c(other.terms, lag.vars)))) ]
-  
-  idx <- unlist(by(data2, as.factor(data2[, unit.id]), FUN = function(x) any(!complete.cases(x))))
-  units.to.remove <- as.numeric(names(idx)[idx])
-  sub.data <- subset(data, !data[, unit.id] %in% units.to.remove)
-  return(sub.data)
-}
-
 perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.method, size.match, 
                                ordered.data, match.missing, covs.formula, verbose, 
                                mset.object = NULL, lead, outcome.var = NULL, forbid.treatment.reversal = FALSE, qoi = "",
@@ -68,13 +19,13 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
   }
   else
   {
-    if(listwise.deletion)
-    {
-      ordered.data <- (parse_and_prep(formula = covs.formula, 
-                                               data = ordered.data, unit.id = unit.id, treatment.var = treatment,
-                                               listwise.delete = listwise.deletion, 
-                                               time.var = time.id, outcomevar = outcome.var)) #every column > 3 at this point should be used in distance/refinement calculation
-    }
+    # if(listwise.deletion) #
+    # {
+    #   ordered.data <- (parse_and_prep(formula = covs.formula, 
+    #                                            data = ordered.data, unit.id = unit.id, treatment.var = treatment,
+    #                                            listwise.delete = listwise.deletion, 
+    #                                            time.var = time.id, outcomevar = outcome.var)) #every column > 3 at this point should be used in distance/refinement calculation
+    # }
     
     temp.treateds <- findAllTreated(ordered.data, treatedvar = treatment, time.var = time.id, 
                                     unit.var = unit.id, hasbeensorted = TRUE)
@@ -109,6 +60,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
     e.sets <- c(e.sets, msets[sapply(msets, length) == 0])
     msets <- msets[sapply(msets, length) > 0 ]
   }
+
   if(refinement.method == "none")
   {
     for(i in 1:length(msets))
@@ -130,16 +82,33 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
   
   treated.ts <- as.numeric(unlist(strsplit(names(msets), split = "[.]"))[c(F,T)])
   treated.ids <- as.numeric(unlist(strsplit(names(msets), split = "[.]"))[c(T,F)])
-  if(!listwise.deletion)
-  {
-    ordered.data <- as.matrix(parse_and_prep(formula = covs.formula, 
+  
+
+  
+  #if(!listwise.deletion)
+  #{
+  ordered.data <- as.matrix(parse_and_prep(formula = covs.formula, 
                                              data = ordered.data, unit.id = unit.id, treatment.var = treatment,
-                                             listwise.delete = listwise.deletion)) #every column > 3 at this point should be used in distance/refinement calculation
-  } else
+                                             listwise.delete = F)) #every column > 3 at this point should be used in distance/refinement calculation
+  # } else
+  # {
+  #   dropidx <- which(colnames(ordered.data) == outcome.var) #believe this should always be 4th column 
+  #   ordered.data <- as.matrix(ordered.data[, -dropidx])
+  # }
+  ################################################
+  ### insert brute force listwise delete code here ####
+  # lwd_refinement <- function(msets, global.data, treated.ts, 
+  #                            treated.ids, lag, time.id, unit.id, lead, refinement.method)
+  
+  if(listwise.deletion) #code will just return from here when listwise.deletion = T
   {
-    dropidx <- which(colnames(ordered.data) == outcome.var) #believe this should always be 4th column 
-    ordered.data <- as.matrix(ordered.data[, -dropidx])
+    browser()
+    msets <- lwd_refinement(msets, ordered.data, treated.ts, treated.ids, lag, 
+                            time.id, unit.id, lead, refinement.method, treatment, size.match,
+                            match.missing, covs.formula, verbose, outcome.var, e.sets)
+    return(msets)
   }
+  ################################################
   if(!listwise.deletion)
   {
     ordered.data <- as.matrix(handle.missing.data(ordered.data, 4:ncol(ordered.data)))  
