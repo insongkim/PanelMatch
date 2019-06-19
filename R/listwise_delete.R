@@ -174,7 +174,32 @@ lwd_refinement <- function(msets, global.data, treated.ts,
   t.newsets <- unlist(new.msets, recursive = F)
   idx <- sapply(t.newsets, function(x) !any(is.na(x)))
   t.newsets <- t.newsets[idx]
+  
   class(e.sets) <- 'list'
+  
+  treated.ts <- as.numeric(unlist(strsplit(names(e.sets), split = "[.]"))[c(F,T)])
+  treated.ids <- as.numeric(unlist(strsplit(names(e.sets), split = "[.]"))[c(T,F)])
+  
+  esetlist <- logical(length(e.sets))
+  for(i in 1:length(e.sets))
+  {
+    
+    time <- treated.ts[i]
+    uid <- treated.ids[i]
+    
+    localdata <- global.data[ global.data[, time.id]  %in% ((time - lag):time), ]
+    localdata <- lwd_units(localdata, unit.id, covs.formula)
+    viable.units <- unique(localdata[, unit.id])
+    
+    if(uid %in% viable.units)
+    {
+      esetlist[i] <- TRUE
+    }
+    
+  }
+  
+  e.sets <- e.sets[esetlist]
+  
   t.newsets <- c(t.newsets, e.sets)
   attrib <- names(attributes(msets))[names(attributes(msets)) != "names"]
   for(tatt in attrib)
