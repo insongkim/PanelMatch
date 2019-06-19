@@ -237,6 +237,37 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
   attr(msets, "match.missing") <- match.missing
   return(msets)
 }
+
+parse_and_prep2 <- function(formula, data, unit.id, treatment.var, listwise.delete = FALSE, time.var = NULL, outcomevar = NULL)
+{
+  browser()
+  internal.lag <- function (x, n = 1L, default = NA) 
+  {
+    if (n == 0) return(x)
+    xlen <- length(x)
+    n <- pmin(n, xlen)
+    out <- c(rep(default, n), x[seq_len(xlen - n)])
+    attributes(out) <- attributes(x)
+    out
+  }
+  
+  lag <- function(y, lwindow)
+  {
+    sapply(lwindow, internal.lag, x = y) #except steal the dplyr lag function so we dont need to import the dependency
+  }
+  
+  apply_formula <- function(x, form)
+  {
+    tdf <- model.frame(form, x, na.action = NULL)
+    cbind(x[, c(unit.id, year.id, treatment.var)], model.matrix(form, tdf))
+  }
+  
+  by(data, as.factor(data[, unit.id]), FUN = tfunc, form = formula)
+  t.data <- do.call(rbind, ((by(subdem, as.factor(subdem[, "wbcode2"]), FUN = tfunc, form = covs.formula))))[, -1]
+  #may not be necessary? 
+  t.data <- t.data[order(t.data[,unit.id], t.data[,time.id]), ]
+}
+
 # builds a list that contains all times in a lag window that correspond to a particular treated unit. This is structured as a list of vectors. Each vector is lag + 1 units long. The overall list will 
 # be the same length as the number of matched sets
 expand.treated.ts <- function(lag, treated.ts)
