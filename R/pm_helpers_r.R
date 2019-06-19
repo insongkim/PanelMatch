@@ -19,14 +19,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
   }
   else
   {
-    # if(listwise.deletion) #
-    # {
-    #   ordered.data <- (parse_and_prep(formula = covs.formula, 
-    #                                            data = ordered.data, unit.id = unit.id, treatment.var = treatment,
-    #                                            listwise.delete = listwise.deletion, 
-    #                                            time.var = time.id, outcomevar = outcome.var)) #every column > 3 at this point should be used in distance/refinement calculation
-    # }
-    
+
     temp.treateds <- findAllTreated(ordered.data, treatedvar = treatment, time.var = time.id, 
                                     unit.var = unit.id, hasbeensorted = TRUE)
     idx <- !((temp.treateds[, time.id] - lag) < min(ordered.data[, time.id]))
@@ -83,22 +76,10 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
   treated.ts <- as.numeric(unlist(strsplit(names(msets), split = "[.]"))[c(F,T)])
   treated.ids <- as.numeric(unlist(strsplit(names(msets), split = "[.]"))[c(T,F)])
   
-
-  
-  #if(!listwise.deletion)
-  #{
   ordered.data <- as.matrix(parse_and_prep(formula = covs.formula, 
                                              data = ordered.data, unit.id = unit.id, treatment.var = treatment,
                                              listwise.delete = F)) #every column > 3 at this point should be used in distance/refinement calculation
-  # } else
-  # {
-  #   dropidx <- which(colnames(ordered.data) == outcome.var) #believe this should always be 4th column 
-  #   ordered.data <- as.matrix(ordered.data[, -dropidx])
-  # }
-  ################################################
-  ### insert brute force listwise delete code here ####
-  # lwd_refinement <- function(msets, global.data, treated.ts, 
-  #                            treated.ids, lag, time.id, unit.id, lead, refinement.method)
+
   
   if(listwise.deletion) #code will just return from here when listwise.deletion = T
   {
@@ -114,7 +95,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
     ordered.data <- as.matrix(handle.missing.data(ordered.data, 4:ncol(ordered.data)))  
   }
   
-  #RE IMPLEMENT forbid.treatment.reversal OR NAIVE?
+  
   if(refinement.method == "mahalanobis")
   {
     tlist <- expand.treated.ts(lag, treated.ts = treated.ts)
