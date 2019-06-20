@@ -1,4 +1,4 @@
-lwd_units <- function(full.local.data, unit.id, covs.formula)
+lwd_units <- function(full.local.data, unit.id)
 {
   ld <- full.local.data[, c(1, 4:ncol(full.local.data)), drop = F]
   idx <- unlist(by(ld, as.factor(ld[, unit.id]), FUN = function(x) any(!complete.cases(x))))
@@ -10,28 +10,52 @@ lwd_units <- function(full.local.data, unit.id, covs.formula)
 #global.data needs to be fully prepped/parsed data set that is internally balanced, full of NAs likely
 lwd_refinement <- function(msets, global.data, treated.ts, 
                            treated.ids, lag, time.id, unit.id, lead, refinement.method, treatment, size.match,
-                           match.missing, covs.formula, verbose, outcome.var, e.sets)
+                           match.missing, covs.formula, verbose, outcome.var, e.sets, covs.form2 = NULL)
 {
   #extract other attributes about the msets object, attach to individual mset for consistency
-  
-  terms <- attr(terms(covs.formula),"term.labels")
-  terms <- gsub(" ", "", terms) #remove whitespace
-  lag.calls <- terms[grepl("lag(*)", terms)] #regex to get calls to lag function
-  if(any(grepl("=", lag.calls))) stop("fix lag calls to use only unnamed arguments in the correct positions")
-  lag.calls <- gsub(pattern = "\"", replacement = "", lag.calls, fixed = T)
-  lag.calls <- gsub(pattern = "\'", replacement = "", lag.calls, fixed = T)
-  lag.calls <- gsub(pattern = "lag(", replacement = "", lag.calls, fixed = T)
-  lag.vars <- unlist(strsplit(lag.calls, split = ","))[c(T,F)]
-  if(length(lag.calls) > 0)
+  if(is.null(covs.form2))
   {
-    lag.nums <- unlist(strsplit(lag.calls, split = ","))[c(F,T)]
-    lag.nums <- as.numeric(gsub(")", "", unlist(strsplit(lag.nums, split = ":"))[c(F,T)]))
-    max.lag <- max(lag.nums)
-    stm <- max.lag + 1
-    global.data <- do.call(rbind, by(global.data, as.factor(global.data[, unit.id]), function(x) x[stm:nrow(x), ] ))
-    rownames(global.data) <- NULL
-    global.data <- as.matrix(global.data[order(global.data[,unit.id], global.data[, time.id]), ] )
+    terms <- attr(terms(covs.formula),"term.labels")
+    terms <- gsub(" ", "", terms) #remove whitespace
+    lag.calls <- terms[grepl("lag(*)", terms)] #regex to get calls to lag function
+    if(any(grepl("=", lag.calls))) stop("fix lag calls to use only unnamed arguments in the correct positions")
+    lag.calls <- gsub(pattern = "\"", replacement = "", lag.calls, fixed = T)
+    lag.calls <- gsub(pattern = "\'", replacement = "", lag.calls, fixed = T)
+    lag.calls <- gsub(pattern = "lag(", replacement = "", lag.calls, fixed = T)
+    lag.vars <- unlist(strsplit(lag.calls, split = ","))[c(T,F)]
+    if(length(lag.calls) > 0)
+    {
+      lag.nums <- unlist(strsplit(lag.calls, split = ","))[c(F,T)]
+      lag.nums <- as.numeric(gsub(")", "", unlist(strsplit(lag.nums, split = ":"))[c(F,T)]))
+      max.lag <- max(lag.nums)
+      stm <- max.lag + 1
+      global.data <- do.call(rbind, by(global.data, as.factor(global.data[, unit.id]), function(x) x[stm:nrow(x), ] ))
+      rownames(global.data) <- NULL
+      global.data <- as.matrix(global.data[order(global.data[,unit.id], global.data[, time.id]), ] )
+    }  
+  } else
+  {
+    covs.formula <- covs.form2
+    terms <- attr(terms(covs.formula),"term.labels")
+    terms <- gsub(" ", "", terms) #remove whitespace
+    lag.calls <- terms[grepl("lag(*)", terms)] #regex to get calls to lag function
+    if(any(grepl("=", lag.calls))) stop("fix lag calls to use only unnamed arguments in the correct positions")
+    lag.calls <- gsub(pattern = "\"", replacement = "", lag.calls, fixed = T)
+    lag.calls <- gsub(pattern = "\'", replacement = "", lag.calls, fixed = T)
+    lag.calls <- gsub(pattern = "lag(", replacement = "", lag.calls, fixed = T)
+    lag.vars <- unlist(strsplit(lag.calls, split = ","))[c(T,F)]
+    if(length(lag.calls) > 0)
+    {
+      lag.nums <- unlist(strsplit(lag.calls, split = ","))[c(F,T)]
+      lag.nums <- as.numeric(gsub(")", "", unlist(strsplit(lag.nums, split = ":"))[c(F,T)]))
+      max.lag <- max(lag.nums)
+      stm <- max.lag + 1
+      global.data <- do.call(rbind, by(global.data, as.factor(global.data[, unit.id]), function(x) x[stm:nrow(x), ] ))
+      rownames(global.data) <- NULL
+      global.data <- as.matrix(global.data[order(global.data[,unit.id], global.data[, time.id]), ] )
+    }  
   }
+  
   
   
   new.msets <- list()
@@ -43,7 +67,7 @@ lwd_refinement <- function(msets, global.data, treated.ts,
       time <- treated.ts[i]
       uid <- treated.ids[i]
       localdata <- global.data[ global.data[, time.id]  %in% ((time - lag):time), ]
-      localdata <- lwd_units(localdata, unit.id, covs.formula)
+      localdata <- lwd_units(localdata, unit.id)
       viable.units <- unique(localdata[, unit.id])
       if(uid %in% viable.units)
       {
@@ -89,7 +113,7 @@ lwd_refinement <- function(msets, global.data, treated.ts,
     uid <- treated.ids[i]
     
     localdata <- global.data[ global.data[, time.id]  %in% ((time - lag):time), ]
-    localdata <- lwd_units(localdata, unit.id, covs.formula)
+    localdata <- lwd_units(localdata, unit.id)
     viable.units <- unique(localdata[, unit.id])
     
     if(uid %in% viable.units)

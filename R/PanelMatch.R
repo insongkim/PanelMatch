@@ -62,7 +62,7 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
                        forbid.treatment.reversal = FALSE,
                        matching = TRUE,
                        listwise.delete = FALSE, 
-                       covs.form2
+                       covs.form2 = NULL
                        ) 
 {
   if(!matching & match.missing)

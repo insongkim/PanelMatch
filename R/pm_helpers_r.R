@@ -3,7 +3,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
                                ordered.data, match.missing, covs.formula, verbose, 
                                mset.object = NULL, lead, outcome.var = NULL, forbid.treatment.reversal = FALSE, qoi = "",
                                matching = TRUE, exact.matching.variables = NULL, listwise.deletion,
-                               covs.form2)
+                               covs.form2 = NULL)
 {
   if(!is.null(mset.object))
   {
@@ -76,23 +76,26 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
   
   treated.ts <- as.numeric(unlist(strsplit(names(msets), split = "[.]"))[c(F,T)])
   treated.ids <- as.numeric(unlist(strsplit(names(msets), split = "[.]"))[c(T,F)])
-  ordered.data2 <- ordered.data
-  ordered.data <- as.matrix(parse_and_prep(formula = covs.formula, 
+  if(!is.null(covs.form2))
+  {
+    ordered.data <- parse_and_prep2(formula = covs.form2, data = ordered.data)
+    
+  } else
+  {
+    ordered.data <- as.matrix(parse_and_prep(formula = covs.formula, 
                                              data = ordered.data, unit.id = unit.id, treatment.var = treatment,
-                                             listwise.delete = F)) #every column > 3 at this point should be used in distance/refinement calculation
-  
-  ordered.data2 <- parse_and_prep2(formula = covs.form2, 
-                                  data = ordered.data2)
-  browser()
+                                             listwise.delete = F))
+  }
+  ################################################################################################
   if(listwise.deletion) #code will just return from here when listwise.deletion = T
   {
     
     msets <- lwd_refinement(msets, ordered.data, treated.ts, treated.ids, lag, 
                             time.id, unit.id, lead, refinement.method, treatment, size.match,
-                            match.missing, covs.formula, verbose, outcome.var, e.sets)
+                            match.missing, covs.formula, verbose, outcome.var, e.sets, covs.form2 = covs.form2)
     return(msets)
   }
-  ################################################
+  ################################################################################################
   if(!listwise.deletion)
   {
     ordered.data <- as.matrix(handle.missing.data(ordered.data, 4:ncol(ordered.data)))  
@@ -270,6 +273,8 @@ parse_and_prep2 <- function(formula, data)
   t.data <- do.call(rbind, by(data, as.factor(data[, 1]), FUN = apply_formula, form = formula))
   #may not be necessary? 
   t.data <- t.data[order(t.data[,1], t.data[,2]), ]
+  rownames(t.data) <- NULL
+  return(t.data)
 }
 
 # builds a list that contains all times in a lag window that correspond to a particular treated unit. This is structured as a list of vectors. Each vector is lag + 1 units long. The overall list will 
