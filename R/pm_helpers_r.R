@@ -2,7 +2,8 @@
 perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.method, size.match, 
                                ordered.data, match.missing, covs.formula, verbose, 
                                mset.object = NULL, lead, outcome.var = NULL, forbid.treatment.reversal = FALSE, qoi = "",
-                               matching = TRUE, exact.matching.variables = NULL, listwise.deletion)
+                               matching = TRUE, exact.matching.variables = NULL, listwise.deletion,
+                               covs.form2)
 {
   if(!is.null(mset.object))
   {
@@ -75,12 +76,14 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
   
   treated.ts <- as.numeric(unlist(strsplit(names(msets), split = "[.]"))[c(F,T)])
   treated.ids <- as.numeric(unlist(strsplit(names(msets), split = "[.]"))[c(T,F)])
-  
+  ordered.data2 <- ordered.data
   ordered.data <- as.matrix(parse_and_prep(formula = covs.formula, 
                                              data = ordered.data, unit.id = unit.id, treatment.var = treatment,
                                              listwise.delete = F)) #every column > 3 at this point should be used in distance/refinement calculation
-
   
+  ordered.data2 <- parse_and_prep2(formula = covs.form2, 
+                                  data = ordered.data2)
+  browser()
   if(listwise.deletion) #code will just return from here when listwise.deletion = T
   {
     
@@ -238,9 +241,9 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
   return(msets)
 }
 
-parse_and_prep2 <- function(formula, data, unit.id, treatment.var, listwise.delete = FALSE, time.var = NULL, outcomevar = NULL)
+#data has unit, time, treatment, everything else column order at this point
+parse_and_prep2 <- function(formula, data)
 {
-  browser()
   internal.lag <- function (x, n = 1L, default = NA) 
   {
     if (n == 0) return(x)
@@ -253,19 +256,20 @@ parse_and_prep2 <- function(formula, data, unit.id, treatment.var, listwise.dele
   
   lag <- function(y, lwindow)
   {
-    sapply(lwindow, internal.lag, x = y) #except steal the dplyr lag function so we dont need to import the dependency
+    sapply(lwindow, internal.lag, x = y) 
   }
   
   apply_formula <- function(x, form)
   {
+    attr(form, ".Environment") <- environment()
     tdf <- model.frame(form, x, na.action = NULL)
-    cbind(x[, c(unit.id, year.id, treatment.var)], model.matrix(form, tdf))
+    cbind(x[, c(1, 2, 3)], model.matrix(form, tdf)[, -1])
   }
   
-  by(data, as.factor(data[, unit.id]), FUN = tfunc, form = formula)
-  t.data <- do.call(rbind, ((by(subdem, as.factor(subdem[, "wbcode2"]), FUN = tfunc, form = covs.formula))))[, -1]
+  #by(data, as.factor(data[, unit.id]), FUN = tfunc, form = formula)
+  t.data <- do.call(rbind, by(data, as.factor(data[, 1]), FUN = apply_formula, form = formula))
   #may not be necessary? 
-  t.data <- t.data[order(t.data[,unit.id], t.data[,time.id]), ]
+  t.data <- t.data[order(t.data[,1], t.data[,2]), ]
 }
 
 # builds a list that contains all times in a lag window that correspond to a particular treated unit. This is structured as a list of vectors. Each vector is lag + 1 units long. The overall list will 
