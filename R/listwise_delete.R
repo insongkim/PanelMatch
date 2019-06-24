@@ -12,6 +12,7 @@ lwd_refinement <- function(msets, global.data, treated.ts,
                            treated.ids, lag, time.id, unit.id, lead, refinement.method, treatment, size.match,
                            match.missing, covs.formula, verbose, outcome.var, e.sets, covs.form2 = NULL)
 {
+  print(refinement.method)
   #extract other attributes about the msets object, attach to individual mset for consistency
   if(is.null(covs.form2))
   {
@@ -57,7 +58,7 @@ lwd_refinement <- function(msets, global.data, treated.ts,
   }
   
   
-  if(length(msets) == 0) stop('There are no matched sets!')
+  if(length(msets) == 0) stop("There are no matched sets!")
   new.msets <- list()
   for(i in 1:length(msets))
   {
@@ -66,13 +67,21 @@ lwd_refinement <- function(msets, global.data, treated.ts,
     {
       time <- treated.ts[i]
       uid <- treated.ids[i]
-      localdata <- global.data[ global.data[, time.id]  %in% ((time - lag):time), ]
-      localdata <- lwd_units(localdata, unit.id)
+      if(refinement.method == "ps.msm.weight" | refinement.method == "CBPS.msm.weight")
+      {
+        localdata <- global.data[ global.data[, time.id]  %in% ( (time - lag):time + max(lead) ), ]
+        localdata <- lwd_units(localdata, unit.id)
+      } else
+      {
+        localdata <- global.data[ global.data[, time.id]  %in% ((time - lag):time), ]
+        localdata <- lwd_units(localdata, unit.id)  
+      }
+      
       viable.units <- unique(localdata[, unit.id])
       if(uid %in% viable.units)
       {
         mset <- msets[i]
-        print(mset)
+        #print(mset)
         controls <- mset[[1]]
         controls <- controls[controls %in% viable.units]
         mset[[1]] <- controls
@@ -176,7 +185,7 @@ set_lwd_refinement <- function(mset, local.data, time, id,
   }
   if(refinement.method == "ps.msm.weight" | refinement.method == "CBPS.msm.weight")
   {
-    stop()
+    
     store.msm.data <- list()
     for(i in 1:length(lead))
     {
@@ -185,9 +194,10 @@ set_lwd_refinement <- function(mset, local.data, time, id,
       tf.index <- get_yearly_dmats(ordered.data, treated.ids, tf, paste0(ordered.data[,unit.id], ".", 
                                                                          ordered.data[, time.id]), matched_sets = msets, lag)
       expanded.sets.tf <- build_ps_data(tf.index, ordered.data, lag)
-      pre.pooled <- ordered.data[ordered.data[, time.id] %in% (treated.ts + f), ]
+      #pre.pooled <- ordered.data[ordered.data[, time.id] %in% (treated.ts + f), ]
+      pre.pooled <- rbindlist(expanded.sets.tf)
       pooled <- pre.pooled[complete.cases(pre.pooled), ]
-      pooled <- as.data.frame(pooled)
+      pooled <- unique(as.data.frame(pooled))
       #do the column removal thing
       cols.to.remove <- which(unlist(lapply(pooled, function(x){all(x[1] == x)}))) #checking for columns that only have one value
       cols.to.remove <- unique(c(cols.to.remove, which(!colnames(pooled) %in% colnames(t(unique(t(pooled))))))) #removing columns that are identical to another column 
@@ -244,7 +254,7 @@ set_lwd_refinement <- function(mset, local.data, time, id,
                                                                          ordered.data[, time.id]), matched_sets = msets, lag)
     expanded.sets.t0 <- build_ps_data(idxlist, ordered.data, lag)
     pre.pooled <- rbindlist(expanded.sets.t0)
-    pooled <- pre.pooled[complete.cases(pre.pooled), ]
+    pooled <- unique(pre.pooled[complete.cases(pre.pooled), ])
     
     cols.to.remove <- which(unlist(lapply(pooled, function(x){all(x[1] == x)}))) #checking for columns that only have one value
     cols.to.remove <- unique(c(cols.to.remove, which(!colnames(pooled) %in% colnames(t(unique(t(pooled))))))) #removing columns that are identical to another column 

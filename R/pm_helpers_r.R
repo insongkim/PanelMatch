@@ -120,9 +120,10 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
         tf.index <- get_yearly_dmats(ordered.data, treated.ids, tf, paste0(ordered.data[,unit.id], ".", 
                                                                            ordered.data[, time.id]), matched_sets = msets, lag)
         expanded.sets.tf <- build_ps_data(tf.index, ordered.data, lag)
-        pre.pooled <- ordered.data[ordered.data[, time.id] %in% (treated.ts + f), ]
+        #pre.pooled <- ordered.data[ordered.data[, time.id] %in% (treated.ts + f), ]
+        pre.pooled <- rbindlist(expanded.sets.tf)
         pooled <- pre.pooled[complete.cases(pre.pooled), ]
-        pooled <- as.data.frame(pooled)
+        pooled <- unique(as.data.frame(pooled))
         #do the column removal thing
         cols.to.remove <- which(unlist(lapply(pooled, function(x){all(x[1] == x)}))) #checking for columns that only have one value
         cols.to.remove <- unique(c(cols.to.remove, which(!colnames(pooled) %in% colnames(t(unique(t(pooled))))))) #removing columns that are identical to another column 
@@ -179,7 +180,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
                                                                          ordered.data[, time.id]), matched_sets = msets, lag)
     expanded.sets.t0 <- build_ps_data(idxlist, ordered.data, lag)
     pre.pooled <- rbindlist(expanded.sets.t0)
-    pooled <- pre.pooled[complete.cases(pre.pooled), ]
+    pooled <- unique(pre.pooled[complete.cases(pre.pooled), ])
   
     cols.to.remove <- which(unlist(lapply(pooled, function(x){all(x[1] == x)}))) #checking for columns that only have one value
     cols.to.remove <- unique(c(cols.to.remove, which(!colnames(pooled) %in% colnames(t(unique(t(pooled))))))) #removing columns that are identical to another column 
