@@ -12,7 +12,7 @@ lwd_refinement <- function(msets, global.data, treated.ts,
                            treated.ids, lag, time.id, unit.id, lead, refinement.method, treatment, size.match,
                            match.missing, covs.formula, verbose, outcome.var, e.sets, covs.form2 = NULL)
 {
-  print(refinement.method)
+  #print(refinement.method)
   #extract other attributes about the msets object, attach to individual mset for consistency
   if(is.null(covs.form2))
   {
@@ -67,16 +67,17 @@ lwd_refinement <- function(msets, global.data, treated.ts,
     {
       time <- treated.ts[i]
       uid <- treated.ids[i]
-      if(refinement.method == "ps.msm.weight" | refinement.method == "CBPS.msm.weight")
-      {
-        localdata <- global.data[ global.data[, time.id]  %in% ( (time - lag):time + max(lead) ), ]
-        localdata <- lwd_units(localdata, unit.id)
-      } else
-      {
-        localdata <- global.data[ global.data[, time.id]  %in% ((time - lag):time), ]
-        localdata <- lwd_units(localdata, unit.id)  
-      }
-      
+      # if(refinement.method == "ps.msm.weight" | refinement.method == "CBPS.msm.weight")
+      # {
+      #   localdata <- global.data[ global.data[, time.id]  %in% ( (time - lag):(time + max(lead) )), ]
+      #   localdata <- lwd_units(localdata, unit.id)
+      # } else
+      # {
+      #   localdata <- global.data[ global.data[, time.id]  %in% ((time - lag):time), ]
+      #   localdata <- lwd_units(localdata, unit.id)  
+      # }
+      localdata <- global.data[ global.data[, time.id]  %in% ( (time - lag):(time + max(lead) )), ]
+      localdata <- lwd_units(localdata, unit.id)
       viable.units <- unique(localdata[, unit.id])
       if(uid %in% viable.units)
       {

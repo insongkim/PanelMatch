@@ -503,7 +503,6 @@ handle_mahalanobis_calculations <- function(mahal.nested.list, msets, max.size, 
     colnames(tmat) <- NULL
     dists <- colMeans(tmat)
     n.dists <- dists[dists > 0]
-    #if(length(n.dists) == 0 ) browser()
     if(length(n.dists) == 0 ) stop("a matched set contain only identical units. Please examine the data and remove this set.")
     if(length(n.dists) < max.set.size)
     {
