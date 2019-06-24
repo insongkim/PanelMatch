@@ -195,8 +195,8 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
     }
     if(qr(pooled)$rank != ncol(pooled)) 
     {
-      print("Data used to generate propensity scores is not linearly independent. Calculations cannot be completed.
-            Would you like to save the problematic matrix to file for manual inspection? File and variable will be saved as 'problematic_matrix.rda'. ")
+
+        print("Data used to generate propensity scores is not linearly independent. Calculations cannot be completed.Would you like to save the problematic matrix to file for manual inspection? File and variable will be saved as 'problematic_matrix.rda'. ")
       inkey <- readline("Press 'y' to save and any other key to do nothing: ")
       if(inkey == "y")
       {
@@ -458,7 +458,6 @@ handle_mahalanobis_calculations <- function(mahal.nested.list, msets, max.size, 
     cov.matrix <- cov(cov.data)
     center.data <- year.df[nrow(year.df), 4:ncol(year.df), drop = FALSE]
     
-
     if(isTRUE(all.equal(det(cov.matrix), 0, tolerance = .00001))) #might not be the conditions we want precisely
     {
       cols.to.remove <- which(apply(cov.data, 2, function(x) isTRUE(length(unique(x)) == 1))) #checking for columns that only have one value
@@ -481,7 +480,18 @@ handle_mahalanobis_calculations <- function(mahal.nested.list, msets, max.size, 
       
     } else
     {
-      return(mahalanobis(x = cov.data, center = center.data, cov = cov.matrix))
+      result = tryCatch({
+        mahalanobis(x = cov.data, center = center.data, cov = cov.matrix)
+      }, warning = function(w) {
+        
+      }, error = function(e) {
+        cov.matrix <- ginv(cov.matrix)
+        mahalanobis(x = cov.data, center = center.data, cov = cov.matrix, inverted = TRUE)
+      }, finally = {
+        #(mahalanobis(x = cov.data, center = center.data, cov = cov.matrix))
+      }
+      )
+      return(result)
     }
     
   }

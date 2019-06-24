@@ -57,7 +57,7 @@ lwd_refinement <- function(msets, global.data, treated.ts,
   }
   
   
-  
+  if(length(msets) == 0) stop('There are no matched sets!')
   new.msets <- list()
   for(i in 1:length(msets))
   {
@@ -72,7 +72,7 @@ lwd_refinement <- function(msets, global.data, treated.ts,
       if(uid %in% viable.units)
       {
         mset <- msets[i]
-        # browser()
+        print(mset)
         controls <- mset[[1]]
         controls <- controls[controls %in% viable.units]
         mset[[1]] <- controls
@@ -80,10 +80,18 @@ lwd_refinement <- function(msets, global.data, treated.ts,
         if(length(mset[[1]]) > 0 ) # do something else if we delete everything because of listwise deletion
         {
           #print(mset)
-          tset <- set_lwd_refinement(mset, localdata, time, uid, lag, refinement.method, lead, 
-                                     verbose, size.match, unit.id, time.id, covs.formula, match.missing, treatment)
+          if(refinement.method == "mahalanobis")
+          {
+            tset <- set_lwd_refinement(mset, localdata, time, uid, lag, refinement.method, lead, 
+                                       verbose, size.match, unit.id, time.id, covs.formula, match.missing, treatment)  
+            new.msets[[i]] <- tset
+          } else
+          {
+            new.msets[[i]] <- mset
+          }
+          
           #maybe add things/attributes? idk
-          new.msets[[i]] <- tset 
+           
         } else
         {
           new.msets[[i]] <- NA
@@ -99,6 +107,15 @@ lwd_refinement <- function(msets, global.data, treated.ts,
   t.newsets <- unlist(new.msets, recursive = F)
   idx <- sapply(t.newsets, function(x) !any(is.na(x)))
   t.newsets <- t.newsets[idx]
+  if(length(t.newsets) == 0) stop("There are no matched sets!")
+  treated.ts <- as.numeric(unlist(strsplit(names(t.newsets), split = "[.]"))[c(F,T)])
+  treated.ids <- as.numeric(unlist(strsplit(names(t.newsets), split = "[.]"))[c(T,F)])
+  
+  if(refinement.method != "mahalanobis")
+  {
+    t.newsets <- set_lwd_refinement(t.newsets, global.data, treated.ts, treated.ids, lag, refinement.method, lead, 
+                                              verbose, size.match, unit.id, time.id, covs.formula, match.missing, treatment)
+  }
   
   class(e.sets) <- 'list'
   
@@ -106,31 +123,39 @@ lwd_refinement <- function(msets, global.data, treated.ts,
   treated.ids <- as.numeric(unlist(strsplit(names(e.sets), split = "[.]"))[c(T,F)])
   
   esetlist <- logical(length(e.sets))
-  for(i in 1:length(e.sets))
+  if(length(e.sets) > 0)
   {
-    
-    time <- treated.ts[i]
-    uid <- treated.ids[i]
-    
-    localdata <- global.data[ global.data[, time.id]  %in% ((time - lag):time), ]
-    localdata <- lwd_units(localdata, unit.id)
-    viable.units <- unique(localdata[, unit.id])
-    
-    if(uid %in% viable.units)
+    for(i in 1:length(e.sets))
     {
-      esetlist[i] <- TRUE
+      
+      time <- treated.ts[i]
+      uid <- treated.ids[i]
+      
+      localdata <- global.data[ global.data[, time.id]  %in% ((time - lag):time), ]
+      localdata <- lwd_units(localdata, unit.id)
+      viable.units <- unique(localdata[, unit.id])
+      
+      if(uid %in% viable.units)
+      {
+        esetlist[i] <- TRUE
+      }
+      
     }
     
+    e.sets <- e.sets[esetlist]
+    
+    t.newsets <- c(t.newsets, e.sets)
   }
   
-  e.sets <- e.sets[esetlist]
-  
-  t.newsets <- c(t.newsets, e.sets)
   attrib <- names(attributes(msets))[names(attributes(msets)) != "names"]
   for(tatt in attrib)
   {
     attr(t.newsets, tatt) <- attr(msets, tatt)
   }
+  attr(t.newsets, "refinement.method") <- refinement.method
+  attr(t.newsets, 'max.match.size') <- size.match
+  attr(t.newsets, "covs.formula") <- covs.formula
+  attr(t.newsets, "match.missing") <- match.missing
   return(t.newsets)
 }
 
@@ -151,7 +176,7 @@ set_lwd_refinement <- function(mset, local.data, time, id,
   }
   if(refinement.method == "ps.msm.weight" | refinement.method == "CBPS.msm.weight")
   {
-    stop('dont think this is gonna work yet')
+    stop()
     store.msm.data <- list()
     for(i in 1:length(lead))
     {
@@ -235,8 +260,7 @@ set_lwd_refinement <- function(mset, local.data, time, id,
     }
     if(qr(pooled)$rank != ncol(pooled)) 
     {
-      print("Data used to generate propensity scores is not linearly independent. Calculations cannot be completed.
-            Would you like to save the problematic matrix to file for manual inspection? File and variable will be saved as 'problematic_matrix.rda'. ")
+      print("Data used to generate propensity scores is not linearly independent. Calculations cannot be completed. Would you like to save the problematic matrix to file for manual inspection? File and variable will be saved as 'problematic_matrix.rda'. ")
       inkey <- readline("Press 'y' to save and any other key to do nothing: ")
       if(inkey == "y")
       {

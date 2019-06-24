@@ -65,6 +65,7 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
                        covs.form2 = NULL
                        ) 
 {
+  #if(refinement.method == "CBPS.msm.weight" | refinement.method == "ps.msm.weight") browser()
   if(!matching & match.missing)
   {
     old.lag <- lag
