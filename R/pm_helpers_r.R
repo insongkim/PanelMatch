@@ -458,7 +458,6 @@ handle_mahalanobis_calculations <- function(mahal.nested.list, msets, max.size, 
     cov.data <- year.df[1:(nrow(year.df) - 1), 4:ncol(year.df), drop = FALSE]
     cov.matrix <- cov(cov.data)
     center.data <- year.df[nrow(year.df), 4:ncol(year.df), drop = FALSE]
-    
     if(isTRUE(all.equal(det(cov.matrix), 0, tolerance = .00001))) #might not be the conditions we want precisely
     {
       cols.to.remove <- which(apply(cov.data, 2, function(x) isTRUE(length(unique(x)) == 1))) #checking for columns that only have one value
@@ -467,33 +466,34 @@ handle_mahalanobis_calculations <- function(mahal.nested.list, msets, max.size, 
       {
         cov.data <- cov.data[, -cols.to.remove, drop = FALSE]
         center.data <- center.data[-cols.to.remove, drop = FALSE]
-        cov.matrix <- diag(apply(cov.data, 2, var), ncol(cov.data), ncol(cov.data))  
+        #cov.matrix <- diag(apply(cov.data, 2, var), ncol(cov.data), ncol(cov.data))  #I dont know where this came from
+        cov.matrix <- cov(cov.data)
       }
       
-      if( isTRUE(all.equal(det(cov.matrix), 0, tolerance = .00001)) ) #we might want to make this smaller, but had some errors here about computationally infeasible problems because of values very close to zero
-      {
-        cov.matrix <- ginv(cov.matrix)
-        return(mahalanobis(x = cov.data, center = center.data, cov = cov.matrix, inverted = TRUE))
-      } else
-      {
-        return(mahalanobis(x = cov.data, center = center.data, cov = cov.matrix))
-      }
+      # if( isTRUE(all.equal(det(cov.matrix), 0, tolerance = .00001)) ) #we might want to make this smaller, but had some errors here about computationally infeasible problems because of values very close to zero
+      # {
+      #   cov.matrix <- ginv(cov.matrix)
+      #   return(mahalanobis(x = cov.data, center = center.data, cov = cov.matrix, inverted = TRUE))
+      # } else
+      # {
+      #   return(mahalanobis(x = cov.data, center = center.data, cov = cov.matrix))
+      # }
       
-    } else
-    {
-      result = tryCatch({
-        mahalanobis(x = cov.data, center = center.data, cov = cov.matrix)
-      }, warning = function(w) {
-        
-      }, error = function(e) {
-        cov.matrix <- ginv(cov.matrix)
-        mahalanobis(x = cov.data, center = center.data, cov = cov.matrix, inverted = TRUE)
-      }, finally = {
-        #(mahalanobis(x = cov.data, center = center.data, cov = cov.matrix))
-      }
-      )
-      return(result)
+    }# else
+    #{
+    result = tryCatch({
+      mahalanobis(x = cov.data, center = center.data, cov = cov.matrix)
+    }, warning = function(w) {
+      
+    }, error = function(e) {
+      cov.matrix <- ginv(cov.matrix)
+      mahalanobis(x = cov.data, center = center.data, cov = cov.matrix, inverted = TRUE)
+    }, finally = {
+      #(mahalanobis(x = cov.data, center = center.data, cov = cov.matrix))
     }
+    )
+    return(result)
+    #}
     
   }
   handle_set <- function(sub.list, max.set.size, idx)
