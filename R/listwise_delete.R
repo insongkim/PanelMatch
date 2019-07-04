@@ -10,7 +10,7 @@ lwd_units <- function(full.local.data, unit.id)
 #global.data needs to be fully prepped/parsed data set that is internally balanced, full of NAs likely
 lwd_refinement <- function(msets, global.data, treated.ts, 
                            treated.ids, lag, time.id, unit.id, lead, refinement.method, treatment, size.match,
-                           match.missing, covs.formula, verbose, outcome.var, e.sets, covs.form2 = NULL)
+                           match.missing, covs.formula, verbose, outcome.var, e.sets, covs.form2 = NULL, use.diag.covmat)
 {
   #print(refinement.method)
   #extract other attributes about the msets object, attach to individual mset for consistency
@@ -93,7 +93,8 @@ lwd_refinement <- function(msets, global.data, treated.ts,
           if(refinement.method == "mahalanobis")
           {
             tset <- set_lwd_refinement(mset, localdata, time, uid, lag, refinement.method, lead, 
-                                       verbose, size.match, unit.id, time.id, covs.formula, match.missing, treatment)  
+                                       verbose, size.match, unit.id, time.id, covs.formula, match.missing, treatment,
+                                       use.diag.covmat = use.diag.covmat)  
             new.msets[[i]] <- tset
           } else
           {
@@ -124,7 +125,8 @@ lwd_refinement <- function(msets, global.data, treated.ts,
   if(refinement.method != "mahalanobis")
   {
     t.newsets <- set_lwd_refinement(t.newsets, global.data, treated.ts, treated.ids, lag, refinement.method, lead, 
-                                              verbose, size.match, unit.id, time.id, covs.formula, match.missing, treatment)
+                                              verbose, size.match, unit.id, time.id, covs.formula, match.missing, treatment,
+                                    use.diag.covmat = use.diag.covmat)
   }
   
   class(e.sets) <- 'list'
@@ -170,7 +172,8 @@ lwd_refinement <- function(msets, global.data, treated.ts,
 }
 
 set_lwd_refinement <- function(mset, local.data, time, id, 
-                               lag, refinement.method, lead, verbose, size.match, unit.id, time.id, covs.formula, match.missing, treatment)
+                               lag, refinement.method, lead, verbose, size.match, unit.id, time.id, covs.formula, match.missing,
+                               treatment, use.diag.covmat)
 {
   treated.ts <- time
   treated.ids <- id
@@ -182,7 +185,7 @@ set_lwd_refinement <- function(mset, local.data, time, id,
     idxlist <- get_yearly_dmats(ordered.data, treated.ids, tlist, paste0(ordered.data[,unit.id], ".", 
                                                                          ordered.data[, time.id]), matched_sets = msets, lag)
     mahalmats <- build_maha_mats(ordered_expanded_data = ordered.data, idx =  idxlist)
-    msets <- handle_mahalanobis_calculations(mahalmats, msets, size.match, verbose)
+    msets <- handle_mahalanobis_calculations(mahalmats, msets, size.match, verbose, use.diagonal.covmat = use.diag.covmat)
   }
   if(refinement.method == "ps.msm.weight" | refinement.method == "CBPS.msm.weight")
   {

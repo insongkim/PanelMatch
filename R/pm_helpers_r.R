@@ -3,7 +3,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
                                ordered.data, match.missing, covs.formula, verbose, 
                                mset.object = NULL, lead, outcome.var = NULL, forbid.treatment.reversal = FALSE, qoi = "",
                                matching = TRUE, exact.matching.variables = NULL, listwise.deletion,
-                               covs.form2 = NULL)
+                               covs.form2 = NULL, use.diag.covmat = FALSE)
 {
   if(!is.null(mset.object))
   {
@@ -92,7 +92,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
     
     msets <- lwd_refinement(msets, ordered.data, treated.ts, treated.ids, lag, 
                             time.id, unit.id, lead, refinement.method, treatment, size.match,
-                            match.missing, covs.formula, verbose, outcome.var, e.sets, covs.form2 = covs.form2)
+                            match.missing, covs.formula, verbose, outcome.var, e.sets, covs.form2 = covs.form2, use.diag.covmat = use.diag.covmat)
     return(msets)
   }
   ################################################################################################
@@ -108,7 +108,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
     idxlist <- get_yearly_dmats(ordered.data, treated.ids, tlist, paste0(ordered.data[,unit.id], ".", 
                                                                          ordered.data[, time.id]), matched_sets = msets, lag)
     mahalmats <- build_maha_mats(ordered_expanded_data = ordered.data, idx =  idxlist)
-    msets <- handle_mahalanobis_calculations(mahalmats, msets, size.match, verbose)
+    msets <- handle_mahalanobis_calculations(mahalmats, msets, size.match, verbose, use.diagonal.covmat = use.diag.covmat)
   }
   if(refinement.method == "ps.msm.weight" | refinement.method == "CBPS.msm.weight")
   {
@@ -446,7 +446,7 @@ find_ps <- function(sets, fitted.model)
 # Each of the following similarly named functions carry out the refinement procedures -- using either propensity scores or mahalanobis distances according to the paper. Each of these functions
 # will return a matched.set object with the appropriate weights for control units assigned and new, additional attributes (such as refinement method). 
 # These functions could use some work to be better optimized. For instance, when the "verbose" argument is set to true, they will essentially do all of the refinement calculations twice.
-handle_mahalanobis_calculations <- function(mahal.nested.list, msets, max.size, verbose)
+handle_mahalanobis_calculations <- function(mahal.nested.list, msets, max.size, verbose, use.diagonal.covmat)
 {
   
   do.calcs <- function(year.df)
@@ -456,7 +456,14 @@ handle_mahalanobis_calculations <- function(mahal.nested.list, msets, max.size, 
       return(1)
     }
     cov.data <- year.df[1:(nrow(year.df) - 1), 4:ncol(year.df), drop = FALSE]
-    cov.matrix <- cov(cov.data)
+    if(use.diagonal.covmat)
+    {
+      cov.matrix <- diag(apply(cov.data, 2, var), ncol(cov.data), ncol(cov.data)) 
+    } else
+    {
+      cov.matrix <- cov(cov.data)  
+    }
+    
     center.data <- year.df[nrow(year.df), 4:ncol(year.df), drop = FALSE]
     if(isTRUE(all.equal(det(cov.matrix), 0, tolerance = .00001))) #might not be the conditions we want precisely
     {
@@ -466,34 +473,30 @@ handle_mahalanobis_calculations <- function(mahal.nested.list, msets, max.size, 
       {
         cov.data <- cov.data[, -cols.to.remove, drop = FALSE]
         center.data <- center.data[-cols.to.remove, drop = FALSE]
-        #cov.matrix <- diag(apply(cov.data, 2, var), ncol(cov.data), ncol(cov.data))  #I dont know where this came from
-        cov.matrix <- cov(cov.data)
+        if(use.diagonal.covmat)
+        {
+          cov.matrix <- diag(apply(cov.data, 2, var), ncol(cov.data), ncol(cov.data)) 
+        } else {
+          cov.matrix <- cov(cov.data)  
+        }
       }
       
-      # if( isTRUE(all.equal(det(cov.matrix), 0, tolerance = .00001)) ) #we might want to make this smaller, but had some errors here about computationally infeasible problems because of values very close to zero
-      # {
-      #   cov.matrix <- ginv(cov.matrix)
-      #   return(mahalanobis(x = cov.data, center = center.data, cov = cov.matrix, inverted = TRUE))
-      # } else
-      # {
-      #   return(mahalanobis(x = cov.data, center = center.data, cov = cov.matrix))
-      # }
-      
-    }# else
-    #{
+    }
+    
     result = tryCatch({
       mahalanobis(x = cov.data, center = center.data, cov = cov.matrix)
     }, warning = function(w) {
       
     }, error = function(e) {
+      cov.matrix <- cov(cov.data)
       cov.matrix <- ginv(cov.matrix)
       mahalanobis(x = cov.data, center = center.data, cov = cov.matrix, inverted = TRUE)
     }, finally = {
       #(mahalanobis(x = cov.data, center = center.data, cov = cov.matrix))
-    }
-    )
+    })
+    
     return(result)
-    #}
+    
     
   }
   handle_set <- function(sub.list, max.set.size, idx)
