@@ -61,8 +61,7 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
                        exact.match.variables = NULL,
                        forbid.treatment.reversal = FALSE,
                        matching = TRUE,
-                       listwise.delete = FALSE, 
-                       covs.form2 = NULL, 
+                       listwise.delete = FALSE,
                        use.diagonal.variance.matrix = FALSE
                        ) 
 {
@@ -146,7 +145,7 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
                                 match.missing, covs.formula, verbose, lead= lead, outcome.var = outcome.var, 
                                 forbid.treatment.reversal = forbid.treatment.reversal, qoi = qoi, matching = matching,
                                 exact.matching.variables = exact.match.variables, listwise.deletion = listwise.delete,
-                                covs.form2 = covs.form2, use.diag.covmat = use.diagonal.variance.matrix)
+                                use.diag.covmat = use.diagonal.variance.matrix)
     msets <- decode_index(msets, unit.index.map, og.unit.id)
     if(!matching & match.missing)
     {
@@ -165,7 +164,7 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
                                 match.missing, covs.formula, verbose, lead = lead, outcome.var = outcome.var, 
                                 forbid.treatment.reversal = forbid.treatment.reversal, qoi = qoi, matching = matching,
                                 exact.matching.variables = exact.match.variables, listwise.deletion = listwise.delete,
-                                covs.form2 = covs.form2, use.diag.covmat = use.diagonal.variance.matrix)
+                                use.diag.covmat = use.diagonal.variance.matrix)
     msets <- decode_index(msets, unit.index.map, og.unit.id)
     if(!matching & match.missing)
     {
@@ -184,13 +183,13 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
                                 match.missing, covs.formula, verbose, lead = lead, outcome.var = outcome.var, 
                                 forbid.treatment.reversal = forbid.treatment.reversal, qoi = qoi, matching = matching,
                                 exact.matching.variables = exact.match.variables, listwise.deletion = listwise.delete,
-                                covs.form2 = covs.form2, use.diag.covmat = use.diagonal.variance.matrix)
+                                use.diag.covmat = use.diagonal.variance.matrix)
     ordered.data[, treatment] <- ifelse(ordered.data[, treatment] == 1,0,1) #flip the treatment variables 
     msets2 <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data,
                                  match.missing, covs.formula, verbose, lead = lead, outcome.var = outcome.var, 
                                  forbid.treatment.reversal = forbid.treatment.reversal, qoi = qoi, matching = matching,
                                  exact.matching.variables = exact.match.variables, listwise.deletion = listwise.delete,
-                                 covs.form2 = covs.form2, use.diag.covmat = use.diagonal.variance.matrix)
+                                 use.diag.covmat = use.diagonal.variance.matrix)
     msets <- decode_index(msets, unit.index.map, og.unit.id)
     if(!matching & match.missing)
     {

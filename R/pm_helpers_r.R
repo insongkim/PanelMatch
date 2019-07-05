@@ -3,7 +3,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
                                ordered.data, match.missing, covs.formula, verbose, 
                                mset.object = NULL, lead, outcome.var = NULL, forbid.treatment.reversal = FALSE, qoi = "",
                                matching = TRUE, exact.matching.variables = NULL, listwise.deletion,
-                               covs.form2 = NULL, use.diag.covmat = FALSE)
+                               use.diag.covmat = FALSE)
 {
   if(!is.null(mset.object))
   {
@@ -76,23 +76,18 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
   
   treated.ts <- as.numeric(unlist(strsplit(names(msets), split = "[.]"))[c(F,T)])
   treated.ids <- as.numeric(unlist(strsplit(names(msets), split = "[.]"))[c(T,F)])
-  if(!is.null(covs.form2))
-  {
-    ordered.data <- parse_and_prep2(formula = covs.form2, data = ordered.data)
+
+  ordered.data <- parse_and_prep(formula = covs.formula, data = ordered.data)
     
-  } else
-  {
-    ordered.data <- as.matrix(parse_and_prep(formula = covs.formula, 
-                                             data = ordered.data, unit.id = unit.id, treatment.var = treatment,
-                                             listwise.delete = F))
-  }
+  
   ################################################################################################
   if(listwise.deletion) #code will just return from here when listwise.deletion = T
   {
     
     msets <- lwd_refinement(msets, ordered.data, treated.ts, treated.ids, lag, 
                             time.id, unit.id, lead, refinement.method, treatment, size.match,
-                            match.missing, covs.formula, verbose, outcome.var, e.sets, covs.form2 = covs.form2, use.diag.covmat = use.diag.covmat)
+                            match.missing, covs.formula, verbose, outcome.var, e.sets, 
+                            use.diag.covmat = use.diag.covmat)
     return(msets)
   }
   ################################################################################################
@@ -246,7 +241,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
 }
 
 #data has unit, time, treatment, everything else column order at this point
-parse_and_prep2 <- function(formula, data)
+parse_and_prep <- function(formula, data)
 {
   internal.lag <- function (x, n = 1L, default = NA) 
   {
@@ -304,83 +299,6 @@ build_maha_mats <- function(idx, ordered_expanded_data)
   return(result)
 }
 
-# Will need to be updated if the syntax/implementation of the covs.formula argument is changed
-# Applies necessary transformation to the data based on the specified parameters, including using the covs.formula argument to apply the necessary lags to particular columns.
-# It also will structure the data frame such that every column after the 3rd column is used in the following calculations
-parse_and_prep <- function(formula, data, unit.id, treatment.var, listwise.delete = FALSE, time.var = NULL, outcomevar = NULL)
-{
-  #check if formula empty or no covariates provided -- error checks
-  terms <- attr(terms(formula),"term.labels")
-  terms <- gsub(" ", "", terms) #remove whitespace
-  lag.calls <- terms[grepl("lag(*)", terms)] #regex to get calls to lag function
-  other.terms <- terms[!grepl("lag(*)", terms)]
-  if(any(treatment.var %in% other.terms)) stop("contemporaneous treatment variable cannot be used for matching calculations")
-  if(listwise.delete)
-  {
-    unit.idx <- which(colnames(data) == unit.id)
-    time.idx <- which(colnames(data) == time.var)
-    t.idx <- which(colnames(data) == treatment.var)
-    o.idx <- which(colnames(data) == outcomevar)
-    sub.data <- data[, unique(c(unit.idx, time.idx, t.idx, o.idx, which(colnames(data) %in% other.terms))) ] #including only what is specified in the formula
-  }
-  else {
-    sub.data <- data[, c(1:3, which(colnames(data) %in% other.terms) )] #including only what is specified in the formula  
-  }
-  
-  if(any(grepl("=", lag.calls))) stop("fix lag calls to use only unnamed arguments in the correct positions")
-  data <- data.table::as.data.table(data) #check sorting
-  if(length(lag.calls) > 0)
-  {
-    
-    results.unmerged <- mapply(FUN = handle.calls, call.as.string = lag.calls, MoreArgs =  list(.data = data, .unitid = unit.id), SIMPLIFY = FALSE)
-    names(results.unmerged) <- NULL
-    full.data <- cbind(sub.data, do.call("cbind", results.unmerged))
-    if(listwise.delete)
-    {
-      lagged_na_year.start <- max(as.numeric(unlist(strsplit(colnames(full.data)[grepl("_l", colnames(full.data))], split = "_l"))[c(F,T)])) + 1
-      
-      idx <- unlist(by(full.data, as.factor(full.data[, unit.id]), FUN = function(x) any(!complete.cases(x[lagged_na_year.start:nrow(x), ]))))
-      units.to.remove <- as.numeric(names(idx)[idx])
-      sub.data <- subset(full.data, !full.data[, unit.id] %in% units.to.remove)
-      
-      return(na.omit(sub.data))  
-    } else 
-    {
-      return(full.data)  
-    }
-    
-  }
-  else
-  {
-    if(listwise.delete)
-    {
-      
-      idx <- unlist(by(sub.data, as.factor(sub.data[, unit.id]), FUN = function(x) any(!complete.cases(x))))
-      units.to.remove <- as.numeric(names(idx)[idx])
-      sub.data <- subset(sub.data, !sub.data[, unit.id] %in% units.to.remove)
-      #might not need the na.omit piece here now.
-      return(na.omit(sub.data))
-    } else 
-    {
-      return(sub.data)  
-    }
-    
-  }
-  
-}
-#helper function that deals with the covs.formula argument. This is what specifically will need to be modified if the format of that argument is changed. It handles the lagging of the various covariates
-# in the process of preparing the data frame for the remaining calculations.
-handle.calls <- function(call.as.string, .data, .unitid)
-{
-  lag <- function(var.name, lag.window, data = .data, unitid = .unitid) #want to make sure its being called appropriately
-  {
-    tr <- data[, data.table::shift(.SD, n = lag.window, fill = NA, type = "lag", give.names = TRUE), .SDcols=var.name, by = unitid]
-    tr <- tr[, -1]
-    colnames(tr) <- paste0(var.name, "_l", lag.window)
-    return(tr)
-  }
-  return(eval(parse(text = call.as.string)))
-}
 
 #use col.index to determine which columns we want to "scan" for missing data
 # Note that in earlier points in the code, we rearrange the columns and prepare the data frame such that cols 1-4 are bookkeeping (unit id, time id, treated variable, unlagged outcome variable)
@@ -801,3 +719,84 @@ gather_msm_sets <- function(lead.data.list)
   
   return(reassembled.sets)
 }
+
+
+# # Will need to be updated if the syntax/implementation of the covs.formula argument is changed
+# # Applies necessary transformation to the data based on the specified parameters, including using the covs.formula argument to apply the necessary lags to particular columns.
+# # It also will structure the data frame such that every column after the 3rd column is used in the following calculations
+# parse_and_prep <- function(formula, data, unit.id, treatment.var, listwise.delete = FALSE, time.var = NULL, outcomevar = NULL)
+# {
+#   #check if formula empty or no covariates provided -- error checks
+#   terms <- attr(terms(formula),"term.labels")
+#   terms <- gsub(" ", "", terms) #remove whitespace
+#   lag.calls <- terms[grepl("lag(*)", terms)] #regex to get calls to lag function
+#   other.terms <- terms[!grepl("lag(*)", terms)]
+#   if(any(treatment.var %in% other.terms)) stop("contemporaneous treatment variable cannot be used for matching calculations")
+#   if(listwise.delete)
+#   {
+#     unit.idx <- which(colnames(data) == unit.id)
+#     time.idx <- which(colnames(data) == time.var)
+#     t.idx <- which(colnames(data) == treatment.var)
+#     o.idx <- which(colnames(data) == outcomevar)
+#     sub.data <- data[, unique(c(unit.idx, time.idx, t.idx, o.idx, which(colnames(data) %in% other.terms))) ] #including only what is specified in the formula
+#   }
+#   else {
+#     sub.data <- data[, c(1:3, which(colnames(data) %in% other.terms) )] #including only what is specified in the formula  
+#   }
+#   
+#   if(any(grepl("=", lag.calls))) stop("fix lag calls to use only unnamed arguments in the correct positions")
+#   data <- data.table::as.data.table(data) #check sorting
+#   if(length(lag.calls) > 0)
+#   {
+#     
+#     results.unmerged <- mapply(FUN = handle.calls, call.as.string = lag.calls, MoreArgs =  list(.data = data, .unitid = unit.id), SIMPLIFY = FALSE)
+#     names(results.unmerged) <- NULL
+#     full.data <- cbind(sub.data, do.call("cbind", results.unmerged))
+#     if(listwise.delete)
+#     {
+#       lagged_na_year.start <- max(as.numeric(unlist(strsplit(colnames(full.data)[grepl("_l", colnames(full.data))], split = "_l"))[c(F,T)])) + 1
+#       
+#       idx <- unlist(by(full.data, as.factor(full.data[, unit.id]), FUN = function(x) any(!complete.cases(x[lagged_na_year.start:nrow(x), ]))))
+#       units.to.remove <- as.numeric(names(idx)[idx])
+#       sub.data <- subset(full.data, !full.data[, unit.id] %in% units.to.remove)
+#       
+#       return(na.omit(sub.data))  
+#     } else 
+#     {
+#       return(full.data)  
+#     }
+#     
+#   }
+#   else
+#   {
+#     if(listwise.delete)
+#     {
+#       
+#       idx <- unlist(by(sub.data, as.factor(sub.data[, unit.id]), FUN = function(x) any(!complete.cases(x))))
+#       units.to.remove <- as.numeric(names(idx)[idx])
+#       sub.data <- subset(sub.data, !sub.data[, unit.id] %in% units.to.remove)
+#       #might not need the na.omit piece here now.
+#       return(na.omit(sub.data))
+#     } else 
+#     {
+#       return(sub.data)  
+#     }
+#     
+#   }
+#   
+# }
+# #helper function that deals with the covs.formula argument. This is what specifically will need to be modified if the format of that argument is changed. It handles the lagging of the various covariates
+# # in the process of preparing the data frame for the remaining calculations.
+# handle.calls <- function(call.as.string, .data, .unitid)
+# {
+#   lag <- function(var.name, lag.window, data = .data, unitid = .unitid) #want to make sure its being called appropriately
+#   {
+#     tr <- data[, data.table::shift(.SD, n = lag.window, fill = NA, type = "lag", give.names = TRUE), .SDcols=var.name, by = unitid]
+#     tr <- tr[, -1]
+#     colnames(tr) <- paste0(var.name, "_l", lag.window)
+#     return(tr)
+#   }
+#   return(eval(parse(text = call.as.string)))
+# }
+
+
