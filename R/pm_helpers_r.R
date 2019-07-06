@@ -484,12 +484,32 @@ handle_mahalanobis_calculations <- function(mahal.nested.list, msets, max.size, 
     }
     
     result = tryCatch({
+      print("****************printing standard solution************************")
+      print("correlation matrix")
+      print(cor(cov.data))
+      print("determinant of covariance matrix")
+      print(det(cov.matrix))
+      print("eigenvalues")
+      print(eigen(cov.matrix)$values)
+      print("Covariance matrix")
+      print(cov.matrix)
+      print("**************************end of matrix results***************************************")
       mahalanobis(x = cov.data, center = center.data, cov = cov.matrix)
     }, warning = function(w) {
       
     }, error = function(e) {
       cov.matrix <- cov(cov.data)
       cov.matrix <- ginv(cov.matrix)
+      print("****************printing GENERALIZED INVERSE solution************************")
+      print("correlation matrix")
+      print(cor(cov.data))
+      print("determinant of covariance matrix")
+      print(det(cov.matrix))
+      print("eigenvalues")
+      print(eigen(cov.matrix)$values)
+      print("Covariance matrix")
+      print(cov.matrix)
+      print("**************************end of matrix results***************************************")
       mahalanobis(x = cov.data, center = center.data, cov = cov.matrix, inverted = TRUE)
     }, finally = {
       #(mahalanobis(x = cov.data, center = center.data, cov = cov.matrix))
