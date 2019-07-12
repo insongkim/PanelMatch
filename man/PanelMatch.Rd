@@ -8,7 +8,8 @@ PanelMatch(lag, time.id, unit.id, treatment, refinement.method,
   size.match = 10, data, match.missing = TRUE, covs.formula = NULL,
   verbose = FALSE, qoi, lead = 0, outcome.var,
   exact.match.variables = NULL, forbid.treatment.reversal = FALSE,
-  matching = TRUE)
+  matching = TRUE, listwise.delete = FALSE,
+  use.diagonal.variance.matrix = FALSE)
 }
 \arguments{
 \item{lag}{An integer value indicating the length of history to be matched}

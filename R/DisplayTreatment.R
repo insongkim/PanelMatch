@@ -106,8 +106,8 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
     }
     
   }
-  x.size = NULL
-  y.size = NULL
+  #x.size = NULL
+  #y.size = NULL
   if(!is.null(group_on))
   {
     if(!is.null(sort_by))
