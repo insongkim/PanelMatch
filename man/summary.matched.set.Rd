@@ -5,7 +5,7 @@
 \title{Method for plotting the distribution of the sizes of \code{matched.set} objects.
 A plot method for creating histograms of the distribution of the sizes of matched sets.}
 \usage{
-summary.matched.set(object, ..., verbose = T)
+\method{summary}{matched.set}(object, ..., verbose = T)
 }
 \arguments{
 \item{object}{a \code{matched.set} object}
