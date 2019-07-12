@@ -78,7 +78,10 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
   treated.ids <- as.numeric(unlist(strsplit(names(msets), split = "[.]"))[c(T,F)])
 
   ordered.data <- parse_and_prep(formula = covs.formula, data = ordered.data)
-
+  if(any(apply(ordered.data, 2, FUN = function(x) any(is.infinite(x)))))
+  {
+    stop("Data needed for refinement contains infinite values. Code cannot proceed!")
+  }
 
   ################################################################################################
   if(listwise.deletion) #code will just return from here when listwise.deletion = T
