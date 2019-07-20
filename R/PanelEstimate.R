@@ -432,6 +432,7 @@ PanelEstimate <- function(inference = c("wfe", "bootstrap"),
 #' @param ... Further arguments to be passed to \code{summary.PanelEstimate()}.
 #'
 #' @method summary PanelEstimate
+#' @export
 summary.PanelEstimate <- function(object,..., verbose = TRUE, bias.corrected = FALSE) {
   
   if(verbose)

@@ -52,6 +52,7 @@ matched_set <- function(matchedsets, id, t, L, t.var, id.var, treated.var)
 #' @param verbose Logical option specifying whether or not a longer, more verbose summary should be calculated and returned.
 #' 
 #' @method summary matched.set
+#' @export
 summary.matched.set <- function(object, ..., verbose = T)
 {
   set <- object
@@ -124,6 +125,7 @@ plot.matched.set <- function(x, ..., border = NA, col = "grey", ylab = "Frequenc
 #' @param ... additional arguments to be passed to \code{print}
 #' 
 #' @method print matched.set
+#' @export
 print.matched.set <- function(x, ..., verbose = F)
 {
   set <- x
