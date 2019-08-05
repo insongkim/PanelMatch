@@ -99,7 +99,6 @@ lwd_refinement <- function(msets, global.data, treated.ts,
   if(length(t.newsets) == 0) stop("There are no matched sets!")
   treated.ts <- as.numeric(unlist(strsplit(names(t.newsets), split = "[.]"))[c(F,T)])
   treated.ids <- as.numeric(unlist(strsplit(names(t.newsets), split = "[.]"))[c(T,F)])
-  
   if(refinement.method != "mahalanobis")
   {
     t.newsets <- set_lwd_refinement(t.newsets, global.data, treated.ts, treated.ids, lag, refinement.method, lead, 

@@ -82,7 +82,6 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
   {
     stop("Data needed for refinement contains infinite values. Code cannot proceed!")
   }
-
   ################################################################################################
   if(listwise.deletion) #code will just return from here when listwise.deletion = T
   {
@@ -488,7 +487,6 @@ handle_mahalanobis_calculations <- function(mahal.nested.list, msets, max.size, 
 
 handle_ps_weighted <- function(just.ps.sets, msets, refinement.method)
 {
-
   handle_set <- function(set)
   {
     control.ps.set <- set[1:(nrow(set) - 1), ncol(set)]
@@ -497,7 +495,14 @@ handle_ps_weighted <- function(just.ps.sets, msets, refinement.method)
       return(1)
     }
     vec.ratio <- control.ps.set / (1 - control.ps.set) #just for clarity
-    wts <- ( vec.ratio ) / sum( vec.ratio )
+    if(sum(vec.ratio) == 0)
+    {
+      wts <- rep(1 / length(control.ps.set), length(control.ps.set))
+    }
+    else
+    {
+      wts <- ( vec.ratio ) / sum( vec.ratio )  
+    }
     return(as.vector(wts))
   }
   wts <- lapply(just.ps.sets, handle_set)
