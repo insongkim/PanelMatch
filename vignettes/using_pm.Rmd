@@ -1,0 +1,19 @@
+---
+title: "Using PanelMatch"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Using PanelMatch}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## PanelMatch Vignette
+
+This is some skeleton text to test vignette capabilities.
+
+
+## Simulation results
