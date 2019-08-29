@@ -58,6 +58,7 @@ PanelEstimate <- function(inference = c("wfe", "bootstrap"),
                           df.adjustment = FALSE,
                           CI = .95,
                           sets,
+                          DiD = TRUE,
                           data
                           ) {
   lead <- attr(sets, "lead")
@@ -91,7 +92,7 @@ PanelEstimate <- function(inference = c("wfe", "bootstrap"),
   #method = inference
   method <- attr(sets, "refinement.method")
   
-  forbid.treatment.reversal <- attr(sets, "forbid.treatment.reversal") # this doesnt exist yet, not sure what it means.
+  forbid.treatment.reversal <- attr(sets, "forbid.treatment.reversal") 
   #add in checks about forbid.treatment.reversal and wfe, etc. 
   
   if(!"data.frame" %in% class(data)) stop("please convert data to data.frame class")
@@ -154,7 +155,48 @@ PanelEstimate <- function(inference = c("wfe", "bootstrap"),
     sets <- encode_index(temp.sets$att, unit.index.map, unit.id)
     sets2 <- encode_index(temp.sets$atc, unit.index.map, unit.id)
   }
-
+  ##brute force matching section
+  if(!DiD)
+  {
+    if(qoi == "att"){
+      f.coefs <- list()
+      for(f in lead)
+      {
+        f.coefs[[paste0(f)]]<- brute_force_matching(sets, data, outcome.variable, f, time.id, unit.id)  
+      }
+      return(f.coefs)
+    }
+    else if(qoi == "atc")
+    {
+      f.coefs <- list()
+      d2 = data
+      d2[, treatment] <- ifelse(data[, treatment] == 1,0,1)
+      for(f in lead)
+      {
+        f.coefs[[paste0(f)]]<- brute_force_matching(sets2, d2, outcome.variable, f, time.id, unit.id)  
+      }
+      return(f.coefs)
+    } else { #qoi is ate
+      f.coefs <- list()
+      for(f in lead)
+      {
+        f.coefs[[paste0(f)]]<- brute_force_matching(sets, data, outcome.variable, f, time.id, unit.id)  
+      }
+      d2 = data
+      d2[, treatment] <- ifelse(data[, treatment] == 1,0,1)
+      f.coefs2 = list()
+      for(f in lead)
+      {
+        f.coefs2[[paste0(f)]]<- brute_force_matching(sets2, d2, outcome.variable, f, time.id, unit.id)
+      }
+      ate.list = list()
+      for (f in lead) { 
+        ate.list[[paste0(f)]] <- ( (length(sets1) * f.coefs[[paste0(f)]]) +  (length(sets2) * -f.coefs2[[paste0(f)]]) ) / (length(sets1) + length(sets2))
+      }
+      return(ate.list)
+    }
+  }
+  ##end of brute force
   if (qoi == "att" | qoi == "ate") 
   {
     treated.unit.ids <- as.numeric(unlist(strsplit(names(sets), split = "[.]"))[c(T,F)])
@@ -205,6 +247,7 @@ PanelEstimate <- function(inference = c("wfe", "bootstrap"),
       
     } else if (inference == "bootstrap")
     {
+      browser()
       o.coefs <- sapply(data[, sapply(lead, function(x) paste0("Wit_att", x)), drop = FALSE],
                         equality_four,
                         y = data[c(dependent)][,1],
