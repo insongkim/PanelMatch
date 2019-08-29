@@ -59,6 +59,7 @@ PanelEstimate <- function(inference = c("wfe", "bootstrap"),
                           CI = .95,
                           sets,
                           DiD = TRUE,
+                          DiD.SE = TRUE,
                           data
                           ) {
   lead <- attr(sets, "lead")
@@ -164,7 +165,7 @@ PanelEstimate <- function(inference = c("wfe", "bootstrap"),
       {
         f.coefs[[paste0(f)]]<- brute_force_matching(sets, data, outcome.variable, f, time.id, unit.id)  
       }
-      return(f.coefs)
+      
     }
     else if(qoi == "atc")
     {
@@ -175,7 +176,7 @@ PanelEstimate <- function(inference = c("wfe", "bootstrap"),
       {
         f.coefs[[paste0(f)]]<- brute_force_matching(sets2, d2, outcome.variable, f, time.id, unit.id)  
       }
-      return(f.coefs)
+      
     } else { #qoi is ate
       f.coefs <- list()
       for(f in lead)
@@ -191,10 +192,58 @@ PanelEstimate <- function(inference = c("wfe", "bootstrap"),
       }
       ate.list = list()
       for (f in lead) { 
-        ate.list[[paste0(f)]] <- ( (length(sets1) * f.coefs[[paste0(f)]]) +  (length(sets2) * -f.coefs2[[paste0(f)]]) ) / (length(sets1) + length(sets2))
+        ate.list[[paste0(f)]] <- ( (length(sets) * f.coefs[[paste0(f)]]) +  (length(sets2) * -f.coefs2[[paste0(f)]]) ) / (length(sets) + length(sets2))
       }
-      return(ate.list)
+      
+      f.coefs <- ate.list
+      
+    
     }
+    o.coefs <- unlist(f.coefs)
+    names(o.coefs) <- paste0("t+", lead)
+    if(qoi == "att")
+    {
+      if(DiD.SE)
+      {
+        bs <- brute_force_bootstrap(att.set = sets, data = data, outcome.variable = outcome.variable, 
+                                    lead = lead, treatment = treatment, time.id = time.id, unit.id = unit.id, ITER = ITER)  
+      } else
+      {
+        bs <- matrix(0, nrow = ITER, ncol = length(lead))
+      }
+      
+      sets <- decode_index(sets, unit.index.map, og.unit.id)
+    }
+    if(qoi == "atc")
+    {
+      if(DiD.SE)
+      {
+        bs <- brute_force_bootstrap(atc.set = sets, data = data, outcome.variable = outcome.variable, 
+                                    lead = lead, treatment = treatment, time.id = time.id, unit.id = unit.id, ITER = ITER)
+      } else {
+        bs <- matrix(0, nrow = ITER, ncol = length(lead))
+      }
+      
+      sets <- decode_index(sets2, unit.index.map, og.unit.id)
+    }
+    if(qoi == "ate")
+    {
+      if(DiD.SE)
+      {
+        bs <- brute_force_bootstrap(sets, sets2, data, outcome.variable, lead, treatment, time.id, unit.id, ITER)
+      } else {
+        bs <- matrix(0, nrow = ITER, ncol = length(lead))
+      }
+      
+      sets = list(decode_index(sets, unit.index.map, og.unit.id), decode_index(sets2, unit.index.map, og.unit.id))
+      names(sets) <- c('att', 'atc')
+      
+    }
+    z <- list("coefficients" = o.coefs, "method" = method, "lag" = lag,
+              "lead" = lead, "confidence.level" = CI, "qoi" = qoi, "DiD" = FALSE, 
+              "bootstrap.iterations" = ITER, "standard.error" = apply(bs, 2, sd, na.rm = T),"matched.sets" = sets)
+    class(z) <- "PanelEstimate"
+    return(z)
   }
   ##end of brute force
   if (qoi == "att" | qoi == "ate") 
@@ -247,7 +296,6 @@ PanelEstimate <- function(inference = c("wfe", "bootstrap"),
       
     } else if (inference == "bootstrap")
     {
-      browser()
       o.coefs <- sapply(data[, sapply(lead, function(x) paste0("Wit_att", x)), drop = FALSE],
                         equality_four,
                         y = data[c(dependent)][,1],

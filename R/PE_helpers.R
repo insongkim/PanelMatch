@@ -171,13 +171,15 @@ brute_force_matching <- function(matched.set, data, outcome.variable, f, time, i
   for (i in 1:length(tids)) {
     t0 <- ts[i] + f
     controls <- matched.set[[i]]
-    controls <- controls[attr(controls, "weights") > 0]
-    
+    #controls <- controls[attr(controls, "weights") > 0]
+    wts <- attr(controls, "weights")[order(controls)]
+    controls <- controls[order(controls)]
+    attr(controls, "weights") <- wts
     checkdf2 <- data[data[, id] %in% controls & data[, time] == t0, ]
-    
+    checkdf2 <- checkdf2[order(controls), ]
     treated2 <- data[data[, id] == tids[i] & data[, time] == t0, ]
-    
-    set.difs <- mean(treated2[,outcome.variable] - checkdf2[, outcome.variable], na.rm = T)
+    weighted.control.outcome <- sum(attr(controls, "weights") * checkdf2[, "outcome"], na.rm = T)
+    set.difs <- treated2[,outcome.variable] - weighted.control.outcome
   }
   return(mean(unlist(set.difs), na.rm = T))
 }
@@ -186,68 +188,91 @@ brute_force_matching <- function(matched.set, data, outcome.variable, f, time, i
 
 refine_sets_for_bootstrap <- function(matched.sets, sampled.units)
 {
-  all.data <- as.numeric(unlist(strsplit(names(matched.set), split = "[.]")))
+  all.data <- as.numeric(unlist(strsplit(names(matched.sets), split = "[.]")))
   tids <- all.data[seq(from = 1, to = length(all.data), by = 2)]
   ts <- all.data[seq(from = 2, to = length(all.data), by = 2)]
   
-  matched.sets <- matched.sets[ids %in% sampled.units] 
-  
+  matched.sets <- matched.sets[tids %in% sampled.units] 
   for(i in 1:length(matched.sets))
   {
     units <- matched.sets[[i]]
-    matched.sets[[i]] <- units[units %in% sampled.units]
+    idx <- units %in% sampled.units
+    new.wts <- attr(matched.sets[[i]], "weights")[idx]
+    matched.sets[[i]] <- units[idx]
+    attr(matched.sets[[i]], "weights") <- new.wts / sum(new.wts) #renormalize to fix what is dropped
   }
-  
   return(matched.sets)
 }
 
 
-brute_force_bootstrap <- function(att.set = NULL, atc.set = NULL, data, outcome.variable, lead, time.id, unit.id, ITER)
+brute_force_bootstrap <- function(att.set = NULL, atc.set = NULL, data, outcome.variable, lead, treatment, time.id, unit.id, ITER)
 {
   coefs <- matrix(NA, nrow = ITER, ncol = length(lead))
   if(is.null(atc.set) & !is.null(att.set))
   {
+    treated.unit.ids <- as.numeric(unlist(strsplit(names(att.set), split = "[.]"))[c(T,F)]) 
+    current_f = list()
     for(j in 1:length(lead)){
       for(k in 1:ITER)
       {
         clusters <- unique(data[, unit.id])
         units <- sample(clusters, size = length(clusters), replace=T)
+        while(all(!units %in% treated.unit.ids)) #while none of the units are treated units, resample
+        {
+          units <- sample(clusters, size = length(clusters), replace=T)
+        }
         sub.set = refine_sets_for_bootstrap(att.set, units)
-        coefs[k, j] <- brute_force_matching(sub.set, data, outcome.variable, lead[j], time.id, unit.id)
+        current_f[[k]] <- brute_force_matching(sub.set, data, outcome.variable, lead[j], time.id, unit.id)
       }
+      coefs[, j] <- unlist(current_f)
     }  
     
   } else if(is.null(att.set) & !is.null(atc.set)) {
+    treated.unit.ids2 <- as.numeric(unlist(strsplit(names(atc.set), split = "[.]"))[c(T,F)])
     d2 <- data
     d2[, treatment] <- ifelse(data[, treatment] == 1,0,1)
-    for(j in length(lead))
+    for(j in 1:length(lead))
     {
+      current_f = list()
       for(k in 1:ITER)
       {
         clusters <- unique(data[, unit.id])
         units <- sample(clusters, size = length(clusters), replace=T)
+        while(all(!units %in% treated.unit.ids2)) #while none of the units are treated units, resample
+        {
+          units <- sample(clusters, size = length(clusters), replace=T)
+        }
         sub.set<-refine_sets_for_bootstrap(atc.set, units)
-        coefs[k, j] <- brute_force_matching(sub.set, d2, outcome.variable, lead[j], time.id, unit.id)
+        current_f[[k]] <- brute_force_matching(sub.set, d2, outcome.variable, lead[j], time.id, unit.id)
       }
+      coefs[, j] <- unlist(current_f)
     }
     
   }
   if(!is.null(atc.set) & !is.null(att.set))
   {
+    treated.unit.ids <- as.numeric(unlist(strsplit(names(att.set), split = "[.]"))[c(T,F)])
+    treated.unit.ids2 <- as.numeric(unlist(strsplit(names(atc.set), split = "[.]"))[c(T,F)])
     d2 <- data
     d2[, treatment] <- ifelse(data[, treatment] == 1,0,1)
-    for(j in length(lead))
+    for(j in 1:length(lead))
     {
+      current_f = list()
       for(k in 1:ITER)
       {
         clusters <- unique(data[, unit.id])
         units <- sample(clusters, size = length(clusters), replace=T)
+        while(all(!units %in% treated.unit.ids) | all(!units %in% treated.unit.ids2)) #while none of the units are treated units (att and atc), resample
+        {
+          units <- sample(clusters, size = length(clusters), replace=T)
+        }
         sub.set<-refine_sets_for_bootstrap(att.set, units)
         sub.set2<-refine_sets_for_bootstrap(atc.set, units)
         coef1 <- brute_force_matching(sub.set, data, outcome.variable, lead[j], time.id, unit.id) 
         coef2 <- brute_force_matching(sub.set2, d2, outcome.variable, lead[j], time.id, unit.id)
-        coefs[k, j] <- ( (length(sub.set) * coef1) +  (length(sub.set2) * - coef2) ) / (length(sub.set) + length(sub.set2))
+        current_f[[k]] <- ( (length(sub.set) * coef1) +  (length(sub.set2) * - coef2) ) / (length(sub.set) + length(sub.set2))
       }
+      coefs[, j] <- unlist(current_f)
     }
   }
   
