@@ -178,8 +178,8 @@ brute_force_matching <- function(matched.set, data, outcome.variable, f, time, i
     checkdf2 <- data[data[, id] %in% controls & data[, time] == t0, ]
     checkdf2 <- checkdf2[order(controls), ]
     treated2 <- data[data[, id] == tids[i] & data[, time] == t0, ]
-    weighted.control.outcome <- sum(attr(controls, "weights") * checkdf2[, "outcome"], na.rm = T)
-    set.difs <- treated2[,outcome.variable] - weighted.control.outcome
+    weighted.control.outcome <- sum(attr(controls, "weights") * checkdf2[, outcome.variable], na.rm = T)
+    set.difs[[i]] <- treated2[,outcome.variable] - weighted.control.outcome
   }
   return(mean(unlist(set.difs), na.rm = T))
 }
