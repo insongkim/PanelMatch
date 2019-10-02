@@ -8,7 +8,8 @@ PanelMatch(lag, time.id, unit.id, treatment, refinement.method,
   size.match = 10, data, match.missing = TRUE, covs.formula = NULL,
   verbose = FALSE, qoi, lead = 0, outcome.var,
   exact.match.variables = NULL, forbid.treatment.reversal = FALSE,
-  matching = TRUE)
+  matching = TRUE, listwise.delete = FALSE,
+  use.diagonal.variance.matrix = FALSE)
 }
 \arguments{
 \item{lag}{An integer value indicating the length of history to be matched}
@@ -29,8 +30,8 @@ variable in the \code{data}. This data currently must be integers that increase 
 \item{match.missing}{Logical variable indicating whether or not units should be matched on the patterns of missingness in their treatment histories}
 
 \item{covs.formula}{One sided formula indicating which variables should be used for matching and refinement. Argument is optional if \code{refinement.method} is set to "none"
-If the user wants to include lagged variables, this can be done using a function, "lag()", which takes two, unnamed, positional arguments. The first is the name of the variable which you wish to lag, specified as a string. The second is the lag window, specified as an integer sequence
-For instance, lag("x", 1:4) will then add new columns to the data for variable "x" for time t-1, t-2, t-3, and t-4.}
+If the user wants to include lagged variables, this can be done using a function, "lag()", which takes two, unnamed, positional arguments. The first is the name of the variable which you wish to lag. The second is the lag window, specified as an integer sequence
+For instance, I(lag(x, 1:4)) will then add new columns to the data for variable "x" for time t-1, t-2, t-3, and t-4. Other transformations using the I() function, such as I(x^2) are also permitted.}
 
 \item{verbose}{option to include more information about the matched.set object calculations, like the distances used to create the refined sets and weights.}
 
@@ -45,6 +46,10 @@ For instance, lag("x", 1:4) will then add new columns to the data for variable "
 \item{forbid.treatment.reversal}{Logical indicating whether or not it is permissible for treatment to reverse. This must be set to TRUE for msm methods. When set to TRUE, only matched sets where treatment is applied continuously are included.}
 
 \item{matching}{logical indicating whether or not any matching on treatment history should be performed. This is used for diagnostic purposes. Default is TRUE.}
+
+\item{listwise.delete}{TRUE/FALSE indicating whether or not missing data should be handled using listwise deletion or the package's default missing data handling procedures. Default is FALSE.}
+
+\item{use.diagonal.variance.matrix}{TRUE/FALSE indicating whether or not a regular covariance matrix should be used in mahalanobis distance calculations during refinement, or if a diagonal matrix with only covariate variances should be used instead. In some cases, setting this to TRUE can lead to better covariate balance, especially when there is high correlation between variables.}
 }
 \value{
 \code{PanelMatch} returns an object of class "PanelMatch". This is a list that contains a few specific elements: First, a matched.set object(s) that has the same name as the provided qoi if the qoi is "att" or "atc". 
@@ -73,7 +78,7 @@ such as past outcomes and covariates via \code{covs.formula} and specifying a me
 PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
                          treatment = "dem", refinement.method = "mahalanobis", 
                          data = dem, match.missing = T, 
-                         covs.formula = ~ lag("tradewb", 1:4) + lag("y", 1:4), 
+                         covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
                          size.match = 5, qoi = "att",
                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
 }

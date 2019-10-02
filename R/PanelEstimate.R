@@ -39,7 +39,7 @@
 #' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
 #'                          treatment = "dem", refinement.method = "mahalanobis", 
 #'                          data = dem, match.missing = T, 
-#'                          covs.formula = ~ lag("tradewb", 1:4) + lag("y", 1:4), 
+#'                          covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
 #'                          size.match = 5, qoi = "att",
 #'                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = TRUE)
 #' PE.results <- PanelEstimate(inference = "bootstrap", sets = PM.results, data = dem)
@@ -47,7 +47,7 @@
 #' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
 #'                          treatment = "dem", refinement.method = "mahalanobis", 
 #'                          data = dem, match.missing = T, 
-#'                          covs.formula = ~ lag("tradewb", 1:4) + lag("y", 1:4), 
+#'                          covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
 #'                          size.match = 5, qoi = "att",
 #'                          outcome.var = "y", lead = 0, forbid.treatment.reversal = TRUE)
 #' PE.results <- PanelEstimate(inference = "wfe", sets = PM.results, data = dem)
@@ -430,7 +430,8 @@ PanelEstimate <- function(inference = c("wfe", "bootstrap"),
 #' @param verbose logical indicating whether or not output should be output in an expanded form.
 #' @param bias.corrected logical indicating whether or not bias corrected estimates should be provided.
 #' @param ... Further arguments to be passed to \code{summary.PanelEstimate()}.
-#' 
+#'
+#' @method summary PanelEstimate
 #' @export
 summary.PanelEstimate <- function(object,..., verbose = TRUE, bias.corrected = FALSE) {
   
@@ -548,7 +549,7 @@ summary.PanelEstimate <- function(object,..., verbose = TRUE, bias.corrected = F
 #' @param main default is "Estimated Effects of Treatment Over Time". This is the same argument as the standard argument for \code{plot}
 #' @param ylim default is NULL. This is the same argument as the standard argument for \code{plot}
 #' @param ... Additional optional arguments to \code{plot}.
-
+#' 
 #' @export
 plot.PanelEstimate <- function(x, ylab = "Estimated Effect of Treatment", 
                                xlab = "Time", main = "Estimated Effects of Treatment Over Time", ylim = NULL, ...)

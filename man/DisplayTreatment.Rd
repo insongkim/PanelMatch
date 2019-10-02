@@ -4,15 +4,14 @@
 \alias{DisplayTreatment}
 \title{DisplayTreatment}
 \usage{
-DisplayTreatment(unit.id, time.id, treatment, data,
-  color.of.treated = "red", color.of.untreated = "blue",
-  title = "Treatment Distribution \\n Across Units and Time",
-  xlab = "Time", ylab = "Unit", x.size = 10, y.size = 5,
-  legend.position = "none", x.angle = 45, y.angle = NULL,
-  legend.labels = c("not treated", "treated"), decreasing = FALSE,
-  matched.set = NULL, show.set.only = FALSE,
-  hide.x.axis.label = FALSE, hide.y.axis.label = FALSE,
-  gradient.weights = FALSE)
+DisplayTreatment(unit.id, time.id, treatment, data, color.of.treated = "red",
+  color.of.untreated = "blue",
+  title = "Treatment Distribution \\n Across Units and Time", xlab = "Time",
+  ylab = "Unit", x.size = 10, y.size = 5, legend.position = "none",
+  x.angle = 45, y.angle = NULL, legend.labels = c("not treated",
+  "treated"), decreasing = FALSE, matched.set = NULL,
+  show.set.only = FALSE, hide.x.axis.label = FALSE,
+  hide.y.axis.label = FALSE, gradient.weights = FALSE, dense.plot = FALSE)
 }
 \arguments{
 \item{unit.id}{A numeric vector of unit identifiers}
@@ -59,6 +58,8 @@ labels of the legend to be shown in the plot -- again, ggplot2 standards are use
 \item{hide.y.axis.label}{logical. If TRUE, y axis label are not shown. Default is FALSE.}
 
 \item{gradient.weights}{logical. If TRUE, the "darkness" units in the provided \code{matched.set} object will be displayed according to their weight. Control units with higher weights will appear darker on the resulting plot. Control units with lower weights will appear lighter.}
+
+\item{dense.plot}{logical. if TRUE, lines between tiles are removed on resulting plot. This is useful for producing more readable plots in situations where the number of units is very high.}
 }
 \value{
 \code{DisplayTreatment} returns a treatment variation plot (using ggplot2),

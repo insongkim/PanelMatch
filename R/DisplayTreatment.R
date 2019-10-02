@@ -27,6 +27,7 @@
 #' @param gradient.weights logical. If TRUE, the "darkness" units in the provided \code{matched.set} object will be displayed according to their weight. Control units with higher weights will appear darker on the resulting plot. Control units with lower weights will appear lighter.
 #' @param hide.x.axis.label logical. If TRUE, x axis labels are not shown. Default is FALSE. 
 #' @param hide.y.axis.label logical. If TRUE, y axis label are not shown. Default is FALSE.
+#' @param dense.plot logical. if TRUE, lines between tiles are removed on resulting plot. This is useful for producing more readable plots in situations where the number of units is very high.
 #' @return \code{DisplayTreatment} returns a treatment variation plot (using ggplot2),
 #' which visualizes the variation of treatment across unit and time.
 #' @author In Song Kim <insong@mit.edu>, Erik Wang
@@ -56,7 +57,8 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
                              show.set.only = FALSE,
                              hide.x.axis.label = FALSE,
                              hide.y.axis.label = FALSE,
-                             gradient.weights = FALSE)
+                             gradient.weights = FALSE,
+                             dense.plot = FALSE)
     
 {
   #note: removing group_on and sort_by features for right now:
@@ -106,8 +108,8 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
     }
     
   }
-  x.size = NULL
-  y.size = NULL
+  #x.size = NULL
+  #y.size = NULL
   if(!is.null(group_on))
   {
     if(!is.null(sort_by))
@@ -352,37 +354,75 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
     if(!gradient.weights) 
     {
       colorvals <- c(color.factor(color.of.untreated, .3, 1), color.factor(color.of.treated, .3, 1), color.of.untreated, color.of.treated)
-      p <- ggplot(data, aes(unit.id, time.id)) + geom_tile(aes(fill = as.factor(colref)),
-                                                           colour = "white") +
-        scale_fill_manual(values = colorvals)+
-        theme_bw() +
-        labs(list(title = title, x = ylab, y = xlab, fill = "")) +
-        theme(axis.ticks.x=element_blank(),
-              panel.grid.major = element_blank(), panel.border = element_blank(),
-              legend.position = legend.position,
-              panel.background = element_blank(), 
-              axis.text.x = element_text(angle=x.angle, size = x.size, vjust=0.5),
-              axis.text.y = element_text(size = y.size, angle = y.angle),
-              plot.title = element_text(hjust = 0.5))
+      if(!dense.plot)
+      {
+        p <- ggplot(data, aes(unit.id, time.id)) + geom_tile(aes(fill = as.factor(colref)),
+                                                             colour = "white") +
+          scale_fill_manual(values = colorvals)+
+          theme_bw() +
+          labs(list(title = title, x = ylab, y = xlab, fill = "")) +
+          theme(axis.ticks.x=element_blank(),
+                panel.grid.major = element_blank(), panel.border = element_blank(),
+                legend.position = legend.position,
+                panel.background = element_blank(), 
+                axis.text.x = element_text(angle=x.angle, size = x.size, vjust=0.5),
+                axis.text.y = element_text(size = y.size, angle = y.angle),
+                plot.title = element_text(hjust = 0.5))  
+      } else
+      {
+        p <- ggplot(data, aes(unit.id, time.id)) + geom_raster(aes(fill = as.factor(colref)), hjust = 0, vjust = .5) +
+          scale_fill_manual(values = colorvals)+
+          theme_bw() +
+          labs(list(title = title, x = ylab, y = xlab, fill = "")) +
+          theme(axis.ticks.x=element_blank(),
+                panel.grid.major = element_blank(), panel.border = element_blank(),
+                legend.position = legend.position,
+                panel.background = element_blank(), 
+                axis.text.x = element_text(angle=x.angle, size = x.size, vjust=0.5),
+                axis.text.y = element_text(size = y.size, angle = y.angle),
+                plot.title = element_text(hjust = 0.5))
+      }
+      
     }
   }
   else
   {
     clrs <- NULL
-    p <- ggplot(data, aes(unit.id, time.id)) + geom_tile(aes(fill = treatment),
-                                                         colour = "white") +
-      scale_fill_gradient(low = color.of.untreated,
-                          high = color.of.treated, guide = "legend", 
-                          breaks = c(0,1), labels = legend.labels) +
-      theme_bw() +
-      labs(list(title = title, x = ylab, y = xlab, fill = "")) +
-      theme(axis.ticks.x=element_blank(),
-            panel.grid.major = element_blank(), panel.border = element_blank(),
-            legend.position = legend.position,
-            panel.background = element_blank(), 
-            axis.text.x = element_text(angle=x.angle, size = x.size, vjust=0.5),
-            axis.text.y = element_text(size = y.size, angle = y.angle),
-            plot.title = element_text(hjust = 0.5))
+    if(!dense.plot)
+    {
+      p <- ggplot(data, aes(unit.id, time.id)) + geom_tile(aes(fill = treatment),
+                                                           colour = "white") +
+        scale_fill_gradient(low = color.of.untreated,
+                            high = color.of.treated, guide = "legend",
+                            breaks = c(0,1), labels = legend.labels) +
+        theme_bw() +
+        labs(list(title = title, x = ylab, y = xlab, fill = "")) +
+        theme(axis.ticks.x=element_blank(),
+              panel.grid.major = element_blank(), panel.border = element_blank(),
+              legend.position = legend.position,
+              panel.background = element_blank(),
+              axis.text.x = element_text(angle=x.angle, size = x.size, vjust=0.5),
+              axis.text.y = element_text(size = y.size, angle = y.angle),
+              plot.title = element_text(hjust = 0.5))
+    } else
+    {
+      p <- ggplot(data, aes(unit.id, time.id)) + geom_raster(aes(fill = treatment), hjust = 0, vjust = .5) +
+        scale_fill_gradient(low = color.of.untreated,
+                            high = color.of.treated, guide = "legend",
+                            breaks = c(0,1), labels = legend.labels) +
+        theme_bw() +
+        labs(list(title = title, x = ylab, y = xlab, fill = "")) +
+        theme(axis.ticks.x=element_blank(),
+              panel.grid.major = element_blank(), panel.border = element_blank(),
+              legend.position = legend.position,
+              panel.background = element_blank(),
+              axis.text.x = element_text(angle=x.angle, size = x.size, vjust=0.5),
+              axis.text.y = element_text(size = y.size, angle = y.angle),
+              plot.title = element_text(hjust = 0.5))
+    }
+    
+    
+    
   }
   
   

@@ -51,6 +51,7 @@ matched_set <- function(matchedsets, id, t, L, t.var, id.var, treated.var)
 #' @param ... Optional additional arguments to be passed to the summary function
 #' @param verbose Logical option specifying whether or not a longer, more verbose summary should be calculated and returned.
 #' 
+#' @method summary matched.set
 #' @export
 summary.matched.set <- function(object, ..., verbose = T)
 {
@@ -122,6 +123,8 @@ plot.matched.set <- function(x, ..., border = NA, col = "grey", ylab = "Frequenc
 #' @param x a \code{matched.set} object
 #' @param verbose logical indicating whether or not output should be printed in expanded form
 #' @param ... additional arguments to be passed to \code{print}
+#' 
+#' @method print matched.set
 #' @export
 print.matched.set <- function(x, ..., verbose = F)
 {
@@ -195,8 +198,10 @@ build_balance_mats <- function(idx, ordered_expanded_data, msets)
 #' @examples \dontrun{
 #' dem$rdata <- runif(runif(nrow(dem)))
 #' pm.obj <- PanelMatch(lead = 0:3, lag = 4, time.id = "year", unit.id = "wbcode2", treatment = "dem",
-#'                     outcome.var ="y", refinement.method = "mahalanobis", data = dem, match.missing = T,
-#'                     covs.formula = ~ tradewb + rdata + lag("tradewb", 1:4) + lag("y", 1:4), size.match = 5, qoi = "att")
+#'                     outcome.var ="y", refinement.method = "mahalanobis", 
+#'                     data = dem, match.missing = T,
+#'                     covs.formula = ~ tradewb + rdata + I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
+#'                     size.match = 5, qoi = "att")
 #' get_covariate_balance(pm.obj$att, dem, covariates = c("tradewb", "rdata"), plot = T, ylim = c(-2,2))
 #' } 
 #' @export
