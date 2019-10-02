@@ -25,6 +25,10 @@ DifferenceScatter(non_refined_set, refined_list, xlim = c(0, 0.8),
 \item{covariates}{variables for which balance is displayed}
 
 \item{data}{the dataset}
+
+\item{x.axis.label}{x axis label}
+
+\item{y.axis.label}{y axis label}
 }
 \description{
 \code{DifferenceScatter} visualizes the standardized mean differences for each covariate

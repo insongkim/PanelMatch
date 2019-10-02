@@ -403,6 +403,8 @@ encode_index <- function(mset, unit.index, new.unit.id)
 #' @param xlim xlim of the scatter plot
 #' @param ylim ylim of the scatter plot
 #' @param main title of the scatter plot
+#' @param x.axis.label x axis label
+#' @param y.axis.label y axis label
 #' @param pchs one or two pch for the symbols on the scatter plot
 #' @param covariates variables for which balance is displayed
 #' @param data the dataset
@@ -475,7 +477,7 @@ DifferenceScatter <- function(non_refined_set, refined_list,
   # extract values for y-axis from refined sets and delete balance results after t-1
   compared <- sapply(refined_balance, function(x) x <- x[1:(nrow(x)-1),])
   
-  plot(abs(as.numeric(benchmark)), 
+  graphics::plot(abs(as.numeric(benchmark)), 
        abs(as.numeric(compared[,1])), pch = 1,
        xlab = x.axis.label,
        ylab = y.axis.label,
@@ -486,14 +488,14 @@ DifferenceScatter <- function(non_refined_set, refined_list,
   # logical statement for the length of the refined_balance
   if (length(refined_balance) > 1) {
     for (j in 2:length(refined_balance)) {
-      points(abs(as.numeric(benchmark)), 
+      graphics::points(abs(as.numeric(benchmark)), 
              abs(as.numeric(compared[,j])),
              pch = pchs[j])  
     }
   } 
   
-  abline(h = 0, lty = "dashed")
-  abline(0, 1, lty = 2, col = "red")
+  graphics::abline(h = 0, lty = "dashed")
+  graphics::abline(0, 1, lty = 2, col = "red")
   
   
 } 
