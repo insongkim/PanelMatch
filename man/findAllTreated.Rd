@@ -4,8 +4,7 @@
 \alias{findAllTreated}
 \title{findAllTreated}
 \usage{
-findAllTreated(dmat, treatedvar, time.var, unit.var,
-  hasbeensorted = FALSE)
+findAllTreated(dmat, treatedvar, time.var, unit.var, hasbeensorted = FALSE)
 }
 \arguments{
 \item{dmat}{Data frame or matrix containing data used to identify potential treated units. Must be specified in such a way that a combination of time and id variables will correspond to a unique row. Must also contain at least a binary treatment variable column as well.}
