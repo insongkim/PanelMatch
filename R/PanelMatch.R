@@ -67,7 +67,80 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
                        use.diagonal.variance.matrix = FALSE
                        ) 
 {
-  #if(refinement.method == "CBPS.msm.weight" | refinement.method == "ps.msm.weight") browser()
+  if(class(lag) == "list" & class(time.id) == "list" & class(unit.id) == "list" & class(treatment) == "list" & 
+     class(refinement.method) == "list" & class(size.match) == "list" & class(match.missing) == "list" & 
+     class(covs.formula) == "list" & class(verbose) == "list" & class(qoi) == "list" & class(lead) == "list" & 
+     class(outcome.var) == "list" & class(exact.match.variables) == "list" & class(forbid.treatment.reversal) == "list" &
+     class(matching) == "list" & class(listwise.delete) == "list" & class(use.diagonal.variance.matrix) == "list") #everything but data must be provided explicitly
+  {
+    if(length(unique(length(lag) , length(time.id)  , length(unit.id)  , length(treatment)  , 
+                     length(refinement.method)  , length(size.match)  , length(match.missing)  , 
+                     length(covs.formula)  , length(verbose)  , length(qoi)  , length(lead)  , 
+                     length(outcome.var)  , length(exact.match.variables)  , length(forbid.treatment.reversal)  ,
+                     length(matching)  , length(listwise.delete)  , length(use.diagonal.variance.matrix) )) == 1)
+    {
+      
+     list.res <- mapply(FUN = panel_match,
+             lag = lag, time.id = time.id, unit.id = unit.id, treatment = treatment,
+             refinement.method = refinement.method,
+             size.match = size.match,
+             match.missing = match.missing,
+             covs.formula = covs.formula,
+             verbose = verbose,
+             qoi = qoi,
+             lead = lead,
+             outcome.var  = outcome.var,
+             exact.match.variables = exact.match.variables,
+             forbid.treatment.reversal = forbid.treatment.reversal,
+             matching = matching,
+             listwise.delete = listwise.delete,
+             use.diagonal.variance.matrix = use.diagonal.variance.matrix,
+             MoreArgs = list(data = data)
+             )
+     return(list.res)
+    }
+    else {
+      stop("arguments are not provided in equal length lists")
+    }
+  }
+  else
+  {
+    panel_match(lag, time.id, unit.id, treatment,
+                refinement.method,
+                size.match,
+                data,
+                match.missing,
+                covs.formula,
+                verbose,
+                qoi,
+                lead,
+                outcome.var,
+                exact.match.variables,
+                forbid.treatment.reversal,
+                matching,
+                listwise.delete,
+                use.diagonal.variance.matrix)
+  }
+  
+}
+
+panel_match <- function(lag, time.id, unit.id, treatment,
+                        refinement.method,
+                        size.match,
+                        data,
+                        match.missing,
+                        covs.formula,
+                        verbose,
+                        qoi,
+                        lead,
+                        outcome.var,
+                        exact.match.variables,
+                        forbid.treatment.reversal,
+                        matching,
+                        listwise.delete,
+                        use.diagonal.variance.matrix)
+{
+  
   if(!matching & match.missing)
   {
     old.lag <- lag
@@ -84,7 +157,7 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
   if(any(duplicated(data[, c(unit.id, time.id)]))) stop("Time, unit combinations should uniquely identify rows. Please remove duplicates")
   if(class(data[, unit.id]) == "factor") stop("please convert unit id column to character, integer, or numeric")
   if(class(data[, time.id]) != "integer") stop("please convert time id to consecutive integers")
-
+  
   if(any(table(data[, unit.id]) != max(table(data[, unit.id]))))
   {
     testmat <- data.table::dcast(data.table::as.data.table(data), formula = paste0(unit.id, "~", time.id),
@@ -104,7 +177,7 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
   {
     stop("please set forbid.treatment.reversal to TRUE for msm methods")
   }
-
+  
   if(any(is.na(data[, unit.id]))) stop("Cannot have NA unit ids")
   ordered.data <- data[order(data[,unit.id], data[,time.id]), ]
   
@@ -125,7 +198,7 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
     }
   }
   else {
-  stop("Unit ID Data is not integer, numeric, or character.")
+    stop("Unit ID Data is not integer, numeric, or character.")
   }
   og.unit.id <- unit.id
   unit.id <- paste0(unit.id, ".int")
@@ -139,7 +212,7 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
       ordered.data[, variable] <- as.numeric(as.factor(ordered.data[, variable]))
     }  
   }
-
+  
   if(qoi == "atc")
   {
     ordered.data[, treatment] <- ifelse(ordered.data[, treatment] == 1,0,1) #flip the treatment variables 
@@ -214,4 +287,7 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
     stop("qoi not specified correctly!")
   }
   
-} 
+  
+}
+  
+  
