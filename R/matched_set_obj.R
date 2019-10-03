@@ -400,9 +400,9 @@ encode_index <- function(mset, unit.index, new.unit.id)
 }
 
 
-#' DifferenceScatter
+#' balance_scatter
 #' 
-#' \code{DifferenceScatter} visualizes the standardized mean differences for each covariate
+#' \code{balance_scatter} visualizes the standardized mean differences for each covariate
 #'
 #' @param non_refined_set a matched.set object produced by setting `refinement.method` to "none" in `PanelMatch` 
 #' @param refined_list a list of one or two matched.set objects
@@ -445,7 +445,7 @@ encode_index <- function(mset, unit.index, new.unit.id)
 #' 
 #' 
 #' 
-#' DifferenceScatter(non_refined_set = sets0$att,
+#' balance_scatter(non_refined_set = sets0$att,
 #'               refined_lists = list(sets1$att, sets2$att),
 #'               
 #'               data = dem,
@@ -454,7 +454,7 @@ encode_index <- function(mset, unit.index, new.unit.id)
 #' }
 #'
 #' @export
-DifferenceScatter <- function(non_refined_set, refined_list,
+balance_scatter <- function(non_refined_set, refined_list,
                               xlim = c(0, .8),
                               ylim = c(0, .8),
                               main = "Standardized Mean Difference of Covariates",
