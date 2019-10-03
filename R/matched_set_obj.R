@@ -91,31 +91,37 @@ summary.matched.set <- function(object, ..., verbose = T)
 #' @param ylab default is "Frequency of Size". This is the same argument as the standard argument for \code{plot}
 #' @param xlab default is "Matched Set Size". This is the same argument as the standard argument for \code{plot}
 #' @param lwd default is NULL. This is the same argument as the standard argument for \code{plot}
+#' @param freq default is TRUE. See \code{freq} argument in \code{hist} function for more
+#' @param include.empty.sets default is TRUE. Should empty sets be included on the plot? If false, they will be excluded, but noted as a subtitle.
 #' @param main default is "Distributioin of matched set sizes". This is the same argument as the standard argument for \code{plot}
 #' 
 #' @export
 plot.matched.set <- function(x, ..., border = NA, col = "grey", ylab = "Frequency of Size", 
                              xlab ="Matched Set Size" , lwd = NULL,
-                             main = "Distribution of matched set sizes")
+                             main = "Distribution of matched set sizes", freq = TRUE, include.empty.sets = TRUE)
 {
-  set <- x  
-  lvec <- sapply(set, length)
-    lvec.nonempty <- lvec[lvec > 0]
+    set <- x  
+    lvec <- sapply(set, length)
+  
+    if(include.empty.sets)
+    {
+      graphics::hist(x = lvec, freq = freq, border = border, col = col, ylab = ylab, xlab = xlab, main = main, ...)
+    }
+    else 
+    {
+      lvec.nonempty <- lvec[lvec > 0]
+      
+      if(sum(lvec == 0) > 0)
+      {
+        num.empties <- as.character(sum(lvec == 0))
+        graphics::hist(x = lvec.nonempty, freq = freq, border = border, col = col, ylab = ylab, xlab = xlab, main = main, sub = paste(num.empties, "empty matched set(s)"), ...)
+      }
+      else
+      {
+        graphics::hist(x = lvec.nonempty, freq = freq, border = border, col = col, ylab = ylab, xlab = xlab, main = main, ...)
+      }
+    }
     
-    if(sum(lvec == 0) > 0)
-    {
-      num.empties <- as.character(sum(lvec == 0))
-      # if(is.null(lwd))
-      # {
-      #   lwd = 4
-      # }
-      # lines(x = c(0,0), y = c(0, length(rep(0, sum(lvec == 0) )) ), col = "red", lwd = lwd)
-      graphics::hist(x = lvec.nonempty, freq = TRUE, border = border, col = col, ylab = ylab, xlab = xlab, main = main, sub = paste(num.empties, "empty matched set(s)"), ...)
-    }
-    else
-    {
-      graphics::hist(x = lvec.nonempty, freq = TRUE, border = border, col = col, ylab = ylab, xlab = xlab, main = main, ...)
-    }
 }
 
 #' Method for printing \code{matched.set} objects.

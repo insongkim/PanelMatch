@@ -8,7 +8,8 @@ Accepts all standard \code{plot} arguments. Empty sets are excluded from the his
 \usage{
 \method{plot}{matched.set}(x, ..., border = NA, col = "grey",
   ylab = "Frequency of Size", xlab = "Matched Set Size", lwd = NULL,
-  main = "Distribution of matched set sizes")
+  main = "Distribution of matched set sizes", freq = TRUE,
+  include.empty.sets = TRUE)
 }
 \arguments{
 \item{x}{a \code{matched.set} object}
@@ -26,6 +27,10 @@ Accepts all standard \code{plot} arguments. Empty sets are excluded from the his
 \item{lwd}{default is NULL. This is the same argument as the standard argument for \code{plot}}
 
 \item{main}{default is "Distributioin of matched set sizes". This is the same argument as the standard argument for \code{plot}}
+
+\item{freq}{default is TRUE. See \code{freq} argument in \code{hist} function for more}
+
+\item{include.empty.sets}{default is TRUE. Should empty sets be included on the plot? If false, they will be excluded, but noted as a subtitle.}
 }
 \description{
 Method for plotting the distribution of the sizes of \code{matched.set} objects.
