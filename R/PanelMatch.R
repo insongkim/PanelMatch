@@ -96,7 +96,7 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
              listwise.delete = listwise.delete,
              use.diagonal.variance.matrix = use.diagonal.variance.matrix,
              MoreArgs = list(data = data)
-             )
+             , SIMPLIFY = F)
      return(list.res)
     }
     else {
