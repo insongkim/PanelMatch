@@ -69,6 +69,9 @@ PanelEstimate <- function(inference = c("wfe", "bootstrap"),
                    MoreArgs = list(data = data),
                    SIMPLIFY = FALSE)
     }
+    else {
+      stop("arguments are not provided in equal length lists")
+    }
   }
   else 
   {
