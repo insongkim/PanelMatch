@@ -139,12 +139,12 @@ Rcpp:: List get_msets_helper(const Rcpp::List &control_history_list, const Rcpp:
 
 /*
  control_history_list: result of above get_comparison_histories C++ function
-widemat: "wide" form of data matrix with a row for each unit id and columns corresponding to every known t. Entries are 1 if unit is treated at that time, 0 if not
-t_as_col_nums: integers corresponding to the column number of the t for a (t,id) pair for which we are trying to find a matched set.
-ids: vector containing ids for treated units for which we are attempting to find matched sets
-L: lag window size
-returns a list of vectors, vectors will contain unit ids for units included in a matched set. Size should correspond to the length of t_as_col_nums vector and ids vector, although some sets might be empty.
-*/
+ widemat: "wide" form of data matrix with a row for each unit id and columns corresponding to every known t. Entries are 1 if unit is treated at that time, 0 if not
+ t_as_col_nums: integers corresponding to the column number of the t for a (t,id) pair for which we are trying to find a matched set.
+ ids: vector containing ids for treated units for which we are attempting to find matched sets
+ L: lag window size
+ returns a list of vectors, vectors will contain unit ids for units included in a matched set. Size should correspond to the length of t_as_col_nums vector and ids vector, although some sets might be empty.
+ */
 // [[Rcpp::export()]]
 Rcpp:: List non_matching_matcher(const Rcpp::List &control_history_list, 
                                  const Rcpp::NumericMatrix &widemat, const Rcpp::NumericVector &t_as_col_nums, 
@@ -179,14 +179,46 @@ Rcpp:: List non_matching_matcher(const Rcpp::List &control_history_list,
         if(Rcpp::all(!Rcpp::is_na(na_tempcomp)))
         {
           Rcpp::NumericVector tempcomp(L + 1);
+          // if(widemat(j, 0) == 4)
+          // {
+          //   Rcpp::Rcout << widemat(j, 0) << std::endl;  
+          // }
+          
           for (int k = 0; k < L + 1; k++)
           {
             tempcomp[k] = widemat(j, t - L + k); //retrieving treatment history for the window of interest
+            
+            //for(int s = 0; s < tempcomp.length(); s++)
+            //Rcpp::Rcout << tempcomp[s]; 
             //tempcomp is the actual history of a unit, cont_hist is what must be matched in order for a unit to be included in a matched set for a given t, id
           }
+          // if(widemat(j, 0) == 4)
+          // {
+          //   for(int s = 0; s < tempcomp.length(); s++)
+          //   {
+          //     Rcpp::Rcout << tempcomp[s];
+          //   }
+          //   Rcpp::Rcout << std::endl;
+          //   
+          // }
           
-          if ( (!Rcpp::internal::Rcpp_IsNA(Rcpp::is_true(Rcpp::all(tempcomp == cont_hist)))) & //Do the actual treatment history of a unit match the needed control history? If so...
-               Rcpp::is_true(Rcpp::all(tempcomp == cont_hist)) ) // checking that NOT na might be redundant, but also might prevent bug
+          Rcpp::NumericVector cont_hist_comp(2);
+          
+          for(int k = 0; k < 2; k++)
+          {
+            cont_hist_comp[k] = cont_hist[cont_hist.length() -2 + k];
+          }
+          
+          // if(id == 3 && t == 38)
+          // {
+          //   for(int xx = 0; xx < cont_hist_comp.length(); xx++)
+          //   {
+          //     Rcpp::Rcout << cont_hist_comp[xx];
+          //   }
+          //   Rcpp::Rcout << std::endl;
+          // }
+          if ( (!Rcpp::internal::Rcpp_IsNA(Rcpp::is_true(Rcpp::all(tempcomp == cont_hist_comp)))) & //Do the actual treatment history of a unit match the needed control history? If so...
+               Rcpp::is_true(Rcpp::all(tempcomp == cont_hist_comp)) ) // checking that NOT na might be redundant, but also might prevent bug
           {
             in_matched_set_idx[j] = true; //... then that unit should be included in the matched set.
           }
