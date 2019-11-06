@@ -303,6 +303,10 @@ get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.wei
       
       sd.val <- sd(sapply(unlistedmats[seq(from = 1, to = (length(matched.sets) * (lag + 1)), by = lag + 1)], 
                           function(x){x[nrow(x), variable]}), na.rm = T)
+      if(isTRUE(all.equal(sd.val, 0)))
+      {
+        sd.val <- NA #make everything fail in a standardized way
+      }
       
       tprd <- unlistedmats[seq(from = k, to = (length(matched.sets) * (lag + 1)), by = lag + 1)] #should represent the same relative period across all matched sets. each df is a matched set
       
@@ -321,6 +325,19 @@ get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.wei
   names(plotpoints) <- paste0("t_", lag:0)
   pointmatrix <- apply((as.matrix(do.call(rbind, plotpoints))), 2, function(x){(as.numeric(x))})
   rownames(pointmatrix) <- names(plotpoints)
+  
+  remove.vars.idx <- apply(apply(pointmatrix, 2, is.nan), 2, any)
+  if(length(remove.vars.idx) > 0)
+  {
+    removed.vars <- names(which(apply(apply(pointmatrix, 2, is.nan), 2, any)))
+    pointmatrix <- pointmatrix[, !remove.vars.idx]  
+    warning(paste0("Some variables were removed due to low variation: ", removed.vars))
+  }
+  
+  
+  
+  
+  
   if(!plot) return(pointmatrix)
   
   if(plot)
