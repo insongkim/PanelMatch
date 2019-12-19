@@ -53,13 +53,14 @@
 #' PE.results <- PanelEstimate(inference = "wfe", sets = PM.results, data = dem)
 #' }
 #' @export
-PanelEstimate <- function(inference = c("wfe", "bootstrap"),
+PanelEstimate <- function(inference = "bootstrap",
                           ITER = 1000,
                           df.adjustment = FALSE,
                           CI = .95,
                           sets,
                           data) 
 {
+  if(inference == "wfe") stop("wfe is no longer supported. Please specify inference = 'bootstrap'")
   if(class(inference) == "list" & class(ITER) == "list" & class(df.adjustment) == "list" & class(CI) == "list" & class(sets) == "list")
   {
     if(length(unique(length(inference), length(ITER), length(df.adjustment), length(CI), length(sets))) == 1)
@@ -83,7 +84,7 @@ PanelEstimate <- function(inference = c("wfe", "bootstrap"),
 
 
 
-panel_estimate <- function(inference = c("wfe", "bootstrap"),
+panel_estimate <- function(inference = "bootstrap",
                            ITER = 1000,
                            df.adjustment = FALSE,
                            CI = .95,
@@ -219,8 +220,7 @@ panel_estimate <- function(inference = c("wfe", "bootstrap"),
       fit <- PanelWFE(formula = as.formula(paste(dependent, "~", treatment)), 
                       treat = treatment, unit.index = unit.id,
                       time.index = time.id, method = "unit", 
-                      qoi = "att", estimator = "did", 
-                      df.adjustment = df.adjustment,
+                      qoi = "att", estimator = "did",
                       hetero.se = TRUE, 
                       auto.se = TRUE, White = TRUE,  
                       data = data)
@@ -290,7 +290,6 @@ panel_estimate <- function(inference = c("wfe", "bootstrap"),
                       treat = treatment, unit.index = unit.id,
                       time.index = time.id, method = "unit", 
                       qoi = "atc", estimator = "did", 
-                      df.adjustment = df.adjustment,
                       hetero.se = TRUE, 
                       auto.se = TRUE, White = TRUE,  
                       data = data)
@@ -363,8 +362,7 @@ panel_estimate <- function(inference = c("wfe", "bootstrap"),
       fit <- PanelWFE(formula = as.formula(paste(dependent, "~", treatment)), 
                       treat = treatment, unit.index = unit.id,
                       time.index = time.id, method = "unit", 
-                      qoi = "ate", estimator = "did", 
-                      df.adjustment = df.adjustment,
+                      qoi = "ate", estimator = "did",
                       hetero.se = TRUE, 
                       auto.se = TRUE, White = TRUE,  
                       data = data)
