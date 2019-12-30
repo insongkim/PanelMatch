@@ -4,8 +4,8 @@
 \alias{PanelEstimate}
 \title{PanelEstimate}
 \usage{
-PanelEstimate(inference = c("wfe", "bootstrap"), ITER = 1000,
-  df.adjustment = FALSE, CI = 0.95, sets, data)
+PanelEstimate(inference = "bootstrap", ITER = 1000, df.adjustment = FALSE,
+  CI = 0.95, sets, data)
 }
 \arguments{
 \item{inference}{One of ``wfe'' (weighted fixed effects) or
