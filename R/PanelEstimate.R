@@ -43,14 +43,6 @@
 #'                          size.match = 5, qoi = "att",
 #'                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = TRUE)
 #' PE.results <- PanelEstimate(inference = "bootstrap", sets = PM.results, data = dem)
-#' 
-#' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
-#'                          treatment = "dem", refinement.method = "mahalanobis", 
-#'                          data = dem, match.missing = T, 
-#'                          covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
-#'                          size.match = 5, qoi = "att",
-#'                          outcome.var = "y", lead = 0, forbid.treatment.reversal = TRUE)
-#' PE.results <- PanelEstimate(inference = "wfe", sets = PM.results, data = dem)
 #' }
 #' @export
 PanelEstimate <- function(inference = "bootstrap",
@@ -94,10 +86,7 @@ panel_estimate <- function(inference = "bootstrap",
   
   lead <- attr(sets, "lead")
   outcome.variable <- attr(sets, "outcome.var")
-  if(!attr(sets, "forbid.treatment.reversal") & inference == "wfe")
-  {
-    stop("WFE cannot be used unless treatment stability is guaranteed. Please re-run PanelMatch with forbid.treatment.reversal = TRUE")
-  }
+  
   if(class(sets) != "PanelMatch") stop("sets is not a PanelMatch object")
   qoi <- attr(sets, "qoi")
   if(qoi == "ate")
@@ -110,10 +99,7 @@ panel_estimate <- function(inference = "bootstrap",
     sets <- sets[[qoi]]  
   }
   sets <- sets[sapply(sets, length) > 0]
-  if (inference == "wfe" & length(lead) > 1) 
-    stop("When inference method is wfe, please only supply 1 lead at a time. 
-         For example, please call this function with `lead` = 1 and then call it with `lead` = 2,
-         rather than supplying `lead`` = 1:2. Please re-run PanelMatch in accordance with this.")
+  
   
   lag <- attr(sets, "lag")
   dependent = outcome.variable
@@ -128,7 +114,7 @@ panel_estimate <- function(inference = "bootstrap",
   
   if(!"data.frame" %in% class(data)) stop("please convert data to data.frame class")
   
-  if(class(data[, unit.id]) == "factor") stop("please convert unit id column to character, integer, or numeric")
+  if(!class(data[, unit.id]) %in% c("integer", "numeric")) stop("please convert unit id column to integer or numeric")
   if(class(data[, time.id]) != "integer") stop("please convert time id to consecutive integers")
   
   if(any(table(data[, unit.id]) != max(table(data[, unit.id]))))
@@ -190,7 +176,15 @@ panel_estimate <- function(inference = "bootstrap",
   if (qoi == "att" | qoi == "ate") 
   {
     treated.unit.ids <- as.numeric(unlist(strsplit(names(sets), split = "[.]"))[c(T,F)])
-    data[, paste0("Wit_att", lead)] <- do.call(cbind, lapply(lead, FUN = getWits, data = data, matched_sets = sets, estimation.method = inference))
+    
+    for(j in lead)
+    {
+      dense.wits <- getWits(lead = j, data = data, matched_sets = sets, estimation.method = inference)
+      data = merge(x = data, y = dense.wits, all.x = TRUE, by.x = colnames(data)[1:2], by.y = c("id", "t"))
+      colnames(data)[length(data)] <- paste0("Wit_att", j)
+      data[is.na(data[, length(data)]), length(data)] <- 0 #replace NAs with zeroes
+    }
+    #data[, paste0("Wit_att", lead)] <- do.call(cbind, lapply(lead, FUN = getWits2, data = data, matched_sets = sets, estimation.method = inference))
     data$dit_att <- getDits(matched_sets = sets, data = data)
     colnames(data)[length(data)] <- "dits_att"
     data$`Wit_att-1` <- 0
@@ -199,7 +193,16 @@ panel_estimate <- function(inference = "bootstrap",
   if (qoi == "atc" | qoi == "ate") 
   {
     treated.unit.ids2 <- as.numeric(unlist(strsplit(names(sets2), split = "[.]"))[c(T,F)])
-    data[, paste0("Wit_atc", lead)] <- do.call(cbind, lapply(lead, FUN = getWits, data = data, matched_sets = sets2, estimation.method = inference))
+    
+    for(j in lead)
+    {
+      dense.wits <- getWits(lead = j, data = data, matched_sets = sets, estimation.method = inference)
+      data = merge(x = data, y = dense.wits, all.x = TRUE, by.x = colnames(data)[1:2], by.y = c("id", "t"))
+      colnames(data)[length(data)] <- paste0("Wit_atc", j)
+      data[is.na(data[, length(data)]), length(data)] <- 0 #replace NAs with zeroes
+    }
+    
+    #data[, paste0("Wit_atc", lead)] <- do.call(cbind, lapply(lead, FUN = getWits, data = data, matched_sets = sets2, estimation.method = inference))
     data$dit_atc <- getDits(matched_sets = sets2, data = data)
     colnames(data)[length(data)] <- "dits_atc"
     data$`Wit_atc-1` <- 0

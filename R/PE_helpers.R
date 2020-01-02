@@ -72,13 +72,47 @@ getWits <- function(matched_sets, lead, data, estimation.method)
   
   t.idvector <- paste0(c(p.df$id, t.df$id), ".", c(p.df$t, t.df$t))
   setnums <- c(p.df$set.num, t.df$set.num)
-  #function to figure out where to put each weight
-  #idxes <- get_vit_index(paste0(data[, id.var], ".", data[, t.var]), t.idvector, setnums) #should be ok to leave this in R
+  
+  w.it.df <- rbind(p.df, t.df)
+  w.it.df <- as.data.table(w.it.df[w.it.df$weight != 0,])
+  summarized.Wits <- w.it.df[,.(Wit = sum(weight)), by = .(t,id)]
+  return(summarized.Wits)
+  
+  #Wits <- handle_vits(nrow(data), length(matched_sets), num.empty, c(p.df$weight, t.df$weight),
+  #                    paste0(data[, id.var], ".", data[, t.var]), t.idvector, setnums)
+  #return(Wits)
+  
+}
+
+getWits2 <- function(matched_sets, lead, data, estimation.method)
+{
+  #sort the data
+  t.var <- attr(matched_sets, "t.var")
+  id.var <- attr(matched_sets, "id.var")
+  data <- data[order(data[,id.var], data[,t.var]), ]
+  include <- sapply(matched_sets, length) > 0
+  num.empty <- sum(!include)
+  
+  
+  #prep control sets, prep treatment sets for search/summation vector
+  p.df <- pcs(matched_sets, lead, estimation.method)
+  t.df <- pts(matched_sets, lead, estimation.method)
+  
+  t.idvector <- paste0(c(p.df$id, t.df$id), ".", c(p.df$t, t.df$t))
+  setnums <- c(p.df$set.num, t.df$set.num)
+  
+  #w.it.df <- rbind(p.df, t.df)
+  #w.it.df <- as.data.table(w.it.df[w.it.df$weight >0,])
+  #summarized.Wits <- w.it.df[,.(Wit = sum(weight)), by = .(t,id)]
+  #return(summarized.Wits)
+  
   Wits <- handle_vits(nrow(data), length(matched_sets), num.empty, c(p.df$weight, t.df$weight),
                       paste0(data[, id.var], ".", data[, t.var]), t.idvector, setnums)
   return(Wits)
   
 }
+
+
 # returns a vector of dit values, as defined in the paper. They should be in the same order as the data frame containing the original problem data.
 getDits <- function(matched_sets, data)
 {

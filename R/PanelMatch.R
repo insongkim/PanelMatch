@@ -155,7 +155,7 @@ panel_match <- function(lag, time.id, unit.id, treatment,
   if(class(data) != "data.frame") stop("please convert data to data.frame class")
   if(!all(refinement.method %in% c("mahalanobis", "ps.weight", "ps.match", "CBPS.weight", "CBPS.match", "ps.msm.weight", "CBPS.msm.weight", "none"))) stop("please choose a valid refinement method")
   if(any(duplicated(data[, c(unit.id, time.id)]))) stop("Time, unit combinations should uniquely identify rows. Please remove duplicates")
-  if(class(data[, unit.id]) == "factor") stop("please convert unit id column to character, integer, or numeric")
+  if(!class(data[, unit.id]) %in% c("integer", "numeric")) stop("please convert unit id column to integer or numeric")
   if(class(data[, time.id]) != "integer") stop("please convert time id to consecutive integers")
   
   if(any(table(data[, unit.id]) != max(table(data[, unit.id]))))
