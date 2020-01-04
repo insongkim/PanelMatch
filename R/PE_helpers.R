@@ -58,6 +58,9 @@ pts <- function(sets, lead.in, method)
 # lead. So, for instance if our lead window is 0,1,2,3,4, these function must be called for each of those -- so for 0, then for 1, etc.
 getWits <- function(matched_sets, lead, data, estimation.method)
 {
+  
+  
+  
   #sort the data
   t.var <- attr(matched_sets, "t.var")
   id.var <- attr(matched_sets, "id.var")
@@ -73,6 +76,8 @@ getWits <- function(matched_sets, lead, data, estimation.method)
   t.idvector <- paste0(c(p.df$id, t.df$id), ".", c(p.df$t, t.df$t))
   setnums <- c(p.df$set.num, t.df$set.num)
   
+  ##to solve cran check note about unbound variables
+  . <- weight <- id <- NULL
   w.it.df <- rbind(p.df, t.df)
   w.it.df <- as.data.table(w.it.df[w.it.df$weight != 0,])
   summarized.Wits <- w.it.df[,.(Wit = sum(weight)), by = .(t,id)]
@@ -81,34 +86,6 @@ getWits <- function(matched_sets, lead, data, estimation.method)
   #Wits <- handle_vits(nrow(data), length(matched_sets), num.empty, c(p.df$weight, t.df$weight),
   #                    paste0(data[, id.var], ".", data[, t.var]), t.idvector, setnums)
   #return(Wits)
-  
-}
-
-getWits2 <- function(matched_sets, lead, data, estimation.method)
-{
-  #sort the data
-  t.var <- attr(matched_sets, "t.var")
-  id.var <- attr(matched_sets, "id.var")
-  data <- data[order(data[,id.var], data[,t.var]), ]
-  include <- sapply(matched_sets, length) > 0
-  num.empty <- sum(!include)
-  
-  
-  #prep control sets, prep treatment sets for search/summation vector
-  p.df <- pcs(matched_sets, lead, estimation.method)
-  t.df <- pts(matched_sets, lead, estimation.method)
-  
-  t.idvector <- paste0(c(p.df$id, t.df$id), ".", c(p.df$t, t.df$t))
-  setnums <- c(p.df$set.num, t.df$set.num)
-  
-  #w.it.df <- rbind(p.df, t.df)
-  #w.it.df <- as.data.table(w.it.df[w.it.df$weight >0,])
-  #summarized.Wits <- w.it.df[,.(Wit = sum(weight)), by = .(t,id)]
-  #return(summarized.Wits)
-  
-  Wits <- handle_vits(nrow(data), length(matched_sets), num.empty, c(p.df$weight, t.df$weight),
-                      paste0(data[, id.var], ".", data[, t.var]), t.idvector, setnums)
-  return(Wits)
   
 }
 

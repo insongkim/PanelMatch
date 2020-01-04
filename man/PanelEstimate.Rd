@@ -8,9 +8,7 @@ PanelEstimate(inference = "bootstrap", ITER = 1000, df.adjustment = FALSE,
   CI = 0.95, sets, data)
 }
 \arguments{
-\item{inference}{One of ``wfe'' (weighted fixed effects) or
-``bootstrap'' methods for standard error calculation. The default
-is \code{bootstrap}.}
+\item{inference}{The default and only currently supported option is \code{bootstrap}.}
 
 \item{ITER}{An integer value indicating the number of bootstrap
 iteration. The default is 1000.}
@@ -31,15 +29,14 @@ estimates for statistical inference. The default is .95.}
 \code{PanelEstimate} returns a list of class
 `PanelEstimate' containing the following components:
 \item{coefficients}{the point estimates of the quantity of interest}
-\item{bootstrapped.coefficients}{the bootstrapped coefficients, if applicable}
-\item{bootstrap.iterations}{the number of iterations, if applicable}
+\item{bootstrapped.coefficients}{the bootstrapped coefficients}
+\item{bootstrap.iterations}{the number of iterations}
 \item{method}{refinement method used to create the matched sets from which the estimates were calculated}
 \item{lag}{See PanelMatch argument \code{lag} for more information.}
 \item{lead}{The lead window sequence for which PanelEstimate is producing point estimates and standard errors.}
 \item{confidence.level}{the confidence interval range}
 \item{qoi}{the quantity of interest}
 \item{matched.sets}{the refined matched sets used to produce the estimations}
-\item{df}{if \code{inference} is "wfe", the degrees of freedom}
 \item{standard.error}{the standard error of the point estimates}
 }
 \description{
@@ -58,14 +55,6 @@ PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                          size.match = 5, qoi = "att",
                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = TRUE)
 PE.results <- PanelEstimate(inference = "bootstrap", sets = PM.results, data = dem)
-
-PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
-                         treatment = "dem", refinement.method = "mahalanobis", 
-                         data = dem, match.missing = T, 
-                         covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
-                         size.match = 5, qoi = "att",
-                         outcome.var = "y", lead = 0, forbid.treatment.reversal = TRUE)
-PE.results <- PanelEstimate(inference = "wfe", sets = PM.results, data = dem)
 }
 }
 \author{

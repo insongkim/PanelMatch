@@ -6,9 +6,7 @@
 #' \code{PanelMatch} function and obtain point estimates via weighted fixed effects regressions or via
 #' weighted average computation with weighted bootstrap standard errors.
 #' 
-#' @param inference One of ``wfe'' (weighted fixed effects) or
-#' ``bootstrap'' methods for standard error calculation. The default
-#' is \code{bootstrap}.
+#' @param inference The default and only currently supported option is \code{bootstrap}.
 #' @param ITER An integer value indicating the number of bootstrap
 #' iteration. The default is 1000.
 #' @param sets A list of class `PanelMatch' attained by
@@ -22,15 +20,14 @@
 #' @return \code{PanelEstimate} returns a list of class
 #' `PanelEstimate' containing the following components:
 #' \item{coefficients}{the point estimates of the quantity of interest}
-#' \item{bootstrapped.coefficients}{the bootstrapped coefficients, if applicable}
-#' \item{bootstrap.iterations}{the number of iterations, if applicable}
+#' \item{bootstrapped.coefficients}{the bootstrapped coefficients}
+#' \item{bootstrap.iterations}{the number of iterations}
 #' \item{method}{refinement method used to create the matched sets from which the estimates were calculated}
 #' \item{lag}{See PanelMatch argument \code{lag} for more information.}
 #' \item{lead}{The lead window sequence for which PanelEstimate is producing point estimates and standard errors.}
 #' \item{confidence.level}{the confidence interval range}
 #' \item{qoi}{the quantity of interest}
 #' \item{matched.sets}{the refined matched sets used to produce the estimations}
-#' \item{df}{if \code{inference} is "wfe", the degrees of freedom}
 #' \item{standard.error}{the standard error of the point estimates}
 #' @author In Song Kim <insong@mit.edu>, Erik Wang
 #' <haixiao@Princeton.edu>, Adam Rauh <adamrauh@mit.edu>, and Kosuke Imai <kimai@Princeton.edu>
@@ -217,27 +214,7 @@ panel_estimate <- function(inference = "bootstrap",
   
   if (qoi == "att") 
   {
-    if (inference == "wfe")
-    {
-      data$Wit_att0 <- data[c(paste0("Wit_att", lead))][,1]
-      fit <- PanelWFE(formula = as.formula(paste(dependent, "~", treatment)), 
-                      treat = treatment, unit.index = unit.id,
-                      time.index = time.id, method = "unit", 
-                      qoi = "att", estimator = "did",
-                      hetero.se = TRUE, 
-                      auto.se = TRUE, White = TRUE,  
-                      data = data)
-      coef <- as.numeric(fit$coefficients)
-      names(coef) <- paste0("t+", lead)
-      sets <- decode_index(sets, unit.index.map, og.unit.id)
-      z <- list("coefficients" = coef,
-                "method" = method, "lag" = lag,
-                "lead" = lead, "confidence.level" = CI, "qoi" = qoi, 
-                "standard.error" = fit$se,"matched.sets" = sets, "df" = fit$df)
-      class(z) <- "PanelEstimate"
-      return(z)
-      
-    } else if (inference == "bootstrap")
+    if (inference == "bootstrap")
     {
       o.coefs <- sapply(data[, sapply(lead, function(x) paste0("Wit_att", x)), drop = FALSE],
                         equality_four,
@@ -286,27 +263,7 @@ panel_estimate <- function(inference = "bootstrap",
     }
   } else if (qoi == "atc")
   {
-    if (inference == "wfe") 
-    {
-      data$Wit_atc0 <- data[c(paste0("Wit_atc", lead))][,1]
-      fit <- PanelWFE(formula = as.formula(paste(dependent, "~", treatment)), 
-                      treat = treatment, unit.index = unit.id,
-                      time.index = time.id, method = "unit", 
-                      qoi = "atc", estimator = "did", 
-                      hetero.se = TRUE, 
-                      auto.se = TRUE, White = TRUE,  
-                      data = data)
-      coef <- as.numeric(fit$coefficients)
-      names(coef) <- paste0("t+", lead)
-      sets2 <- decode_index(sets2, unit.index.map, og.unit.id)
-      z <- list("coefficients" = coef,
-                "method" = method, "lag" = lag,
-                "lead" = lead, "confidence.level" = CI, "qoi" = qoi, 
-                "standard.error" = fit$se,"matched.sets" = sets2, "df" = fit$df)
-      class(z) <- "PanelEstimate"
-      return(z)
-      
-    } else if (inference == "bootstrap") 
+    if (inference == "bootstrap") 
     {
       o.coefs <-  -sapply(data[, sapply(lead, function(x) paste0("Wit_atc", x)), drop = FALSE],
                           equality_four,
@@ -356,32 +313,7 @@ panel_estimate <- function(inference = "bootstrap",
     }
   } else if (qoi == "ate") 
   {
-    if (inference == "wfe")
-    {
-      
-      data$Wit_att0 <- data[c(paste0("Wit_att", lead))][,1]
-      data$Wit_atc0 <- data[c(paste0("Wit_atc", lead))][,1]
-      
-      fit <- PanelWFE(formula = as.formula(paste(dependent, "~", treatment)), 
-                      treat = treatment, unit.index = unit.id,
-                      time.index = time.id, method = "unit", 
-                      qoi = "ate", estimator = "did",
-                      hetero.se = TRUE, 
-                      auto.se = TRUE, White = TRUE,  
-                      data = data)
-      
-      coef <- as.numeric(fit$coefficients)
-      names(coef) <- paste0("t+", lead)
-      sets <- decode_index(sets, unit.index.map, og.unit.id)
-      sets2 <- decode_index(sets2, unit.index.map, og.unit.id)
-      z <- list("coefficients" = coef,
-                "method" = method, "lag" = lag,
-                "lead" = lead, "confidence.level" = CI, "qoi" = qoi, 
-                "standard.error" = fit$se,"matched.sets" = list(sets,sets2), "df" = fit$df)
-      class(z) <- "PanelEstimate"
-      return(z)
-      
-    } else if (inference == "bootstrap")
+    if (inference == "bootstrap")
     {
       o.coefs_att <-  sapply(data[, sapply(lead, function(x) paste0("Wit_att", x)), 
                                   drop = FALSE],
