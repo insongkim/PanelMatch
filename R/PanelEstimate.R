@@ -193,7 +193,7 @@ panel_estimate <- function(inference = "bootstrap",
     
     for(j in lead)
     {
-      dense.wits <- getWits(lead = j, data = data, matched_sets = sets, estimation.method = inference)
+      dense.wits <- getWits(lead = j, data = data, matched_sets = sets2, estimation.method = inference)
       data = merge(x = data, y = dense.wits, all.x = TRUE, by.x = colnames(data)[1:2], by.y = c("id", "t"))
       colnames(data)[length(data)] <- paste0("Wit_atc", j)
       data[is.na(data[, length(data)]), length(data)] <- 0 #replace NAs with zeroes
