@@ -327,7 +327,7 @@ get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.wei
   rownames(pointmatrix) <- names(plotpoints)
   
   remove.vars.idx <- apply(apply(pointmatrix, 2, is.nan), 2, any)
-  if(length(remove.vars.idx) > 0)
+  if(sum(remove.vars.idx) > 0)
   {
     removed.vars <- names(which(apply(apply(pointmatrix, 2, is.nan), 2, any)))
     pointmatrix <- pointmatrix[, !remove.vars.idx]  
