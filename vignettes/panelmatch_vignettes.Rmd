@@ -1,0 +1,74 @@
+---
+title: "PanelMatch"
+author: "Vignette Author"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+PanelMatch vignette test
+
+## DisplayTreatment: Visualize Data
+
+
+```{r, fig.width=7, fig.height=7}
+library(PanelMatch)
+DisplayTreatment(unit.id = "wbcode2",
+                 time.id = "year", legend.position = "none",
+                 xlab = "year", ylab = "Country Code",
+                 treatment = "dem", data = dem)
+```
+
+Create some matched sets.
+
+## PanelMatch
+```{r}
+PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
+                         treatment = "dem", refinement.method = "mahalanobis", 
+                         data = dem, match.missing = T, 
+                         covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
+                         size.match = 5, qoi = "att" ,outcome.var = "y",
+                         lead = 0:4, forbid.treatment.reversal = FALSE)
+```
+
+
+Check out out covariate balance
+### get_covariate_balance
+```{r}
+get_covariate_balance(PM.results$att, dem, covariates = c("tradewb"), plot = FALSE, ylim = c(-2,2))
+```
+You can also plot the balance
+```{r}
+get_covariate_balance(PM.results$att, dem, covariates = c("tradewb"), plot = TRUE, ylim = c(-2,2))
+```
+
+
+Compare with pre-refinement balance
+```{r}
+get_covariate_balance(PM.results$att, dem, covariates = c("tradewb"), plot = FALSE, ylim = c(-2,2), use.equal.weights = TRUE)
+```
+
+
+
+Now you can use PanelEstimate
+
+## PanelEstimate
+```{r}
+PE.results <- PanelEstimate(sets = PM.results, data = dem)
+```
+
+
+
+
+
+

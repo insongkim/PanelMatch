@@ -48,3 +48,7 @@ Encoding: UTF-8
 LazyData: true
 BugReports: https://github.com/insongkim/PanelMatch/issues
 RoxygenNote: 6.1.0
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
