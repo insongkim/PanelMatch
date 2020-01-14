@@ -14,7 +14,9 @@
 #' @examples \dontrun{
 #' treateds <- findAllTreated(dmat = dem, treatedvar = "dem", time.var = "year", unit.var = "wbcode2")
 #' }
-#' @export
+#' 
+#' @keywords internal
+#' 
 
 findAllTreated <- function(dmat, treatedvar, time.var, unit.var, hasbeensorted = FALSE)
 {
@@ -84,7 +86,9 @@ findAllTreated <- function(dmat, treatedvar, time.var, unit.var, hasbeensorted =
 #' treateds <- findAllTreated(subdem, "dem", "year", "wbcode2")
 #' msets <- get.matchedsets(treateds$year, treateds$wbcode2, subdem, 4, "year", "wbcode2", "dem")
 #' }
-#' @export
+#' 
+#' @keywords internal
+#' 
 get.matchedsets <- function(t, id, data, L, t.column, id.column, treatedvar, 
                             hasbeensorted = FALSE, match.on.missingness = TRUE, matching = TRUE) 
 {

@@ -124,7 +124,7 @@ panel_estimate <- function(inference = "bootstrap",
     class(d[, 2]) <- "integer"
     data <- merge(data.table(d), data.table(data), all.x = TRUE, by = c(unit.id, time.id))
     data <- as.data.frame(data)
-    #data <- make.pbalanced(data, balance.type = "fill", index = c(unit.id, time.id))
+    
   }
   check_time_data(data, time.id)
   
@@ -181,7 +181,7 @@ panel_estimate <- function(inference = "bootstrap",
       colnames(data)[length(data)] <- paste0("Wit_att", j)
       data[is.na(data[, length(data)]), length(data)] <- 0 #replace NAs with zeroes
     }
-    #data[, paste0("Wit_att", lead)] <- do.call(cbind, lapply(lead, FUN = getWits2, data = data, matched_sets = sets, estimation.method = inference))
+    
     data$dit_att <- getDits(matched_sets = sets, data = data)
     colnames(data)[length(data)] <- "dits_att"
     data$`Wit_att-1` <- 0
@@ -199,7 +199,7 @@ panel_estimate <- function(inference = "bootstrap",
       data[is.na(data[, length(data)]), length(data)] <- 0 #replace NAs with zeroes
     }
     
-    #data[, paste0("Wit_atc", lead)] <- do.call(cbind, lapply(lead, FUN = getWits, data = data, matched_sets = sets2, estimation.method = inference))
+    
     data$dit_atc <- getDits(matched_sets = sets2, data = data)
     colnames(data)[length(data)] <- "dits_atc"
     data$`Wit_atc-1` <- 0
@@ -387,19 +387,20 @@ panel_estimate <- function(inference = "bootstrap",
 }
 
 
-#' Get summaries of PanelEstimate objects
+#' Get summaries of PanelEstimate objects/calculations
+#' 
+#' 
 #' \code{summary.PanelEstimate()} takes an object returned by
 #' \code{PanelEstimate}, and returns a summary table of point
-#' estimates and the confidence intervales.
+#' estimates and confidence intervals
 #'
 #' @param object A PanelEstimate object
-#' @param verbose logical indicating whether or not output should be output in an expanded form.
+#' @param verbose logical indicating whether or not output should be printed in an expanded form.
 #' @param bias.corrected logical indicating whether or not bias corrected estimates should be provided.
-#' @param ... Further arguments to be passed to \code{summary.PanelEstimate()}.
-#'
+#' @param ... optional additional arguments. Currently, no additional arguments are supported. 
 #' @method summary PanelEstimate
 #' @export
-summary.PanelEstimate <- function(object,..., verbose = TRUE, bias.corrected = FALSE) {
+summary.PanelEstimate <- function(object, verbose = TRUE, bias.corrected = FALSE, ...) {
   
   if(verbose)
   {
@@ -507,15 +508,19 @@ summary.PanelEstimate <- function(object,..., verbose = TRUE, bias.corrected = F
 }
 
 
-#' plot the point estimates and standard errors from a PanelEstimate calculation. The only mandatory argument is an object of the PanelEstimate class
-#' Use standard arguments to the \code{plot} function to modify the plot as needed.
-
+#' Plot point estimates and standard errors from a PanelEstimate calculation.
+#' 
+#' 
+#' The \code{plot.PanelEstimate} method takes an object returned by the \code{PanelEstimate} function and plots the calculated 
+#' point estimates and standard errors. The only mandatory argument is an object of the \code{PanelEstimate} class.
+#'
+#'
 #' @param x a PanelEstimate object
 #' @param ylab default is "Estimated Effect of Treatment. This is the same argument as the standard argument for \code{plot}
 #' @param xlab default is "Time". This is the same argument as the standard argument for \code{plot}
 #' @param main default is "Estimated Effects of Treatment Over Time". This is the same argument as the standard argument for \code{plot}
 #' @param ylim default is NULL. This is the same argument as the standard argument for \code{plot}
-#' @param ... Additional optional arguments to \code{plot}.
+#' @param ... Additional optional arguments to be passed to \code{plot}.
 #' 
 #' @export
 plot.PanelEstimate <- function(x, ylab = "Estimated Effect of Treatment", 
@@ -531,7 +536,7 @@ plot.PanelEstimate <- function(x, ylab = "Estimated Effect of Treatment",
   graphics::plot(x = 1:(nrow(plot.data)),y = plot.data[, 1], pch = 16, cex = 1.5,
        xaxt = "n", ylab = ylab, xlab = xlab, main = main, ylim = ylim, ...)
   graphics::axis(side = 1, at = 1:nrow(plot.data), labels = rownames(plot.data))
-  graphics::segments(1:(nrow(plot.data)), plot.data[,3], 1:(nrow(plot.data)), plot.data[,4])#, length=0.05, angle=90, code=3)
+  graphics::segments(1:(nrow(plot.data)), plot.data[,3], 1:(nrow(plot.data)), plot.data[,4])
   graphics::abline(h = 0, lty = "dashed")
 }
 

@@ -28,4 +28,6 @@ More precisely, it finds units for which at time t, the specified treatment has 
 \dontrun{
 treateds <- findAllTreated(dmat = dem, treatedvar = "dem", time.var = "year", unit.var = "wbcode2")
 }
+
 }
+\keyword{internal}

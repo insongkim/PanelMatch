@@ -83,10 +83,6 @@ getWits <- function(matched_sets, lead, data, estimation.method)
   summarized.Wits <- w.it.df[,.(Wit = sum(weight)), by = .(t,id)]
   return(summarized.Wits)
   
-  #Wits <- handle_vits(nrow(data), length(matched_sets), num.empty, c(p.df$weight, t.df$weight),
-  #                    paste0(data[, id.var], ".", data[, t.var]), t.idvector, setnums)
-  #return(Wits)
-  
 }
 
 
@@ -158,10 +154,10 @@ prep_for_leads <- function(matched_sets, ordered.data, max.lead, t.var, id.var, 
     }
     if(all(sapply(sub.set.new, length) == 0)) stop('estimation not possible: none of the matched sets have viable control units due to a lack of necessary data')
     pm2 <- perform_refinement(ordered.data = ordered.data, mset.object = sub.set.new)
-    #pm2 <- reweight(sub.set.new, ordered.data)
+    
     
     matched_sets[idx] <- pm2
-    #matched_sets[idx] <- renormalize(sub.index, sub.set) #utilize the [.matched.set operator
+    
     matched_sets <- matched_sets[sapply(matched_sets, length) > 0]
   }
   return(matched_sets)

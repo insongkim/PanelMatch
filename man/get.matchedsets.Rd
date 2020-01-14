@@ -43,4 +43,6 @@ mset <- get.matchedsets(1992, 4, subdem, 4, "year", "wbcode2", "dem")
 treateds <- findAllTreated(subdem, "dem", "year", "wbcode2")
 msets <- get.matchedsets(treateds$year, treateds$wbcode2, subdem, 4, "year", "wbcode2", "dem")
 }
+
 }
+\keyword{internal}

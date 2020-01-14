@@ -287,7 +287,7 @@ get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.wei
   treated.ts <- as.integer(unlist(strsplit(names(matched.sets), split = "[.]"))[c(F,T)])
   treated.ids <- as.integer(unlist(strsplit(names(matched.sets), split = "[.]"))[c(T,F)])
   tlist <- expand.treated.ts(lag, treated.ts = treated.ts)
-  #empty matrix = temporary solution until fix for get_yearly_dmats can be pushed
+  
   idxlist <- get_yearly_dmats(matrix(nrow = 0, ncol = 0), treated.ids, tlist, paste0(ordered.data[,unit.id], ".", 
                                                                        ordered.data[, time.id]), matched_sets = matched.sets, lag)
   balance_mats <- build_balance_mats(ordered_expanded_data = ordered.data, idx =  idxlist, msets = matched.sets)
@@ -370,7 +370,7 @@ decode_index <- function(mset, unit.index, original.unit.id)#, original.time.id)
   decode.treated.units <- function(ts, ids, unit.index)#, time.index)
   {
     n.ids <- unit.index$original.id[match(ids, unit.index$new.id)]
-    #n.ts <- time.index$original.time.id[match(ts, time.index$new.time.id)]
+    
     return(paste0(n.ids, ".", ts))
   }
   treated.ts <- as.numeric(unlist(strsplit(names(mset), split = "[.]"))[c(F,T)])
@@ -378,7 +378,7 @@ decode_index <- function(mset, unit.index, original.unit.id)#, original.time.id)
   attributes(new.mset) <- attributes(mset)
   names(new.mset) <- decode.treated.units(treated.ts, treated.ids, unit.index)
   attr(new.mset, "id.var") <- original.unit.id
-  #attr(new.mset, "t.var") <- original.time.id
+  
   return(new.mset)
 }
 
@@ -404,7 +404,7 @@ encode_index <- function(mset, unit.index, new.unit.id)
   encode.treated.units <- function(ts, ids, unit.index)#, time.index)
   {
     n.ids <- unit.index$new.id[match(ids, unit.index$original.id)]
-    #n.ts <- time.index$new.time.id[match(ts, time.index$original.time.id)]
+    
     return(paste0(n.ids, ".", ts))
   }
   treated.ts <- (unlist(strsplit(names(mset), split = "[.]"))[c(F,T)])
@@ -412,7 +412,7 @@ encode_index <- function(mset, unit.index, new.unit.id)
   attributes(new.mset) <- attributes(mset)
   names(new.mset) <- encode.treated.units(treated.ts, treated.ids, unit.index)
   attr(new.mset, "id.var") <- new.unit.id
-  #attr(new.mset, "t.var") <- new.time.id
+  
   return(new.mset)
 }
 

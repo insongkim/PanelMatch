@@ -2,8 +2,7 @@
 % Please edit documentation in R/PanelEstimate.R
 \name{plot.PanelEstimate}
 \alias{plot.PanelEstimate}
-\title{plot the point estimates and standard errors from a PanelEstimate calculation. The only mandatory argument is an object of the PanelEstimate class
-Use standard arguments to the \code{plot} function to modify the plot as needed.}
+\title{Plot point estimates and standard errors from a PanelEstimate calculation.}
 \usage{
 \method{plot}{PanelEstimate}(x, ylab = "Estimated Effect of Treatment",
   xlab = "Time", main = "Estimated Effects of Treatment Over Time",
@@ -20,9 +19,9 @@ Use standard arguments to the \code{plot} function to modify the plot as needed.
 
 \item{ylim}{default is NULL. This is the same argument as the standard argument for \code{plot}}
 
-\item{...}{Additional optional arguments to \code{plot}.}
+\item{...}{Additional optional arguments to be passed to \code{plot}.}
 }
 \description{
-plot the point estimates and standard errors from a PanelEstimate calculation. The only mandatory argument is an object of the PanelEstimate class
-Use standard arguments to the \code{plot} function to modify the plot as needed.
+The \code{plot.PanelEstimate} method takes an object returned by the \code{PanelEstimate} function and plots the calculated 
+point estimates and standard errors. The only mandatory argument is an object of the \code{PanelEstimate} class.
 }
