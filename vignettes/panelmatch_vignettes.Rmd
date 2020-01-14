@@ -2,12 +2,19 @@
 title: "PanelMatch"
 author: "Vignette Author"
 date: "`r Sys.Date()`"
-output: rmarkdown::pdf_document
+output: 
+  pdf_document:
+    number_sections: true
 vignette: >
   %\VignetteIndexEntry{Vignette Title}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
+
+<!--
+how to do bibliography
+https://rmarkdown.rstudio.com/authoring_bibliographies_and_citations.html
+-->
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
@@ -16,12 +23,17 @@ knitr::opts_chunk$set(
 )
 ```
 
-PanelMatch vignette test
+# Abstract
 
-## DisplayTreatment: Visualize Data
+# Introduction
 
 
-```{r, fig.width=7, fig.height=7}
+# DisplayTreatment
+
+
+## Data Requirements and Assumptions 
+
+```{r, fig.width=5, fig.height=5}
 library(PanelMatch)
 DisplayTreatment(unit.id = "wbcode2",
                  time.id = "year", legend.position = "none",
@@ -29,9 +41,13 @@ DisplayTreatment(unit.id = "wbcode2",
                  treatment = "dem", data = dem)
 ```
 
-Create some matched sets.
+## Customizing DisplayTreatment Plots
 
-## PanelMatch
+# PanelMatch
+
+## Data Requirements and Assumptions 
+
+## Choosing parameters
 ```{r}
 PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
                          treatment = "dem", refinement.method = "mahalanobis", 
@@ -40,34 +56,40 @@ PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                          size.match = 5, qoi = "att" ,outcome.var = "y",
                          lead = 0:4, forbid.treatment.reversal = FALSE)
 ```
+## Understanding PanelMatch objects
 
+## Understanding matched.set objects
 
-Check out out covariate balance
-### get_covariate_balance
-```{r}
-get_covariate_balance(PM.results$att, dem, covariates = c("tradewb"), plot = FALSE, ylim = c(-2,2))
-```
-You can also plot the balance
-```{r}
-get_covariate_balance(PM.results$att, dem, covariates = c("tradewb"), plot = TRUE, ylim = c(-2,2))
-```
+### Subsetting and manipulation of matched.set objects
 
+### Summary function for matched.set objects
 
-Compare with pre-refinement balance
-```{r}
-get_covariate_balance(PM.results$att, dem, covariates = c("tradewb"), plot = FALSE, ylim = c(-2,2), use.equal.weights = TRUE)
-```
+### Plot function for matched.set objects
 
+## Checking Covariate Balance
 
+### Using get_covariate_balance
 
-Now you can use PanelEstimate
+### Using balance_scatter
 
-## PanelEstimate
+## Checking Multiple Configurations
+
+# PanelEstimate
+
+## Choosing Parameters
+
 ```{r}
 PE.results <- PanelEstimate(sets = PM.results, data = dem)
 ```
+## Understanding PanelEstimate Results
 
 
+### Summary 
+
+### Plot
+
+
+# Concluding Remarks
 
 
 
