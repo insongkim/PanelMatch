@@ -1,6 +1,9 @@
 #' matched_set
 #' 
-#' \code{matched_set} is a constructor for the matched.set class.
+#' \code{matched_set} is a constructor for the \code{matched.set} class.
+#' 
+#' 
+#' Users should never need to use this function by itself. 
 #' 
 #' @param matchedsets a list of treated units and matched control units. Each element in the list should be a vector of control unit ids.
 #' @param id A vector containing the ids of treated units
@@ -11,16 +14,19 @@
 #' @param treated.var string specifying the treatement variable.
 #' 
 #' matched.set objects are a modified list. Each element in the list is a vector of ids corresponding to the control unit ids in a matched set. 
-#' Additionally, these vectors might have additional attributes -- "weights" or "distances". These correspond to the weights or distances corresponding to each control unit, as determined by the specified refinement method.
-#' Each element also has a name, which corresponds to the unit id and time variable of the treated unit and time of treatment, concatenated together and separated by a period. matched.set objects also have a number of methods defined: \code{summary}, \code{plot}, and \code{`[`}
-#' @return \code{matched.set} objects have additional attributes:
+#' Additionally, these vectors might have additional attributes -- "weights". These correspond to the weights corresponding to each control unit, 
+#' as determined by the specified refinement method.
+#' Each element also has a name, which corresponds to the unit id and time variable of the treated unit and time of treatment, 
+#' concatenated together and separated by a period. \code{matched.set} objects also have a number of 
+#' methods defined: \code{summary}, \code{plot}, and \code{`[`}
+#' @return \code{matched.set} objects have additional attributes. These reflect the specified parameters when using the \code{PanelMatch} function:
 #' \item{lag}{an integer value indicating the length of treatment history to be used for matching}
-#' \item{t.var}{time variable name}
-#' \item{id.var}{unit id variable name}
-#' \item{treated.var}{treated variable name}
+#' \item{t.var}{time variable name, represented as a character}
+#' \item{id.var}{unit id variable name, represented as a character}
+#' \item{treated.var}{treated variable name, represented as a character}
 #' \item{class}{class of the object: should always be "matched.set"}
 #' \item{refinement.method}{method used to refine and/or weight the control units in each set.}
-#' \item{covs.formula}{One sided formula indicating which variables should be used for matching and refinement.}
+#' \item{covs.formula}{One sided formula indicating which variables should be used for matching and refinement}
 #' \item{match.missing}{Logical variable indicating whether or not units should be matched on the patterns of missingness in their treatment histories}
 #' \item{max.match.size}{Maximum size of the matched sets after refinement. This argument only affects results when using a matching method}
 #' @author Adam Rauh <adamrauh@mit.edu>, In Song Kim <insong@mit.edu>, Erik Wang
@@ -42,14 +48,23 @@ matched_set <- function(matchedsets, id, t, L, t.var, id.var, treated.var)
   return(matchedsets)
 }
 
-#' Method for plotting the distribution of the sizes of \code{matched.set} objects.
-#' A plot method for creating histograms of the distribution of the sizes of matched sets.
+#' Summarize information about a \code{matched.set} object and the matched sets contained within them.
 #' 
-#' Accepts all standard \code{summary} arguments. Empty sets are excluded from the histogram but are noted in the subtitle by default.
+#' 
+#' A summary method for viewing summary data about the sizes of matched sets and metadata about how they were created. This method
+#' accepts all standard \code{summary} arguments. 
 #' 
 #' @param object a \code{matched.set} object
 #' @param ... Optional additional arguments to be passed to the summary function
-#' @param verbose Logical option specifying whether or not a longer, more verbose summary should be calculated and returned.
+#' @param verbose Logical option specifying whether or not a longer, more verbose summary should be calculated and returned. Default is 
+#' \code{TRUE}.
+#' 
+#' @return list object with either 5 or 1 element(s), depending on whether or not \code{verbose} is set to \code{TRUE} or not.
+#' \item{overview}{A data.frame object containing information about the treated units, and the number of matched control units of weights zero and above.}
+#' \item{set.size.summary}{a summary object summarizing the min/max and IQR of matched set sizes}
+#' \item{number.of.treated.units}{The number of units that are considered "treated" units}
+#' \item{num.units.empty.set}{The number of treated units that were not able to be matched to any control units}
+#' \item{lag}{The size of the lag window used for matching on treatment history. This affects which treated and control units are matched}
 #' 
 #' @method summary matched.set
 #' @export
@@ -80,7 +95,9 @@ summary.matched.set <- function(object, ..., verbose = T)
   }
 }
 
-#' Method for plotting the distribution of the sizes of \code{matched.set} objects.
+#' Plot the distribution of the sizes of matched sets.
+#' 
+#' 
 #' A plot method for creating histograms of the distribution of the sizes of matched sets. 
 #' Accepts all standard \code{plot} arguments. Empty sets are excluded from the histogram but are noted in the subtitle by default.
 #' 
@@ -91,9 +108,9 @@ summary.matched.set <- function(object, ..., verbose = T)
 #' @param ylab default is "Frequency of Size". This is the same argument as the standard argument for \code{plot}
 #' @param xlab default is "Matched Set Size". This is the same argument as the standard argument for \code{plot}
 #' @param lwd default is NULL. This is the same argument as the standard argument for \code{plot}
+#' @param main default is "Distribution of matched set sizes". This is the same argument as the standard argument for \code{plot}
 #' @param freq default is TRUE. See \code{freq} argument in \code{hist} function for more
 #' @param include.empty.sets default is TRUE. Should empty sets be included on the plot? If false, they will be excluded, but noted as a subtitle.
-#' @param main default is "Distributioin of matched set sizes". This is the same argument as the standard argument for \code{plot}
 #' 
 #' @export
 plot.matched.set <- function(x, ..., border = NA, col = "grey", ylab = "Frequency of Size", 
@@ -124,7 +141,7 @@ plot.matched.set <- function(x, ..., border = NA, col = "grey", ylab = "Frequenc
     
 }
 
-#' Method for printing \code{matched.set} objects.
+#' Print \code{matched.set} objects.
 #'
 #' @param x a \code{matched.set} object
 #' @param verbose logical indicating whether or not output should be printed in expanded form
@@ -132,17 +149,17 @@ plot.matched.set <- function(x, ..., border = NA, col = "grey", ylab = "Frequenc
 #' 
 #' @method print matched.set
 #' @export
-print.matched.set <- function(x, ..., verbose = F)
+print.matched.set <- function(x, ..., verbose = FALSE)
 {
   set <- x
   if(verbose) 
   {
     class(set) <- "list"
-    print(set)
+    print(set, ...)
   }
   
   else {
-    print(summary(set, verbose = F))
+    print(summary(set, verbose = F), ...)
   }
 }
 
@@ -167,6 +184,7 @@ print.matched.set <- function(x, ..., verbose = F)
   return(temp)
 }
 
+#helper function for get_covariate_balance()
 build_balance_mats <- function(idx, ordered_expanded_data, msets)
 {
   
@@ -185,30 +203,32 @@ build_balance_mats <- function(idx, ordered_expanded_data, msets)
   return(result)
 }
 
-#' get_covariate_balance
+#' Calculate covariate balance
 #' 
-#' calculating covariate balance and generating balance plots
 #' 
-#' Calculate covariate balance for specified covariates across matched sets. Balance is assessed by taking the difference between 
-#' the values of the user specified covariates in the treated unit and the weighted average of that across all matched sets. Furthermore, results are standardized and are expressed in standard deviations. 
+#' Calculate covariate balance for user specified covariates across matched sets. Balance is assessed by taking the average of the 
+#' difference between the values of the specified covariates for the treated unit(s) and the weighted average of the control units across all matched sets. 
+#' Results are standardized and are expressed in standard deviations. 
 #' @param matched.sets A matched.set object
-#' @param data The data set used to produce the matched.set object. Please make sure this data set is identical to the one passed to PanelMatch/PanelEstimate to ensure consistent results
+#' @param data The time series cross sectional data set used to produce the matched.set object. This data set should be identical to the one passed to PanelMatch/PanelEstimate to ensure consistent results.
 #' @param verbose When TRUE, the function will return more information about the calculations/results. When FALSE, a more compact version of the results/calculations are returned.
-#' @param plot When TRUE, a plot showing the covariate balance calculation results will be shown. When FALSE, no plot is made, but the results of the calculations are still returned. 
+#' @param plot When TRUE, a plot showing the covariate balance calculation results will be shown. When FALSE, no plot is made, but the results of the calculations are returned. 
 #' @param covariates a character vector, specifying the names of the covariates for which the user is interested in calculating balance. 
 #' @param reference.line logical indicating whether or not a horizontal line should be present on the plot at y = 0
-#' @param legend logical indicating whether or not a legend should be included on the plot
-#' @param ylab Label for y axis. Default is "SD"
-#' @param use.equal.weights logical. If set to TRUE, then equal weights will be assigned to control units, rather than using whatever calculated weights have been assigned.
+#' @param legend logical indicating whether or not a legend identifying the variables should be included on the plot
+#' @param ylab Label for y axis. Default is "SD". This is the same as the ylab argument to \code{plot}.
+#' @param use.equal.weights logical. If set to TRUE, then equal weights will be assigned to control units, rather than using whatever calculated weights have been assigned. This is helpful for assessing the improvement in covariate balance as a result of refining the matched sets.
 #' @param ... Additional graphical parameters to be passed to the \code{plot} function in base R.
 #' @examples \dontrun{
-#' dem$rdata <- runif(runif(nrow(dem)))
+#' #add some additional data to data set for demonstration purposes
+#' dem$rdata <- runif(runif(nrow(dem))) 
 #' pm.obj <- PanelMatch(lead = 0:3, lag = 4, time.id = "year", unit.id = "wbcode2", treatment = "dem",
 #'                     outcome.var ="y", refinement.method = "mahalanobis", 
-#'                     data = dem, match.missing = T,
+#'                     data = dem, match.missing = TRUE,
 #'                     covs.formula = ~ tradewb + rdata + I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
 #'                     size.match = 5, qoi = "att")
-#' get_covariate_balance(pm.obj$att, dem, covariates = c("tradewb", "rdata"), plot = T, ylim = c(-2,2))
+#' get_covariate_balance(pm.obj$att, dem, covariates = c("tradewb", "rdata"), 
+#'                          plot = TRUE, ylim = c(-2,2))
 #' } 
 #' @export
 get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.weights = FALSE,
@@ -417,20 +437,20 @@ encode_index <- function(mset, unit.index, new.unit.id)
 }
 
 
-#' balance_scatter
+#' Visualizing the standardized mean differences for covariates
 #' 
 #' \code{balance_scatter} visualizes the standardized mean differences for each covariate
 #'
 #' @param non_refined_set a matched.set object produced by setting `refinement.method` to "none" in `PanelMatch` 
 #' @param refined_list a list of one or two matched.set objects
-#' @param xlim xlim of the scatter plot
-#' @param ylim ylim of the scatter plot
-#' @param main title of the scatter plot
+#' @param xlim xlim of the scatter plot. This is the same as the \code{xlim} argument in \code{plot}
+#' @param ylim ylim of the scatter plot. This is the same as the \code{ylim} argument in \code{plot}
+#' @param main title of the scatter plot. This is the same as the \code{main} argument in \code{plot}
 #' @param x.axis.label x axis label
 #' @param y.axis.label y axis label
-#' @param pchs one or two pch for the symbols on the scatter plot
+#' @param pchs one or two pch indicators for the symbols on the scatter plot. See \code{plot} for more information
 #' @param covariates variables for which balance is displayed
-#' @param data the dataset
+#' @param data the same time series cross sectional data set used to create the matched sets. 
 #' @author In Song Kim <insong@mit.edu>, Erik Wang
 #' <haixiao@Princeton.edu>, Adam Rauh <adamrauh@mit.edu>, and Kosuke Imai <kimai@Princeton.edu>
 #'
@@ -439,7 +459,7 @@ encode_index <- function(mset, unit.index, new.unit.id)
 #' sets1 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
 #'                     treatment = "dem", refinement.method = "CBPS.match",
 #'                     data = dem, match.missing = F,
-#'                     covs.formula = ~ lag("y", 1:4) + lag("tradewb", 1:4),
+#'                     covs.formula = ~ I(lag(y, 1:4)) + I(lag(tradewb, 1:4)),
 #'                     size.match = 5, qoi = "att",
 #'                     outcome.var = "y",
 #'                     lead = 4, forbid.treatment.reversal = FALSE)
@@ -447,7 +467,7 @@ encode_index <- function(mset, unit.index, new.unit.id)
 #' sets0 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
 #'                     treatment = "dem", refinement.method = "none",
 #'                     data = dem, match.missing = F,
-#'                     covs.formula = ~ lag("y", 1:4) + lag("tradewb", 1:4),
+#'                     covs.formula = ~ I(lag(y, 1:4)) + I(lag(tradewb, 1:4)),
 #'                     size.match = 5, qoi = "att",
 #'                     outcome.var = "y",
 #'                     lead = 4, forbid.treatment.reversal = FALSE)
@@ -455,7 +475,7 @@ encode_index <- function(mset, unit.index, new.unit.id)
 #' sets2 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
 #'                     treatment = "dem", refinement.method = "CBPS.weight",
 #'                     data = dem, match.missing = F,
-#'                     covs.formula = ~ lag("y", 1:4) + lag("tradewb", 1:4),
+#'                     covs.formula = ~ I(lag(y, 1:4)) + I(lag(tradewb, 1:4)),
 #'                     size.match = 10, qoi = "att",
 #'                     outcome.var = "y",
 #'                     lead = 4, forbid.treatment.reversal = FALSE)
@@ -467,7 +487,7 @@ encode_index <- function(mset, unit.index, new.unit.id)
 #'               
 #'               data = dem,
 #'               covariates = c("y", "tradewb"))
-
+#'
 #' }
 #'
 #' @export

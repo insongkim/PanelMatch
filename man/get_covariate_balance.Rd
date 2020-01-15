@@ -2,7 +2,7 @@
 % Please edit documentation in R/matched_set_obj.R
 \name{get_covariate_balance}
 \alias{get_covariate_balance}
-\title{get_covariate_balance}
+\title{Calculate covariate balance}
 \usage{
 get_covariate_balance(matched.sets, data, covariates,
   use.equal.weights = FALSE, verbose = T, plot = F,
@@ -11,39 +11,39 @@ get_covariate_balance(matched.sets, data, covariates,
 \arguments{
 \item{matched.sets}{A matched.set object}
 
-\item{data}{The data set used to produce the matched.set object. Please make sure this data set is identical to the one passed to PanelMatch/PanelEstimate to ensure consistent results}
+\item{data}{The time series cross sectional data set used to produce the matched.set object. This data set should be identical to the one passed to PanelMatch/PanelEstimate to ensure consistent results.}
 
 \item{covariates}{a character vector, specifying the names of the covariates for which the user is interested in calculating balance.}
 
-\item{use.equal.weights}{logical. If set to TRUE, then equal weights will be assigned to control units, rather than using whatever calculated weights have been assigned.}
+\item{use.equal.weights}{logical. If set to TRUE, then equal weights will be assigned to control units, rather than using whatever calculated weights have been assigned. This is helpful for assessing the improvement in covariate balance as a result of refining the matched sets.}
 
 \item{verbose}{When TRUE, the function will return more information about the calculations/results. When FALSE, a more compact version of the results/calculations are returned.}
 
-\item{plot}{When TRUE, a plot showing the covariate balance calculation results will be shown. When FALSE, no plot is made, but the results of the calculations are still returned.}
+\item{plot}{When TRUE, a plot showing the covariate balance calculation results will be shown. When FALSE, no plot is made, but the results of the calculations are returned.}
 
 \item{reference.line}{logical indicating whether or not a horizontal line should be present on the plot at y = 0}
 
-\item{legend}{logical indicating whether or not a legend should be included on the plot}
+\item{legend}{logical indicating whether or not a legend identifying the variables should be included on the plot}
 
-\item{ylab}{Label for y axis. Default is "SD"}
+\item{ylab}{Label for y axis. Default is "SD". This is the same as the ylab argument to \code{plot}.}
 
 \item{...}{Additional graphical parameters to be passed to the \code{plot} function in base R.}
 }
 \description{
-calculating covariate balance and generating balance plots
-}
-\details{
-Calculate covariate balance for specified covariates across matched sets. Balance is assessed by taking the difference between 
-the values of the user specified covariates in the treated unit and the weighted average of that across all matched sets. Furthermore, results are standardized and are expressed in standard deviations.
+Calculate covariate balance for user specified covariates across matched sets. Balance is assessed by taking the average of the 
+difference between the values of the specified covariates for the treated unit(s) and the weighted average of the control units across all matched sets. 
+Results are standardized and are expressed in standard deviations.
 }
 \examples{
 \dontrun{
-dem$rdata <- runif(runif(nrow(dem)))
+#add some additional data to data set for demonstration purposes
+dem$rdata <- runif(runif(nrow(dem))) 
 pm.obj <- PanelMatch(lead = 0:3, lag = 4, time.id = "year", unit.id = "wbcode2", treatment = "dem",
                     outcome.var ="y", refinement.method = "mahalanobis", 
-                    data = dem, match.missing = T,
+                    data = dem, match.missing = TRUE,
                     covs.formula = ~ tradewb + rdata + I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
                     size.match = 5, qoi = "att")
-get_covariate_balance(pm.obj$att, dem, covariates = c("tradewb", "rdata"), plot = T, ylim = c(-2,2))
+get_covariate_balance(pm.obj$att, dem, covariates = c("tradewb", "rdata"), 
+                         plot = TRUE, ylim = c(-2,2))
 } 
 }

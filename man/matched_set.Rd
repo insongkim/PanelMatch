@@ -22,23 +22,29 @@ matched_set(matchedsets, id, t, L, t.var, id.var, treated.var)
 \item{treated.var}{string specifying the treatement variable.
 
 matched.set objects are a modified list. Each element in the list is a vector of ids corresponding to the control unit ids in a matched set. 
-Additionally, these vectors might have additional attributes -- "weights" or "distances". These correspond to the weights or distances corresponding to each control unit, as determined by the specified refinement method.
-Each element also has a name, which corresponds to the unit id and time variable of the treated unit and time of treatment, concatenated together and separated by a period. matched.set objects also have a number of methods defined: \code{summary}, \code{plot}, and \code{`[`}}
+Additionally, these vectors might have additional attributes -- "weights". These correspond to the weights corresponding to each control unit, 
+as determined by the specified refinement method.
+Each element also has a name, which corresponds to the unit id and time variable of the treated unit and time of treatment, 
+concatenated together and separated by a period. \code{matched.set} objects also have a number of 
+methods defined: \code{summary}, \code{plot}, and \code{`[`}}
 }
 \value{
-\code{matched.set} objects have additional attributes:
+\code{matched.set} objects have additional attributes. These reflect the specified parameters when using the \code{PanelMatch} function:
 \item{lag}{an integer value indicating the length of treatment history to be used for matching}
-\item{t.var}{time variable name}
-\item{id.var}{unit id variable name}
-\item{treated.var}{treated variable name}
+\item{t.var}{time variable name, represented as a character}
+\item{id.var}{unit id variable name, represented as a character}
+\item{treated.var}{treated variable name, represented as a character}
 \item{class}{class of the object: should always be "matched.set"}
 \item{refinement.method}{method used to refine and/or weight the control units in each set.}
-\item{covs.formula}{One sided formula indicating which variables should be used for matching and refinement.}
+\item{covs.formula}{One sided formula indicating which variables should be used for matching and refinement}
 \item{match.missing}{Logical variable indicating whether or not units should be matched on the patterns of missingness in their treatment histories}
 \item{max.match.size}{Maximum size of the matched sets after refinement. This argument only affects results when using a matching method}
 }
 \description{
-\code{matched_set} is a constructor for the matched.set class.
+\code{matched_set} is a constructor for the \code{matched.set} class.
+}
+\details{
+Users should never need to use this function by itself.
 }
 \author{
 Adam Rauh <adamrauh@mit.edu>, In Song Kim <insong@mit.edu>, Erik Wang

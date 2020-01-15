@@ -2,7 +2,7 @@
 % Please edit documentation in R/matched_set_obj.R
 \name{balance_scatter}
 \alias{balance_scatter}
-\title{balance_scatter}
+\title{Visualizing the standardized mean differences for covariates}
 \usage{
 balance_scatter(non_refined_set, refined_list, xlim = c(0, 0.8), ylim = c(0,
   0.8), main = "Standardized Mean Difference of Covariates", pchs = c(2, 3),
@@ -14,17 +14,17 @@ balance_scatter(non_refined_set, refined_list, xlim = c(0, 0.8), ylim = c(0,
 
 \item{refined_list}{a list of one or two matched.set objects}
 
-\item{xlim}{xlim of the scatter plot}
+\item{xlim}{xlim of the scatter plot. This is the same as the \code{xlim} argument in \code{plot}}
 
-\item{ylim}{ylim of the scatter plot}
+\item{ylim}{ylim of the scatter plot. This is the same as the \code{ylim} argument in \code{plot}}
 
-\item{main}{title of the scatter plot}
+\item{main}{title of the scatter plot. This is the same as the \code{main} argument in \code{plot}}
 
-\item{pchs}{one or two pch for the symbols on the scatter plot}
+\item{pchs}{one or two pch indicators for the symbols on the scatter plot. See \code{plot} for more information}
 
 \item{covariates}{variables for which balance is displayed}
 
-\item{data}{the dataset}
+\item{data}{the same time series cross sectional data set used to create the matched sets.}
 
 \item{x.axis.label}{x axis label}
 
@@ -38,7 +38,7 @@ balance_scatter(non_refined_set, refined_list, xlim = c(0, 0.8), ylim = c(0,
 sets1 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                     treatment = "dem", refinement.method = "CBPS.match",
                     data = dem, match.missing = F,
-                    covs.formula = ~ lag("y", 1:4) + lag("tradewb", 1:4),
+                    covs.formula = ~ I(lag(y, 1:4)) + I(lag(tradewb, 1:4)),
                     size.match = 5, qoi = "att",
                     outcome.var = "y",
                     lead = 4, forbid.treatment.reversal = FALSE)
@@ -46,7 +46,7 @@ sets1 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
 sets0 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                     treatment = "dem", refinement.method = "none",
                     data = dem, match.missing = F,
-                    covs.formula = ~ lag("y", 1:4) + lag("tradewb", 1:4),
+                    covs.formula = ~ I(lag(y, 1:4)) + I(lag(tradewb, 1:4)),
                     size.match = 5, qoi = "att",
                     outcome.var = "y",
                     lead = 4, forbid.treatment.reversal = FALSE)
@@ -54,7 +54,7 @@ sets0 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
 sets2 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                     treatment = "dem", refinement.method = "CBPS.weight",
                     data = dem, match.missing = F,
-                    covs.formula = ~ lag("y", 1:4) + lag("tradewb", 1:4),
+                    covs.formula = ~ I(lag(y, 1:4)) + I(lag(tradewb, 1:4)),
                     size.match = 10, qoi = "att",
                     outcome.var = "y",
                     lead = 4, forbid.treatment.reversal = FALSE)
@@ -66,6 +66,7 @@ balance_scatter(non_refined_set = sets0$att,
               
               data = dem,
               covariates = c("y", "tradewb"))
+
 }
 
 }

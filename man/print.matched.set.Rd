@@ -2,9 +2,9 @@
 % Please edit documentation in R/matched_set_obj.R
 \name{print.matched.set}
 \alias{print.matched.set}
-\title{Method for printing \code{matched.set} objects.}
+\title{Print \code{matched.set} objects.}
 \usage{
-\method{print}{matched.set}(x, ..., verbose = F)
+\method{print}{matched.set}(x, ..., verbose = FALSE)
 }
 \arguments{
 \item{x}{a \code{matched.set} object}
@@ -14,5 +14,5 @@
 \item{verbose}{logical indicating whether or not output should be printed in expanded form}
 }
 \description{
-Method for printing \code{matched.set} objects.
+Print \code{matched.set} objects.
 }

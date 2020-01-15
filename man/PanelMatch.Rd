@@ -12,48 +12,69 @@ PanelMatch(lag, time.id, unit.id, treatment, refinement.method,
   use.diagonal.variance.matrix = FALSE)
 }
 \arguments{
-\item{lag}{An integer value indicating the length of history to be matched}
+\item{lag}{An integer value indicating the length of treatment history to be matched on}
 
-\item{time.id}{A character string indicating the name of time identifier
-variable in the \code{data}. This data currently must be integers that increase by one.}
+\item{time.id}{A character string indicating the name of time 
+variable in the \code{data}. This data currently must be sequential integers.}
 
-\item{unit.id}{A character string indicating the name of unit identifier in the data. This data must be character, integer, or numeric. However, it is recommended to use integers as ids.}
+\item{unit.id}{A character string indicating the name of unit identifier in the data. This data must be integer.}
 
-\item{treatment}{A character string indicating the name of treatment variable in the \code{data}. The treatment must be a binary indicator (integer with 0 for the control group and 1 for the treatment group).}
+\item{treatment}{A character string indicating the name of treatment variable in the \code{data}. 
+The treatment must be a binary indicator (integer with 0 for the control group and 1 for the treatment group).}
 
-\item{refinement.method}{character string of matching or weighting method used for refining the matched sets. The user can choose "mahalanobis", "ps.match", "CBPS.match", "ps.weight", "CBPS.weight", "ps.msm.weight", "CBPS.msm.weight", or "none". The first three methods will use the \code{size.match} argument to create sets of at most \code{size.match} closest control units. Choosing "none" will assign equal weights to all control units in each matched sets.}
+\item{refinement.method}{A character string specifying the matching or weighting method to be used for refining the matched sets. The user can choose "mahalanobis", "ps.match", "CBPS.match", "ps.weight", "CBPS.weight", "ps.msm.weight", "CBPS.msm.weight", or "none". The first three methods will use the \code{size.match} argument to create sets of at most \code{size.match} closest control units. Choosing "none" will assign equal weights to all control units in each matched sets.}
 
-\item{size.match}{Maximum size of the matched sets after refinement. This argument only affects results when using a matching method (any of the refinement methods that end in .match). This argument is not needed and will have no impact if included on a weighting method.}
+\item{size.match}{An integer dictating the number of permitted closest control units after refinement. 
+This argument only affects results when using a matching method (any of the refinement methods that end in ".match").
+ This argument is not needed and will have no impact if included on a weighting method.}
 
-\item{data}{A data.frame object containing time series cross sectional data. Time data must be integers that increase by 1.}
+\item{data}{A data.frame object containing time series cross sectional data. 
+Time data must be sequential integers that increase by 1. Unit identifiers must be integers.}
 
-\item{match.missing}{Logical variable indicating whether or not units should be matched on the patterns of missingness in their treatment histories}
+\item{match.missing}{Logical variable indicating whether or not units should be matched on the patterns of missingness in their treatment histories. Default is TRUE. When FALSE, neither treated nor control units are allowed to have missing treatement data in the lag window.}
 
-\item{covs.formula}{One sided formula indicating which variables should be used for matching and refinement. Argument is optional if \code{refinement.method} is set to "none"
-If the user wants to include lagged variables, this can be done using a function, "lag()", which takes two, unnamed, positional arguments. The first is the name of the variable which you wish to lag. The second is the lag window, specified as an integer sequence
-For instance, I(lag(x, 1:4)) will then add new columns to the data for variable "x" for time t-1, t-2, t-3, and t-4. Other transformations using the I() function, such as I(x^2) are also permitted.}
+\item{covs.formula}{One sided formula indicating which variables should be used for matching and refinement. 
+Argument is optional if \code{refinement.method} is set to "none"
+If the user wants to include lagged variables, this can be done using a function, "lag()", which takes two, unnamed, 
+positional arguments. The first is the name of the variable which you wish to lag. The second is the lag window, specified as an integer sequence in increasing order.
+For instance, I(lag(x, 1:4)) will then add new columns to the data for variable "x" for time t-1, t-2, t-3, and t-4 internally 
+Other transformations using the I() function, such as I(x^2) are also permitted.
+The variables specified in this formula are used to define the similarity/distances between units.}
 
-\item{verbose}{option to include more information about the matched.set object calculations, like the distances used to create the refined sets and weights.}
+\item{verbose}{option to include more information about the matched.set object calculations, 
+like the distances used to create the refined sets and weights.}
 
-\item{qoi}{quantity of interest: att (average treatment effect on treated units), atc (average treatment effect on control units), ate (average treatment effect). Note that the qoi for MSM methods will give the estimated average treatment effect of being treated for a chosen F time periods. This differs slightly from the non-MSM methods -- treatment is not required for F periods for those methods.}
+\item{qoi}{quantity of interest: att (average treatment effect on treated units), 
+atc (average treatment effect on control units), ate (average treatment effect). 
+Note that the qoi for MSM methods will give the estimated average treatment effect of being treated for a chosen \code{lead} 
+time periods. This differs slightly from the non-MSM methods, where treatment reversal is permitted.}
 
 \item{lead}{integer sequence specifying the lead window for which qoi estimates will ultimately be produced. Default is 0.}
 
-\item{outcome.var}{Character string of the outcome variable.}
+\item{outcome.var}{A character string identifying outcome variable.}
 
 \item{exact.match.variables}{character vector giving the names of variables to be exactly matched on. These should be time invariant variables.}
 
-\item{forbid.treatment.reversal}{Logical indicating whether or not it is permissible for treatment to reverse. This must be set to TRUE for msm methods. When set to TRUE, only matched sets where treatment is applied continuously are included.}
+\item{forbid.treatment.reversal}{Logical indicating whether or not it is permissible for treatment to reverse. 
+This must be set to TRUE for msm methods. When set to TRUE, only matched sets where treatment is 
+applied continuously are included. Default is FALSE}
 
-\item{matching}{logical indicating whether or not any matching on treatment history should be performed. This is used for diagnostic purposes. Default is TRUE.}
+\item{matching}{logical indicating whether or not any matching on treatment history should be performed. 
+This is primarily used for diagnostic purposes, and most users will never need to set this to FALSE. Default is TRUE.}
 
 \item{listwise.delete}{TRUE/FALSE indicating whether or not missing data should be handled using listwise deletion or the package's default missing data handling procedures. Default is FALSE.}
 
-\item{use.diagonal.variance.matrix}{TRUE/FALSE indicating whether or not a regular covariance matrix should be used in mahalanobis distance calculations during refinement, or if a diagonal matrix with only covariate variances should be used instead. In some cases, setting this to TRUE can lead to better covariate balance, especially when there is high correlation between variables.}
+\item{use.diagonal.variance.matrix}{TRUE/FALSE indicating whether or not a regular covariance matrix should be used in mahalanobis distance calculations during refinement, 
+or if a diagonal matrix with only covariate variances should be used instead. 
+In many cases, setting this to TRUE can lead to better covariate balance, especially when there is high correlation between variables.
+Default is FALSE.}
 }
 \value{
-\code{PanelMatch} returns an object of class "PanelMatch". This is a list that contains a few specific elements: First, a matched.set object(s) that has the same name as the provided qoi if the qoi is "att" or "atc". 
-If qoi = "ate" then two matched.set objects will be attached, named "att" and "atc." This object also has some additional attributes:
+\code{PanelMatch} returns an object of class "PanelMatch". This is a list that contains a few specific elements: 
+First, a matched.set object(s) that has the same name as the provided qoi if the qoi is "att" or "atc". 
+If qoi = "ate" then two matched.set objects will be attached, named "att" and "atc." Please consult the documentation for
+\code{matched_set} to read more about the structure and usage of \code{matched.set} objects
+This object also has some additional attributes:
 \item{qoi}{The qoi specified in the original function call}
 \item{lead}{the lead window specified in the original function call}
 \item{forbid.treatment.reversal}{logial value matching the forbid.treatment.reversal parameter provided in the function call.}
@@ -67,20 +88,48 @@ Create refined/weighted sets of treated and control units
 \code{PanelMatch} identifies a matched set for each treated
 observation. Specifically, for a given treated unit, the matched
 set consists of control observations that have the identical
-treatment history up to a certain number of \code{lag}
+treatment history up to a number of \code{lag}
 years. Researchers must specify \code{lag}. A further refinement of
-the matched set will be possible by setting a maximum size of the matched
-set \code{size.match} (the maximum number of control units that can be matched to a treated unit) and adjusting for other confounders
-such as past outcomes and covariates via \code{covs.formula} and specifying a method of refinement via \code{refinement.method}.
+the matched set will be possible by setting a maximum size of each matched
+set \code{size.match} (the maximum number of control units that can be matched to a treated unit). Users can also specify covariates that should be used to identify
+similar control units and a method for defining similarity/distance between units. This is done 
+via the \code{covs.formula} argument and \code{refinement.method} argument, which are explained in more detail below.
 }
 \examples{
 \dontrun{
 PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
                          treatment = "dem", refinement.method = "mahalanobis", 
                          data = dem, match.missing = T, 
-                         covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
+                         covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
                          size.match = 5, qoi = "att",
                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
+#not including any lagged variables
+PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
+                         treatment = "dem", refinement.method = "mahalon", 
+                         data = dem, match.missing = T, 
+                         covs.formula = ~ tradewb, 
+                         size.match = 5, qoi = "att",
+                         outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
+# Running multiple configurations at once
+list.of.results = PanelMatch(lag = list(4,3), 
+                                 time.id = list("year", "year"),
+                                 unit.id = list("wbcode2", "wbcode2"),
+                                 treatment = list("dem", "dem"),
+                                 refinement.method = list("mahalanobis", "ps.weight"),
+                                 data = dem,
+                                 match.missing = list(TRUE, TRUE),
+                                 covs.formula = list(~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
+                                 ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4))),
+                                 size.match = list(5,5),
+                                 qoi = list("att", "att"),
+                                 outcome.var = list("y", "y"),
+                                 lead = list(0:4, 0:3),
+                                 forbid.treatment.reversal = list(FALSE, FALSE),
+                                 verbose = list(F, F),
+                                 listwise.delete = list(FALSE,FALSE),
+                                 use.diagonal.variance.matrix = list(T, NULL),
+                                 exact.match.variables = list(NULL, NULL),
+                                 matching = list(TRUE, TRUE))
 }
 }
 \author{

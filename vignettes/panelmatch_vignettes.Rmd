@@ -87,7 +87,9 @@ PE.results <- PanelEstimate(sets = PM.results, data = dem)
 ### Summary 
 
 ### Plot
-
+```{r}
+plot(PE.results)
+```
 
 # Concluding Remarks
 

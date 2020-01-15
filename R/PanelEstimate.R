@@ -1,33 +1,34 @@
 #' PanelEstimate
 #'
-#' \code{PanelEstimate} estimates a causal quantity of interest, including the average treatment effect for treated or control units (att and atc, respectively), or average treatment effect (ate), as specified in \code{PanelMatch}
+#' \code{PanelEstimate} estimates a causal quantity of interest, including the average treatment effect for 
+#' treated or control units (att and atc, respectively), or average treatment effect (ate), as specified in \code{PanelMatch}
 #' This is done by estimating the counterfactual outcomes for each treated unit using
-#' matched sets. Users will specify matched sets that were obtained by the
-#' \code{PanelMatch} function and obtain point estimates via weighted fixed effects regressions or via
-#' weighted average computation with weighted bootstrap standard errors.
+#' matched sets. Users will provide matched sets that were obtained by the
+#' \code{PanelMatch} function and obtain point estimates via a
+#' weighted average computation with weighted bootstrap standard errors. Users may run multiple estimations by 
+#' providing lists of each argument to the function. Each argument must be explicitly specified in each configuration and must adhere to the same
+#' data types/structures outlined below. See the included code examples for more about how this functionality works.
 #' 
-#' @param inference The default and only currently supported option is \code{bootstrap}.
-#' @param ITER An integer value indicating the number of bootstrap
-#' iteration. The default is 1000.
-#' @param sets A list of class `PanelMatch' attained by
-#' \code{PanelMatch}.
-#' @param df.adjustment A logical value indicating whether a
+#' @param number.iterations An integer value indicating the number of bootstrap
+#' iterations. The default is 1000.
+#' @param sets A \code{PanelMatch} object attained via the
+#' \code{PanelMatch} function.
+#' @param df.adjustment A logical value indicating whether or not a
 #' degree-of-freedom adjustment should be performed for standard error
 #' calculation. The default is \code{FALSE}.
-#' @param CI A numerical value specifying the range of interval
+#' @param confidence.level A numerical value specifying the range of interval
 #' estimates for statistical inference. The default is .95.
-#' @param data The same time series cross sectional data set provided to the PanelMatch function to produce the \code{sets}
+#' @param data The same time series cross sectional data set provided to the PanelMatch function to produce the matched sets
 #' @return \code{PanelEstimate} returns a list of class
 #' `PanelEstimate' containing the following components:
 #' \item{coefficients}{the point estimates of the quantity of interest}
 #' \item{bootstrapped.coefficients}{the bootstrapped coefficients}
-#' \item{bootstrap.iterations}{the number of iterations}
+#' \item{bootstrap.iterations}{the number of iterations used in bootstrapping}
 #' \item{method}{refinement method used to create the matched sets from which the estimates were calculated}
 #' \item{lag}{See PanelMatch argument \code{lag} for more information.}
 #' \item{lead}{The lead window sequence for which PanelEstimate is producing point estimates and standard errors.}
-#' \item{confidence.level}{the confidence interval range}
+#' \item{confidence.level}{the confidence interval level}
 #' \item{qoi}{the quantity of interest}
-#' \item{matched.sets}{the refined matched sets used to produce the estimations}
 #' \item{standard.error}{the standard error of the point estimates}
 #' @author In Song Kim <insong@mit.edu>, Erik Wang
 #' <haixiao@Princeton.edu>, Adam Rauh <adamrauh@mit.edu>, and Kosuke Imai <kimai@Princeton.edu>
@@ -35,28 +36,58 @@
 #' @examples \dontrun{
 #' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
 #'                          treatment = "dem", refinement.method = "mahalanobis", 
-#'                          data = dem, match.missing = T, 
+#'                          data = dem, match.missing = TRUE, 
 #'                          covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
 #'                          size.match = 5, qoi = "att",
 #'                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = TRUE)
-#' PE.results <- PanelEstimate(inference = "bootstrap", sets = PM.results, data = dem)
+#' PE.results <- PanelEstimate(sets = PM.results, data = dem)
+#' 
+#' 
+#' # Running multiple configurations at once
+#' list.of.results = PanelMatch(lag = list(4,3), 
+#'                                  time.id = list("year", "year"),
+#'                                  unit.id = list("wbcode2", "wbcode2"),
+#'                                  treatment = list("dem", "dem"),
+#'                                  refinement.method = list("mahalanobis", "ps.weight"),
+#'                                  data = dem,
+#'                                  match.missing = list(TRUE, TRUE),
+#'                                  covs.formula = list(~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
+#'                                  ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4))),
+#'                                  size.match = list(5,5),
+#'                                  qoi = list("att", "att"),
+#'                                  outcome.var = list("y", "y"),
+#'                                  lead = list(0:4, 0:3),
+#'                                  forbid.treatment.reversal = list(FALSE, FALSE),
+#'                                  verbose = list(F, F),
+#'                                  listwise.delete = list(FALSE,FALSE),
+#'                                  use.diagonal.variance.matrix = list(T, NULL),
+#'                                  exact.match.variables = list(NULL, NULL),
+#'                                  matching = list(TRUE, TRUE))
+#' 
+#' estimates = PanelEstimate(sets = list.of.results,        
+#'                           number.iterations = list(1000,1000),
+#'                           df.adjustment = list(FALSE,FALSE),
+#'                           confidence.level = list(.95, .95),
+#'                           data = dem)
+#' 
+#' 
 #' }
 #' @export
-PanelEstimate <- function(inference = "bootstrap",
-                          ITER = 1000,
+PanelEstimate <- function(sets,
+                          number.iterations = 1000,
                           df.adjustment = FALSE,
-                          CI = .95,
-                          sets,
+                          confidence.level = .95,
                           data) 
 {
+  inference <- "bootstrap"
   if(inference == "wfe") stop("wfe is no longer supported. Please specify inference = 'bootstrap'")
-  if(class(inference) == "list" & class(ITER) == "list" & class(df.adjustment) == "list" & class(CI) == "list" & class(sets) == "list")
+  if(class(number.iterations) == "list" & class(df.adjustment) == "list" & class(confidence.level) == "list" & class(sets) == "list")
   {
-    if(length(unique(length(inference), length(ITER), length(df.adjustment), length(CI), length(sets))) == 1)
+    if(length(unique(length(inference), length(number.iterations), length(df.adjustment), length(confidence.level), length(sets))) == 1)
     {
-      res = mapply(FUN = panel_estimate, inference = inference, ITER = ITER, 
-                   df.adjustment = df.adjustment, CI= CI, sets = sets, 
-                   MoreArgs = list(data = data),
+      res = mapply(FUN = panel_estimate, number.iterations = number.iterations, 
+                   df.adjustment = df.adjustment, confidence.level= confidence.level, sets = sets, 
+                   MoreArgs = list(data = data, inference = inference),
                    SIMPLIFY = FALSE)
     }
     else {
@@ -65,7 +96,7 @@ PanelEstimate <- function(inference = "bootstrap",
   }
   else 
   {
-    res = panel_estimate(inference = inference, ITER = ITER, df.adjustment = df.adjustment, CI = CI, sets = sets, data = data)
+    res = panel_estimate(inference = inference, number.iterations = number.iterations, df.adjustment = df.adjustment, confidence.level = confidence.level, sets = sets, data = data)
   }
   return(res)
 }
@@ -74,9 +105,9 @@ PanelEstimate <- function(inference = "bootstrap",
 
 
 panel_estimate <- function(inference = "bootstrap",
-                           ITER = 1000,
+                           number.iterations = 1000,
                            df.adjustment = FALSE,
-                           CI = .95,
+                           confidence.level = .95,
                            sets,
                            data)
 {
@@ -232,9 +263,9 @@ panel_estimate <- function(inference = "bootstrap",
       {
         names(o.coefs) <- sapply(lead, function(x) paste0("t+", x))
       }
-      coefs <- matrix(NA, nrow = ITER, ncol = length(lead))
+      coefs <- matrix(NA, nrow = number.iterations, ncol = length(lead))
       
-      for (k in 1:ITER) 
+      for (k in 1:number.iterations) 
       {  
         # make new data
         clusters <- unique(data[, unit.id])
@@ -255,9 +286,9 @@ panel_estimate <- function(inference = "bootstrap",
       sets <- decode_index(sets, unit.index.map, og.unit.id)
       # changed return to class
       z <- list("coefficients" = o.coefs,
-                "bootstrapped.coefficients" = coefs, "bootstrap.iterations" = ITER, "standard.error" = apply(coefs, 2, sd, na.rm = T),
+                "bootstrapped.coefficients" = coefs, "bootstrap.iterations" = number.iterations, "standard.error" = apply(coefs, 2, sd, na.rm = T),
                 "method" = method, "lag" = lag,
-                "lead" = lead, "confidence.level" = CI, "qoi" = qoi, "matched.sets" = sets)
+                "lead" = lead, "confidence.level" = confidence.level, "qoi" = qoi)
       class(z) <- "PanelEstimate"
       return(z)
     }
@@ -283,9 +314,9 @@ panel_estimate <- function(inference = "bootstrap",
       }
       
       
-      coefs <- matrix(NA, nrow = ITER, ncol = length(lead))
+      coefs <- matrix(NA, nrow = number.iterations, ncol = length(lead))
       
-      for (k in 1:ITER) 
+      for (k in 1:number.iterations) 
       {  
         # make new data
         clusters <- unique(data[, unit.id])
@@ -305,8 +336,8 @@ panel_estimate <- function(inference = "bootstrap",
       }
       sets2 <- decode_index(sets2, unit.index.map, og.unit.id)
       z <- list("coefficients" = o.coefs,
-                "bootstrapped.coefficients" = coefs, "bootstrap.iterations" = ITER, "standard.error" = apply(coefs, 2, sd, na.rm = T),
-                "lead" = lead, "confidence.level" = CI, "qoi" = qoi, "matched.sets" = sets2)
+                "bootstrapped.coefficients" = coefs, "bootstrap.iterations" = number.iterations, "standard.error" = apply(coefs, 2, sd, na.rm = T),
+                "lead" = lead, "confidence.level" = confidence.level, "qoi" = qoi)
       class(z) <- "PanelEstimate"
       return(z)
       
@@ -342,10 +373,10 @@ panel_estimate <- function(inference = "bootstrap",
         names(o.coefs_ate) <- sapply(lead, function(x) paste0("t+", x))
       }
       
-      coefs <- matrix(NA, nrow = ITER, ncol = length(lead))
+      coefs <- matrix(NA, nrow = number.iterations, ncol = length(lead))
       
       
-      for (k in 1:ITER) {
+      for (k in 1:number.iterations) {
         # make new data
         clusters <- unique(data[, unit.id])
         units <- sample(clusters, size = length(clusters), replace=T)
@@ -376,8 +407,8 @@ panel_estimate <- function(inference = "bootstrap",
       sets <- decode_index(sets, unit.index.map, og.unit.id)
       sets2 <- decode_index(sets2, unit.index.map, og.unit.id)
       z <- list("coefficients" = o.coefs_ate,
-                "bootstrapped.coefficients" = coefs, "bootstrap.iterations" = ITER, "standard.error" = apply(coefs, 2, sd, na.rm = T),
-                "lead" = lead, "confidence.level" = CI, "qoi" = qoi, "matched.sets" = list(sets, sets2))
+                "bootstrapped.coefficients" = coefs, "bootstrap.iterations" = number.iterations, "standard.error" = apply(coefs, 2, sd, na.rm = T),
+                "lead" = lead, "confidence.level" = confidence.level, "qoi" = qoi)
       class(z) <- "PanelEstimate"
       return(z)
     }
@@ -454,13 +485,13 @@ summary.PanelEstimate <- function(object, verbose = TRUE, bias.corrected = FALSE
               apply(object$bootstrapped.coefficients, 2, sd, na.rm = T), # bootstrap se
               
               # Efron & Tibshirani 1993 p170 - 171
-              apply(object$bootstrapped.coefficients, 2, quantile, probs = c( (1-object$confidence.level)/2, object$confidence.level+(1-object$confidence.level)/2 ), na.rm = T), # percentile CI
+              apply(object$bootstrapped.coefficients, 2, quantile, probs = c( (1-object$confidence.level)/2, object$confidence.level+(1-object$confidence.level)/2 ), na.rm = T), # percentile confidence.level
               # Efron & Tibshirani 1993 p138
               2*object$coefficients - colMeans(object$bootstrapped.coefficients, na.rm = T), # bc point estimate
               
               apply( (2*matrix(nrow = object$bootstrap.iterations, ncol = length(object$coefficients), object$coefficients, byrow = TRUE) - object$bootstrapped.coefficients), 2, quantile, 
                              probs = c((1-object$confidence.level)/2, object$confidence.level+(1-object$confidence.level)/2), 
-                             na.rm = T) ) # bc percentile CI)
+                             na.rm = T) ) # bc percentile confidence.level)
           rownames(df) <- c("estimate", "std.error", 
                     paste0((1-object$confidence.level)/2 * 100, "%"),
                     paste0( (object$confidence.level+(1-object$confidence.level)/2) * 100, "%"),

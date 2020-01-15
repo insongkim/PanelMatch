@@ -2,8 +2,7 @@
 % Please edit documentation in R/matched_set_obj.R
 \name{summary.matched.set}
 \alias{summary.matched.set}
-\title{Method for plotting the distribution of the sizes of \code{matched.set} objects.
-A plot method for creating histograms of the distribution of the sizes of matched sets.}
+\title{Summarize information about a \code{matched.set} object and the matched sets contained within them.}
 \usage{
 \method{summary}{matched.set}(object, ..., verbose = T)
 }
@@ -12,8 +11,18 @@ A plot method for creating histograms of the distribution of the sizes of matche
 
 \item{...}{Optional additional arguments to be passed to the summary function}
 
-\item{verbose}{Logical option specifying whether or not a longer, more verbose summary should be calculated and returned.}
+\item{verbose}{Logical option specifying whether or not a longer, more verbose summary should be calculated and returned. Default is 
+\code{TRUE}.}
+}
+\value{
+list object with either 5 or 1 element(s), depending on whether or not \code{verbose} is set to \code{TRUE} or not.
+\item{overview}{A data.frame object containing information about the treated units, and the number of matched control units of weights zero and above.}
+\item{set.size.summary}{a summary object summarizing the min/max and IQR of matched set sizes}
+\item{number.of.treated.units}{The number of units that are considered "treated" units}
+\item{num.units.empty.set}{The number of treated units that were not able to be matched to any control units}
+\item{lag}{The size of the lag window used for matching on treatment history. This affects which treated and control units are matched}
 }
 \description{
-Accepts all standard \code{summary} arguments. Empty sets are excluded from the histogram but are noted in the subtitle by default.
+A summary method for viewing summary data about the sizes of matched sets and metadata about how they were created. This method
+accepts all standard \code{summary} arguments.
 }
