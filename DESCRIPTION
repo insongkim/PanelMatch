@@ -50,5 +50,6 @@ BugReports: https://github.com/insongkim/PanelMatch/issues
 RoxygenNote: 6.1.0
 Suggests: 
     knitr,
-    rmarkdown
+    rmarkdown,
+    testthat (>= 2.1.0)
 VignetteBuilder: knitr

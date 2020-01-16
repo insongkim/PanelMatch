@@ -153,8 +153,8 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
         }
         if(refinement.method == "CBPS.msm.weight") #obviously update these conditionals
         {
-          fit.tf <- suppressMessages(CBPS::CBPS(reformulate(response = treatment, termlabels = colnames(pooled)[-c(1:3)]),
-                                                family = binomial(link = "logit"), data = pooled))
+          dummy <- capture.output(fit.tf <- (CBPS::CBPS(reformulate(response = treatment, termlabels = colnames(pooled)[-c(1:3)]),
+                                                family = binomial(link = "logit"), data = pooled)))
         }
         if(refinement.method == "ps.msm.weight")
         {
@@ -210,8 +210,8 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
     }
     if(refinement.method == "CBPS.weight" | refinement.method == "CBPS.match")
     {
-      fit0 <- suppressMessages(CBPS::CBPS(reformulate(response = treatment, termlabels = colnames(pooled)[-c(1:3)]),
-                                          family = binomial(link = "logit"), data = pooled))
+      dummy <-capture.output(fit0 <- (CBPS::CBPS(reformulate(response = treatment, termlabels = colnames(pooled)[-c(1:3)]),
+                                          family = binomial(link = "logit"), data = pooled)))
     }
     if(refinement.method == "ps.weight" | refinement.method == "ps.match")
     {

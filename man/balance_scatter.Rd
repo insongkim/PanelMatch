@@ -41,7 +41,7 @@ sets1 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                     covs.formula = ~ I(lag(y, 1:4)) + I(lag(tradewb, 1:4)),
                     size.match = 5, qoi = "att",
                     outcome.var = "y",
-                    lead = 4, forbid.treatment.reversal = FALSE)
+                    lead = 0:4, forbid.treatment.reversal = FALSE)
 
 sets0 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                     treatment = "dem", refinement.method = "none",
@@ -49,7 +49,7 @@ sets0 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                     covs.formula = ~ I(lag(y, 1:4)) + I(lag(tradewb, 1:4)),
                     size.match = 5, qoi = "att",
                     outcome.var = "y",
-                    lead = 4, forbid.treatment.reversal = FALSE)
+                    lead = 0:4, forbid.treatment.reversal = FALSE)
 
 sets2 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                     treatment = "dem", refinement.method = "CBPS.weight",
@@ -57,13 +57,12 @@ sets2 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                     covs.formula = ~ I(lag(y, 1:4)) + I(lag(tradewb, 1:4)),
                     size.match = 10, qoi = "att",
                     outcome.var = "y",
-                    lead = 4, forbid.treatment.reversal = FALSE)
+                    lead = 0:4, forbid.treatment.reversal = FALSE)
 
 
 
 balance_scatter(non_refined_set = sets0$att,
-              refined_lists = list(sets1$att, sets2$att),
-              
+              refined_list = list(sets1$att, sets2$att),
               data = dem,
               covariates = c("y", "tradewb"))
 
