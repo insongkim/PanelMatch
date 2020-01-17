@@ -25,3 +25,15 @@
 The \code{plot.PanelEstimate} method takes an object returned by the \code{PanelEstimate} function and plots the calculated 
 point estimates and standard errors. The only mandatory argument is an object of the \code{PanelEstimate} class.
 }
+\examples{
+\dontrun{
+PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
+                         treatment = "dem", refinement.method = "mahalanobis", 
+                         data = dem, match.missing = T, 
+                         covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
+                         size.match = 5, qoi = "att",
+                         outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
+PE.results <- PanelEstimate(sets = PM.results, data = dem)
+plot(PE.results)
+}
+}

@@ -3,8 +3,8 @@
 #' \code{DisplayTreatment} visualizes the treatment distribution
 #' across unit and time in a panel dataset
 #'
-#' @param unit.id A numeric vector of unit identifiers
-#' @param time.id A numeric vector of time identifiers
+#' @param unit.id Name of the unit identifier variable as a character string
+#' @param time.id Name of the time identifier variable as a character string
 #' @param treatment Name of the treatment variable as a character string
 #' @param data data.frame that contains the time series cross sectional data used for matching and estimation.
 #' @param color.of.treated Color of the treated observations provided as a character string. Default is red.
@@ -31,7 +31,7 @@
 #' @return \code{DisplayTreatment} returns a treatment variation plot (using ggplot2),
 #' which visualizes the variation of treatment across unit and time.
 #' @author In Song Kim <insong@mit.edu>, Erik Wang
-#' <haixiao@Princeton.edu>, Adam Rauh <adamrauh@mit.edu>, and Kosuke Imai <kimai@Princeton.edu>
+#' <haixiao@Princeton.edu>, Adam Rauh <adamrauh@mit.edu>, and Kosuke Imai <imai@harvard.edu>
 #'
 #' @examples 
 #' \dontrun{

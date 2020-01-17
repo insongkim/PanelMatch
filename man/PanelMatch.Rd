@@ -134,5 +134,5 @@ list.of.results = PanelMatch(lag = list(4,3),
 }
 \author{
 Adam Rauh <adamrauh@mit.edu>, In Song Kim <insong@mit.edu>, Erik Wang
-<haixiao@Princeton.edu>, and Kosuke Imai <kimai@Princeton.edu>
+<haixiao@Princeton.edu>, and Kosuke Imai <imai@harvard.edu>
 }

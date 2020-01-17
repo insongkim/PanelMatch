@@ -29,9 +29,10 @@
 #' \item{lead}{The lead window sequence for which PanelEstimate is producing point estimates and standard errors.}
 #' \item{confidence.level}{the confidence interval level}
 #' \item{qoi}{the quantity of interest}
+#' \item{matched.sets}{the refined matched sets used to produce the estimations}
 #' \item{standard.error}{the standard error of the point estimates}
 #' @author In Song Kim <insong@mit.edu>, Erik Wang
-#' <haixiao@Princeton.edu>, Adam Rauh <adamrauh@mit.edu>, and Kosuke Imai <kimai@Princeton.edu>
+#' <haixiao@Princeton.edu>, Adam Rauh <adamrauh@mit.edu>, and Kosuke Imai <imai@harvard.edu>
 #'
 #' @examples \dontrun{
 #' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
@@ -288,7 +289,7 @@ panel_estimate <- function(inference = "bootstrap",
       z <- list("coefficients" = o.coefs,
                 "bootstrapped.coefficients" = coefs, "bootstrap.iterations" = number.iterations, "standard.error" = apply(coefs, 2, sd, na.rm = T),
                 "method" = method, "lag" = lag,
-                "lead" = lead, "confidence.level" = confidence.level, "qoi" = qoi)
+                "lead" = lead, "confidence.level" = confidence.level, "qoi" = qoi, "matched.sets" = sets)
       class(z) <- "PanelEstimate"
       return(z)
     }
@@ -337,7 +338,7 @@ panel_estimate <- function(inference = "bootstrap",
       sets2 <- decode_index(sets2, unit.index.map, og.unit.id)
       z <- list("coefficients" = o.coefs,
                 "bootstrapped.coefficients" = coefs, "bootstrap.iterations" = number.iterations, "standard.error" = apply(coefs, 2, sd, na.rm = T),
-                "lead" = lead, "confidence.level" = confidence.level, "qoi" = qoi)
+                "lead" = lead, "confidence.level" = confidence.level, "qoi" = qoi, "matched.sets" = sets2)
       class(z) <- "PanelEstimate"
       return(z)
       
@@ -408,7 +409,7 @@ panel_estimate <- function(inference = "bootstrap",
       sets2 <- decode_index(sets2, unit.index.map, og.unit.id)
       z <- list("coefficients" = o.coefs_ate,
                 "bootstrapped.coefficients" = coefs, "bootstrap.iterations" = number.iterations, "standard.error" = apply(coefs, 2, sd, na.rm = T),
-                "lead" = lead, "confidence.level" = confidence.level, "qoi" = qoi)
+                "lead" = lead, "confidence.level" = confidence.level, "qoi" = qoi, "matched.sets" = list(sets, sets2))
       class(z) <- "PanelEstimate"
       return(z)
     }
@@ -429,6 +430,18 @@ panel_estimate <- function(inference = "bootstrap",
 #' @param verbose logical indicating whether or not output should be printed in an expanded form.
 #' @param bias.corrected logical indicating whether or not bias corrected estimates should be provided.
 #' @param ... optional additional arguments. Currently, no additional arguments are supported. 
+#' @examples \dontrun{
+#' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
+#'                          treatment = "dem", refinement.method = "mahalanobis", 
+#'                          data = dem, match.missing = T, 
+#'                          covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
+#'                          size.match = 5, qoi = "att",
+#'                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
+#' PE.results <- PanelEstimate(sets = PM.results, data = dem)
+#' summary(PE.results)
+#' }
+#' 
+#' 
 #' @method summary PanelEstimate
 #' @export
 summary.PanelEstimate <- function(object, verbose = TRUE, bias.corrected = FALSE, ...) {
@@ -449,10 +462,11 @@ summary.PanelEstimate <- function(object, verbose = TRUE, bias.corrected = FALSE
         {
           cat("Weighted Difference-in-Differences with Mahalanobis Distance\n")
         } 
-    else if (refinement.method == "ps.weight" | refinement.method == "ps.match") 
+    if (refinement.method == "ps.weight" | refinement.method == "ps.match") 
         {
           cat("Weighted Difference-in-Differences with Propensity Score\n")
-    } else(refinement.method == "CBPS.weight" | refinement.method == "CBPS.match") 
+        } 
+    if(refinement.method == "CBPS.weight" | refinement.method == "CBPS.match") 
         {
           cat("Weighted Difference-in-Differences with Covariate Balancing Propensity Score\n")
         }
@@ -552,7 +566,17 @@ summary.PanelEstimate <- function(object, verbose = TRUE, bias.corrected = FALSE
 #' @param main default is "Estimated Effects of Treatment Over Time". This is the same argument as the standard argument for \code{plot}
 #' @param ylim default is NULL. This is the same argument as the standard argument for \code{plot}
 #' @param ... Additional optional arguments to be passed to \code{plot}.
-#' 
+#' @examples \dontrun{
+#' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
+#'                          treatment = "dem", refinement.method = "mahalanobis", 
+#'                          data = dem, match.missing = T, 
+#'                          covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
+#'                          size.match = 5, qoi = "att",
+#'                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
+#' PE.results <- PanelEstimate(sets = PM.results, data = dem)
+#' plot(PE.results)
+#' }
+#' @method plot PanelEstimate
 #' @export
 plot.PanelEstimate <- function(x, ylab = "Estimated Effect of Treatment", 
                                xlab = "Time", main = "Estimated Effects of Treatment Over Time", ylim = NULL, ...)

@@ -30,7 +30,7 @@
 #' \item{match.missing}{Logical variable indicating whether or not units should be matched on the patterns of missingness in their treatment histories}
 #' \item{max.match.size}{Maximum size of the matched sets after refinement. This argument only affects results when using a matching method}
 #' @author Adam Rauh <adamrauh@mit.edu>, In Song Kim <insong@mit.edu>, Erik Wang
-#' <haixiao@Princeton.edu>, and Kosuke Imai <kimai@Princeton.edu>
+#' <haixiao@Princeton.edu>, and Kosuke Imai <imai@harvard.edu>
 #' @export
 matched_set <- function(matchedsets, id, t, L, t.var, id.var, treated.var)
 {
@@ -65,6 +65,17 @@ matched_set <- function(matchedsets, id, t, L, t.var, id.var, treated.var)
 #' \item{number.of.treated.units}{The number of units that are considered "treated" units}
 #' \item{num.units.empty.set}{The number of treated units that were not able to be matched to any control units}
 #' \item{lag}{The size of the lag window used for matching on treatment history. This affects which treated and control units are matched}
+#' 
+#' @examples \dontrun{
+#' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
+#'                          treatment = "dem", refinement.method = "mahalanobis", 
+#'                          data = dem, match.missing = T, 
+#'                          covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
+#'                          size.match = 5, qoi = "att",
+#'                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
+#' summary(PM.results$att)
+#' }
+#' 
 #' 
 #' @method summary matched.set
 #' @export
@@ -112,6 +123,17 @@ summary.matched.set <- function(object, ..., verbose = T)
 #' @param freq default is TRUE. See \code{freq} argument in \code{hist} function for more
 #' @param include.empty.sets default is TRUE. Should empty sets be included on the plot? If false, they will be excluded, but noted as a subtitle.
 #' 
+#' @examples \dontrun{
+#' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
+#'                          treatment = "dem", refinement.method = "mahalanobis", 
+#'                          data = dem, match.missing = T, 
+#'                          covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
+#'                          size.match = 5, qoi = "att",
+#'                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
+#' plot(PM.results$att)
+#' }
+#' 
+#' @method plot matched.set
 #' @export
 plot.matched.set <- function(x, ..., border = NA, col = "grey", ylab = "Frequency of Size", 
                              xlab ="Matched Set Size" , lwd = NULL,
@@ -146,6 +168,17 @@ plot.matched.set <- function(x, ..., border = NA, col = "grey", ylab = "Frequenc
 #' @param x a \code{matched.set} object
 #' @param verbose logical indicating whether or not output should be printed in expanded form
 #' @param ... additional arguments to be passed to \code{print}
+#' 
+#' @examples \dontrun{
+#' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
+#'                          treatment = "dem", refinement.method = "mahalanobis", 
+#'                          data = dem, match.missing = T, 
+#'                          covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
+#'                          size.match = 5, qoi = "att",
+#'                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
+#' print(PM.results$att)
+#' }
+#' 
 #' 
 #' @method print matched.set
 #' @export
@@ -452,7 +485,7 @@ encode_index <- function(mset, unit.index, new.unit.id)
 #' @param covariates variables for which balance is displayed
 #' @param data the same time series cross sectional data set used to create the matched sets. 
 #' @author In Song Kim <insong@mit.edu>, Erik Wang
-#' <haixiao@Princeton.edu>, Adam Rauh <adamrauh@mit.edu>, and Kosuke Imai <kimai@Princeton.edu>
+#' <haixiao@Princeton.edu>, Adam Rauh <adamrauh@mit.edu>, and Kosuke Imai <imai@harvard.edu>
 #'
 #' @examples 
 #' \dontrun{

@@ -1,13 +1,13 @@
 Package: PanelMatch
 Type: Package
-Title: Matching Methods for Causal Inference with Time-Series Cross-Section Data
+Title: Matching Methods for Causal Inference with Time-Series Cross-Sectional Data
 Version: 0.0.1
 Date: 2018-03-08
 Authors@R: c(
   person("In Song", "Kim", email = "insong@mit.edu", role = c("aut", "cre")),
-  person("Erik", "Wang", email = "haixiaow@Princeton.edu", role = c("aut")),
   person("Adam", "Rauh", email = "adamrauh@mit.edu", role = c("aut")),
-  person("Kosuke", "Imai", email = "kimai@Princeton.edu", role = c("aut"))
+  person("Erik", "Wang", email = "haixiaow@Princeton.edu", role = c("aut")),
+  person("Kosuke", "Imai", email = "imai@harvard.edu", role = c("aut"))
   )
 Description: This R package provides a set of methodological tools
 	     that enable researchers to apply matching methods to
@@ -21,13 +21,12 @@ Description: This R package provides a set of methodological tools
 	     other units in the same time period that have a similar
 	     treatment and covariate history. These methods include
 	     standard matching methods based on propensity score and
-	     Mahalanobis distance as well as weighting methods such as
-	     synthetic controls. Once matching is done, both
-	     short-term and long-term average treatment effects for
-	     the treated can be estimated with standard errors. The
-	     package also offers a visualization technique that allows
-	     researchers to assess the quality of matches by examining
-	     the resulting covariate balance.
+	     Mahalanobis distance as well as weighting methods. Once 
+	     matching is done, both short-term and long-term average 
+	     treatment effects for the treated can be estimated with 
+	     standard errors. The package also offers a visualization 
+	     technique that allows researchers to assess the quality 
+	     of matches by examining the resulting covariate balance.
 License: GPL(>= 3)	     
 Imports:
     Rcpp (>= 0.12.5),

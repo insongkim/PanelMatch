@@ -61,7 +61,7 @@
 #' \item{outcome.var}{character string matching the outcome variable provided in the original function call.}
 #' For more information about matched.set objects, see documentation for the "matched_set" function
 #' @author Adam Rauh <adamrauh@mit.edu>, In Song Kim <insong@mit.edu>, Erik Wang
-#' <haixiao@Princeton.edu>, and Kosuke Imai <kimai@Princeton.edu>
+#' <haixiao@Princeton.edu>, and Kosuke Imai <imai@harvard.edu>
 #'
 #' @examples \dontrun{
 #' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 

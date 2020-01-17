@@ -26,3 +26,16 @@ list object with either 5 or 1 element(s), depending on whether or not \code{ver
 A summary method for viewing summary data about the sizes of matched sets and metadata about how they were created. This method
 accepts all standard \code{summary} arguments.
 }
+\examples{
+\dontrun{
+PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
+                         treatment = "dem", refinement.method = "mahalanobis", 
+                         data = dem, match.missing = T, 
+                         covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
+                         size.match = 5, qoi = "att",
+                         outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
+summary(PM.results$att)
+}
+
+
+}
