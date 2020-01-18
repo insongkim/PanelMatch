@@ -66,7 +66,7 @@ matched_set <- function(matchedsets, id, t, L, t.var, id.var, treated.var)
 #' \item{num.units.empty.set}{The number of treated units that were not able to be matched to any control units}
 #' \item{lag}{The size of the lag window used for matching on treatment history. This affects which treated and control units are matched}
 #' 
-#' @examples \dontrun{
+#' @examples
 #' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
 #'                          treatment = "dem", refinement.method = "mahalanobis", 
 #'                          data = dem, match.missing = T, 
@@ -74,7 +74,7 @@ matched_set <- function(matchedsets, id, t, L, t.var, id.var, treated.var)
 #'                          size.match = 5, qoi = "att",
 #'                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
 #' summary(PM.results$att)
-#' }
+#' 
 #' 
 #' 
 #' @method summary matched.set
@@ -123,7 +123,7 @@ summary.matched.set <- function(object, ..., verbose = T)
 #' @param freq default is TRUE. See \code{freq} argument in \code{hist} function for more
 #' @param include.empty.sets default is TRUE. Should empty sets be included on the plot? If false, they will be excluded, but noted as a subtitle.
 #' 
-#' @examples \dontrun{
+#' @examples 
 #' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
 #'                          treatment = "dem", refinement.method = "mahalanobis", 
 #'                          data = dem, match.missing = T, 
@@ -131,7 +131,7 @@ summary.matched.set <- function(object, ..., verbose = T)
 #'                          size.match = 5, qoi = "att",
 #'                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
 #' plot(PM.results$att)
-#' }
+#' 
 #' 
 #' @method plot matched.set
 #' @export
@@ -169,7 +169,7 @@ plot.matched.set <- function(x, ..., border = NA, col = "grey", ylab = "Frequenc
 #' @param verbose logical indicating whether or not output should be printed in expanded form
 #' @param ... additional arguments to be passed to \code{print}
 #' 
-#' @examples \dontrun{
+#' @examples 
 #' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
 #'                          treatment = "dem", refinement.method = "mahalanobis", 
 #'                          data = dem, match.missing = T, 
@@ -177,7 +177,7 @@ plot.matched.set <- function(x, ..., border = NA, col = "grey", ylab = "Frequenc
 #'                          size.match = 5, qoi = "att",
 #'                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
 #' print(PM.results$att)
-#' }
+#' 
 #' 
 #' 
 #' @method print matched.set
@@ -252,7 +252,7 @@ build_balance_mats <- function(idx, ordered_expanded_data, msets)
 #' @param ylab Label for y axis. Default is "SD". This is the same as the ylab argument to \code{plot}.
 #' @param use.equal.weights logical. If set to TRUE, then equal weights will be assigned to control units, rather than using whatever calculated weights have been assigned. This is helpful for assessing the improvement in covariate balance as a result of refining the matched sets.
 #' @param ... Additional graphical parameters to be passed to the \code{plot} function in base R.
-#' @examples \dontrun{
+#' @examples 
 #' #add some additional data to data set for demonstration purposes
 #' dem$rdata <- runif(runif(nrow(dem))) 
 #' pm.obj <- PanelMatch(lead = 0:3, lag = 4, time.id = "year", unit.id = "wbcode2", treatment = "dem",
@@ -262,7 +262,7 @@ build_balance_mats <- function(idx, ordered_expanded_data, msets)
 #'                     size.match = 5, qoi = "att")
 #' get_covariate_balance(pm.obj$att, dem, covariates = c("tradewb", "rdata"), 
 #'                          plot = TRUE, ylim = c(-2,2))
-#' } 
+#'
 #' @export
 get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.weights = FALSE,
                                   verbose = T, plot = F, 
@@ -488,7 +488,7 @@ encode_index <- function(mset, unit.index, new.unit.id)
 #' <haixiao@Princeton.edu>, Adam Rauh <adamrauh@mit.edu>, and Kosuke Imai <imai@harvard.edu>
 #'
 #' @examples 
-#' \dontrun{
+#' 
 #' sets1 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
 #'                     treatment = "dem", refinement.method = "CBPS.match",
 #'                     data = dem, match.missing = F,
@@ -520,7 +520,7 @@ encode_index <- function(mset, unit.index, new.unit.id)
 #'               data = dem,
 #'               covariates = c("y", "tradewb"))
 #'
-#' }
+#' 
 #'
 #' @export
 balance_scatter <- function(non_refined_set, refined_list,

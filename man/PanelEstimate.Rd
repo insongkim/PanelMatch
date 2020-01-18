@@ -48,7 +48,6 @@ providing lists of each argument to the function. Each argument must be explicit
 data types/structures outlined below. See the included code examples for more about how this functionality works.
 }
 \examples{
-\dontrun{
 PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
                          treatment = "dem", refinement.method = "mahalanobis", 
                          data = dem, match.missing = TRUE, 
@@ -86,7 +85,7 @@ estimates = PanelEstimate(sets = list.of.results,
                           data = dem)
 
 
-}
+
 }
 \author{
 In Song Kim <insong@mit.edu>, Erik Wang

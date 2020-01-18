@@ -14,9 +14,9 @@ DisplayTreatment(unit.id, time.id, treatment, data, color.of.treated = "red",
   hide.y.axis.label = FALSE, gradient.weights = FALSE, dense.plot = FALSE)
 }
 \arguments{
-\item{unit.id}{A numeric vector of unit identifiers}
+\item{unit.id}{Name of the unit identifier variable as a character string}
 
-\item{time.id}{A numeric vector of time identifiers}
+\item{time.id}{Name of the time identifier variable as a character string}
 
 \item{treatment}{Name of the treatment variable as a character string}
 
@@ -70,12 +70,12 @@ which visualizes the variation of treatment across unit and time.
 across unit and time in a panel dataset
 }
 \examples{
-\dontrun{
+
 DisplayTreatment(unit.id = "wbcode2",
                  time.id = "year", legend.position = "none",
                  xlab = "year", ylab = "Country Code",
                  treatment = "dem", data = dem)
-}
+
 
 }
 \author{

@@ -11,9 +11,9 @@
 #' 
 #' @return \code{findAllTreated} returns a subset of the data in the \code{dmat} data frame, containing only treated units for which a matched set might exist
 #'
-#' @examples \dontrun{
+#' @examples
 #' treateds <- findAllTreated(dmat = dem, treatedvar = "dem", time.var = "year", unit.var = "wbcode2")
-#' }
+#' 
 #' 
 #' @keywords internal
 #' 
@@ -78,14 +78,14 @@ findAllTreated <- function(dmat, treatedvar, time.var, unit.var, hasbeensorted =
 #' @param matching logical indicating whether or not the treatment history should be used for matching. This should almost always be set to TRUE, except for specific situations where the user is interested in particular diagnostic questions.
 #' @return \code{get.matchedsets} returns a "matched set" object, which primarily contains a named list of vectors. Each vector is a "matched set" containing the unit ids included in a matched set. The list names will indicate an i,t pair (formatted as "<i variable>.<t variable>") to which the vector/matched set corresponds.
 #'
-#' @examples \dontrun{
+#' @examples 
 #' uid <-unique(dem$wbcode2)[1:10]
 #' subdem <- dem[dem$wbcode2 %in% uid, ]
 #' mset <- get.matchedsets(1992, 4, subdem, 4, "year", "wbcode2", "dem")
 #' 
 #' treateds <- findAllTreated(subdem, "dem", "year", "wbcode2")
 #' msets <- get.matchedsets(treateds$year, treateds$wbcode2, subdem, 4, "year", "wbcode2", "dem")
-#' }
+#' 
 #' 
 #' @keywords internal
 #' 

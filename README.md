@@ -64,15 +64,15 @@ DisplayTreatment(unit.id = "wbcode2",
  observation. Specifically, for a given treated unit, the matched set
  consists of control observations that have an identical treatment
  history up to a chosen number (`lag`) of years. This number corresponds with the `lag` parameter, which must
- be chosen by the user. Users must also consider various parameters regarding the refinement of created matched sets:
+ be chosen by the user. Users must also consider various parameters regarding the refinement of created matched sets. Please consult the function documentation for a full set of descriptions, but some important arguments are described below:
  1) `refinement.method` -- Users may choose between standard propensity score weighting or matching (`ps.weight`, `ps.match`), covariate balanced propensity score weighting or matching (`CBPS.weight`, `CBPS.match`),  and mahalanobis distance matching (`mahalanobis`). Alternatively users can do no refinement by setting this parameter to `none`.
  2) `size.match` -- This sets the maximum number of control units that can be included in a matched set.
  3) `covs.formula` -- This parameter defines which variables are considered in measuring the similarities/distances between units. These will then affect which control units are included/excluded during refinement. This can be set to include lagged versions of any variable as well. See the `PanelMatch` documentation for more information about this parameter.
-
+ 4) `match.missing` -- Should matches between treatment and control units with identical patterns of missingness in the treatment variable be considered? If set to FALSE, missing data is not permitted in the lag window of the treatment variable in either treated or control units. 
 ``` r
 PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
                          treatment = "dem", refinement.method = "mahalanobis", 
-                         data = dem, match.missing = T, 
+                         data = dem, match.missing = TRUE, 
                          covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
                          size.match = 5, qoi = "att" ,outcome.var = "y",
                          lead = 0:4, forbid.treatment.reversal = FALSE)

@@ -34,7 +34,7 @@
 #' @author In Song Kim <insong@mit.edu>, Erik Wang
 #' <haixiao@Princeton.edu>, Adam Rauh <adamrauh@mit.edu>, and Kosuke Imai <imai@harvard.edu>
 #'
-#' @examples \dontrun{
+#' @examples 
 #' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
 #'                          treatment = "dem", refinement.method = "mahalanobis", 
 #'                          data = dem, match.missing = TRUE, 
@@ -72,7 +72,7 @@
 #'                           data = dem)
 #' 
 #' 
-#' }
+#' 
 #' @export
 PanelEstimate <- function(sets,
                           number.iterations = 1000,
@@ -430,7 +430,7 @@ panel_estimate <- function(inference = "bootstrap",
 #' @param verbose logical indicating whether or not output should be printed in an expanded form.
 #' @param bias.corrected logical indicating whether or not bias corrected estimates should be provided.
 #' @param ... optional additional arguments. Currently, no additional arguments are supported. 
-#' @examples \dontrun{
+#' @examples 
 #' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
 #'                          treatment = "dem", refinement.method = "mahalanobis", 
 #'                          data = dem, match.missing = T, 
@@ -439,7 +439,7 @@ panel_estimate <- function(inference = "bootstrap",
 #'                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
 #' PE.results <- PanelEstimate(sets = PM.results, data = dem)
 #' summary(PE.results)
-#' }
+#' 
 #' 
 #' 
 #' @method summary PanelEstimate
@@ -566,7 +566,7 @@ summary.PanelEstimate <- function(object, verbose = TRUE, bias.corrected = FALSE
 #' @param main default is "Estimated Effects of Treatment Over Time". This is the same argument as the standard argument for \code{plot}
 #' @param ylim default is NULL. This is the same argument as the standard argument for \code{plot}
 #' @param ... Additional optional arguments to be passed to \code{plot}.
-#' @examples \dontrun{
+#' @examples
 #' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
 #'                          treatment = "dem", refinement.method = "mahalanobis", 
 #'                          data = dem, match.missing = T, 
@@ -575,7 +575,7 @@ summary.PanelEstimate <- function(object, verbose = TRUE, bias.corrected = FALSE
 #'                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
 #' PE.results <- PanelEstimate(sets = PM.results, data = dem)
 #' plot(PE.results)
-#' }
+#' 
 #' @method plot PanelEstimate
 #' @export
 plot.PanelEstimate <- function(x, ylab = "Estimated Effect of Treatment", 

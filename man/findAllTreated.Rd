@@ -25,9 +25,8 @@ findAllTreated(dmat, treatedvar, time.var, unit.var, hasbeensorted = FALSE)
 More precisely, it finds units for which at time t, the specified treatment has been applied, but at time t - 1, the treatment has not.
 }
 \examples{
-\dontrun{
 treateds <- findAllTreated(dmat = dem, treatedvar = "dem", time.var = "year", unit.var = "wbcode2")
-}
+
 
 }
 \keyword{internal}

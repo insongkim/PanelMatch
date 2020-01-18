@@ -96,17 +96,16 @@ similar control units and a method for defining similarity/distance between unit
 via the \code{covs.formula} argument and \code{refinement.method} argument, which are explained in more detail below.
 }
 \examples{
-\dontrun{
 PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
                          treatment = "dem", refinement.method = "mahalanobis", 
-                         data = dem, match.missing = T, 
+                         data = dem, match.missing = TRUE, 
                          covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
                          size.match = 5, qoi = "att",
                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
 #not including any lagged variables
 PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
                          treatment = "dem", refinement.method = "mahalon", 
-                         data = dem, match.missing = T, 
+                         data = dem, match.missing = TRUE, 
                          covs.formula = ~ tradewb, 
                          size.match = 5, qoi = "att",
                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
@@ -125,12 +124,12 @@ list.of.results = PanelMatch(lag = list(4,3),
                                  outcome.var = list("y", "y"),
                                  lead = list(0:4, 0:3),
                                  forbid.treatment.reversal = list(FALSE, FALSE),
-                                 verbose = list(F, F),
+                                 verbose = list(FALSE, FALSE),
                                  listwise.delete = list(FALSE,FALSE),
-                                 use.diagonal.variance.matrix = list(T, NULL),
+                                 use.diagonal.variance.matrix = list(TRUE, NULL),
                                  exact.match.variables = list(NULL, NULL),
                                  matching = list(TRUE, TRUE))
-}
+
 }
 \author{
 Adam Rauh <adamrauh@mit.edu>, In Song Kim <insong@mit.edu>, Erik Wang

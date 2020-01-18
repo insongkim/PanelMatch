@@ -35,7 +35,6 @@ difference between the values of the specified covariates for the treated unit(s
 Results are standardized and are expressed in standard deviations.
 }
 \examples{
-\dontrun{
 #add some additional data to data set for demonstration purposes
 dem$rdata <- runif(runif(nrow(dem))) 
 pm.obj <- PanelMatch(lead = 0:3, lag = 4, time.id = "year", unit.id = "wbcode2", treatment = "dem",
@@ -45,5 +44,5 @@ pm.obj <- PanelMatch(lead = 0:3, lag = 4, time.id = "year", unit.id = "wbcode2",
                     size.match = 5, qoi = "att")
 get_covariate_balance(pm.obj$att, dem, covariates = c("tradewb", "rdata"), 
                          plot = TRUE, ylim = c(-2,2))
-} 
+
 }

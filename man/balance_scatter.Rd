@@ -34,7 +34,7 @@ balance_scatter(non_refined_set, refined_list, xlim = c(0, 0.8), ylim = c(0,
 \code{balance_scatter} visualizes the standardized mean differences for each covariate
 }
 \examples{
-\dontrun{
+
 sets1 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                     treatment = "dem", refinement.method = "CBPS.match",
                     data = dem, match.missing = F,
@@ -66,7 +66,7 @@ balance_scatter(non_refined_set = sets0$att,
               data = dem,
               covariates = c("y", "tradewb"))
 
-}
+
 
 }
 \author{

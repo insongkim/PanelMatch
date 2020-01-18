@@ -35,14 +35,13 @@ get.matchedsets(t, id, data, L, t.column, id.column, treatedvar,
 \code{get.matchedsets} is used to identify matched sets for a given unit with a specified i, t.
 }
 \examples{
-\dontrun{
 uid <-unique(dem$wbcode2)[1:10]
 subdem <- dem[dem$wbcode2 \%in\% uid, ]
 mset <- get.matchedsets(1992, 4, subdem, 4, "year", "wbcode2", "dem")
 
 treateds <- findAllTreated(subdem, "dem", "year", "wbcode2")
 msets <- get.matchedsets(treateds$year, treateds$wbcode2, subdem, 4, "year", "wbcode2", "dem")
-}
+
 
 }
 \keyword{internal}
