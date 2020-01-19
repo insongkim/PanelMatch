@@ -24,9 +24,4 @@ findAllTreated(dmat, treatedvar, time.var, unit.var, hasbeensorted = FALSE)
 \code{findAllTreated} is used to identify t,id pairs of units for which a matched set might exist. 
 More precisely, it finds units for which at time t, the specified treatment has been applied, but at time t - 1, the treatment has not.
 }
-\examples{
-treateds <- findAllTreated(dmat = dem, treatedvar = "dem", time.var = "year", unit.var = "wbcode2")
-
-
-}
 \keyword{internal}

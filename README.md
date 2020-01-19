@@ -1,5 +1,7 @@
 # PanelMatch: Matching Methods for Causal Inference with Time-Series Cross-Section Data [![Build Status](https://travis-ci.org/insongkim/PanelMatch.svg?branch=master)](https://travis-ci.org/insongkim/PanelMatch)
 
+Authors: In Song Kim (insong@mit.edu), Adam Rauh (adamrauh@mit.edu), Erik Wang (haixiaow@Princeton.edu), Kosuke Imai (imai@harvard.edu)
+
 This R package provides a set of methodological tools that enable
 researchers to apply matching methods to time-series cross-sectional
 data.  Imai, Kim, and Wang (2018) proposes a nonparametric

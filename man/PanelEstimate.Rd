@@ -4,8 +4,13 @@
 \alias{PanelEstimate}
 \title{PanelEstimate}
 \usage{
-PanelEstimate(sets, number.iterations = 1000, df.adjustment = FALSE,
-  confidence.level = 0.95, data)
+PanelEstimate(
+  sets,
+  number.iterations = 1000,
+  df.adjustment = FALSE,
+  confidence.level = 0.95,
+  data
+)
 }
 \arguments{
 \item{sets}{A \code{PanelMatch} object attained via the
@@ -72,9 +77,9 @@ list.of.results = PanelMatch(lag = list(4,3),
                                  outcome.var = list("y", "y"),
                                  lead = list(0:4, 0:3),
                                  forbid.treatment.reversal = list(FALSE, FALSE),
-                                 verbose = list(F, F),
+                                 verbose = list(FALSE, FALSE),
                                  listwise.delete = list(FALSE,FALSE),
-                                 use.diagonal.variance.matrix = list(T, NULL),
+                                 use.diagonal.variance.matrix = list(TRUE, NULL),
                                  exact.match.variables = list(NULL, NULL),
                                  matching = list(TRUE, TRUE))
 

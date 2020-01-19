@@ -59,9 +59,9 @@
 #'                                  outcome.var = list("y", "y"),
 #'                                  lead = list(0:4, 0:3),
 #'                                  forbid.treatment.reversal = list(FALSE, FALSE),
-#'                                  verbose = list(F, F),
+#'                                  verbose = list(FALSE, FALSE),
 #'                                  listwise.delete = list(FALSE,FALSE),
-#'                                  use.diagonal.variance.matrix = list(T, NULL),
+#'                                  use.diagonal.variance.matrix = list(TRUE, NULL),
 #'                                  exact.match.variables = list(NULL, NULL),
 #'                                  matching = list(TRUE, TRUE))
 #' 
@@ -433,7 +433,7 @@ panel_estimate <- function(inference = "bootstrap",
 #' @examples 
 #' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
 #'                          treatment = "dem", refinement.method = "mahalanobis", 
-#'                          data = dem, match.missing = T, 
+#'                          data = dem, match.missing = TRUE, 
 #'                          covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
 #'                          size.match = 5, qoi = "att",
 #'                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
@@ -569,7 +569,7 @@ summary.PanelEstimate <- function(object, verbose = TRUE, bias.corrected = FALSE
 #' @examples
 #' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
 #'                          treatment = "dem", refinement.method = "mahalanobis", 
-#'                          data = dem, match.missing = T, 
+#'                          data = dem, match.missing = TRUE, 
 #'                          covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
 #'                          size.match = 5, qoi = "att",
 #'                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)

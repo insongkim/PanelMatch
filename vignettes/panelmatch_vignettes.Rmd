@@ -1,6 +1,6 @@
 ---
-title: "PanelMatch"
-author: "Vignette Author"
+title: "Using PanelMatch"
+author: "Kosuke Imai, In Song Kim, Erik Wang, Adam Rauh"
 date: "`r Sys.Date()`"
 output: 
   pdf_document:
@@ -11,10 +11,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-<!--
-how to do bibliography
-https://rmarkdown.rstudio.com/authoring_bibliographies_and_citations.html
--->
+The goal of this vignette is to provide a quick overview of using the `PanelMatch` package, highlight important features and functions, and help users get the most out of their experience with the package. It assumes that you have been able to install the package successfully and are already familiar with the basics of R.
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
@@ -23,39 +20,87 @@ knitr::opts_chunk$set(
 )
 ```
 
-# Abstract
-
-# Introduction
+We will be working with the `dem` package, included with the package. Before doing any matching, estimation or further analysis, it is helpful to understand the distribution of treatment within your data set. The package hopes to facilitate this with the `DisplayTreatment function. 
 
 
-# DisplayTreatment
-
-
-## Data Requirements and Assumptions 
-
-```{r, fig.width=5, fig.height=5}
+```{r}
 library(PanelMatch)
 DisplayTreatment(unit.id = "wbcode2",
                  time.id = "year", legend.position = "none",
                  xlab = "year", ylab = "Country Code",
                  treatment = "dem", data = dem)
 ```
+In the plot, the x axis represents time, and the y axis displays the different units in your data set. Red tiles indicate periods where "treatment" is applied to a given unit and blue tiles indicate "control" periods. White spaces indicate missing data. In the above plot, we have a large number of unique units and time periods, so the axes become hard to read. The `DisplayTreatment` function uses `ggplot2` to create this plot, so any custom styling can be applied easily using `ggplot2` conventions. However, the function has some built in options to make cleaning up the plot a little easier. When the data set is particularly large, it can also help to use the `dense.plot` option. There are many ways to customize these plots. We will return to some of these later, but see the documentation for the full list and descriptions of the arguments. 
 
-## Customizing DisplayTreatment Plots
 
-# PanelMatch
+```{r}
+DisplayTreatment(unit.id = "wbcode2",
+                 time.id = "year", legend.position = "none",
+                 xlab = "year", ylab = "Country Code",
+                 treatment = "dem", data = dem, 
+                 hide.x.axis.label = TRUE, hide.y.axis.label = TRUE)
 
-## Data Requirements and Assumptions 
+DisplayTreatment(unit.id = "wbcode2",
+                 time.id = "year", legend.position = "none",
+                 xlab = "year", ylab = "Country Code",
+                 treatment = "dem", data = dem, 
+                 hide.x.axis.label = TRUE, hide.y.axis.label = TRUE, 
+                 dense.plot = TRUE)
+```
 
-## Choosing parameters
+Next, we will move to the `PanelMatch` function. The primary purposes of this function are to 1) create sets matching treated units to control units and 2) determine weights for each control unit in a matched set. (1) is achieved by matching units that receive treatment after previously being control units (ie .units that move from control to treatment at a certain time) to control units that have matching treatment histories in the specified lag window, while also remaining untreated during the same period that the treated unit receives treatment. For example, if unit 4 is a control unit until 1992, when it receives treatment, if lag = 4, it will be matched with control units that share an identical treatment history from 1988-1991, while also *remaining control units* in 1992. (2) is achieved by defining which variables should be used for measuring similarity/distance between units and then determining the most comparable control units to be included in the matched set. There are many parameters that can be tuned for this step. Users must choose a refinement method ("mahalanobis", "ps.match", "CBPS.match", "ps.weight", "CBPS.weight", "ps.msm.weight", "CBPS.msm.weight", or "none"). The "matching" or mahalanobis methods will assign equal weights to the `size.match` most similar control units in a matched set. The "weighting" methods will generate weights in such a way that control units more similar to treated units will be weighted more heavily. Users must also define which covariates should be used in this process. This is set using the `covs.formula` argument, which takes the form of a one side formula object. The variables defined on the right hand side of the formula are the variables used in these calculations. Users can included "lagged" versions of variables using `I(lag(name.of.var, 0:n))`.
+
+
+The first example sets `refinement.method` to `none`, meaning all control units will receive equal weights. This will also be helpful to refer back to when we are evaluating the impact of refinement.
+
+```{r}
+PM.results.none <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
+                         treatment = "dem", refinement.method = "none", 
+                         data = dem, match.missing = TRUE, 
+                         size.match = 5, qoi = "att" ,outcome.var = "y",
+                         lead = 0:4, forbid.treatment.reversal = FALSE, 
+                         use.diagonal.variance.matrix = TRUE)
+```
+
+
+Below, we will use the `mahalanobis` option for `refinement.method` and will include 4 lags of the `tradewb` variable and the outcome variable, excluding any contemporaneous values. In general, you want to find a balance between having a good number of matched sets and having matched sets that are large enough. Having many small matched sets will lead to larger standard errors. 
+
 ```{r}
 PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
                          treatment = "dem", refinement.method = "mahalanobis", 
-                         data = dem, match.missing = T, 
+                         data = dem, match.missing = TRUE, 
                          covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
                          size.match = 5, qoi = "att" ,outcome.var = "y",
-                         lead = 0:4, forbid.treatment.reversal = FALSE)
+                         lead = 0:4, forbid.treatment.reversal = FALSE, 
+                         use.diagonal.variance.matrix = TRUE)
 ```
+
+We can also apply listwise deletion of units for missing data. 
+```{r}
+PM.results1 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
+                         treatment = "dem", refinement.method = "mahalanobis", 
+                         data = dem, match.missing = FALSE, listwise.delete = TRUE, 
+                         covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
+                         size.match = 5, qoi = "att" ,outcome.var = "y",
+                         lead = 0:4, forbid.treatment.reversal = FALSE, 
+                         use.diagonal.variance.matrix = TRUE)
+```
+
+Let's try out a weighting method using propensity scores and then compare performance.
+```{r}
+PM.results2 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
+                         treatment = "dem", refinement.method = "ps.weight", 
+                         data = dem, match.missing = FALSE, listwise.delete = TRUE, 
+                         covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
+                         size.match = 5, qoi = "att" ,outcome.var = "y",
+                         lead = 0:4, forbid.treatment.reversal = FALSE, 
+                         use.diagonal.variance.matrix = TRUE)
+```
+
+
+Now that we've created matched sets, you might be interested in visualizing a few aspects of these results. First, let's make sure the results are sensible, by using `DisplayTreatment` to see if our control treated and control units meet the parameters outlined previously.
+
+
 ## Understanding PanelMatch objects
 
 ## Understanding matched.set objects

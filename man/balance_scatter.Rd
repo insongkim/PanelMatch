@@ -4,10 +4,18 @@
 \alias{balance_scatter}
 \title{Visualizing the standardized mean differences for covariates}
 \usage{
-balance_scatter(non_refined_set, refined_list, xlim = c(0, 0.8), ylim = c(0,
-  0.8), main = "Standardized Mean Difference of Covariates", pchs = c(2, 3),
-  covariates, data, x.axis.label = "Before refinement",
-  y.axis.label = "After refinement")
+balance_scatter(
+  non_refined_set,
+  refined_list,
+  xlim = c(0, 0.8),
+  ylim = c(0, 0.8),
+  main = "Standardized Mean Difference of Covariates",
+  pchs = c(2, 3),
+  covariates,
+  data,
+  x.axis.label = "Before refinement",
+  y.axis.label = "After refinement"
+)
 }
 \arguments{
 \item{non_refined_set}{a matched.set object produced by setting `refinement.method` to "none" in `PanelMatch`}
@@ -37,7 +45,7 @@ balance_scatter(non_refined_set, refined_list, xlim = c(0, 0.8), ylim = c(0,
 
 sets1 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                     treatment = "dem", refinement.method = "CBPS.match",
-                    data = dem, match.missing = F,
+                    data = dem, match.missing = FALSE,
                     covs.formula = ~ I(lag(y, 1:4)) + I(lag(tradewb, 1:4)),
                     size.match = 5, qoi = "att",
                     outcome.var = "y",
@@ -45,7 +53,7 @@ sets1 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
 
 sets0 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                     treatment = "dem", refinement.method = "none",
-                    data = dem, match.missing = F,
+                    data = dem, match.missing = FALSE,
                     covs.formula = ~ I(lag(y, 1:4)) + I(lag(tradewb, 1:4)),
                     size.match = 5, qoi = "att",
                     outcome.var = "y",
@@ -53,7 +61,7 @@ sets0 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
 
 sets2 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                     treatment = "dem", refinement.method = "CBPS.weight",
-                    data = dem, match.missing = F,
+                    data = dem, match.missing = FALSE,
                     covs.formula = ~ I(lag(y, 1:4)) + I(lag(tradewb, 1:4)),
                     size.match = 10, qoi = "att",
                     outcome.var = "y",

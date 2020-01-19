@@ -4,12 +4,26 @@
 \alias{PanelMatch}
 \title{PanelMatch}
 \usage{
-PanelMatch(lag, time.id, unit.id, treatment, refinement.method,
-  size.match = 10, data, match.missing = TRUE, covs.formula = NULL,
-  verbose = FALSE, qoi, lead = 0, outcome.var,
-  exact.match.variables = NULL, forbid.treatment.reversal = FALSE,
-  matching = TRUE, listwise.delete = FALSE,
-  use.diagonal.variance.matrix = FALSE)
+PanelMatch(
+  lag,
+  time.id,
+  unit.id,
+  treatment,
+  refinement.method,
+  size.match = 10,
+  data,
+  match.missing = TRUE,
+  covs.formula = NULL,
+  verbose = FALSE,
+  qoi,
+  lead = 0,
+  outcome.var,
+  exact.match.variables = NULL,
+  forbid.treatment.reversal = FALSE,
+  matching = TRUE,
+  listwise.delete = FALSE,
+  use.diagonal.variance.matrix = FALSE
+)
 }
 \arguments{
 \item{lag}{An integer value indicating the length of treatment history to be matched on}
@@ -104,7 +118,7 @@ PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
 #not including any lagged variables
 PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
-                         treatment = "dem", refinement.method = "mahalon", 
+                         treatment = "dem", refinement.method = "mahalanobis", 
                          data = dem, match.missing = TRUE, 
                          covs.formula = ~ tradewb, 
                          size.match = 5, qoi = "att",

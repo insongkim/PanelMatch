@@ -69,7 +69,7 @@ matched_set <- function(matchedsets, id, t, L, t.var, id.var, treated.var)
 #' @examples
 #' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
 #'                          treatment = "dem", refinement.method = "mahalanobis", 
-#'                          data = dem, match.missing = T, 
+#'                          data = dem, match.missing = TRUE, 
 #'                          covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
 #'                          size.match = 5, qoi = "att",
 #'                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
@@ -126,7 +126,7 @@ summary.matched.set <- function(object, ..., verbose = T)
 #' @examples 
 #' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
 #'                          treatment = "dem", refinement.method = "mahalanobis", 
-#'                          data = dem, match.missing = T, 
+#'                          data = dem, match.missing = TRUE, 
 #'                          covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
 #'                          size.match = 5, qoi = "att",
 #'                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
@@ -172,7 +172,7 @@ plot.matched.set <- function(x, ..., border = NA, col = "grey", ylab = "Frequenc
 #' @examples 
 #' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
 #'                          treatment = "dem", refinement.method = "mahalanobis", 
-#'                          data = dem, match.missing = T, 
+#'                          data = dem, match.missing = TRUE, 
 #'                          covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
 #'                          size.match = 5, qoi = "att",
 #'                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
@@ -491,7 +491,7 @@ encode_index <- function(mset, unit.index, new.unit.id)
 #' 
 #' sets1 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
 #'                     treatment = "dem", refinement.method = "CBPS.match",
-#'                     data = dem, match.missing = F,
+#'                     data = dem, match.missing = FALSE,
 #'                     covs.formula = ~ I(lag(y, 1:4)) + I(lag(tradewb, 1:4)),
 #'                     size.match = 5, qoi = "att",
 #'                     outcome.var = "y",
@@ -499,7 +499,7 @@ encode_index <- function(mset, unit.index, new.unit.id)
 #' 
 #' sets0 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
 #'                     treatment = "dem", refinement.method = "none",
-#'                     data = dem, match.missing = F,
+#'                     data = dem, match.missing = FALSE,
 #'                     covs.formula = ~ I(lag(y, 1:4)) + I(lag(tradewb, 1:4)),
 #'                     size.match = 5, qoi = "att",
 #'                     outcome.var = "y",
@@ -507,7 +507,7 @@ encode_index <- function(mset, unit.index, new.unit.id)
 #' 
 #' sets2 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
 #'                     treatment = "dem", refinement.method = "CBPS.weight",
-#'                     data = dem, match.missing = F,
+#'                     data = dem, match.missing = FALSE,
 #'                     covs.formula = ~ I(lag(y, 1:4)) + I(lag(tradewb, 1:4)),
 #'                     size.match = 10, qoi = "att",
 #'                     outcome.var = "y",

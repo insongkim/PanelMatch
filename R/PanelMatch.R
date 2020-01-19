@@ -72,7 +72,7 @@
 #'                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
 #' #not including any lagged variables
 #' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
-#'                          treatment = "dem", refinement.method = "mahalon", 
+#'                          treatment = "dem", refinement.method = "mahalanobis", 
 #'                          data = dem, match.missing = TRUE, 
 #'                          covs.formula = ~ tradewb, 
 #'                          size.match = 5, qoi = "att",

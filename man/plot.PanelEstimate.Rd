@@ -4,9 +4,14 @@
 \alias{plot.PanelEstimate}
 \title{Plot point estimates and standard errors from a PanelEstimate calculation.}
 \usage{
-\method{plot}{PanelEstimate}(x, ylab = "Estimated Effect of Treatment",
-  xlab = "Time", main = "Estimated Effects of Treatment Over Time",
-  ylim = NULL, ...)
+\method{plot}{PanelEstimate}(
+  x,
+  ylab = "Estimated Effect of Treatment",
+  xlab = "Time",
+  main = "Estimated Effects of Treatment Over Time",
+  ylim = NULL,
+  ...
+)
 }
 \arguments{
 \item{x}{a PanelEstimate object}
@@ -28,7 +33,7 @@ point estimates and standard errors. The only mandatory argument is an object of
 \examples{
 PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
                          treatment = "dem", refinement.method = "mahalanobis", 
-                         data = dem, match.missing = T, 
+                         data = dem, match.missing = TRUE, 
                          covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
                          size.match = 5, qoi = "att",
                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
