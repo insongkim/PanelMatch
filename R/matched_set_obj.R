@@ -265,7 +265,7 @@ build_balance_mats <- function(idx, ordered_expanded_data, msets)
 #'
 #' @export
 get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.weights = FALSE,
-                                  verbose = T, plot = F, 
+                                  verbose = TRUE, plot = FALSE, 
                                   reference.line = TRUE, legend = TRUE, ylab = "SD",...)
 {
   if(is.null(covariates))

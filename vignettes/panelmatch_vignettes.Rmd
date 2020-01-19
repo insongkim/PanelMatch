@@ -2,13 +2,13 @@
 title: "Using PanelMatch"
 author: "Kosuke Imai, In Song Kim, Erik Wang, Adam Rauh"
 date: "`r Sys.Date()`"
-output: 
+output:
   pdf_document:
-    number_sections: true
-vignette: >
-  %\VignetteIndexEntry{Vignette Title}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+    number_sections: yes
+  html_document:
+    df_print: paged
+vignette: |
+  %\VignetteIndexEntry{Vignette Title} %\VignetteEngine{knitr::rmarkdown} %\VignetteEncoding{UTF-8}
 ---
 
 The goal of this vignette is to provide a quick overview of using the `PanelMatch` package, highlight important features and functions, and help users get the most out of their experience with the package. It assumes that you have been able to install the package successfully and are already familiar with the basics of R.
@@ -52,6 +52,8 @@ Next, we will move to the `PanelMatch` function. The primary purposes of this fu
 
 
 The first example sets `refinement.method` to `none`, meaning all control units will receive equal weights. This will also be helpful to refer back to when we are evaluating the impact of refinement.
+
+The `PanelMatch` function returns a `PanelMatch` object, which contains a `matched.set` object. Please consult the wiki page about [matched set objects for more about them](https://github.com/insongkim/PanelMatch/wiki/Matched-Set-Objects).
 
 ```{r}
 PM.results.none <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
@@ -100,24 +102,61 @@ PM.results2 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
 
 Now that we've created matched sets, you might be interested in visualizing a few aspects of these results. First, let's make sure the results are sensible, by using `DisplayTreatment` to see if our control treated and control units meet the parameters outlined previously.
 
+```{r}
+# extract the first matched set
+mset <- PM.results.none$att[1]
 
-## Understanding PanelMatch objects
+DisplayTreatment(unit.id = "wbcode2",
+                 time.id = "year", legend.position = "none",
+                 xlab = "year", ylab = "Country Code",
+                 treatment = "dem", data = dem,
+                 matched.set = mset,
+                 show.set.only = TRUE)
 
-## Understanding matched.set objects
+```
 
-### Subsetting and manipulation of matched.set objects
+We can also get an idea of the number and size of our matched sets by using the `summary` and `plot` methods for `matched.set` objects
 
-### Summary function for matched.set objects
+```{r}
+summary(PM.results.none$att)
 
-### Plot function for matched.set objects
+plot(PM.results.none$att)
+```
 
-## Checking Covariate Balance
+Now, let's see the impact of performing refinement by comparing the balance of covariates before and after. We can use the `get_covariate_balance` function to help. To view the raw results, set `plot = FALSE` 
 
-### Using get_covariate_balance
+```{r}
+get_covariate_balance(PM.results.none$att,
+                      data = dem,
+                      covariates = c("tradewb", "y"),
+                      plot = FALSE)
 
-### Using balance_scatter
+get_covariate_balance(PM.results$att,
+                      data = dem,
+                      covariates = c("tradewb", "y"),
+                      plot = FALSE)
 
-## Checking Multiple Configurations
+get_covariate_balance(PM.results1$att,
+                      data = dem,
+                      covariates = c("tradewb", "y"), 
+                      plot = FALSE)
+
+get_covariate_balance(PM.results2$att,
+                      data = dem,
+                      covariates = c("tradewb", "y"), 
+                      plot = FALSE)
+
+
+```
+Note: you can also check the balance of unrefined matched sets by setting the `use.equal.weights` argument to `TRUE`
+
+```{r}
+get_covariate_balance(PM.results1$att,
+                      data = dem,
+                      covariates = c("tradewb", "y"), 
+                      plot = TRUE, ylim = c(-.2, .2))
+```
+
 
 # PanelEstimate
 
