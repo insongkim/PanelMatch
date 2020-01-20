@@ -158,24 +158,25 @@ get_covariate_balance(PM.results1$att,
 ```
 
 
-# PanelEstimate
-
-## Choosing Parameters
+We can now move to the next major part of the package, obtaining point estimates and standard errors using `PanelEstimate`. The package uses bootstrapping to obtain standard errors. By default, 1000 bootstrap iterations are used, and .95 is the default confidence level. 
 
 ```{r}
-PE.results <- PanelEstimate(sets = PM.results, data = dem)
+PE.results <- PanelEstimate(sets = PM.results1,
+              data = dem,
+              confidence.level = .95,
+              number.iterations = 1000)
 ```
-## Understanding PanelEstimate Results
+
+The function returns a `PanelEstimate` object, which has `summary` and `plot` methods defined. The `plot` method can be customized with all of the same arguments/operations as using the regular `plot` function in base R. 
 
 
-### Summary 
-
-### Plot
 ```{r}
+summary(PE.results)
+
 plot(PE.results)
 ```
 
-# Concluding Remarks
+
 
 
 
