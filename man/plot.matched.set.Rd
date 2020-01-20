@@ -4,18 +4,10 @@
 \alias{plot.matched.set}
 \title{Plot the distribution of the sizes of matched sets.}
 \usage{
-\method{plot}{matched.set}(
-  x,
-  ...,
-  border = NA,
-  col = "grey",
-  ylab = "Frequency of Size",
-  xlab = "Matched Set Size",
-  lwd = NULL,
-  main = "Distribution of matched set sizes",
-  freq = TRUE,
-  include.empty.sets = TRUE
-)
+\method{plot}{matched.set}(x, ..., border = NA, col = "grey",
+  ylab = "Frequency of Size", xlab = "Matched Set Size", lwd = NULL,
+  main = "Distribution of matched set sizes", freq = TRUE,
+  include.empty.sets = FALSE)
 }
 \arguments{
 \item{x}{a \code{matched.set} object}
@@ -36,11 +28,14 @@
 
 \item{freq}{default is TRUE. See \code{freq} argument in \code{hist} function for more}
 
-\item{include.empty.sets}{default is TRUE. Should empty sets be included on the plot? If false, they will be excluded, but noted as a subtitle.}
+\item{include.empty.sets}{logical value indicating whether or not empty sets should be included in the histogram. default is FALSE. If FALSE, then empty sets will be noted as a separate vertical bar at x = 0.}
 }
 \description{
 A plot method for creating histograms of the distribution of the sizes of matched sets. 
-Accepts all standard \code{plot} arguments. Empty sets are excluded from the histogram but are noted in the subtitle by default.
+This method accepts all standard optional \code{plot} arguments via the \code{...} argument. 
+By default, empty matched sets (treated units that could not be 
+matched with any control units) are noted as a vertical bar and not included in the 
+regular histogram. See the \code{include.empty.sets} argument for more information about this.
 }
 \examples{
 PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
@@ -50,6 +45,6 @@ PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                          size.match = 5, qoi = "att",
                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
 plot(PM.results$att)
-
+plot(PM.results$att, include.empty.sets = TRUE)
 
 }

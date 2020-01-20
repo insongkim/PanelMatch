@@ -21,8 +21,8 @@
 #' @param data The same time series cross sectional data set provided to the PanelMatch function to produce the matched sets
 #' @return \code{PanelEstimate} returns a list of class
 #' `PanelEstimate' containing the following components:
-#' \item{coefficients}{the point estimates of the quantity of interest}
-#' \item{bootstrapped.coefficients}{the bootstrapped coefficients}
+#' \item{estimates}{the point estimates of the quantity of interest}
+#' \item{bootstrapped.estimates}{the bootstrapped estimates}
 #' \item{bootstrap.iterations}{the number of iterations used in bootstrapping}
 #' \item{method}{refinement method used to create the matched sets from which the estimates were calculated}
 #' \item{lag}{See PanelMatch argument \code{lag} for more information.}
@@ -286,8 +286,8 @@ panel_estimate <- function(inference = "bootstrap",
       }
       sets <- decode_index(sets, unit.index.map, og.unit.id)
       # changed return to class
-      z <- list("coefficients" = o.coefs,
-                "bootstrapped.coefficients" = coefs, "bootstrap.iterations" = number.iterations, "standard.error" = apply(coefs, 2, sd, na.rm = T),
+      z <- list("estimates" = o.coefs,
+                "bootstrapped.estimates" = coefs, "bootstrap.iterations" = number.iterations, "standard.error" = apply(coefs, 2, sd, na.rm = T),
                 "method" = method, "lag" = lag,
                 "lead" = lead, "confidence.level" = confidence.level, "qoi" = qoi, "matched.sets" = sets)
       class(z) <- "PanelEstimate"
@@ -336,8 +336,8 @@ panel_estimate <- function(inference = "bootstrap",
         coefs[k,] <- atc_new
       }
       sets2 <- decode_index(sets2, unit.index.map, og.unit.id)
-      z <- list("coefficients" = o.coefs,
-                "bootstrapped.coefficients" = coefs, "bootstrap.iterations" = number.iterations, "standard.error" = apply(coefs, 2, sd, na.rm = T),
+      z <- list("estimates" = o.coefs,
+                "bootstrapped.estimates" = coefs, "bootstrap.iterations" = number.iterations, "standard.error" = apply(coefs, 2, sd, na.rm = T),
                 "lead" = lead, "confidence.level" = confidence.level, "qoi" = qoi, "matched.sets" = sets2)
       class(z) <- "PanelEstimate"
       return(z)
@@ -407,8 +407,8 @@ panel_estimate <- function(inference = "bootstrap",
       # return(list("o.coef" = DID_ATE, "boots" = coefs))
       sets <- decode_index(sets, unit.index.map, og.unit.id)
       sets2 <- decode_index(sets2, unit.index.map, og.unit.id)
-      z <- list("coefficients" = o.coefs_ate,
-                "bootstrapped.coefficients" = coefs, "bootstrap.iterations" = number.iterations, "standard.error" = apply(coefs, 2, sd, na.rm = T),
+      z <- list("estimates" = o.coefs_ate,
+                "bootstrapped.estimates" = coefs, "bootstrap.iterations" = number.iterations, "standard.error" = apply(coefs, 2, sd, na.rm = T),
                 "lead" = lead, "confidence.level" = confidence.level, "qoi" = qoi, "matched.sets" = list(sets, sets2))
       class(z) <- "PanelEstimate"
       return(z)
@@ -494,16 +494,16 @@ summary.PanelEstimate <- function(object, verbose = TRUE, bias.corrected = FALSE
   if(bias.corrected)
   {
     if(is.null(object$bootstrap.iterations)) stop("bias corrected estimates only available for bootstrap method currently")
-    df <- rbind(t(as.data.frame(object$coefficients)), # point estimate
+    df <- rbind(t(as.data.frame(object$estimates)), # point estimate
               
-              apply(object$bootstrapped.coefficients, 2, sd, na.rm = T), # bootstrap se
+              apply(object$bootstrapped.estimates, 2, sd, na.rm = T), # bootstrap se
               
               # Efron & Tibshirani 1993 p170 - 171
-              apply(object$bootstrapped.coefficients, 2, quantile, probs = c( (1-object$confidence.level)/2, object$confidence.level+(1-object$confidence.level)/2 ), na.rm = T), # percentile confidence.level
+              apply(object$bootstrapped.estimates, 2, quantile, probs = c( (1-object$confidence.level)/2, object$confidence.level+(1-object$confidence.level)/2 ), na.rm = T), # percentile confidence.level
               # Efron & Tibshirani 1993 p138
-              2*object$coefficients - colMeans(object$bootstrapped.coefficients, na.rm = T), # bc point estimate
+              2*object$estimates - colMeans(object$bootstrapped.estimates, na.rm = T), # bc point estimate
               
-              apply( (2*matrix(nrow = object$bootstrap.iterations, ncol = length(object$coefficients), object$coefficients, byrow = TRUE) - object$bootstrapped.coefficients), 2, quantile, 
+              apply( (2*matrix(nrow = object$bootstrap.iterations, ncol = length(object$estimates), object$estimates, byrow = TRUE) - object$bootstrapped.estimates), 2, quantile, 
                              probs = c((1-object$confidence.level)/2, object$confidence.level+(1-object$confidence.level)/2), 
                              na.rm = T) ) # bc percentile confidence.level)
           rownames(df) <- c("estimate", "std.error", 
@@ -517,12 +517,12 @@ summary.PanelEstimate <- function(object, verbose = TRUE, bias.corrected = FALSE
   {
     if(!is.null(object$bootstrap.iteration))
     {
-      df <- rbind(t(as.data.frame(object$coefficients)), # point estimate
+      df <- rbind(t(as.data.frame(object$estimates)), # point estimate
                   
-                  apply(object$bootstrapped.coefficients, 2, sd, na.rm = T), # bootstrap se
+                  apply(object$bootstrapped.estimates, 2, sd, na.rm = T), # bootstrap se
                   
                   # Efron & Tibshirani 1993 p170 - 171
-                  apply(object$bootstrapped.coefficients, 2, quantile, probs = c( (1-object$confidence.level)/2, object$confidence.level+(1-object$confidence.level)/2 ), na.rm = T))
+                  apply(object$bootstrapped.estimates, 2, quantile, probs = c( (1-object$confidence.level)/2, object$confidence.level+(1-object$confidence.level)/2 ), na.rm = T))
       rownames(df) <- c("estimate", "std.error", 
                         paste0((1-object$confidence.level)/2 * 100, "%"),
                         paste0( (object$confidence.level+(1-object$confidence.level)/2) * 100, "%"))
@@ -533,15 +533,15 @@ summary.PanelEstimate <- function(object, verbose = TRUE, bias.corrected = FALSE
     else #wfe method
     {
       critical.vals <- rep(qt((1 - object$confidence.level) / 2, object$df), 2) * c(1, -1)
-      quants <- object$coefficients + critical.vals * object$standard.error
-      df <- as.data.frame(c(object$coefficients, # point estimate
+      quants <- object$estimates + critical.vals * object$standard.error
+      df <- as.data.frame(c(object$estimates, # point estimate
                   object$standard.error,
                   quants))
       rownames(df) <- c("estimate", "std.error", 
                         paste0((1-object$confidence.level)/2 * 100, "%"),
                         paste0( (object$confidence.level+(1-object$confidence.level)/2) * 100, "%"))
       tdf <- t(df)
-      rownames(tdf) <- names(object$coefficients)
+      rownames(tdf) <- names(object$estimates)
       if(!verbose) return(t(df))
       return(list("summary" = tdf, "lag" = lag, "qoi" = object$qoi) )
     }

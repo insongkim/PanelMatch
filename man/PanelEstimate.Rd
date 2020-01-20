@@ -4,13 +4,8 @@
 \alias{PanelEstimate}
 \title{PanelEstimate}
 \usage{
-PanelEstimate(
-  sets,
-  number.iterations = 1000,
-  df.adjustment = FALSE,
-  confidence.level = 0.95,
-  data
-)
+PanelEstimate(sets, number.iterations = 1000, df.adjustment = FALSE,
+  confidence.level = 0.95, data)
 }
 \arguments{
 \item{sets}{A \code{PanelMatch} object attained via the
@@ -31,8 +26,8 @@ estimates for statistical inference. The default is .95.}
 \value{
 \code{PanelEstimate} returns a list of class
 `PanelEstimate' containing the following components:
-\item{coefficients}{the point estimates of the quantity of interest}
-\item{bootstrapped.coefficients}{the bootstrapped coefficients}
+\item{estimates}{the point estimates of the quantity of interest}
+\item{bootstrapped.estimates}{the bootstrapped estimates}
 \item{bootstrap.iterations}{the number of iterations used in bootstrapping}
 \item{method}{refinement method used to create the matched sets from which the estimates were calculated}
 \item{lag}{See PanelMatch argument \code{lag} for more information.}

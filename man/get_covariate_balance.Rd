@@ -4,18 +4,9 @@
 \alias{get_covariate_balance}
 \title{Calculate covariate balance}
 \usage{
-get_covariate_balance(
-  matched.sets,
-  data,
-  covariates,
-  use.equal.weights = FALSE,
-  verbose = TRUE,
-  plot = FALSE,
-  reference.line = TRUE,
-  legend = TRUE,
-  ylab = "SD",
-  ...
-)
+get_covariate_balance(matched.sets, data, covariates,
+  use.equal.weights = FALSE, verbose = TRUE, plot = FALSE,
+  reference.line = TRUE, legend = TRUE, ylab = "SD", ...)
 }
 \arguments{
 \item{matched.sets}{A matched.set object}
@@ -28,7 +19,7 @@ get_covariate_balance(
 
 \item{verbose}{When TRUE, the function will return more information about the calculations/results. When FALSE, a more compact version of the results/calculations are returned.}
 
-\item{plot}{When TRUE, a plot showing the covariate balance calculation results will be shown. When FALSE, no plot is made, but the results of the calculations are returned.}
+\item{plot}{When TRUE, a plot showing the covariate balance calculation results will be shown. When FALSE, no plot is made, but the results of the calculations are returned. default is FALSE}
 
 \item{reference.line}{logical indicating whether or not a horizontal line should be present on the plot at y = 0}
 
@@ -51,6 +42,8 @@ pm.obj <- PanelMatch(lead = 0:3, lag = 4, time.id = "year", unit.id = "wbcode2",
                     data = dem, match.missing = TRUE,
                     covs.formula = ~ tradewb + rdata + I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
                     size.match = 5, qoi = "att")
+get_covariate_balance(pm.obj$att, dem, covariates = c("tradewb", "rdata"), 
+                         ylim = c(-2,2))
 get_covariate_balance(pm.obj$att, dem, covariates = c("tradewb", "rdata"), 
                          plot = TRUE, ylim = c(-2,2))
 

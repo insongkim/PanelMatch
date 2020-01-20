@@ -4,14 +4,9 @@
 \alias{plot.PanelEstimate}
 \title{Plot point estimates and standard errors from a PanelEstimate calculation.}
 \usage{
-\method{plot}{PanelEstimate}(
-  x,
-  ylab = "Estimated Effect of Treatment",
-  xlab = "Time",
-  main = "Estimated Effects of Treatment Over Time",
-  ylim = NULL,
-  ...
-)
+\method{plot}{PanelEstimate}(x, ylab = "Estimated Effect of Treatment",
+  xlab = "Time", main = "Estimated Effects of Treatment Over Time",
+  ylim = NULL, ...)
 }
 \arguments{
 \item{x}{a PanelEstimate object}

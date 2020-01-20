@@ -207,7 +207,7 @@ test_that("(ATT) PanelEstimate Runs", {
   
   pe.results <- PanelEstimate(pm1, data = dem)
   comp.results <-  c(-0.903871831205692,-0.497466128634409,0.403842635007254,1.24893191622705)
-  expect_equivalent(pe.results$coefficients, comp.results)
+  expect_equivalent(pe.results$estimates, comp.results)
 })
 
 
@@ -223,7 +223,7 @@ test_that("(ATC) PanelEstimate Runs", {
   
   pe.results <- PanelEstimate(pm1, data = dem)
   comp.results <-  c(5.21729365330116,7.97913255878523,8.6319948682598,7.93186896829045)
-  expect_equivalent(pe.results$coefficients, comp.results)
+  expect_equivalent(pe.results$estimates, comp.results)
   
 })
 
@@ -239,7 +239,7 @@ test_that("(ATE) PanelEstimate Runs", {
   
   pe.results <- PanelEstimate(pm1, data = dem)
   comp.results <-  c(1.20544870737437,2.42352395959804,3.23921941808752,3.55183590038403)
-  expect_equivalent(pe.results$coefficients, comp.results)
+  expect_equivalent(pe.results$estimates, comp.results)
   
 })
 

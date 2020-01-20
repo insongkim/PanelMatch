@@ -110,7 +110,10 @@ summary.matched.set <- function(object, ..., verbose = T)
 #' 
 #' 
 #' A plot method for creating histograms of the distribution of the sizes of matched sets. 
-#' Accepts all standard \code{plot} arguments. Empty sets are excluded from the histogram but are noted in the subtitle by default.
+#' This method accepts all standard optional \code{plot} arguments via the \code{...} argument. 
+#' By default, empty matched sets (treated units that could not be 
+#' matched with any control units) are noted as a vertical bar and not included in the 
+#' regular histogram. See the \code{include.empty.sets} argument for more information about this.
 #' 
 #' @param x a \code{matched.set} object
 #' @param ... optional arguments to be passed to \code{plot} 
@@ -121,7 +124,7 @@ summary.matched.set <- function(object, ..., verbose = T)
 #' @param lwd default is NULL. This is the same argument as the standard argument for \code{plot}
 #' @param main default is "Distribution of matched set sizes". This is the same argument as the standard argument for \code{plot}
 #' @param freq default is TRUE. See \code{freq} argument in \code{hist} function for more
-#' @param include.empty.sets default is TRUE. Should empty sets be included on the plot? If false, they will be excluded, but noted as a subtitle.
+#' @param include.empty.sets logical value indicating whether or not empty sets should be included in the histogram. default is FALSE. If FALSE, then empty sets will be noted as a separate vertical bar at x = 0.
 #' 
 #' @examples 
 #' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
@@ -131,15 +134,16 @@ summary.matched.set <- function(object, ..., verbose = T)
 #'                          size.match = 5, qoi = "att",
 #'                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
 #' plot(PM.results$att)
-#' 
+#' plot(PM.results$att, include.empty.sets = TRUE)
 #' 
 #' @method plot matched.set
 #' @export
 plot.matched.set <- function(x, ..., border = NA, col = "grey", ylab = "Frequency of Size", 
                              xlab ="Matched Set Size" , lwd = NULL,
-                             main = "Distribution of matched set sizes", freq = TRUE, include.empty.sets = TRUE)
+                             main = "Distribution of matched set sizes", 
+                             freq = TRUE, include.empty.sets = FALSE)
 {
-    set <- x  
+    set <- x
     lvec <- sapply(set, length)
   
     if(include.empty.sets)
@@ -153,11 +157,17 @@ plot.matched.set <- function(x, ..., border = NA, col = "grey", ylab = "Frequenc
       if(sum(lvec == 0) > 0)
       {
         num.empties <- as.character(sum(lvec == 0))
-        graphics::hist(x = lvec.nonempty, freq = freq, border = border, col = col, ylab = ylab, xlab = xlab, main = main, sub = paste(num.empties, "empty matched set(s)"), ...)
+        graphics::hist(x = lvec.nonempty, freq = freq, border = border, col = col, ylab = ylab, 
+                       xlab = xlab, main = main, ...)
+        graphics::lines(x = c(0,0), 
+              y = c(0, num.empties), 
+              lwd = 4,
+              col = "#ffc6c4")
       }
       else
       {
-        graphics::hist(x = lvec.nonempty, freq = freq, border = border, col = col, ylab = ylab, xlab = xlab, main = main, ...)
+        graphics::hist(x = lvec.nonempty, freq = freq, border = border, col = col, ylab = ylab, 
+                       xlab = xlab, main = main, ...)
       }
     }
     
@@ -245,7 +255,7 @@ build_balance_mats <- function(idx, ordered_expanded_data, msets)
 #' @param matched.sets A matched.set object
 #' @param data The time series cross sectional data set used to produce the matched.set object. This data set should be identical to the one passed to PanelMatch/PanelEstimate to ensure consistent results.
 #' @param verbose When TRUE, the function will return more information about the calculations/results. When FALSE, a more compact version of the results/calculations are returned.
-#' @param plot When TRUE, a plot showing the covariate balance calculation results will be shown. When FALSE, no plot is made, but the results of the calculations are returned. 
+#' @param plot When TRUE, a plot showing the covariate balance calculation results will be shown. When FALSE, no plot is made, but the results of the calculations are returned. default is FALSE
 #' @param covariates a character vector, specifying the names of the covariates for which the user is interested in calculating balance. 
 #' @param reference.line logical indicating whether or not a horizontal line should be present on the plot at y = 0
 #' @param legend logical indicating whether or not a legend identifying the variables should be included on the plot
@@ -260,6 +270,8 @@ build_balance_mats <- function(idx, ordered_expanded_data, msets)
 #'                     data = dem, match.missing = TRUE,
 #'                     covs.formula = ~ tradewb + rdata + I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
 #'                     size.match = 5, qoi = "att")
+#' get_covariate_balance(pm.obj$att, dem, covariates = c("tradewb", "rdata"), 
+#'                          ylim = c(-2,2))
 #' get_covariate_balance(pm.obj$att, dem, covariates = c("tradewb", "rdata"), 
 #'                          plot = TRUE, ylim = c(-2,2))
 #'
