@@ -2,7 +2,7 @@
 % Please edit documentation in R/matched_set_obj.R
 \name{balance_scatter}
 \alias{balance_scatter}
-\title{Visualizing the standardized mean differences for covariates}
+\title{balance_scatter}
 \usage{
 balance_scatter(
   non_refined_set,
@@ -39,18 +39,18 @@ balance_scatter(
 \item{y.axis.label}{y axis label}
 }
 \description{
-\code{balance_scatter} visualizes the standardized mean differences for each covariate
+Visualizing the standardized mean differences for covariates via a scatter plot.
+}
+\details{
+\code{balance_scatter} visualizes the standardized mean differences for each covariate.
+ALthough users can use the scatter plot in a variety of ways, it's recommended that 
+the x-axis refers to balance for covariates before refinement, and y-axis
+refers to balance after refinement. Users can utilize parameters powered by \code{plot}
+in base R to further customize the figure.
 }
 \examples{
 
-sets1 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
-                    treatment = "dem", refinement.method = "CBPS.match",
-                    data = dem, match.missing = FALSE,
-                    covs.formula = ~ I(lag(y, 1:4)) + I(lag(tradewb, 1:4)),
-                    size.match = 5, qoi = "att",
-                    outcome.var = "y",
-                    lead = 0:4, forbid.treatment.reversal = FALSE)
-
+# get a matched set without refinement
 sets0 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                     treatment = "dem", refinement.method = "none",
                     data = dem, match.missing = FALSE,
@@ -59,6 +59,17 @@ sets0 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                     outcome.var = "y",
                     lead = 0:4, forbid.treatment.reversal = FALSE)
 
+# get a matched set with refinement using CBPS.match, setting the 
+# size of matched set to 5
+sets1 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
+                    treatment = "dem", refinement.method = "CBPS.match",
+                    data = dem, match.missing = FALSE,
+                    covs.formula = ~ I(lag(y, 1:4)) + I(lag(tradewb, 1:4)),
+                    size.match = 5, qoi = "att",
+                    outcome.var = "y",
+                    lead = 0:4, forbid.treatment.reversal = FALSE)
+
+# get another matched set with refinement using CBPS.weight
 sets2 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                     treatment = "dem", refinement.method = "CBPS.weight",
                     data = dem, match.missing = FALSE,
@@ -68,11 +79,20 @@ sets2 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                     lead = 0:4, forbid.treatment.reversal = FALSE)
 
 
-
+# use the function to produce the scatter plot
 balance_scatter(non_refined_set = sets0$att,
               refined_list = list(sets1$att, sets2$att),
               data = dem,
               covariates = c("y", "tradewb"))
+# add legend 
+legend(x = 0, y = 0.8,  
+legend = c("CBPS matching",
+           "CBPS weighting"),
+y.intersp = 0.65,
+x.intersp = 0.3,
+xjust = 0,
+pch = c(1, 3), pt.cex = 1,
+bty = "n", ncol = 1, cex = 1, bg = "white")
 
 
 
