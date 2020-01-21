@@ -4,26 +4,26 @@
 \alias{summary.matched.set}
 \title{Summarize information about a \code{matched.set} object and the matched sets contained within them.}
 \usage{
-\method{summary}{matched.set}(object, ..., verbose = T)
+\method{summary}{matched.set}(object, ..., verbose = TRUE)
 }
 \arguments{
 \item{object}{a \code{matched.set} object}
 
-\item{...}{Optional additional arguments to be passed to the summary function}
+\item{...}{Optional additional arguments to be passed to the \code{summary} function}
 
 \item{verbose}{Logical option specifying whether or not a longer, more verbose summary should be calculated and returned. Default is 
 \code{TRUE}.}
 }
 \value{
 list object with either 5 or 1 element(s), depending on whether or not \code{verbose} is set to \code{TRUE} or not.
-\item{overview}{A data.frame object containing information about the treated units, and the number of matched control units of weights zero and above.}
-\item{set.size.summary}{a summary object summarizing the min/max and IQR of matched set sizes}
-\item{number.of.treated.units}{The number of units that are considered "treated" units}
-\item{num.units.empty.set}{The number of treated units that were not able to be matched to any control units}
-\item{lag}{The size of the lag window used for matching on treatment history. This affects which treated and control units are matched}
+\item{overview}{A data.frame object containing information about the treated units (unit id, time of treatment), and the number of matched control units of weights zero and above.}
+\item{set.size.summary}{a \code{summary} object summarizing the min, max, and IQR of matched set sizes}
+\item{number.of.treated.units}{The number of unit, time pairs that are considered to be "treated" units}
+\item{num.units.empty.set}{The number of units treated at a particular time that were not able to be matched to any control units}
+\item{lag}{The size of the lag window used for matching on treatment history. This affects which treated and control units are matched.}
 }
 \description{
-A summary method for viewing summary data about the sizes of matched sets and metadata about how they were created. This method
+A method for viewing summary data about the sizes of matched sets and metadata about how they were created. This method
 accepts all standard \code{summary} arguments.
 }
 \examples{

@@ -6,7 +6,7 @@
 \usage{
 \method{plot}{matched.set}(x, ..., border = NA, col = "grey",
   ylab = "Frequency of Size", xlab = "Matched Set Size", lwd = NULL,
-  main = "Distribution of matched set sizes", freq = TRUE,
+  main = "Distribution of Matched Set Sizes", freq = TRUE,
   include.empty.sets = FALSE)
 }
 \arguments{
@@ -24,17 +24,17 @@
 
 \item{lwd}{default is NULL. This is the same argument as the standard argument for \code{plot}}
 
-\item{main}{default is "Distribution of matched set sizes". This is the same argument as the standard argument for \code{plot}}
+\item{main}{default is "Distribution of Matched Set Sizes". This is the same argument as the standard argument for \code{plot}}
 
-\item{freq}{default is TRUE. See \code{freq} argument in \code{hist} function for more}
+\item{freq}{default is TRUE. See \code{freq} argument in \code{hist} function for more.}
 
-\item{include.empty.sets}{logical value indicating whether or not empty sets should be included in the histogram. default is FALSE. If FALSE, then empty sets will be noted as a separate vertical bar at x = 0.}
+\item{include.empty.sets}{logical value indicating whether or not empty sets should be included in the histogram. default is FALSE. If FALSE, then empty sets will be noted as a separate vertical bar at x = 0. If TRUE, empty sets will be included as normal sets.}
 }
 \description{
-A plot method for creating histograms of the distribution of the sizes of matched sets. 
+A plot method for creating a histogram of the distribution of the sizes of matched sets. 
 This method accepts all standard optional \code{plot} arguments via the \code{...} argument. 
 By default, empty matched sets (treated units that could not be 
-matched with any control units) are noted as a vertical bar and not included in the 
+matched with any control units) are noted as a vertical bar at x = 0 and not included in the 
 regular histogram. See the \code{include.empty.sets} argument for more information about this.
 }
 \examples{

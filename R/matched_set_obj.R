@@ -3,7 +3,7 @@
 #' \code{matched_set} is a constructor for the \code{matched.set} class.
 #' 
 #' 
-#' Users should never need to use this function by itself. 
+#' Users should never need to use this function by itself. See below for more about \code{matched.set} objects.
 #' 
 #' @param matchedsets a list of treated units and matched control units. Each element in the list should be a vector of control unit ids.
 #' @param id A vector containing the ids of treated units
@@ -16,14 +16,15 @@
 #' matched.set objects are a modified list. Each element in the list is a vector of ids corresponding to the control unit ids in a matched set. 
 #' Additionally, these vectors might have additional attributes -- "weights". These correspond to the weights corresponding to each control unit, 
 #' as determined by the specified refinement method.
-#' Each element also has a name, which corresponds to the unit id and time variable of the treated unit and time of treatment, 
+#' Each element also has a name, which corresponds to the unit id of the treated unit and time of treatment, 
 #' concatenated together and separated by a period. \code{matched.set} objects also have a number of 
-#' methods defined: \code{summary}, \code{plot}, and \code{`[`}
+#' methods defined: \code{summary}, \code{plot}, and \code{`[`}. \code{matched.set} objects can be modified manually
+#' as long as these conventions (and conventions about other attributes) are maintained. It is important to note that \code{matched.set} objects are distinct from \code{PanelMatch} objects. \code{matched.set} objects are often contained within \code{PanelMatch} objects.
 #' @return \code{matched.set} objects have additional attributes. These reflect the specified parameters when using the \code{PanelMatch} function:
-#' \item{lag}{an integer value indicating the length of treatment history to be used for matching}
-#' \item{t.var}{time variable name, represented as a character}
-#' \item{id.var}{unit id variable name, represented as a character}
-#' \item{treated.var}{treated variable name, represented as a character}
+#' \item{lag}{an integer value indicating the length of treatment history to be used for matching. Treated and control units are matched based on whether or not they have exactly matching treatment histories in the lag window.}
+#' \item{t.var}{time variable name, represented as a character/string}
+#' \item{id.var}{unit id variable name, represented as a character/string}
+#' \item{treated.var}{treated variable name, represented as a character/string}
 #' \item{class}{class of the object: should always be "matched.set"}
 #' \item{refinement.method}{method used to refine and/or weight the control units in each set.}
 #' \item{covs.formula}{One sided formula indicating which variables should be used for matching and refinement}
@@ -51,20 +52,20 @@ matched_set <- function(matchedsets, id, t, L, t.var, id.var, treated.var)
 #' Summarize information about a \code{matched.set} object and the matched sets contained within them.
 #' 
 #' 
-#' A summary method for viewing summary data about the sizes of matched sets and metadata about how they were created. This method
+#' A method for viewing summary data about the sizes of matched sets and metadata about how they were created. This method
 #' accepts all standard \code{summary} arguments. 
 #' 
 #' @param object a \code{matched.set} object
-#' @param ... Optional additional arguments to be passed to the summary function
+#' @param ... Optional additional arguments to be passed to the \code{summary} function
 #' @param verbose Logical option specifying whether or not a longer, more verbose summary should be calculated and returned. Default is 
 #' \code{TRUE}.
 #' 
 #' @return list object with either 5 or 1 element(s), depending on whether or not \code{verbose} is set to \code{TRUE} or not.
-#' \item{overview}{A data.frame object containing information about the treated units, and the number of matched control units of weights zero and above.}
-#' \item{set.size.summary}{a summary object summarizing the min/max and IQR of matched set sizes}
-#' \item{number.of.treated.units}{The number of units that are considered "treated" units}
-#' \item{num.units.empty.set}{The number of treated units that were not able to be matched to any control units}
-#' \item{lag}{The size of the lag window used for matching on treatment history. This affects which treated and control units are matched}
+#' \item{overview}{A data.frame object containing information about the treated units (unit id, time of treatment), and the number of matched control units of weights zero and above.}
+#' \item{set.size.summary}{a \code{summary} object summarizing the min, max, and IQR of matched set sizes}
+#' \item{number.of.treated.units}{The number of unit, time pairs that are considered to be "treated" units}
+#' \item{num.units.empty.set}{The number of units treated at a particular time that were not able to be matched to any control units}
+#' \item{lag}{The size of the lag window used for matching on treatment history. This affects which treated and control units are matched.}
 #' 
 #' @examples
 #' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
@@ -79,7 +80,7 @@ matched_set <- function(matchedsets, id, t, L, t.var, id.var, treated.var)
 #' 
 #' @method summary matched.set
 #' @export
-summary.matched.set <- function(object, ..., verbose = T)
+summary.matched.set <- function(object, ..., verbose = TRUE)
 {
   set <- object
   Lengthcol <- sapply(set, length)
@@ -109,10 +110,10 @@ summary.matched.set <- function(object, ..., verbose = T)
 #' Plot the distribution of the sizes of matched sets.
 #' 
 #' 
-#' A plot method for creating histograms of the distribution of the sizes of matched sets. 
+#' A plot method for creating a histogram of the distribution of the sizes of matched sets. 
 #' This method accepts all standard optional \code{plot} arguments via the \code{...} argument. 
 #' By default, empty matched sets (treated units that could not be 
-#' matched with any control units) are noted as a vertical bar and not included in the 
+#' matched with any control units) are noted as a vertical bar at x = 0 and not included in the 
 #' regular histogram. See the \code{include.empty.sets} argument for more information about this.
 #' 
 #' @param x a \code{matched.set} object
@@ -122,9 +123,9 @@ summary.matched.set <- function(object, ..., verbose = T)
 #' @param ylab default is "Frequency of Size". This is the same argument as the standard argument for \code{plot}
 #' @param xlab default is "Matched Set Size". This is the same argument as the standard argument for \code{plot}
 #' @param lwd default is NULL. This is the same argument as the standard argument for \code{plot}
-#' @param main default is "Distribution of matched set sizes". This is the same argument as the standard argument for \code{plot}
-#' @param freq default is TRUE. See \code{freq} argument in \code{hist} function for more
-#' @param include.empty.sets logical value indicating whether or not empty sets should be included in the histogram. default is FALSE. If FALSE, then empty sets will be noted as a separate vertical bar at x = 0.
+#' @param main default is "Distribution of Matched Set Sizes". This is the same argument as the standard argument for \code{plot}
+#' @param freq default is TRUE. See \code{freq} argument in \code{hist} function for more.
+#' @param include.empty.sets logical value indicating whether or not empty sets should be included in the histogram. default is FALSE. If FALSE, then empty sets will be noted as a separate vertical bar at x = 0. If TRUE, empty sets will be included as normal sets.
 #' 
 #' @examples 
 #' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
@@ -140,7 +141,7 @@ summary.matched.set <- function(object, ..., verbose = T)
 #' @export
 plot.matched.set <- function(x, ..., border = NA, col = "grey", ylab = "Frequency of Size", 
                              xlab ="Matched Set Size" , lwd = NULL,
-                             main = "Distribution of matched set sizes", 
+                             main = "Distribution of Matched Set Sizes", 
                              freq = TRUE, include.empty.sets = FALSE)
 {
     set <- x
@@ -176,7 +177,8 @@ plot.matched.set <- function(x, ..., border = NA, col = "grey", ylab = "Frequenc
 #' Print \code{matched.set} objects.
 #'
 #' @param x a \code{matched.set} object
-#' @param verbose logical indicating whether or not output should be printed in expanded form
+#' @param verbose logical indicating whether or not output should be printed in expanded form. 
+#' The verbose form is not recommended unless the data set is small.
 #' @param ... additional arguments to be passed to \code{print}
 #' 
 #' @examples 
@@ -414,73 +416,6 @@ get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.wei
   }
 }
 
-decode_index <- function(mset, unit.index, original.unit.id)#, original.time.id)
-{
-  decode.control.units <- function(in_, unit.index)
-  {
-    news <- unit.index$original.id[match(in_, unit.index$new.id)]
-    if(!is.null(attr(in_, "distances")))
-    {
-      attr(news, "distances") <- attr(in_, "distances")
-      names(attr(news, "distances")) <- news
-    }
-    if(!is.null(attr(in_, "weights")))
-    {
-      attr(news, "weights") <- attr(in_, "weights")
-      names(attr(news, "weights")) <- news
-    }
-    return(news)
-  }
-  new.mset <- sapply(mset, decode.control.units, unit.index = unit.index, simplify = F)
-  decode.treated.units <- function(ts, ids, unit.index)#, time.index)
-  {
-    n.ids <- unit.index$original.id[match(ids, unit.index$new.id)]
-    
-    return(paste0(n.ids, ".", ts))
-  }
-  treated.ts <- as.numeric(unlist(strsplit(names(mset), split = "[.]"))[c(F,T)])
-  treated.ids <- as.numeric(unlist(strsplit(names(mset), split = "[.]"))[c(T,F)])
-  attributes(new.mset) <- attributes(mset)
-  names(new.mset) <- decode.treated.units(treated.ts, treated.ids, unit.index)
-  attr(new.mset, "id.var") <- original.unit.id
-  
-  return(new.mset)
-}
-
-
-encode_index <- function(mset, unit.index, new.unit.id)
-{
-  encode.control.units <- function(in_, unit.index)
-  {
-    news <- unit.index$new.id[match(in_, unit.index$original.id)]
-    if(!is.null(attr(in_, "distances")))
-    {
-      attr(news, "distances") <- attr(in_, "distances")
-      names(attr(news, "distances")) <- news
-    }
-    if(!is.null(attr(in_, "weights")))
-    {
-      attr(news, "weights") <- attr(in_, "weights")
-      names(attr(news, "weights")) <- news
-    }
-    return(news)
-  }
-  new.mset <- sapply(mset, encode.control.units, unit.index = unit.index, simplify = F)
-  encode.treated.units <- function(ts, ids, unit.index)#, time.index)
-  {
-    n.ids <- unit.index$new.id[match(ids, unit.index$original.id)]
-    
-    return(paste0(n.ids, ".", ts))
-  }
-  treated.ts <- (unlist(strsplit(names(mset), split = "[.]"))[c(F,T)])
-  treated.ids <- (unlist(strsplit(names(mset), split = "[.]"))[c(T,F)])
-  attributes(new.mset) <- attributes(mset)
-  names(new.mset) <- encode.treated.units(treated.ts, treated.ids, unit.index)
-  attr(new.mset, "id.var") <- new.unit.id
-  
-  return(new.mset)
-}
-
 #' balance_scatter
 #'
 #' Visualizing the standardized mean differences for covariates via a scatter plot. 
@@ -606,4 +541,69 @@ balance_scatter <- function(non_refined_set, refined_list,
 
 
 
+decode_index <- function(mset, unit.index, original.unit.id)#, original.time.id)
+{
+  decode.control.units <- function(in_, unit.index)
+  {
+    news <- unit.index$original.id[match(in_, unit.index$new.id)]
+    if(!is.null(attr(in_, "distances")))
+    {
+      attr(news, "distances") <- attr(in_, "distances")
+      names(attr(news, "distances")) <- news
+    }
+    if(!is.null(attr(in_, "weights")))
+    {
+      attr(news, "weights") <- attr(in_, "weights")
+      names(attr(news, "weights")) <- news
+    }
+    return(news)
+  }
+  new.mset <- sapply(mset, decode.control.units, unit.index = unit.index, simplify = F)
+  decode.treated.units <- function(ts, ids, unit.index)#, time.index)
+  {
+    n.ids <- unit.index$original.id[match(ids, unit.index$new.id)]
+    
+    return(paste0(n.ids, ".", ts))
+  }
+  treated.ts <- as.numeric(unlist(strsplit(names(mset), split = "[.]"))[c(F,T)])
+  treated.ids <- as.numeric(unlist(strsplit(names(mset), split = "[.]"))[c(T,F)])
+  attributes(new.mset) <- attributes(mset)
+  names(new.mset) <- decode.treated.units(treated.ts, treated.ids, unit.index)
+  attr(new.mset, "id.var") <- original.unit.id
+  
+  return(new.mset)
+}
 
+
+encode_index <- function(mset, unit.index, new.unit.id)
+{
+  encode.control.units <- function(in_, unit.index)
+  {
+    news <- unit.index$new.id[match(in_, unit.index$original.id)]
+    if(!is.null(attr(in_, "distances")))
+    {
+      attr(news, "distances") <- attr(in_, "distances")
+      names(attr(news, "distances")) <- news
+    }
+    if(!is.null(attr(in_, "weights")))
+    {
+      attr(news, "weights") <- attr(in_, "weights")
+      names(attr(news, "weights")) <- news
+    }
+    return(news)
+  }
+  new.mset <- sapply(mset, encode.control.units, unit.index = unit.index, simplify = F)
+  encode.treated.units <- function(ts, ids, unit.index)#, time.index)
+  {
+    n.ids <- unit.index$new.id[match(ids, unit.index$original.id)]
+    
+    return(paste0(n.ids, ".", ts))
+  }
+  treated.ts <- (unlist(strsplit(names(mset), split = "[.]"))[c(F,T)])
+  treated.ids <- (unlist(strsplit(names(mset), split = "[.]"))[c(T,F)])
+  attributes(new.mset) <- attributes(mset)
+  names(new.mset) <- encode.treated.units(treated.ts, treated.ids, unit.index)
+  attr(new.mset, "id.var") <- new.unit.id
+  
+  return(new.mset)
+}
