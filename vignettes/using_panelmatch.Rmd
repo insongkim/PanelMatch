@@ -3,16 +3,16 @@ title: "Using PanelMatch"
 author: "Kosuke Imai, In Song Kim, Erik Wang, Adam Rauh"
 date: "`r Sys.Date()`"
 output:
-  pdf_document:
-    number_sections: yes
   html_document:
     df_print: paged
+  pdf_document:
+    number_sections: yes
   fig_width: 6 
   fig_height: 4 
 vignette: |
   %\VignetteIndexEntry{Vignette Title} 
-  %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
 ---
 
 The goal of this vignette is to provide a quick overview of using the `PanelMatch` package, highlight important features and functions, and help users get the most out of their experience with the package. It assumes that you have been able to install the package successfully and are already familiar with the basics of R.
@@ -42,7 +42,7 @@ DisplayTreatment(unit.id = "wbcode2",
                  time.id = "year", legend.position = "none",
                  xlab = "year", ylab = "Country Code",
                  treatment = "dem", data = dem, 
-                 hide.x.axis.label = TRUE, hide.y.axis.label = TRUE)
+                 hide.x.axis.label = TRUE, hide.y.axis.label = TRUE) # axis label options
 ```
 
 ```{r}
@@ -51,7 +51,7 @@ DisplayTreatment(unit.id = "wbcode2",
                  xlab = "year", ylab = "Country Code",
                  treatment = "dem", data = dem, 
                  hide.x.axis.label = TRUE, hide.y.axis.label = TRUE, 
-                 dense.plot = TRUE)
+                 dense.plot = TRUE) # setting dense.plot to TRUE
 ```
 
 Next, we will move to the `PanelMatch` function. The primary purposes of this function are to 1) create sets matching treated units to control units and 2) determine weights for each control unit in a given matched set. These weights are then used in the estimation stage in an intuitive way: units with higher weights factor more heavily into the estimations.
@@ -81,7 +81,7 @@ Below, we will use the `mahalanobis` option for `refinement.method` and will use
 
 ```{r}
 PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
-                         treatment = "dem", refinement.method = "mahalanobis", 
+                         treatment = "dem", refinement.method = "mahalanobis", # use Mahalanobis distance 
                          data = dem, match.missing = TRUE, 
                          covs.formula = ~ tradewb, 
                          size.match = 5, qoi = "att" , outcome.var = "y",
@@ -97,7 +97,7 @@ While there are no hard rules for how to set the many different `PanelMatch` par
 PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
                          treatment = "dem", refinement.method = "mahalanobis", 
                          data = dem, match.missing = TRUE, 
-                         covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
+                         covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), # lags
                          size.match = 5, qoi = "att", outcome.var = "y",
                          lead = 0:4, forbid.treatment.reversal = FALSE, 
                          use.diagonal.variance.matrix = TRUE)
@@ -107,7 +107,7 @@ We can also apply listwise deletion of units for missing data.
 ```{r}
 PM.results1 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
                          treatment = "dem", refinement.method = "mahalanobis", 
-                         data = dem, match.missing = FALSE, listwise.delete = TRUE, 
+                         data = dem, match.missing = FALSE, listwise.delete = TRUE, # listwise deletion used 
                          covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
                          size.match = 5, qoi = "att", outcome.var = "y",
                          lead = 0:4, forbid.treatment.reversal = FALSE, 
@@ -136,7 +136,7 @@ DisplayTreatment(unit.id = "wbcode2",
                  time.id = "year", legend.position = "none",
                  xlab = "year", ylab = "Country Code",
                  treatment = "dem", data = dem,
-                 matched.set = mset,
+                 matched.set = mset, # this way we highlight the particular set
                  show.set.only = TRUE)
 
 ```
@@ -148,7 +148,7 @@ summary(PM.results.none$att)
 
 plot(PM.results.none$att)
 
-plot(PM.results.none$att, include.empty.sets = TRUE)
+plot(PM.results.none$att, include.empty.sets = TRUE) # The red tiny bar that would otherwise indicate empty sets is now part of the grey bar
 ```
 
 Now, let's see the impact of performing refinement by comparing the balance of covariates before and after. See the documentation for the `get_covariate_balance` for more about how the package calculates covariate balance. We hope to see low values (.2 is a helpful threshold value as a rule of thumb) in the results of our covariate balance calculations. We also hope to see an improvement in covariate balance after applying some method of refinement to our results. 
@@ -193,7 +193,8 @@ We can also create plots showing covariate balance throughout the lag window per
 get_covariate_balance(PM.results1$att,
                       data = dem,
                       covariates = c("tradewb", "y"), 
-                      plot = TRUE, ylim = c(-.2, .2))
+                      plot = TRUE, # visualize by setting plot to TRUE
+                      ylim = c(-.2, .2))
 ```
 
 
