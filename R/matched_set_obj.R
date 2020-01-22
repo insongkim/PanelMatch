@@ -10,21 +10,22 @@
 #' @param t A vector containing the times of treatment for treated units.
 #' @param L integer specifying the length of the lag window used in matching
 #' @param t.var string specifying the time variable
-#' @param id.var string specifying the id variable
-#' @param treated.var string specifying the treatement variable.
+#' @param id.var string specifying the unit id variable
+#' @param treatment.var string specifying the treatment variable.
 #' 
-#' matched.set objects are a modified list. Each element in the list is a vector of ids corresponding to the control unit ids in a matched set. 
-#' Additionally, these vectors might have additional attributes -- "weights". These correspond to the weights corresponding to each control unit, 
+#' \code{matched.set} objects are a modified lists. Each element in the list is a vector of ids corresponding to the control unit ids in a matched set. 
+#' Additionally, these vectors might have additional attributes -- "weights". These correspond to the weights assigned to each control unit, 
 #' as determined by the specified refinement method.
-#' Each element also has a name, which corresponds to the unit id of the treated unit and time of treatment, 
+#' Each element in the list also has a name, which corresponds to the unit id of the treated unit and time of treatment, 
 #' concatenated together and separated by a period. \code{matched.set} objects also have a number of 
 #' methods defined: \code{summary}, \code{plot}, and \code{`[`}. \code{matched.set} objects can be modified manually
-#' as long as these conventions (and conventions about other attributes) are maintained. It is important to note that \code{matched.set} objects are distinct from \code{PanelMatch} objects. \code{matched.set} objects are often contained within \code{PanelMatch} objects.
+#' as long as these conventions (and conventions about other attributes) are maintained. It is important to note that \code{matched.set} objects 
+#' are distinct from \code{PanelMatch} objects. \code{matched.set} objects are often contained within \code{PanelMatch} objects.
 #' @return \code{matched.set} objects have additional attributes. These reflect the specified parameters when using the \code{PanelMatch} function:
 #' \item{lag}{an integer value indicating the length of treatment history to be used for matching. Treated and control units are matched based on whether or not they have exactly matching treatment histories in the lag window.}
 #' \item{t.var}{time variable name, represented as a character/string}
 #' \item{id.var}{unit id variable name, represented as a character/string}
-#' \item{treated.var}{treated variable name, represented as a character/string}
+#' \item{treatment.var}{treatment variable name, represented as a character/string}
 #' \item{class}{class of the object: should always be "matched.set"}
 #' \item{refinement.method}{method used to refine and/or weight the control units in each set.}
 #' \item{covs.formula}{One sided formula indicating which variables should be used for matching and refinement}
@@ -33,7 +34,7 @@
 #' @author Adam Rauh <adamrauh@mit.edu>, In Song Kim <insong@mit.edu>, Erik Wang
 #' <haixiao@Princeton.edu>, and Kosuke Imai <imai@harvard.edu>
 #' @export
-matched_set <- function(matchedsets, id, t, L, t.var, id.var, treated.var)
+matched_set <- function(matchedsets, id, t, L, t.var, id.var, treatment.var)
 {
   if(length(matchedsets) != length(id) | length(matchedsets) != length(t) | length(id) != length(t))
   {
@@ -45,7 +46,7 @@ matched_set <- function(matchedsets, id, t, L, t.var, id.var, treated.var)
   attr(matchedsets, "lag") <- L
   attr(matchedsets, "t.var") <- t.var
   attr(matchedsets, "id.var" ) <- id.var
-  attr(matchedsets, "treated.var") <- treated.var
+  attr(matchedsets, "treatment.var") <- treatment.var
   return(matchedsets)
 }
 
@@ -57,11 +58,11 @@ matched_set <- function(matchedsets, id, t, L, t.var, id.var, treated.var)
 #' 
 #' @param object a \code{matched.set} object
 #' @param ... Optional additional arguments to be passed to the \code{summary} function
-#' @param verbose Logical option specifying whether or not a longer, more verbose summary should be calculated and returned. Default is 
+#' @param verbose Logical value specifying whether or not a longer, more verbose summary should be calculated and returned. Default is 
 #' \code{TRUE}.
 #' 
 #' @return list object with either 5 or 1 element(s), depending on whether or not \code{verbose} is set to \code{TRUE} or not.
-#' \item{overview}{A data.frame object containing information about the treated units (unit id, time of treatment), and the number of matched control units of weights zero and above.}
+#' \item{overview}{A \code{data.frame} object containing information about the treated units (unit id, time of treatment), and the number of matched control units with weights zero and above.}
 #' \item{set.size.summary}{a \code{summary} object summarizing the min, max, and IQR of matched set sizes}
 #' \item{number.of.treated.units}{The number of unit, time pairs that are considered to be "treated" units}
 #' \item{num.units.empty.set}{The number of units treated at a particular time that were not able to be matched to any control units}
@@ -219,7 +220,7 @@ print.matched.set <- function(x, ..., verbose = FALSE)
   attr(temp, "refinement.method") <- attr(x, "refinement.method")
   attr(temp, "t.var") <- attr(x, "t.var")
   attr(temp, "id.var" ) <- attr(x, "id.var" )
-  attr(temp, "treated.var") <- attr(x, "treated.var")
+  attr(temp, "treatment.var") <- attr(x, "treatment.var")
   attr(temp, "distances") <- attr(x, "distances")
   attr(temp, "max.match.size") <- attr(x, "max.match.size")
   attr(temp, "covs.formula") <- attr(x, "covs.formula")
@@ -255,12 +256,12 @@ build_balance_mats <- function(idx, ordered_expanded_data, msets)
 #' difference between the values of the specified covariates for the treated unit(s) and the weighted average of the control units across all matched sets. 
 #' Results are standardized and are expressed in standard deviations. 
 #' @param matched.sets A matched.set object
-#' @param data The time series cross sectional data set used to produce the matched.set object. This data set should be identical to the one passed to PanelMatch/PanelEstimate to ensure consistent results.
+#' @param data The time series cross sectional data set used to produce the \code{matched.set} object. This data set should be identical to the one passed to \code{PanelMatch} and \code{PanelEstimate} to ensure consistent results.
 #' @param verbose When TRUE, the function will return more information about the calculations/results. When FALSE, a more compact version of the results/calculations are returned.
 #' @param plot When TRUE, a plot showing the covariate balance calculation results will be shown. When FALSE, no plot is made, but the results of the calculations are returned. default is FALSE
 #' @param covariates a character vector, specifying the names of the covariates for which the user is interested in calculating balance. 
-#' @param reference.line logical indicating whether or not a horizontal line should be present on the plot at y = 0
-#' @param legend logical indicating whether or not a legend identifying the variables should be included on the plot
+#' @param reference.line logical indicating whether or not a horizontal line should be present on the plot at y = 0. Default is TRUE.
+#' @param legend logical indicating whether or not a legend identifying the variables should be included on the plot. Default is TRUE.
 #' @param ylab Label for y axis. Default is "SD". This is the same as the ylab argument to \code{plot}.
 #' @param use.equal.weights logical. If set to TRUE, then equal weights will be assigned to control units, rather than using whatever calculated weights have been assigned. This is helpful for assessing the improvement in covariate balance as a result of refining the matched sets.
 #' @param ... Additional graphical parameters to be passed to the \code{plot} function in base R.
@@ -294,7 +295,7 @@ get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.wei
   unit.id <- attr(matched.sets, "id.var")
   time.id <- attr(matched.sets, "t.var")
   lag <- attr(matched.sets, "lag")
-  treatment <- attr(matched.sets, "treated.var")
+  treatment <- attr(matched.sets, "treatment.var")
   if(class(data[, unit.id]) == "factor") stop("please convert unit id column to character, integer, or numeric")
   if(class(data[, time.id]) != "integer") stop("please convert time id to consecutive integers")
   
@@ -421,7 +422,7 @@ get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.wei
 #' Visualizing the standardized mean differences for covariates via a scatter plot. 
 #'
 #' \code{balance_scatter} visualizes the standardized mean differences for each covariate.
-#' ALthough users can use the scatter plot in a variety of ways, it's recommended that 
+#' Although users can use the scatter plot in a variety of ways, it is recommended that 
 #' the x-axis refers to balance for covariates before refinement, and y-axis
 #' refers to balance after refinement. Users can utilize parameters powered by \code{plot}
 #' in base R to further customize the figure. 
@@ -434,7 +435,8 @@ get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.wei
 #' @param y.axis.label y axis label
 #' @param pchs one or two pch indicators for the symbols on the scatter plot. See \code{plot} for more information
 #' @param covariates variables for which balance is displayed
-#' @param data the same time series cross sectional data set used to create the matched sets. 
+#' @param data the same time series cross sectional data set used to create the matched sets.
+#' @param ... optional arguments to be passed to \code{plot} 
 #' @author In Song Kim <insong@mit.edu>, Erik Wang
 #' <haixiao@Princeton.edu>, Adam Rauh <adamrauh@mit.edu>, and Kosuke Imai <imai@harvard.edu>
 #'
@@ -494,7 +496,8 @@ balance_scatter <- function(non_refined_set, refined_list,
                               pchs = c(2,3),
                               covariates, data, 
                               x.axis.label = "Before refinement",
-                              y.axis.label = "After refinement") {
+                              y.axis.label = "After refinement",
+                              ...) {
   # first, get balance for non-refined set
   non_refined_balance <- get_covariate_balance(matched.sets = non_refined_set, 
                                                data = data,
@@ -523,7 +526,7 @@ balance_scatter <- function(non_refined_set, refined_list,
        xlim = xlim,
        ylim = ylim,
        main = main,
-       font.main = 1)
+       font.main = 1, ...)
   # logical statement for the length of the refined_balance
   if (length(refined_balance) > 1) {
     for (j in 2:length(refined_balance)) {

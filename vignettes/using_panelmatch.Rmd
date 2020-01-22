@@ -1,6 +1,6 @@
 ---
 title: "Using PanelMatch"
-author: "Kosuke Imai, In Song Kim, Erik Wang, Adam Rauh"
+author: "In Song Kim, Adam Rauh, Erik Wang, Kosuke Imai"
 date: "`r Sys.Date()`"
 output:
   html_document:

@@ -11,12 +11,12 @@
 
 \item{...}{Optional additional arguments to be passed to the \code{summary} function}
 
-\item{verbose}{Logical option specifying whether or not a longer, more verbose summary should be calculated and returned. Default is 
+\item{verbose}{Logical value specifying whether or not a longer, more verbose summary should be calculated and returned. Default is 
 \code{TRUE}.}
 }
 \value{
 list object with either 5 or 1 element(s), depending on whether or not \code{verbose} is set to \code{TRUE} or not.
-\item{overview}{A data.frame object containing information about the treated units (unit id, time of treatment), and the number of matched control units of weights zero and above.}
+\item{overview}{A \code{data.frame} object containing information about the treated units (unit id, time of treatment), and the number of matched control units with weights zero and above.}
 \item{set.size.summary}{a \code{summary} object summarizing the min, max, and IQR of matched set sizes}
 \item{number.of.treated.units}{The number of unit, time pairs that are considered to be "treated" units}
 \item{num.units.empty.set}{The number of units treated at a particular time that were not able to be matched to any control units}

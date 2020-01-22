@@ -10,7 +10,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
     lag = attr(mset.object, "lag")
     time.id = attr(mset.object, "t.var")
     unit.id = attr(mset.object, "id.var")
-    treatment = attr(mset.object, "treated.var")
+    treatment = attr(mset.object, "treatment.var")
     refinement.method = attr(mset.object, "refinement.method")
     size.match = attr(mset.object, "max.match.size")
     covs.formula = attr(mset.object, "covs.formula")

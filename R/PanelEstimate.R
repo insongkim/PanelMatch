@@ -132,7 +132,7 @@ panel_estimate <- function(inference = "bootstrap",
   
   lag <- attr(sets, "lag")
   dependent = outcome.variable
-  treatment <- attr(sets, "treated.var")
+  treatment <- attr(sets, "treatment.var")
   unit.id <- attr(sets, "id.var")
   time.id <- attr(sets, "t.var")
   #method = inference

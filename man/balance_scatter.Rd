@@ -4,10 +4,19 @@
 \alias{balance_scatter}
 \title{balance_scatter}
 \usage{
-balance_scatter(non_refined_set, refined_list, xlim = c(0, 0.8), ylim = c(0,
-  0.8), main = "Standardized Mean Difference of Covariates", pchs = c(2, 3),
-  covariates, data, x.axis.label = "Before refinement",
-  y.axis.label = "After refinement")
+balance_scatter(
+  non_refined_set,
+  refined_list,
+  xlim = c(0, 0.8),
+  ylim = c(0, 0.8),
+  main = "Standardized Mean Difference of Covariates",
+  pchs = c(2, 3),
+  covariates,
+  data,
+  x.axis.label = "Before refinement",
+  y.axis.label = "After refinement",
+  ...
+)
 }
 \arguments{
 \item{non_refined_set}{a matched.set object produced by setting `refinement.method` to "none" in `PanelMatch`}
@@ -29,13 +38,15 @@ balance_scatter(non_refined_set, refined_list, xlim = c(0, 0.8), ylim = c(0,
 \item{x.axis.label}{x axis label}
 
 \item{y.axis.label}{y axis label}
+
+\item{...}{optional arguments to be passed to \code{plot}}
 }
 \description{
 Visualizing the standardized mean differences for covariates via a scatter plot.
 }
 \details{
 \code{balance_scatter} visualizes the standardized mean differences for each covariate.
-ALthough users can use the scatter plot in a variety of ways, it's recommended that 
+Although users can use the scatter plot in a variety of ways, it is recommended that 
 the x-axis refers to balance for covariates before refinement, and y-axis
 refers to balance after refinement. Users can utilize parameters powered by \code{plot}
 in base R to further customize the figure.

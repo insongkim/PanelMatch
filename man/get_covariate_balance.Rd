@@ -4,14 +4,23 @@
 \alias{get_covariate_balance}
 \title{Calculate covariate balance}
 \usage{
-get_covariate_balance(matched.sets, data, covariates,
-  use.equal.weights = FALSE, verbose = TRUE, plot = FALSE,
-  reference.line = TRUE, legend = TRUE, ylab = "SD", ...)
+get_covariate_balance(
+  matched.sets,
+  data,
+  covariates,
+  use.equal.weights = FALSE,
+  verbose = TRUE,
+  plot = FALSE,
+  reference.line = TRUE,
+  legend = TRUE,
+  ylab = "SD",
+  ...
+)
 }
 \arguments{
 \item{matched.sets}{A matched.set object}
 
-\item{data}{The time series cross sectional data set used to produce the matched.set object. This data set should be identical to the one passed to PanelMatch/PanelEstimate to ensure consistent results.}
+\item{data}{The time series cross sectional data set used to produce the \code{matched.set} object. This data set should be identical to the one passed to \code{PanelMatch} and \code{PanelEstimate} to ensure consistent results.}
 
 \item{covariates}{a character vector, specifying the names of the covariates for which the user is interested in calculating balance.}
 
@@ -21,9 +30,9 @@ get_covariate_balance(matched.sets, data, covariates,
 
 \item{plot}{When TRUE, a plot showing the covariate balance calculation results will be shown. When FALSE, no plot is made, but the results of the calculations are returned. default is FALSE}
 
-\item{reference.line}{logical indicating whether or not a horizontal line should be present on the plot at y = 0}
+\item{reference.line}{logical indicating whether or not a horizontal line should be present on the plot at y = 0. Default is TRUE.}
 
-\item{legend}{logical indicating whether or not a legend identifying the variables should be included on the plot}
+\item{legend}{logical indicating whether or not a legend identifying the variables should be included on the plot. Default is TRUE.}
 
 \item{ylab}{Label for y axis. Default is "SD". This is the same as the ylab argument to \code{plot}.}
 
