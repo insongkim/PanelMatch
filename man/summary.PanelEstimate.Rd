@@ -4,19 +4,20 @@
 \alias{summary.PanelEstimate}
 \title{Get summaries of PanelEstimate objects/calculations}
 \usage{
-\method{summary}{PanelEstimate}(object, verbose = TRUE, bias.corrected = FALSE, ...)
+\method{summary}{PanelEstimate}(object, verbose = TRUE,
+  bias.corrected = FALSE, ...)
 }
 \arguments{
 \item{object}{A PanelEstimate object}
 
-\item{verbose}{logical indicating whether or not output should be printed in an expanded form.}
+\item{verbose}{logical indicating whether or not output should be printed in an expanded form. Default is TRUE}
 
-\item{bias.corrected}{logical indicating whether or not bias corrected estimates should be provided.}
+\item{bias.corrected}{logical indicating whether or not bias corrected estimates should be provided. Default is FALSE}
 
 \item{...}{optional additional arguments. Currently, no additional arguments are supported.}
 }
 \description{
-\code{summary.PanelEstimate()} takes an object returned by
+\code{summary.PanelEstimate} takes an object returned by
 \code{PanelEstimate}, and returns a summary table of point
 estimates and confidence intervals
 }

@@ -4,13 +4,8 @@
 \alias{PanelEstimate}
 \title{PanelEstimate}
 \usage{
-PanelEstimate(
-  sets,
-  number.iterations = 1000,
-  df.adjustment = FALSE,
-  confidence.level = 0.95,
-  data
-)
+PanelEstimate(sets, number.iterations = 1000, df.adjustment = FALSE,
+  confidence.level = 0.95, data)
 }
 \arguments{
 \item{sets}{A \code{PanelMatch} object attained via the
@@ -20,37 +15,41 @@ PanelEstimate(
 iterations. The default is 1000.}
 
 \item{df.adjustment}{A logical value indicating whether or not a
-degree-of-freedom adjustment should be performed for standard error
+degree-of-freedom adjustment should be performed for the standard error
 calculation. The default is \code{FALSE}.}
 
-\item{confidence.level}{A numerical value specifying the range of interval
+\item{confidence.level}{A numerical value specifying the confidence level and range of interval
 estimates for statistical inference. The default is .95.}
 
-\item{data}{The same time series cross sectional data set provided to the PanelMatch function to produce the matched sets}
+\item{data}{The same time series cross sectional data set provided to the PanelMatch function used to produce 
+the matched sets}
 }
 \value{
 \code{PanelEstimate} returns a list of class
 `PanelEstimate' containing the following components:
-\item{estimates}{the point estimates of the quantity of interest}
-\item{bootstrapped.estimates}{the bootstrapped estimates}
+\item{estimates}{the point estimates of the quantity of interest for the lead periods specified}
+\item{bootstrapped.estimates}{the bootstrapped point estimate values}
 \item{bootstrap.iterations}{the number of iterations used in bootstrapping}
 \item{method}{refinement method used to create the matched sets from which the estimates were calculated}
 \item{lag}{See PanelMatch argument \code{lag} for more information.}
-\item{lead}{The lead window sequence for which PanelEstimate is producing point estimates and standard errors.}
-\item{confidence.level}{the confidence interval level}
+\item{lead}{The lead window sequence for which \code{PanelEstimate} is producing point estimates and standard errors.}
+\item{confidence.level}{the confidence level}
 \item{qoi}{the quantity of interest}
 \item{matched.sets}{the refined matched sets used to produce the estimations}
-\item{standard.error}{the standard error of the point estimates}
+\item{standard.error}{the standard error(s) of the point estimates}
 }
 \description{
 \code{PanelEstimate} estimates a causal quantity of interest, including the average treatment effect for 
-treated or control units (att and atc, respectively), or average treatment effect (ate), as specified in \code{PanelMatch}
+treated or control units (att and atc, respectively), or average treatment effect (ate), as specified in \code{PanelMatch}.
 This is done by estimating the counterfactual outcomes for each treated unit using
 matched sets. Users will provide matched sets that were obtained by the
 \code{PanelMatch} function and obtain point estimates via a
-weighted average computation with weighted bootstrap standard errors. Users may run multiple estimations by 
-providing lists of each argument to the function. Each argument must be explicitly specified in each configuration and must adhere to the same
-data types/structures outlined below. See the included code examples for more about how this functionality works.
+weighted average computation with weighted bootstrap standard errors. Point estimates and standard errors will be 
+produced for each period in the lead window specified by the \code{lead} argument from \code{PanelMatch}. 
+Users may run multiple estimations by providing lists of each argument to the function. 
+Every argument must be explicitly specified in each configuration 
+and must adhere to the same data types/structures outlined below. See the included code examples for more about 
+how this functionality works.
 }
 \examples{
 PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 

@@ -4,14 +4,9 @@
 \alias{plot.PanelEstimate}
 \title{Plot point estimates and standard errors from a PanelEstimate calculation.}
 \usage{
-\method{plot}{PanelEstimate}(
-  x,
-  ylab = "Estimated Effect of Treatment",
-  xlab = "Time",
-  main = "Estimated Effects of Treatment Over Time",
-  ylim = NULL,
-  ...
-)
+\method{plot}{PanelEstimate}(x, ylab = "Estimated Effect of Treatment",
+  xlab = "Time", main = "Estimated Effects of Treatment Over Time",
+  ylim = NULL, ...)
 }
 \arguments{
 \item{x}{a PanelEstimate object}
@@ -28,7 +23,8 @@
 }
 \description{
 The \code{plot.PanelEstimate} method takes an object returned by the \code{PanelEstimate} function and plots the calculated 
-point estimates and standard errors. The only mandatory argument is an object of the \code{PanelEstimate} class.
+point estimates and standard errors over the specified \code{lead} time period. 
+The only mandatory argument is an object of the \code{PanelEstimate} class.
 }
 \examples{
 PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 

@@ -4,18 +4,8 @@
 \alias{get.matchedsets}
 \title{get.matchedsets}
 \usage{
-get.matchedsets(
-  t,
-  id,
-  data,
-  L,
-  t.column,
-  id.column,
-  treatedvar,
-  hasbeensorted = FALSE,
-  match.on.missingness = TRUE,
-  matching = TRUE
-)
+get.matchedsets(t, id, data, L, t.column, id.column, treatedvar,
+  hasbeensorted = FALSE, match.on.missingness = TRUE, matching = TRUE)
 }
 \arguments{
 \item{t}{integer vector specifying the times of treated units for which matched sets should be found. This vector should be the same length as the following \code{id} parameter -- the entries at corresponding indices in each vector should form the t,id pair of a specified treatment unit.}

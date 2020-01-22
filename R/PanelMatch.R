@@ -4,62 +4,69 @@
 #' 
 #' \code{PanelMatch} identifies a matched set for each treated
 #' observation. Specifically, for a given treated unit, the matched
-#' set consists of control observations that have the identical
+#' set consists of control observations that have an identical
 #' treatment history up to a number of \code{lag}
-#' years. Researchers must specify \code{lag}. A further refinement of
-#' the matched set will be possible by setting a maximum size of each matched
+#' time periods. Researchers must specify \code{lag}. A further refinement of
+#' the matched set may be performed by setting a maximum size of each matched
 #' set \code{size.match} (the maximum number of control units that can be matched to a treated unit). Users can also specify covariates that should be used to identify
 #' similar control units and a method for defining similarity/distance between units. This is done 
-#' via the \code{covs.formula} argument and \code{refinement.method} argument, which are explained in more detail below.
-#' @param lag An integer value indicating the length of treatment history to be matched on
+#' via the \code{covs.formula} and \code{refinement.method} arguments, respectively which are explained in more detail below.
+#' @param lag An integer value indicating the length of treatment history periods to be matched on
 #' @param time.id A character string indicating the name of time 
-#' variable in the \code{data}. This data currently must be sequential integers. 
+#' variable in the \code{data}. This data currently must be formatted as sequential integers. 
 #' @param unit.id A character string indicating the name of unit identifier in the data. This data must be integer.
 #' @param treatment A character string indicating the name of treatment variable in the \code{data}. 
 #' The treatment must be a binary indicator (integer with 0 for the control group and 1 for the treatment group).
-#' @param outcome.var A character string identifying outcome variable.
+#' @param outcome.var A character string identifying the outcome variable.
 #' @param refinement.method A character string specifying the matching or weighting method to be used for refining the matched sets. The user can choose "mahalanobis", "ps.match", "CBPS.match", "ps.weight", "CBPS.weight", "ps.msm.weight", "CBPS.msm.weight", or "none". The first three methods will use the \code{size.match} argument to create sets of at most \code{size.match} closest control units. Choosing "none" will assign equal weights to all control units in each matched sets.
 #' @param match.missing Logical variable indicating whether or not units should be matched on the patterns of missingness in their treatment histories. Default is TRUE. When FALSE, neither treated nor control units are allowed to have missing treatement data in the lag window.
 #' @param data A data.frame object containing time series cross sectional data. 
-#' Time data must be sequential integers that increase by 1. Unit identifiers must be integers.
-#' @param size.match An integer dictating the number of permitted closest control units after refinement. 
+#' Time data must be sequential integers that increase by 1. Unit identifiers must be integers. Treatment data must be binary (0/1).
+#' @param size.match An integer dictating the number of permitted closest control units in a matched set after refinement. 
 #' This argument only affects results when using a matching method (any of the refinement methods that end in ".match").
-#'  This argument is not needed and will have no impact if included on a weighting method.
-#' @param covs.formula One sided formula indicating which variables should be used for matching and refinement. 
-#' Argument is optional if \code{refinement.method} is set to "none"
+#' This argument is not needed and will have no impact if included when a weighting method is specified (any \code{refinement.method} that includes "weight" in the name).
+#' @param covs.formula One sided formula object indicating which variables should be used for matching and refinement. 
+#' Argument is not needed if \code{refinement.method} is set to "none"
 #' If the user wants to include lagged variables, this can be done using a function, "lag()", which takes two, unnamed, 
-#' positional arguments. The first is the name of the variable which you wish to lag. The second is the lag window, specified as an integer sequence in increasing order.
-#' For instance, I(lag(x, 1:4)) will then add new columns to the data for variable "x" for time t-1, t-2, t-3, and t-4 internally 
+#' positional arguments. The first is the name of the variable which you wish to lag. The second is the lag window, 
+#' specified as an integer sequence in increasing order.
+#' For instance, I(lag(x, 1:4)) will then add new columns to the data for variable "x" for time t-1, t-2, t-3, and t-4 internally
+#' and use them for defining/measuring similarity between units. 
 #' Other transformations using the I() function, such as I(x^2) are also permitted.
 #' The variables specified in this formula are used to define the similarity/distances between units.
 #' @param verbose option to include more information about the matched.set object calculations, 
 #' like the distances used to create the refined sets and weights.
-#' @param qoi quantity of interest: att (average treatment effect on treated units), 
-#' atc (average treatment effect on control units), ate (average treatment effect). 
+#' @param qoi quantity of interest: \code{att} (average treatment effect on treated units), 
+#' \code{atc} (average treatment effect on control units), \code{ate} (average treatment effect). 
 #' Note that the qoi for MSM methods will give the estimated average treatment effect of being treated for a chosen \code{lead} 
 #' time periods. This differs slightly from the non-MSM methods, where treatment reversal is permitted.
-#' @param lead integer sequence specifying the lead window for which qoi estimates will ultimately be produced. Default is 0.
+#' @param lead integer sequence specifying the lead window, for which qoi point estimates (and standard errors) will 
+#' ultimately be produced. Default is 0 (which corresponds to contemporaneous treatment effect).
 #' @param matching logical indicating whether or not any matching on treatment history should be performed. 
 #' This is primarily used for diagnostic purposes, and most users will never need to set this to FALSE. Default is TRUE.
-#' @param forbid.treatment.reversal Logical indicating whether or not it is permissible for treatment to reverse. 
-#' This must be set to TRUE for msm methods. When set to TRUE, only matched sets where treatment is 
-#' applied continuously are included. Default is FALSE
-#' @param exact.match.variables character vector giving the names of variables to be exactly matched on. These should be time invariant variables.
+#' @param forbid.treatment.reversal Logical indicating whether or not it is permissible for treatment to reverse in the specified lead window. 
+#' This must be set to TRUE for MSM methods. When set to TRUE, only matched sets for treated units where treatment is 
+#' applied continuously in the lead window are included in the results. Default is FALSE.
+#' @param exact.match.variables character vector giving the names of variables to be exactly matched on. These should be time invariant variables. 
+#' Exact matching for time varying covariates is not currently supported. 
 #' @param listwise.delete TRUE/FALSE indicating whether or not missing data should be handled using listwise deletion or the package's default missing data handling procedures. Default is FALSE.
-#' @param use.diagonal.variance.matrix TRUE/FALSE indicating whether or not a regular covariance matrix should be used in mahalanobis distance calculations during refinement, 
+#' @param use.diagonal.variance.matrix TRUE/FALSE indicating whether or not a regular covariance matrix should be used in 
+#' mahalanobis distance calculations during refinement, 
 #' or if a diagonal matrix with only covariate variances should be used instead. 
-#' In many cases, setting this to TRUE can lead to better covariate balance, especially when there is high correlation between variables.
-#' Default is FALSE.
+#' In many cases, setting this to TRUE can lead to better covariate balance, especially when there is 
+#' high correlation between variables. Default is FALSE. This argument is only necessary when 
+#' \code{refinement.method = mahalanobis} and will have no impact otherwise.
 #' @return \code{PanelMatch} returns an object of class "PanelMatch". This is a list that contains a few specific elements: 
 #' First, a matched.set object(s) that has the same name as the provided qoi if the qoi is "att" or "atc". 
 #' If qoi = "ate" then two matched.set objects will be attached, named "att" and "atc." Please consult the documentation for
-#' \code{matched_set} to read more about the structure and usage of \code{matched.set} objects
-#' This object also has some additional attributes:
+#' \code{matched_set} to read more about the structure and usage of \code{matched.set} objects. Also, see the wiki page for 
+#' more information about these objects: \url{https://github.com/insongkim/PanelMatch/wiki/Matched-Set-Objects}.
+#' The \code{PanelMatch} object also has some additional attributes:
 #' \item{qoi}{The qoi specified in the original function call}
 #' \item{lead}{the lead window specified in the original function call}
 #' \item{forbid.treatment.reversal}{logial value matching the forbid.treatment.reversal parameter provided in the function call.}
 #' \item{outcome.var}{character string matching the outcome variable provided in the original function call.}
-#' For more information about matched.set objects, see documentation for the "matched_set" function
+#' 
 #' @author Adam Rauh <adamrauh@mit.edu>, In Song Kim <insong@mit.edu>, Erik Wang
 #' <haixiao@Princeton.edu>, and Kosuke Imai <imai@harvard.edu>
 #'
