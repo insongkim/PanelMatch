@@ -71,7 +71,7 @@ matched_set <- function(matchedsets, id, t, L, t.var, id.var, treatment.var)
 #' \item{num.units.empty.set}{The number of units treated at a particular time that were not able to be matched to any control units}
 #' \item{lag}{The size of the lag window used for matching on treatment history. This affects which treated and control units are matched.}
 #' 
-#' @examples
+#' @examples \dontrun{
 #' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
 #'                          treatment = "dem", refinement.method = "mahalanobis", 
 #'                          data = dem, match.missing = TRUE, 
@@ -81,7 +81,7 @@ matched_set <- function(matchedsets, id, t, L, t.var, id.var, treatment.var)
 #' summary(PM.results$att)
 #' 
 #' 
-#' 
+#' }
 #' @method summary matched.set
 #' @export
 summary.matched.set <- function(object, ..., verbose = TRUE)
@@ -131,7 +131,7 @@ summary.matched.set <- function(object, ..., verbose = TRUE)
 #' @param freq default is TRUE. See \code{freq} argument in \code{hist} function for more.
 #' @param include.empty.sets logical value indicating whether or not empty sets should be included in the histogram. default is FALSE. If FALSE, then empty sets will be noted as a separate vertical bar at x = 0. If TRUE, empty sets will be included as normal sets.
 #' 
-#' @examples 
+#' @examples \dontrun{
 #' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
 #'                          treatment = "dem", refinement.method = "mahalanobis", 
 #'                          data = dem, match.missing = TRUE, 
@@ -140,7 +140,7 @@ summary.matched.set <- function(object, ..., verbose = TRUE)
 #'                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
 #' plot(PM.results$att)
 #' plot(PM.results$att, include.empty.sets = TRUE)
-#' 
+#' }
 #' @method plot matched.set
 #' @export
 plot.matched.set <- function(x, ..., border = NA, col = "grey", ylab = "Frequency of Size", 
@@ -185,7 +185,7 @@ plot.matched.set <- function(x, ..., border = NA, col = "grey", ylab = "Frequenc
 #' The verbose form is not recommended unless the data set is small. Default is FALSE
 #' @param ... additional arguments to be passed to \code{print}
 #' 
-#' @examples 
+#' @examples \dontrun{
 #' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
 #'                          treatment = "dem", refinement.method = "mahalanobis", 
 #'                          data = dem, match.missing = TRUE, 
@@ -195,7 +195,7 @@ plot.matched.set <- function(x, ..., border = NA, col = "grey", ylab = "Frequenc
 #' print(PM.results$att)
 #' 
 #' 
-#' 
+#' }
 #' @method print matched.set
 #' @export
 print.matched.set <- function(x, ..., verbose = FALSE)
@@ -444,8 +444,7 @@ get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.wei
 #' @author In Song Kim <insong@mit.edu>, Erik Wang
 #' <haixiao@Princeton.edu>, Adam Rauh <adamrauh@mit.edu>, and Kosuke Imai <imai@harvard.edu>
 #'
-#' @examples 
-#' 
+#' @examples \dontrun{
 #' # get a matched set without refinement
 #' sets0 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
 #'                     treatment = "dem", refinement.method = "none",
@@ -491,7 +490,7 @@ get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.wei
 #' bty = "n", ncol = 1, cex = 1, bg = "white")
 #'
 #' 
-#'
+#'}
 #' @export
 balance_scatter <- function(non_refined_set, refined_list,
                               xlim = c(0, .8),

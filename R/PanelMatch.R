@@ -71,7 +71,7 @@
 #' @author Adam Rauh <adamrauh@mit.edu>, In Song Kim <insong@mit.edu>, Erik Wang
 #' <haixiao@Princeton.edu>, and Kosuke Imai <imai@harvard.edu>
 #'
-#' @examples 
+#' @examples \dontrun{
 #' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
 #'                          treatment = "dem", refinement.method = "mahalanobis", 
 #'                          data = dem, match.missing = TRUE, 
@@ -106,6 +106,7 @@
 #'                                  exact.match.variables = list(NULL, NULL),
 #'                                  matching = list(TRUE, TRUE))
 #'
+#' }
 #' @export
 PanelMatch <- function(lag, time.id, unit.id, treatment,
                        refinement.method,
