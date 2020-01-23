@@ -1,33 +1,34 @@
 #' DisplayTreatment
 #' 
 #' \code{DisplayTreatment} visualizes the treatment distribution
-#' across unit and time in a panel dataset
+#' across units and time in a panel dataset
 #'
 #' @param unit.id Name of the unit identifier variable as a character string
 #' @param time.id Name of the time identifier variable as a character string
 #' @param treatment Name of the treatment variable as a character string
-#' @param data data.frame that contains the time series cross sectional data used for matching and estimation.
-#' @param color.of.treated Color of the treated observations provided as a character string. Default is red.
-#' @param color.of.untreated Color of the untreated observations provided as a character string. Default is blue.
+#' @param data data.frame that contains the time series cross sectional data used for matching and estimation. Unit and time data must be integers. Time data must also be formatted as sequential integers that increase by one.
+#' @param color.of.treated Color of the treated observations provided as a character string (this includes hex values). Default is red.
+#' @param color.of.untreated Color of the untreated observations provided as a character string (this includes hex values). Default is blue.
 #' @param title Title of the plot provided as character string
 #' @param xlab Character label of the x-axis
 #' @param ylab Character label of the y-axis
-#' @param x.size Numeric size of the text for xlab. Default is 10. Assign x.size = NULL to use built in ggplot2 method of determining label size. 
+#' @param x.size Numeric size of the text for xlab or x axis label. Default is 10. Assign x.size = NULL to use built in ggplot2 method of determining label size. 
 #' When the length of the time period is long, consider setting to NULL and adjusting size and ratio of the plot.
-#' @param y.size Numeric size of the text for ylab. Default is 5. Assign y.size = NULL to use built in ggplot2 method of determining label size. 
+#' @param y.size Numeric size of the text for ylab or y axis label. Default is 5. Assign y.size = NULL to use built in ggplot2 method of determining label size. 
 #' When the number of units is large, consider setting to NULL and adjusting size and ratio of the plot.
 #' @param x.angle Angle (in degrees) of the tick labels for x-axis
 #' @param y.angle Angle (in degrees) of the tick labels for y-axis
 #' @param legend.position Position of the legend. Provide this according to ggplot2 standards. 
 #' @param legend.labels Character vector of length two describing the
-#' labels of the legend to be shown in the plot -- again, ggplot2 standards are used.
+#' labels of the legend to be shown in the plot. ggplot2 standards are used.
 #' @param decreasing Logical. Determines if display order should be increasing or decreasing by the amount of treatment received. Default is \code{decreasing} = FALSE.
 #' @param matched.set a matched.set object (optional) containing a single treated unit and a set of matched controls. If provided, this set will be highlighted on the resulting plot.
-#' @param show.set.only logical. If TRUE, only the treated unit and control units contained in the provided \code{matched.set} object will be shown on the plot. Default is FALSE
-#' @param gradient.weights logical. If TRUE, the "darkness" units in the provided \code{matched.set} object will be displayed according to their weight. Control units with higher weights will appear darker on the resulting plot. Control units with lower weights will appear lighter.
+#' @param show.set.only logical. If TRUE, only the treated unit and control units contained in the provided \code{matched.set} object will be shown on the plot. 
+#' Default is FALSE. If no \code{matched.set} is provided, then this argument will have no effect.
+#' @param gradient.weights logical. If TRUE, the "darkness"/shade of units in the provided \code{matched.set} object will be displayed according to their weight. Control units with higher weights will appear darker on the resulting plot. Control units with lower weights will appear lighter. This argument has no effect unless a \code{matched.set} is provided.
 #' @param hide.x.axis.label logical. If TRUE, x axis labels are not shown. Default is FALSE. 
-#' @param hide.y.axis.label logical. If TRUE, y axis label are not shown. Default is FALSE.
-#' @param dense.plot logical. if TRUE, lines between tiles are removed on resulting plot. This is useful for producing more readable plots in situations where the number of units is very high.
+#' @param hide.y.axis.label logical. If TRUE, y axis labels are not shown. Default is FALSE.
+#' @param dense.plot logical. if TRUE, lines between tiles are removed on resulting plot. This is useful for producing more readable plots in situations where the number of units and/or time periods is very high.
 #' @return \code{DisplayTreatment} returns a treatment variation plot (using ggplot2),
 #' which visualizes the variation of treatment across unit and time.
 #' @author In Song Kim <insong@mit.edu>, Erik Wang
@@ -74,6 +75,8 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
   ###############
   if(class(data) != "data.frame") stop("please convert data to data.frame class")
   if(any(is.na(data[, unit.id]))) stop("Cannot have NA unit ids")
+  if(!class(data[, unit.id]) %in% c("integer", "numeric")) stop("please convert unit id column to integer or numeric")
+  if(class(data[, time.id]) != "integer") stop("please convert time id to consecutive integers")
   if(show.set.only & !is.null(matched.set) & length(matched.set) == 1 & class(matched.set) == "matched.set")
   {
     info <- unlist(strsplit(names(matched.set)[1], split = ".", fixed = TRUE))

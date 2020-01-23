@@ -197,6 +197,15 @@ get_covariate_balance(PM.results1$att,
                       ylim = c(-.2, .2))
 ```
 
+We can also evaluate our results using the `balance_scatter` function:
+```{r}
+balance_scatter(non_refined_set = PM.results.none$att,
+               refined_list = list(PM.results$att, PM.results2$att),
+               data = dem,
+               covariates = c("y", "tradewb"))
+```
+
+
 
 We now move to the next major part of the package: obtaining point estimates and standard errors using `PanelEstimate`. The package uses bootstrapping to obtain standard errors. By default, 1000 bootstrap iterations are used, and .95 is the default confidence level. 
 

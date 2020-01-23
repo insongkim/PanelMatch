@@ -10,9 +10,9 @@ balance_scatter(non_refined_set, refined_list, xlim = c(0, 0.8), ylim = c(0,
   y.axis.label = "After refinement", ...)
 }
 \arguments{
-\item{non_refined_set}{a matched.set object produced by setting `refinement.method` to "none" in `PanelMatch`}
+\item{non_refined_set}{a \code{matched.set} object produced by setting `refinement.method` to "none" in `PanelMatch`}
 
-\item{refined_list}{a list of one or two matched.set objects}
+\item{refined_list}{a list of one or two \code{matched.set} objects}
 
 \item{xlim}{xlim of the scatter plot. This is the same as the \code{xlim} argument in \code{plot}}
 

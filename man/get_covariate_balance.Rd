@@ -9,17 +9,17 @@ get_covariate_balance(matched.sets, data, covariates,
   reference.line = TRUE, legend = TRUE, ylab = "SD", ...)
 }
 \arguments{
-\item{matched.sets}{A matched.set object}
+\item{matched.sets}{A \code{matched.set} object}
 
-\item{data}{The time series cross sectional data set used to produce the \code{matched.set} object. This data set should be identical to the one passed to \code{PanelMatch} and \code{PanelEstimate} to ensure consistent results.}
+\item{data}{The time series cross sectional data set (as a \code{data.frame} object) used to produce the \code{matched.set} object. This data set should be identical to the one passed to \code{PanelMatch} and \code{PanelEstimate} to ensure consistent results.}
 
 \item{covariates}{a character vector, specifying the names of the covariates for which the user is interested in calculating balance.}
 
 \item{use.equal.weights}{logical. If set to TRUE, then equal weights will be assigned to control units, rather than using whatever calculated weights have been assigned. This is helpful for assessing the improvement in covariate balance as a result of refining the matched sets.}
 
-\item{verbose}{When TRUE, the function will return more information about the calculations/results. When FALSE, a more compact version of the results/calculations are returned.}
+\item{verbose}{logical. When TRUE, the function will return more information about the calculations/results. When FALSE, a more compact version of the results/calculations are returned.}
 
-\item{plot}{When TRUE, a plot showing the covariate balance calculation results will be shown. When FALSE, no plot is made, but the results of the calculations are returned. default is FALSE}
+\item{plot}{logical. When TRUE, a plot showing the covariate balance calculation results will be shown. When FALSE, no plot is made, but the results of the calculations are returned. default is FALSE}
 
 \item{reference.line}{logical indicating whether or not a horizontal line should be present on the plot at y = 0. Default is TRUE.}
 
@@ -30,9 +30,10 @@ get_covariate_balance(matched.sets, data, covariates,
 \item{...}{Additional graphical parameters to be passed to the \code{plot} function in base R.}
 }
 \description{
-Calculate covariate balance for user specified covariates across matched sets. Balance is assessed by taking the average of the 
-difference between the values of the specified covariates for the treated unit(s) and the weighted average of the control units across all matched sets. 
-Results are standardized and are expressed in standard deviations.
+Calculate covariate balance for user specified covariates across matched sets. Balance is assessed by taking the average 
+of the difference between the values of the specified covariates for the treated unit(s) and the weighted average of 
+the control units across all matched sets. Results are standardized and are expressed in standard deviations. 
+Balance is calculated for each period in the specified lag window.
 }
 \examples{
 #add some additional data to data set for demonstration purposes

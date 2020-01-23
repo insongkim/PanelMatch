@@ -13,8 +13,11 @@
 #' @param id.var string specifying the unit id variable
 #' @param treatment.var string specifying the treatment variable.
 #' 
-#' \code{matched.set} objects are a modified lists. Each element in the list is a vector of ids corresponding to the control unit ids in a matched set. 
-#' Additionally, these vectors might have additional attributes -- "weights". These correspond to the weights assigned to each control unit, 
+#' The constructor function returns a \code{matched.set} object. 
+#' \code{matched.set} objects are a modified lists. Each element in the list is a vector of ids 
+#' corresponding to the control unit ids in a matched set. 
+#' Additionally, these vectors might have additional attributes -- "weights". These correspond to the 
+#' weights assigned to each control unit, 
 #' as determined by the specified refinement method.
 #' Each element in the list also has a name, which corresponds to the unit id of the treated unit and time of treatment, 
 #' concatenated together and separated by a period. \code{matched.set} objects also have a number of 
@@ -63,7 +66,7 @@ matched_set <- function(matchedsets, id, t, L, t.var, id.var, treatment.var)
 #' 
 #' @return list object with either 5 or 1 element(s), depending on whether or not \code{verbose} is set to \code{TRUE} or not.
 #' \item{overview}{A \code{data.frame} object containing information about the treated units (unit id, time of treatment), and the number of matched control units with weights zero and above.}
-#' \item{set.size.summary}{a \code{summary} object summarizing the min, max, and IQR of matched set sizes}
+#' \item{set.size.summary}{a \code{summary} object summarizing the minimum, maximum, and IQR of matched set sizes}
 #' \item{number.of.treated.units}{The number of unit, time pairs that are considered to be "treated" units}
 #' \item{num.units.empty.set}{The number of units treated at a particular time that were not able to be matched to any control units}
 #' \item{lag}{The size of the lag window used for matching on treatment history. This affects which treated and control units are matched.}
@@ -96,7 +99,7 @@ summary.matched.set <- function(object, ..., verbose = TRUE)
   {
     summary.result <- list()
     summary.result$overview <- df
-    summary.result$set.size.summary <- summary(Lengthcol)
+    summary.result$set.size.summary <- summary(Lengthcol, ...)
     summary.result$number.of.treated.units <- length(set)
     summary.result$num.units.empty.set <- sum(Lengthcol == 0)
     summary.result$lag <- attr(set, "lag")
@@ -112,19 +115,19 @@ summary.matched.set <- function(object, ..., verbose = TRUE)
 #' 
 #' 
 #' A plot method for creating a histogram of the distribution of the sizes of matched sets. 
-#' This method accepts all standard optional \code{plot} arguments via the \code{...} argument. 
+#' This method accepts all standard optional \code{hist} arguments via the \code{...} argument. 
 #' By default, empty matched sets (treated units that could not be 
 #' matched with any control units) are noted as a vertical bar at x = 0 and not included in the 
 #' regular histogram. See the \code{include.empty.sets} argument for more information about this.
 #' 
 #' @param x a \code{matched.set} object
-#' @param ... optional arguments to be passed to \code{plot} 
-#' @param border default is NA. This is the same argument as the standard argument for \code{plot}
-#' @param col default is "grey". This is the same argument as the standard argument for \code{plot}
-#' @param ylab default is "Frequency of Size". This is the same argument as the standard argument for \code{plot}
-#' @param xlab default is "Matched Set Size". This is the same argument as the standard argument for \code{plot}
-#' @param lwd default is NULL. This is the same argument as the standard argument for \code{plot}
-#' @param main default is "Distribution of Matched Set Sizes". This is the same argument as the standard argument for \code{plot}
+#' @param ... optional arguments to be passed to \code{hist} 
+#' @param border default is NA. This is the same argument as the standard argument for \code{hist}
+#' @param col default is "grey". This is the same argument as the standard argument for \code{hist}
+#' @param ylab default is "Frequency of Size". This is the same argument as the standard argument for \code{hist}
+#' @param xlab default is "Matched Set Size". This is the same argument as the standard argument for \code{hist}
+#' @param lwd default is NULL. This is the same argument as the standard argument for \code{hist}
+#' @param main default is "Distribution of Matched Set Sizes". This is the same argument as the standard argument for \code{hist}
 #' @param freq default is TRUE. See \code{freq} argument in \code{hist} function for more.
 #' @param include.empty.sets logical value indicating whether or not empty sets should be included in the histogram. default is FALSE. If FALSE, then empty sets will be noted as a separate vertical bar at x = 0. If TRUE, empty sets will be included as normal sets.
 #' 
@@ -178,8 +181,8 @@ plot.matched.set <- function(x, ..., border = NA, col = "grey", ylab = "Frequenc
 #' Print \code{matched.set} objects.
 #'
 #' @param x a \code{matched.set} object
-#' @param verbose logical indicating whether or not output should be printed in expanded form. 
-#' The verbose form is not recommended unless the data set is small.
+#' @param verbose logical indicating whether or not output should be printed in expanded/raw list form. 
+#' The verbose form is not recommended unless the data set is small. Default is FALSE
 #' @param ... additional arguments to be passed to \code{print}
 #' 
 #' @examples 
@@ -252,13 +255,14 @@ build_balance_mats <- function(idx, ordered_expanded_data, msets)
 #' Calculate covariate balance
 #' 
 #' 
-#' Calculate covariate balance for user specified covariates across matched sets. Balance is assessed by taking the average of the 
-#' difference between the values of the specified covariates for the treated unit(s) and the weighted average of the control units across all matched sets. 
-#' Results are standardized and are expressed in standard deviations. 
-#' @param matched.sets A matched.set object
-#' @param data The time series cross sectional data set used to produce the \code{matched.set} object. This data set should be identical to the one passed to \code{PanelMatch} and \code{PanelEstimate} to ensure consistent results.
-#' @param verbose When TRUE, the function will return more information about the calculations/results. When FALSE, a more compact version of the results/calculations are returned.
-#' @param plot When TRUE, a plot showing the covariate balance calculation results will be shown. When FALSE, no plot is made, but the results of the calculations are returned. default is FALSE
+#' Calculate covariate balance for user specified covariates across matched sets. Balance is assessed by taking the average 
+#' of the difference between the values of the specified covariates for the treated unit(s) and the weighted average of 
+#' the control units across all matched sets. Results are standardized and are expressed in standard deviations. 
+#' Balance is calculated for each period in the specified lag window. 
+#' @param matched.sets A \code{matched.set} object
+#' @param data The time series cross sectional data set (as a \code{data.frame} object) used to produce the \code{matched.set} object. This data set should be identical to the one passed to \code{PanelMatch} and \code{PanelEstimate} to ensure consistent results.
+#' @param verbose logical. When TRUE, the function will return more information about the calculations/results. When FALSE, a more compact version of the results/calculations are returned.
+#' @param plot logical. When TRUE, a plot showing the covariate balance calculation results will be shown. When FALSE, no plot is made, but the results of the calculations are returned. default is FALSE
 #' @param covariates a character vector, specifying the names of the covariates for which the user is interested in calculating balance. 
 #' @param reference.line logical indicating whether or not a horizontal line should be present on the plot at y = 0. Default is TRUE.
 #' @param legend logical indicating whether or not a legend identifying the variables should be included on the plot. Default is TRUE.
@@ -426,8 +430,8 @@ get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.wei
 #' the x-axis refers to balance for covariates before refinement, and y-axis
 #' refers to balance after refinement. Users can utilize parameters powered by \code{plot}
 #' in base R to further customize the figure. 
-#' @param non_refined_set a matched.set object produced by setting `refinement.method` to "none" in `PanelMatch` 
-#' @param refined_list a list of one or two matched.set objects
+#' @param non_refined_set a \code{matched.set} object produced by setting `refinement.method` to "none" in `PanelMatch` 
+#' @param refined_list a list of one or two \code{matched.set} objects
 #' @param xlim xlim of the scatter plot. This is the same as the \code{xlim} argument in \code{plot}
 #' @param ylim ylim of the scatter plot. This is the same as the \code{ylim} argument in \code{plot}
 #' @param main title of the scatter plot. This is the same as the \code{main} argument in \code{plot}

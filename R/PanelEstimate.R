@@ -8,7 +8,7 @@
 #' weighted average computation with weighted bootstrap standard errors. Point estimates and standard errors will be 
 #' produced for each period in the lead window specified by the \code{lead} argument from \code{PanelMatch}. 
 #' Users may run multiple estimations by providing lists of each argument to the function. 
-#' Every argument must be explicitly specified in each configuration 
+#' However, in this format, every argument must be explicitly specified in each configuration 
 #' and must adhere to the same data types/structures outlined below. See the included code examples for more about 
 #' how this functionality works.
 #' 
@@ -564,7 +564,7 @@ summary.PanelEstimate <- function(object, verbose = TRUE, bias.corrected = FALSE
 #' point estimates and standard errors over the specified \code{lead} time period. 
 #' The only mandatory argument is an object of the \code{PanelEstimate} class.
 #'
-#' @param x a PanelEstimate object
+#' @param x a \code{PanelEstimate} object
 #' @param ylab default is "Estimated Effect of Treatment. This is the same argument as the standard argument for \code{plot}
 #' @param xlab default is "Time". This is the same argument as the standard argument for \code{plot}
 #' @param main default is "Estimated Effects of Treatment Over Time". This is the same argument as the standard argument for \code{plot}

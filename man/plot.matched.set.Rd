@@ -12,19 +12,19 @@
 \arguments{
 \item{x}{a \code{matched.set} object}
 
-\item{...}{optional arguments to be passed to \code{plot}}
+\item{...}{optional arguments to be passed to \code{hist}}
 
-\item{border}{default is NA. This is the same argument as the standard argument for \code{plot}}
+\item{border}{default is NA. This is the same argument as the standard argument for \code{hist}}
 
-\item{col}{default is "grey". This is the same argument as the standard argument for \code{plot}}
+\item{col}{default is "grey". This is the same argument as the standard argument for \code{hist}}
 
-\item{ylab}{default is "Frequency of Size". This is the same argument as the standard argument for \code{plot}}
+\item{ylab}{default is "Frequency of Size". This is the same argument as the standard argument for \code{hist}}
 
-\item{xlab}{default is "Matched Set Size". This is the same argument as the standard argument for \code{plot}}
+\item{xlab}{default is "Matched Set Size". This is the same argument as the standard argument for \code{hist}}
 
-\item{lwd}{default is NULL. This is the same argument as the standard argument for \code{plot}}
+\item{lwd}{default is NULL. This is the same argument as the standard argument for \code{hist}}
 
-\item{main}{default is "Distribution of Matched Set Sizes". This is the same argument as the standard argument for \code{plot}}
+\item{main}{default is "Distribution of Matched Set Sizes". This is the same argument as the standard argument for \code{hist}}
 
 \item{freq}{default is TRUE. See \code{freq} argument in \code{hist} function for more.}
 
@@ -32,7 +32,7 @@
 }
 \description{
 A plot method for creating a histogram of the distribution of the sizes of matched sets. 
-This method accepts all standard optional \code{plot} arguments via the \code{...} argument. 
+This method accepts all standard optional \code{hist} arguments via the \code{...} argument. 
 By default, empty matched sets (treated units that could not be 
 matched with any control units) are noted as a vertical bar at x = 0 and not included in the 
 regular histogram. See the \code{include.empty.sets} argument for more information about this.

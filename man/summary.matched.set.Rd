@@ -17,7 +17,7 @@
 \value{
 list object with either 5 or 1 element(s), depending on whether or not \code{verbose} is set to \code{TRUE} or not.
 \item{overview}{A \code{data.frame} object containing information about the treated units (unit id, time of treatment), and the number of matched control units with weights zero and above.}
-\item{set.size.summary}{a \code{summary} object summarizing the min, max, and IQR of matched set sizes}
+\item{set.size.summary}{a \code{summary} object summarizing the minimum, maximum, and IQR of matched set sizes}
 \item{number.of.treated.units}{The number of unit, time pairs that are considered to be "treated" units}
 \item{num.units.empty.set}{The number of units treated at a particular time that were not able to be matched to any control units}
 \item{lag}{The size of the lag window used for matching on treatment history. This affects which treated and control units are matched.}

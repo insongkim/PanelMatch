@@ -47,7 +47,7 @@ matched sets. Users will provide matched sets that were obtained by the
 weighted average computation with weighted bootstrap standard errors. Point estimates and standard errors will be 
 produced for each period in the lead window specified by the \code{lead} argument from \code{PanelMatch}. 
 Users may run multiple estimations by providing lists of each argument to the function. 
-Every argument must be explicitly specified in each configuration 
+However, in this format, every argument must be explicitly specified in each configuration 
 and must adhere to the same data types/structures outlined below. See the included code examples for more about 
 how this functionality works.
 }

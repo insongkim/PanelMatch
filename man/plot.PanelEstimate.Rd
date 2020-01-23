@@ -9,7 +9,7 @@
   ylim = NULL, ...)
 }
 \arguments{
-\item{x}{a PanelEstimate object}
+\item{x}{a \code{PanelEstimate} object}
 
 \item{ylab}{default is "Estimated Effect of Treatment. This is the same argument as the standard argument for \code{plot}}
 

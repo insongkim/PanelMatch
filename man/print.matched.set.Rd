@@ -11,8 +11,8 @@
 
 \item{...}{additional arguments to be passed to \code{print}}
 
-\item{verbose}{logical indicating whether or not output should be printed in expanded form. 
-The verbose form is not recommended unless the data set is small.}
+\item{verbose}{logical indicating whether or not output should be printed in expanded/raw list form. 
+The verbose form is not recommended unless the data set is small. Default is FALSE}
 }
 \description{
 Print \code{matched.set} objects.
