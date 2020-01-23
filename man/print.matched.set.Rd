@@ -18,6 +18,7 @@ The verbose form is not recommended unless the data set is small. Default is FAL
 Print \code{matched.set} objects.
 }
 \examples{
+\dontrun{
 PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
                          treatment = "dem", refinement.method = "mahalanobis", 
                          data = dem, match.missing = TRUE, 
@@ -27,5 +28,5 @@ PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
 print(PM.results$att)
 
 
-
+}
 }

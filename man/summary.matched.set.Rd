@@ -27,6 +27,7 @@ A method for viewing summary data about the sizes of matched sets and metadata a
 accepts all standard \code{summary} arguments.
 }
 \examples{
+\dontrun{
 PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
                          treatment = "dem", refinement.method = "mahalanobis", 
                          data = dem, match.missing = TRUE, 
@@ -36,5 +37,5 @@ PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
 summary(PM.results$att)
 
 
-
+}
 }

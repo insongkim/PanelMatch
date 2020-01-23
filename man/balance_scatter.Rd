@@ -43,7 +43,7 @@ refers to balance after refinement. Users can utilize parameters powered by \cod
 in base R to further customize the figure.
 }
 \examples{
-
+\dontrun{
 # get a matched set without refinement
 sets0 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                     treatment = "dem", refinement.method = "none",
@@ -89,7 +89,7 @@ pch = c(1, 3), pt.cex = 1,
 bty = "n", ncol = 1, cex = 1, bg = "white")
 
 
-
+}
 }
 \author{
 In Song Kim <insong@mit.edu>, Erik Wang

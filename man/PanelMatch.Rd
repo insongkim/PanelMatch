@@ -103,6 +103,7 @@ similar control units and a method for defining similarity/distance between unit
 via the \code{covs.formula} and \code{refinement.method} arguments, respectively, which are explained in more detail below.
 }
 \examples{
+\dontrun{
 PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
                          treatment = "dem", refinement.method = "mahalanobis", 
                          data = dem, match.missing = TRUE, 
@@ -137,6 +138,7 @@ list.of.results = PanelMatch(lag = list(4,3),
                                  exact.match.variables = list(NULL, NULL),
                                  matching = list(TRUE, TRUE))
 
+}
 }
 \author{
 Adam Rauh <adamrauh@mit.edu>, In Song Kim <insong@mit.edu>, Erik Wang

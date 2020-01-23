@@ -52,6 +52,7 @@ and must adhere to the same data types/structures outlined below. See the includ
 how this functionality works.
 }
 \examples{
+\dontrun{
 PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
                          treatment = "dem", refinement.method = "mahalanobis", 
                          data = dem, match.missing = TRUE, 
@@ -90,6 +91,7 @@ estimates = PanelEstimate(sets = list.of.results,
 
 
 
+}
 }
 \author{
 In Song Kim <insong@mit.edu>, Erik Wang
