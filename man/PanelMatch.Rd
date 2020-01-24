@@ -4,12 +4,26 @@
 \alias{PanelMatch}
 \title{PanelMatch}
 \usage{
-PanelMatch(lag, time.id, unit.id, treatment, refinement.method,
-  size.match = 10, data, match.missing = TRUE, covs.formula = NULL,
-  verbose = FALSE, qoi, lead = 0, outcome.var,
-  exact.match.variables = NULL, forbid.treatment.reversal = FALSE,
-  matching = TRUE, listwise.delete = FALSE,
-  use.diagonal.variance.matrix = FALSE)
+PanelMatch(
+  lag,
+  time.id,
+  unit.id,
+  treatment,
+  refinement.method,
+  size.match = 10,
+  data,
+  match.missing = TRUE,
+  covs.formula = NULL,
+  verbose = FALSE,
+  qoi,
+  lead = 0,
+  outcome.var,
+  exact.match.variables = NULL,
+  forbid.treatment.reversal = FALSE,
+  matching = TRUE,
+  listwise.delete = FALSE,
+  use.diagonal.variance.matrix = FALSE
+)
 }
 \arguments{
 \item{lag}{An integer value indicating the length of treatment history periods to be matched on}
@@ -139,6 +153,9 @@ list.of.results = PanelMatch(lag = list(4,3),
                                  matching = list(TRUE, TRUE))
 
 }
+}
+\references{
+Imai, Kosuke, In Song Kim, and Erik Wang (2018) "Matching Methods for Causal Inference with Time-Series Cross-Section Data"
 }
 \author{
 Adam Rauh <adamrauh@mit.edu>, In Song Kim <insong@mit.edu>, Erik Wang

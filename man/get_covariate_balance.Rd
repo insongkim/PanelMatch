@@ -4,9 +4,18 @@
 \alias{get_covariate_balance}
 \title{Calculate covariate balance}
 \usage{
-get_covariate_balance(matched.sets, data, covariates,
-  use.equal.weights = FALSE, verbose = TRUE, plot = FALSE,
-  reference.line = TRUE, legend = TRUE, ylab = "SD", ...)
+get_covariate_balance(
+  matched.sets,
+  data,
+  covariates,
+  use.equal.weights = FALSE,
+  verbose = TRUE,
+  plot = FALSE,
+  reference.line = TRUE,
+  legend = TRUE,
+  ylab = "SD",
+  ...
+)
 }
 \arguments{
 \item{matched.sets}{A \code{matched.set} object}
