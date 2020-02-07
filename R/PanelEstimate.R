@@ -36,7 +36,7 @@
 #' \item{matched.sets}{the refined matched sets used to produce the estimations}
 #' \item{standard.error}{the standard error(s) of the point estimates}
 #' 
-#' @references Imai, Kosuke, In Song Kim, and Erik Wang (2018) "Matching Methods for Causal Inference with Time-Series Cross-Section Data"
+#' @references Imai, Kosuke, In Song Kim, and Erik Wang (2018) <http://web.mit.edu/insong/www/pdf/tscs.pdf>
 #' @author In Song Kim <insong@mit.edu>, Erik Wang
 #' <haixiao@Princeton.edu>, Adam Rauh <adamrauh@mit.edu>, and Kosuke Imai <imai@harvard.edu>
 #'

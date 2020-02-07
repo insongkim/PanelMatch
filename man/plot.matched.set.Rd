@@ -4,18 +4,10 @@
 \alias{plot.matched.set}
 \title{Plot the distribution of the sizes of matched sets.}
 \usage{
-\method{plot}{matched.set}(
-  x,
-  ...,
-  border = NA,
-  col = "grey",
-  ylab = "Frequency of Size",
-  xlab = "Matched Set Size",
-  lwd = NULL,
-  main = "Distribution of Matched Set Sizes",
-  freq = TRUE,
-  include.empty.sets = FALSE
-)
+\method{plot}{matched.set}(x, ..., border = NA, col = "grey",
+  ylab = "Frequency of Size", xlab = "Matched Set Size", lwd = NULL,
+  main = "Distribution of Matched Set Sizes", freq = TRUE,
+  include.empty.sets = FALSE)
 }
 \arguments{
 \item{x}{a \code{matched.set} object}

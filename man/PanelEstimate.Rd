@@ -4,13 +4,8 @@
 \alias{PanelEstimate}
 \title{PanelEstimate}
 \usage{
-PanelEstimate(
-  sets,
-  number.iterations = 1000,
-  df.adjustment = FALSE,
-  confidence.level = 0.95,
-  data
-)
+PanelEstimate(sets, number.iterations = 1000, df.adjustment = FALSE,
+  confidence.level = 0.95, data)
 }
 \arguments{
 \item{sets}{A \code{PanelMatch} object attained via the
@@ -99,7 +94,7 @@ estimates = PanelEstimate(sets = list.of.results,
 }
 }
 \references{
-Imai, Kosuke, In Song Kim, and Erik Wang (2018) "Matching Methods for Causal Inference with Time-Series Cross-Section Data"
+Imai, Kosuke, In Song Kim, and Erik Wang (2018) <http://web.mit.edu/insong/www/pdf/tscs.pdf>
 }
 \author{
 In Song Kim <insong@mit.edu>, Erik Wang

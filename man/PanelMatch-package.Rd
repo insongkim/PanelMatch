@@ -7,8 +7,8 @@
 \description{
 \code{PanelMatch} provides a set of methodological tools that
 enable researchers to apply matching methods to time-series
-cross-section data. Imai, Kim, and Wang (2018) proposes a
-nonparametric generalization of difference-in-differences
+cross-section data. Imai, Kim, and Wang (2018) <http://web.mit.edu/insong/www/pdf/tscs.pdf> 
+proposes a nonparametric generalization of difference-in-differences
 estimator, which does not rely on the linearity assumption as often
 done in practice. Researchers first select a method of matching
 each treated observation from a given unit in a particular time
@@ -27,9 +27,7 @@ quality of matches by examining the resulting covariate balance.
 Date: \tab 2018-03-01\cr License: \tab GPL (>= 3)\cr }
 }
 \references{
-Imai, Kosuke, In Song Kim and Erik Wang. (2018)
-"Matching Methods for Causal Inference with Time-Series
-Cross-Section Data." Working paper.
+Imai, Kosuke, In Song Kim and Erik Wang. (2018) <http://web.mit.edu/insong/www/pdf/tscs.pdf>
 }
 \author{
 In Song Kim <insong@mit.edu>, Erik Wang
