@@ -40,7 +40,7 @@
 #' @author In Song Kim <insong@mit.edu>, Erik Wang
 #' <haixiao@Princeton.edu>, Adam Rauh <adamrauh@mit.edu>, and Kosuke Imai <imai@harvard.edu>
 #'
-#' @examples \dontrun{
+#' @examples
 #' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
 #'                          treatment = "dem", refinement.method = "mahalanobis", 
 #'                          data = dem, match.missing = TRUE, 
@@ -55,7 +55,7 @@
 #'                                  time.id = list("year", "year"),
 #'                                  unit.id = list("wbcode2", "wbcode2"),
 #'                                  treatment = list("dem", "dem"),
-#'                                  refinement.method = list("mahalanobis", "ps.weight"),
+#'                                  refinement.method = list("mahalanobis", "none"),
 #'                                  data = dem,
 #'                                  match.missing = list(TRUE, TRUE),
 #'                                  covs.formula = list(~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
@@ -63,7 +63,7 @@
 #'                                  size.match = list(5,5),
 #'                                  qoi = list("att", "att"),
 #'                                  outcome.var = list("y", "y"),
-#'                                  lead = list(0:4, 0:3),
+#'                                  lead = list(0, 0:1),
 #'                                  forbid.treatment.reversal = list(FALSE, FALSE),
 #'                                  verbose = list(FALSE, FALSE),
 #'                                  listwise.delete = list(FALSE,FALSE),
@@ -72,14 +72,14 @@
 #'                                  matching = list(TRUE, TRUE))
 #' 
 #' estimates = PanelEstimate(sets = list.of.results,        
-#'                           number.iterations = list(1000,1000),
+#'                           number.iterations = list(200,200),
 #'                           df.adjustment = list(FALSE,FALSE),
 #'                           confidence.level = list(.95, .95),
 #'                           data = dem)
 #' 
 #' 
 #'
-#' }
+#'
 #' @export
 PanelEstimate <- function(sets,
                           number.iterations = 1000,
@@ -437,7 +437,7 @@ panel_estimate <- function(inference = "bootstrap",
 #' @param verbose logical indicating whether or not output should be printed in an expanded form. Default is TRUE
 #' @param bias.corrected logical indicating whether or not bias corrected estimates should be provided. Default is FALSE
 #' @param ... optional additional arguments. Currently, no additional arguments are supported. 
-#' @examples \dontrun{
+#' @examples
 #' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
 #'                          treatment = "dem", refinement.method = "mahalanobis", 
 #'                          data = dem, match.missing = TRUE, 
@@ -447,7 +447,7 @@ panel_estimate <- function(inference = "bootstrap",
 #' PE.results <- PanelEstimate(sets = PM.results, data = dem)
 #' summary(PE.results)
 #' 
-#' }
+#'
 #' 
 #' @method summary PanelEstimate
 #' @export
@@ -573,7 +573,7 @@ summary.PanelEstimate <- function(object, verbose = TRUE, bias.corrected = FALSE
 #' @param main default is "Estimated Effects of Treatment Over Time". This is the same argument as the standard argument for \code{plot}
 #' @param ylim default is NULL. This is the same argument as the standard argument for \code{plot}
 #' @param ... Additional optional arguments to be passed to \code{plot}.
-#' @examples \dontrun{
+#' @examples
 #' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
 #'                          treatment = "dem", refinement.method = "mahalanobis", 
 #'                          data = dem, match.missing = TRUE, 
@@ -583,7 +583,7 @@ summary.PanelEstimate <- function(object, verbose = TRUE, bias.corrected = FALSE
 #' PE.results <- PanelEstimate(sets = PM.results, data = dem)
 #' plot(PE.results)
 #'
-#' }
+#'
 #' @method plot PanelEstimate
 #' @export
 plot.PanelEstimate <- function(x, ylab = "Estimated Effect of Treatment", 

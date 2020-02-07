@@ -27,7 +27,6 @@ point estimates and standard errors over the specified \code{lead} time period.
 The only mandatory argument is an object of the \code{PanelEstimate} class.
 }
 \examples{
-\dontrun{
 PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
                          treatment = "dem", refinement.method = "mahalanobis", 
                          data = dem, match.missing = TRUE, 
@@ -37,5 +36,5 @@ PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
 PE.results <- PanelEstimate(sets = PM.results, data = dem)
 plot(PE.results)
 
-}
+
 }

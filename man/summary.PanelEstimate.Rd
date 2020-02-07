@@ -22,7 +22,6 @@
 estimates and confidence intervals
 }
 \examples{
-\dontrun{
 PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
                          treatment = "dem", refinement.method = "mahalanobis", 
                          data = dem, match.missing = TRUE, 
@@ -32,6 +31,6 @@ PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
 PE.results <- PanelEstimate(sets = PM.results, data = dem)
 summary(PE.results)
 
-}
+
 
 }

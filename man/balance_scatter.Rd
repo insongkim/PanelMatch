@@ -43,7 +43,6 @@ refers to balance after refinement. Users can utilize parameters powered by \cod
 in base R to further customize the figure.
 }
 \examples{
-\dontrun{
 # get a matched set without refinement
 sets0 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                     treatment = "dem", refinement.method = "none",
@@ -56,7 +55,7 @@ sets0 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
 # get a matched set with refinement using CBPS.match, setting the 
 # size of matched set to 5
 sets1 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
-                    treatment = "dem", refinement.method = "CBPS.match",
+                    treatment = "dem", refinement.method = "mahalanobis",
                     data = dem, match.missing = FALSE,
                     covs.formula = ~ I(lag(y, 1:4)) + I(lag(tradewb, 1:4)),
                     size.match = 5, qoi = "att",
@@ -65,7 +64,7 @@ sets1 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
 
 # get another matched set with refinement using CBPS.weight
 sets2 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
-                    treatment = "dem", refinement.method = "CBPS.weight",
+                    treatment = "dem", refinement.method = "ps.weight",
                     data = dem, match.missing = FALSE,
                     covs.formula = ~ I(lag(y, 1:4)) + I(lag(tradewb, 1:4)),
                     size.match = 10, qoi = "att",
@@ -80,8 +79,8 @@ balance_scatter(non_refined_set = sets0$att,
               covariates = c("y", "tradewb"))
 # add legend 
 legend(x = 0, y = 0.8,  
-legend = c("CBPS matching",
-           "CBPS weighting"),
+legend = c("mahalanobis",
+           "PS weighting"),
 y.intersp = 0.65,
 x.intersp = 0.3,
 xjust = 0,
@@ -89,7 +88,7 @@ pch = c(1, 3), pt.cex = 1,
 bty = "n", ncol = 1, cex = 1, bg = "white")
 
 
-}
+
 }
 \author{
 In Song Kim <insong@mit.edu>, Erik Wang

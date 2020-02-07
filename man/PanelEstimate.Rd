@@ -52,7 +52,6 @@ and must adhere to the same data types/structures outlined below. See the includ
 how this functionality works.
 }
 \examples{
-\dontrun{
 PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
                          treatment = "dem", refinement.method = "mahalanobis", 
                          data = dem, match.missing = TRUE, 
@@ -67,7 +66,7 @@ list.of.results = PanelMatch(lag = list(4,3),
                                  time.id = list("year", "year"),
                                  unit.id = list("wbcode2", "wbcode2"),
                                  treatment = list("dem", "dem"),
-                                 refinement.method = list("mahalanobis", "ps.weight"),
+                                 refinement.method = list("mahalanobis", "none"),
                                  data = dem,
                                  match.missing = list(TRUE, TRUE),
                                  covs.formula = list(~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
@@ -75,7 +74,7 @@ list.of.results = PanelMatch(lag = list(4,3),
                                  size.match = list(5,5),
                                  qoi = list("att", "att"),
                                  outcome.var = list("y", "y"),
-                                 lead = list(0:4, 0:3),
+                                 lead = list(0, 0:1),
                                  forbid.treatment.reversal = list(FALSE, FALSE),
                                  verbose = list(FALSE, FALSE),
                                  listwise.delete = list(FALSE,FALSE),
@@ -84,14 +83,14 @@ list.of.results = PanelMatch(lag = list(4,3),
                                  matching = list(TRUE, TRUE))
 
 estimates = PanelEstimate(sets = list.of.results,        
-                          number.iterations = list(1000,1000),
+                          number.iterations = list(200,200),
                           df.adjustment = list(FALSE,FALSE),
                           confidence.level = list(.95, .95),
                           data = dem)
 
 
 
-}
+
 }
 \references{
 Imai, Kosuke, In Song Kim, and Erik Wang (2018) <http://web.mit.edu/insong/www/pdf/tscs.pdf>
