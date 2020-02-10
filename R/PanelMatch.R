@@ -68,7 +68,7 @@
 #' \item{forbid.treatment.reversal}{logial value matching the forbid.treatment.reversal parameter provided in the function call.}
 #' \item{outcome.var}{character string matching the outcome variable provided in the original function call.}
 #' 
-#' @references Imai, Kosuke, In Song Kim, and Erik Wang (2018) \url{http://web.mit.edu/insong/www/pdf/tscs.pdf}
+#' @references Imai, Kosuke, In Song Kim, and Erik Wang (2018)
 #' @author Adam Rauh <adamrauh@mit.edu>, In Song Kim <insong@mit.edu>, Erik Wang
 #' <haixiao@Princeton.edu>, and Kosuke Imai <imai@harvard.edu>
 #'

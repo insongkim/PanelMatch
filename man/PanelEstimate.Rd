@@ -98,7 +98,7 @@ estimates = PanelEstimate(sets = list.of.results,
 
 }
 \references{
-Imai, Kosuke, In Song Kim, and Erik Wang (2018) \url{http://web.mit.edu/insong/www/pdf/tscs.pdf}
+Imai, Kosuke, In Song Kim, and Erik Wang (2018)
 }
 \author{
 In Song Kim <insong@mit.edu>, Erik Wang

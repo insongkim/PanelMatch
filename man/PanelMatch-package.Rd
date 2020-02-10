@@ -8,7 +8,7 @@
 Implements a set of methodological tools
 that enable researchers to apply matching methods to
 time-series cross-sectional data. Imai, Kim, and Wang
-(2018) \url{http://web.mit.edu/insong/www/pdf/tscs.pdf} proposes a nonparametric generalization of the
+(2018) proposes a nonparametric generalization of the
 difference-in-differences estimator, which does not rely
 on the linearity assumption as often done in
 practice. Researchers first select a method of matching
@@ -29,7 +29,7 @@ of matches by examining the resulting covariate balance.
 Date: \tab 2018-03-01\cr License: \tab GPL (>= 3)\cr }
 }
 \references{
-Imai, Kosuke, In Song Kim and Erik Wang. (2018) \url{http://web.mit.edu/insong/www/pdf/tscs.pdf}
+Imai, Kosuke, In Song Kim and Erik Wang. (2018)
 }
 \author{
 In Song Kim <insong@mit.edu>, Erik Wang

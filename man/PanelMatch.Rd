@@ -154,7 +154,7 @@ list.of.results = PanelMatch(lag = list(4,3),
 
 }
 \references{
-Imai, Kosuke, In Song Kim, and Erik Wang (2018) \url{http://web.mit.edu/insong/www/pdf/tscs.pdf}
+Imai, Kosuke, In Song Kim, and Erik Wang (2018)
 }
 \author{
 Adam Rauh <adamrauh@mit.edu>, In Song Kim <insong@mit.edu>, Erik Wang
