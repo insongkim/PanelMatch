@@ -4,7 +4,8 @@
 \alias{summary.PanelEstimate}
 \title{Get summaries of PanelEstimate objects/calculations}
 \usage{
-\method{summary}{PanelEstimate}(object, verbose = TRUE, bias.corrected = FALSE, ...)
+\method{summary}{PanelEstimate}(object, verbose = TRUE,
+  bias.corrected = FALSE, ...)
 }
 \arguments{
 \item{object}{A PanelEstimate object}

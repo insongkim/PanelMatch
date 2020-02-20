@@ -4,13 +4,8 @@
 \alias{PanelEstimate}
 \title{PanelEstimate}
 \usage{
-PanelEstimate(
-  sets,
-  number.iterations = 1000,
-  df.adjustment = FALSE,
-  confidence.level = 0.95,
-  data
-)
+PanelEstimate(sets, number.iterations = 1000, df.adjustment = FALSE,
+  confidence.level = 0.95, data)
 }
 \arguments{
 \item{sets}{A \code{PanelMatch} object attained via the

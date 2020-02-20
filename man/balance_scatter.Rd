@@ -4,19 +4,10 @@
 \alias{balance_scatter}
 \title{balance_scatter}
 \usage{
-balance_scatter(
-  non_refined_set,
-  refined_list,
-  xlim = c(0, 0.8),
-  ylim = c(0, 0.8),
-  main = "Standardized Mean Difference of Covariates",
-  pchs = c(2, 3),
-  covariates,
-  data,
-  x.axis.label = "Before refinement",
-  y.axis.label = "After refinement",
-  ...
-)
+balance_scatter(non_refined_set, refined_list, xlim = c(0, 0.8), ylim = c(0,
+  0.8), main = "Standardized Mean Difference of Covariates", pchs = c(2, 3),
+  covariates, data, x.axis.label = "Before refinement",
+  y.axis.label = "After refinement", ...)
 }
 \arguments{
 \item{non_refined_set}{a \code{matched.set} object produced by setting `refinement.method` to "none" in `PanelMatch`}
