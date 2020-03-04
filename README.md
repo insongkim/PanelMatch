@@ -21,11 +21,11 @@ balance.
 Installation Instructions
 -------------------------
 
-<!-- `panelMatch` is available on CRAN and can be installed using: -->
+`PanelMatch` is available on CRAN and can be installed using:
 
-<!-- ``` r -->
-<!-- install.packages("panelMatch") -->
-<!-- ``` -->
+``` r
+install.packages("PanelMatch")
+```
 
 You can install the most recent development version of `PanelMatch` using the `devtools` package. First you have to install `devtools` using the following code. Note that you only have to do this once:
 
