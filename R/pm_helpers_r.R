@@ -124,6 +124,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
         #do the column removal thing
         cols.to.remove <- which(unlist(lapply(pooled, function(x){all(x[1] == x)}))) #checking for columns that only have one value
         cols.to.remove <- unique(c(cols.to.remove, which(!colnames(pooled) %in% colnames(t(unique(t(pooled))))))) #removing columns that are identical to another column
+        cols.to.remove <- cols.to.remove[cols.to.remove > 3] #leave the first three columns alone
         if(length(cols.to.remove) > 0)
         {
           class(pooled) <- c("data.frame")
@@ -181,6 +182,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
 
     cols.to.remove <- which(unlist(lapply(pooled, function(x){all(x[1] == x)}))) #checking for columns that only have one value
     cols.to.remove <- unique(c(cols.to.remove, which(!colnames(pooled) %in% colnames(t(unique(t(pooled))))))) #removing columns that are identical to another column
+    cols.to.remove <- cols.to.remove[cols.to.remove > 3] #leave the first three columns alone
     if(length(cols.to.remove) > 0)
     {
       class(pooled) <- c("data.frame")
