@@ -3,10 +3,10 @@ title: "Using PanelMatch"
 author: "In Song Kim, Adam Rauh, Erik Wang, Kosuke Imai"
 date: "`r Sys.Date()`"
 output:
+  pdf_document:
+    number_sections: no
   html_document:
     df_print: paged
-  pdf_document:
-    number_sections: yes
   fig_width: 6 
   fig_height: 4 
 vignette: |
@@ -14,7 +14,7 @@ vignette: |
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
 ---
-
+# Overview
 The goal of this vignette is to provide a quick overview of using the `PanelMatch` package, highlight important features and functions, and help users get the most out of their experience with the package. It assumes that you have been able to install the package successfully and are already familiar with the basics of R.
 
 ```{r setup, include = FALSE}
@@ -24,7 +24,8 @@ knitr::opts_chunk$set(
 )
 ```
 
-We will be working with the `dem` data set, which comes included with the package. Before doing any matching, estimation or further analysis, it is helpful to understand the distribution of the treatment variable within your data set. The package hopes to facilitate this with the `DisplayTreatment function. 
+# DisplayTreatment
+We will be working with the `dem` data set, which comes included with the package. Before doing any matching, estimation or further analysis, it is helpful to understand the distribution of the treatment variable within your data set. The package hopes to facilitate this with the `DisplayTreatment` function. 
 
 
 ```{r}
@@ -54,34 +55,68 @@ DisplayTreatment(unit.id = "wbcode2",
                  dense.plot = TRUE) # setting dense.plot to TRUE
 ```
 
+# PanelMatch
 Next, we will move to the `PanelMatch` function. The primary purposes of this function are to 1) create sets matching treated units to control units and 2) determine weights for each control unit in a given matched set. These weights are then used in the estimation stage in an intuitive way: units with higher weights factor more heavily into the estimations.
 
-(1) is achieved by matching units that receive treatment after previously being untreated (ie. units that move from `control` to `treatment` at a certain time) to control units that have matching treatment histories in a specified lag window, while also remaining untreated during the same period that the treated unit receives treatment. For example, if unit 4 is a control unit until 1992, when it receives treatment, then, for a specified lag = 4, it will be matched with control units that share an identical treatment history with unit 4 from 1988-1991, while also *remaining control units* in 1992. 
+**1** is achieved by matching units that receive treatment after previously being untreated (ie. units that move from `control` to `treatment` at a certain time) to control units that have matching treatment histories in a specified lag window, while also remaining untreated during the same period that the treated unit receives treatment. For example, if unit 4 is a control unit until 1992, when it receives treatment, then, for a specified lag = 4, it will be matched with control units that share an identical treatment history with unit 4 from 1988-1991, while also *remaining control units* in 1992. 
 
-(2) is achieved by defining which variables should be used for measuring similarity/distance between units, determining the most comparable control units to be included in the matched set, and assigning weights to control units as appropriate. There are many parameters that can be tuned for this step. Users must choose a refinement method ("mahalanobis", "ps.match", "CBPS.match", "ps.weight", "CBPS.weight", "ps.msm.weight", "CBPS.msm.weight", or "none"). The "matching" or mahalanobis refinement methods will assign equal weights to the `size.match` most similar control units in a matched set. The "weighting" methods will generate weights in such a way that control units more similar to treated units will be assigned higher weights. 
+**2** is achieved by defining which variables should be used for measuring similarity/distance between units, determining the most comparable control units to be included in the matched set, and assigning weights to control units as appropriate. There are many parameters that can be tuned for this step. Users must choose a refinement method ("mahalanobis", "ps.match", "CBPS.match", "ps.weight", "CBPS.weight", "ps.msm.weight", "CBPS.msm.weight", or "none"). The "matching" or mahalanobis refinement methods will assign equal weights to the `size.match` most similar control units in a matched set. The "weighting" methods will generate weights in such a way that control units more similar to treated units will be assigned higher weights. 
 
 Users must also define which covariates should be used in this process for defining similarity between units. This is set using the `covs.formula` argument, which takes the form of a one side formula object. The variables defined on the right hand side of the formula are the variables used in these calculations. Users can included "lagged" versions of variables using `I(lag(name.of.var, 0:n))`.
 
-
+## Examples and `matched.set` objects
 The first example sets `refinement.method` to `none`, meaning all control units will receive equal weights and no refinement is performed. This will also be helpful to refer back to when we are evaluating the impact of refinement.
 
-The `PanelMatch` function returns a `PanelMatch` object, which contains a `matched.set` object. Please consult the wiki page about [matched set objects for more about them](https://github.com/insongkim/PanelMatch/wiki/Matched-Set-Objects).
+The `PanelMatch` function returns a `PanelMatch` object, which contains a `matched.set` object. These objects are just lists with some additional attributes. Within the `PanelMatch` object, the attached `matched.set` object is always named either `att` or `atc`. When `qoi = ate`, then there are two `matched.set` objects included in the results of the `PanelMatch` call. Specifically, there will be two matched sets named `att` and `atc`, respectively.
+
+In implementation, the `matched.set` is just a named list with some added attributes (lag, names of treatment, unit, and time variables) and a structured name scheme. Each entry in the list is a vector containing the unit ids of control units that are in a matched set. Additionally, each entry corresponds to a time/unit id pair (the unit id of a treated unit and the time at which treatment occurred). This is reflected in the names of each element of the list, as the name scheme `[id varable]`.`[time variable]` is used. 
+
 
 ```{r}
+#Call PanelMatch
 PM.results.none <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
                          treatment = "dem", refinement.method = "none", 
                          data = dem, match.missing = TRUE, 
                          size.match = 5, qoi = "att", outcome.var = "y",
                          lead = 0:4, forbid.treatment.reversal = FALSE, 
                          use.diagonal.variance.matrix = TRUE)
+#Extract the matched.set object
+msets <- PM.results.none$att
 ```
 
+We can print information about the matched sets. Matched set objects are implemented as lists, but the default printing behavior resembles that of a data frame. One can toggle a `verbose` option on the `print` method to print as a list and also display a less summarized version of the matched set data.
+```{r}
+names(msets) #get the treated unit ids, times of treatment
+print(msets)
+```
 
-Below, we will use the `mahalanobis` option for `refinement.method` and will use only contemporaneous values of the `tradewb` to define similarity.
+Since `matched.set` objects are just lists with attributes, you can expect the `[` and `[[` functions to work similarly to how they would with a list. So, for instance, users can extract information about matched sets using numerical indices or by taking advantage of the naming scheme. Each matched set will have an attribute called "weights," which are the weights calculated for each control unit in the refinement process. Here, because no refinment was used, each control unit has equal weight. 
+```{r}
+msets[1] #prints like a matched.set object
+msets[[1]] #prints the matched control unit ids.
+attr(msets[[1]], "weights")
+```
+
+We can also get an idea of the number and size of our matched sets by using the `summary` and `plot` methods for `matched.set` objects. By default, the `plot` method excludes empty matched sets (treated units that could not be matched to any control units), showing the number of empty sets in a separate vertical bar at x = 0. This can be turned off by setting `include.empty.sets` to `TRUE`.
+
+```{r}
+summary(PM.results.none$att)
+
+plot(PM.results.none$att)
+
+plot(PM.results.none$att, include.empty.sets = TRUE) 
+#The red tiny bar that would otherwise indicate empty sets is now part of the grey bar
+```
+
+### Other methods of refinement
+
+
+Below, we will use the `mahalanobis` option for `refinement.method` and will use only contemporaneous values of the `tradewb` variable to define similarity.
 
 ```{r}
 PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
-                         treatment = "dem", refinement.method = "mahalanobis", # use Mahalanobis distance 
+                         treatment = "dem", refinement.method = "mahalanobis", 
+                         # use Mahalanobis distance 
                          data = dem, match.missing = TRUE, 
                          covs.formula = ~ tradewb, 
                          size.match = 5, qoi = "att" , outcome.var = "y",
@@ -107,7 +142,8 @@ We can also apply listwise deletion of units for missing data.
 ```{r}
 PM.results1 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
                          treatment = "dem", refinement.method = "mahalanobis", 
-                         data = dem, match.missing = FALSE, listwise.delete = TRUE, # listwise deletion used 
+                         data = dem, match.missing = FALSE, listwise.delete = TRUE, 
+                         # listwise deletion used 
                          covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
                          size.match = 5, qoi = "att", outcome.var = "y",
                          lead = 0:4, forbid.treatment.reversal = FALSE, 
@@ -121,10 +157,12 @@ PM.results2 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                          data = dem, match.missing = FALSE, listwise.delete = TRUE, 
                          covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
                          size.match = 5, qoi = "att", outcome.var = "y",
-                         lead = 0:4, forbid.treatment.reversal = FALSE, 
-                         use.diagonal.variance.matrix = TRUE)
+                         lead = 0:4, forbid.treatment.reversal = FALSE)
 ```
 
+# Investigating and Evaluating Matched Set Data
+
+### DisplayTreatment with matched set data
 
 Now that we've created matched sets, you might be interested in visualizing and evaluating a few aspects of these results. First, let's make sure the results are sensible, by using `DisplayTreatment` to see if our treated and control units meet the parameters outlined previously for one of our matched sets. 
 
@@ -141,17 +179,10 @@ DisplayTreatment(unit.id = "wbcode2",
 
 ```
 
-We can also get an idea of the number and size of our matched sets by using the `summary` and `plot` methods for `matched.set` objects. By default, the `plot` method excludes empty matched sets (treated units that could not be matched to any control units) by default, showing the number of empty sets in a separate vertical bar at x = 0. This can be turned off by setting `include.empty.sets` to `TRUE`.
 
-```{r}
-summary(PM.results.none$att)
+### Evaluating refinement with `get_covariate_balance`
 
-plot(PM.results.none$att)
-
-plot(PM.results.none$att, include.empty.sets = TRUE) # The red tiny bar that would otherwise indicate empty sets is now part of the grey bar
-```
-
-Now, let's see the impact of performing refinement by comparing the balance of covariates before and after. See the documentation for the `get_covariate_balance` for more about how the package calculates covariate balance. We hope to see low values (.2 is a helpful threshold value as a rule of thumb) in the results of our covariate balance calculations. We also hope to see an improvement in covariate balance after applying some method of refinement to our results. 
+Now, let's see the impact of performing refinement by comparing the balance of covariates before and after. See the documentation for the `get_covariate_balance` function for more about how the package calculates covariate balance. We hope to see low values (.2 is a helpful threshold value as a rule of thumb) in the results of our covariate balance calculations. We also hope to see an improvement in covariate balance after applying some method of refinement to our results. 
 
 
 We can use the `get_covariate_balance` function to assess our results. To view the raw results, set `plot = FALSE`. 
@@ -206,6 +237,7 @@ balance_scatter(non_refined_set = PM.results.none$att,
 ```
 
 
+# PanelEstimate
 
 We now move to the next major part of the package: obtaining point estimates and standard errors using `PanelEstimate`. The package uses bootstrapping to obtain standard errors. By default, 1000 bootstrap iterations are used, and .95 is the default confidence level. 
 
