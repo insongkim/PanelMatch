@@ -180,8 +180,10 @@ test_that("balance checking functions are sensible", {
   
   balmat <- get_covariate_balance(pm.obj$att, dem, covariates = c("tradewb", "rdata"), 
                             plot = FALSE, ylim = c(-2,2))
-  compmat <- matrix(data = c(0.152972260454625,0.0923632722068149,0.109795148587497,0.249427241400355,0.295472804606837,0.166692980558207,
-                             0.103662692289609,0.00896485955293765,0.048526876268204,0.0604550292871631), ncol = 2, nrow = 5)
+  compmat <- matrix(data = c(0.0601621099966881,-0.00582951116008258,0.00211544759632536,0.124463506760345,
+                             0.168548575854201,0.0252020903167403,0.0540683319809353,
+                             -0.117257087671973,0.0260535302880658,-0.0130941237795542)
+                    , ncol = 2, nrow = 5)
   expect_equal(nrow(balmat), 5)
   expect_equal(ncol(balmat), 2)
   expect_equivalent(balmat, compmat)
@@ -206,7 +208,7 @@ test_that("(ATT) PanelEstimate Runs", {
                     lead = 0:3, forbid.treatment.reversal = FALSE)
   
   pe.results <- PanelEstimate(pm1, data = dem)
-  comp.results <-  c(-0.903871831205692,-0.497466128634409,0.403842635007254,1.24893191622705)
+  comp.results <-  c(-0.593399771464233,-0.321260212377162,0.456311286847623,1.73182162255356)
   expect_equivalent(pe.results$estimates, comp.results)
 })
 
@@ -222,7 +224,7 @@ test_that("(ATC) PanelEstimate Runs", {
                     lead = 0:3, forbid.treatment.reversal = FALSE)
   
   pe.results <- PanelEstimate(pm1, data = dem)
-  comp.results <-  c(5.21729365330116,7.97913255878523,8.6319948682598,7.93186896829045)
+  comp.results <-  c(5.2177188648897,8.02138564165901,8.75646876914828,8.12399471507353)
   expect_equivalent(pe.results$estimates, comp.results)
   
 })
@@ -238,7 +240,7 @@ test_that("(ATE) PanelEstimate Runs", {
                     lead = 0:3, forbid.treatment.reversal = FALSE)
   
   pe.results <- PanelEstimate(pm1, data = dem)
-  comp.results <-  c(1.20544870737437,2.42352395959804,3.23921941808752,3.55183590038403)
+  comp.results <-  c(1.40908029917124,2.55357045354071,3.31650068953231,3.93452991794896)
   expect_equivalent(pe.results$estimates, comp.results)
   
 })
