@@ -101,11 +101,15 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
 
   if(refinement.method == "mahalanobis")
   {
+    #browser()
+    old.lag <- lag
+    lag <- 0 
     tlist <- expand.treated.ts(lag, treated.ts = treated.ts)
     idxlist <- get_yearly_dmats(ordered.data, treated.ids, tlist, paste0(ordered.data[,unit.id], ".",
                                                                          ordered.data[, time.id]), matched_sets = msets, lag)
     mahalmats <- build_maha_mats(ordered_expanded_data = ordered.data, idx =  idxlist)
     msets <- handle_mahalanobis_calculations(mahalmats, msets, size.match, verbose, use.diagonal.covmat = use.diag.covmat)
+    lag <- old.lag
   }
   if(refinement.method == "ps.msm.weight" | refinement.method == "CBPS.msm.weight")
   {
@@ -371,7 +375,6 @@ find_ps <- function(sets, fitted.model)
 # These functions could use some work to be better optimized. For instance, when the "verbose" argument is set to true, they will essentially do all of the refinement calculations twice.
 handle_mahalanobis_calculations <- function(mahal.nested.list, msets, max.size, verbose, use.diagonal.covmat)
 {
-
   do.calcs <- function(year.df)
   {
     if(nrow(year.df) == 2)
@@ -424,6 +427,7 @@ handle_mahalanobis_calculations <- function(mahal.nested.list, msets, max.size, 
   }
   handle_set <- function(sub.list, max.set.size, idx)
   {
+    #browser()
     results.temp <- lapply(sub.list, do.calcs)
     tmat <- do.call(rbind, results.temp)
     colnames(tmat) <- NULL

@@ -158,11 +158,14 @@ set_lwd_refinement <- function(mset, local.data, time, id,
   msets <- mset
   if(refinement.method == "mahalanobis")
   {
+    old.lag <- lag
+    lag <- 0
     tlist <- expand.treated.ts(lag, treated.ts = treated.ts)
     idxlist <- get_yearly_dmats(ordered.data, treated.ids, tlist, paste0(ordered.data[,unit.id], ".", 
                                                                          ordered.data[, time.id]), matched_sets = msets, lag)
     mahalmats <- build_maha_mats(ordered_expanded_data = ordered.data, idx =  idxlist)
     msets <- handle_mahalanobis_calculations(mahalmats, msets, size.match, verbose, use.diagonal.covmat = use.diag.covmat)
+    lag <- old.lag
   }
   if(refinement.method == "ps.msm.weight" | refinement.method == "CBPS.msm.weight")
   {
