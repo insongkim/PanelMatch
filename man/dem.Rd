@@ -4,7 +4,9 @@
 \name{dem}
 \alias{dem}
 \title{County-level Democracy indicator}
-\format{A dataframe containing 9384 rows and 3 variables}
+\format{
+A dataframe containing 9384 rows and 3 variables
+}
 \source{
 Acemoglu, Daron, Suresh Naidu, Pascual Restrepo, and James
 A Robinson. ``Democracy does cause growth.'' Journal of Political
