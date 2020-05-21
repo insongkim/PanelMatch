@@ -442,6 +442,7 @@ handle_mahalanobis_calculations <- function(mahal.nested.list, msets, max.size, 
     #}
     #if(length(n.dists) == 0 ) browser()#stop("a matched set contain only identical units. Please examine the data and remove this set.")
     #else 
+  
     if(length(n.dists) < max.set.size) #case where total number of units in matched set < max.set size
     {
       w <- 1 / length(n.dists)
@@ -472,7 +473,7 @@ handle_mahalanobis_calculations <- function(mahal.nested.list, msets, max.size, 
       }
       else
       {
-        newdists <- ifelse(dists < scoretobeat & dists > 0, 1 / max.set.size, 0)
+        newdists <- ifelse(dists < scoretobeat, 1 / max.set.size, 0)
       }
 
     }
