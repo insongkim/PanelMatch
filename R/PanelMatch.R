@@ -217,6 +217,9 @@ panel_match <- function(lag, time.id, unit.id, treatment,
   if(!class(data[, unit.id]) %in% c("integer", "numeric")) stop("please convert unit id column to integer or numeric")
   if(class(data[, time.id]) != "integer") stop("please convert time id to consecutive integers")
   
+  #######take this out when negative lead is implemented:
+  if(any(lead < 0)) stop("Please provide positive lead values. Negative lead values will be supported in future versions")
+  
   if(any(table(data[, unit.id]) != max(table(data[, unit.id]))))
   {
     testmat <- data.table::dcast(data.table::as.data.table(data), formula = paste0(unit.id, "~", time.id),
