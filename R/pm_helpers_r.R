@@ -432,19 +432,22 @@ handle_mahalanobis_calculations <- function(mahal.nested.list, msets, max.size, 
     tmat <- do.call(rbind, results.temp)
     colnames(tmat) <- NULL
     dists <- colMeans(tmat)
-    n.dists <- dists[dists > 0]
-    if(length(n.dists) == 0)
-    {
-      w <- 1 / length(dists)
-      newdists <- dists
-      newdists <- rep(w, length(newdists))
-    }
+    #n.dists <- dists[dists > 0]
+    n.dists <- dists
+    #if(length(n.dists) == 0)
+    #{
+    #  w <- 1 / length(dists)
+    #  newdists <- dists
+    #  newdists <- rep(w, length(newdists))
+    #}
     #if(length(n.dists) == 0 ) browser()#stop("a matched set contain only identical units. Please examine the data and remove this set.")
-    else if(length(n.dists) < max.set.size)
+    #else 
+    if(length(n.dists) < max.set.size) #case where total number of units in matched set < max.set size
     {
       w <- 1 / length(n.dists)
       newdists <- dists
-      newdists[newdists > 0 ] <- w
+      newdists <- rep(w, length(newdists))
+      #newdists[newdists > 0 ] <- w
     }
     else
     {
@@ -452,10 +455,20 @@ handle_mahalanobis_calculations <- function(mahal.nested.list, msets, max.size, 
       scoretobeat <- max(utils::head(ordered.dists, n = max.set.size + 1))
       # might have situation where the Mth largest distance is the same as the Mth - 1 distance. This means that we either choose to leave out both and have a matched set smaller than the max,
       # or include both of them and relax the size of our maximum set size
-      if(sum(dists < scoretobeat & dists > 0) < max.set.size) #change this if we want to be more strict about max.set.size enforcements
+      # if(sum(dists < scoretobeat & dists > 0) < max.set.size) #change this if we want to be more strict about max.set.size enforcements
+      # {
+      #   new.denom <- sum(dists <= scoretobeat & dists > 0)
+      #   newdists <- ifelse(dists <= scoretobeat & dists > 0, 1 / new.denom, 0)
+      # }
+      # else
+      # {
+      #   newdists <- ifelse(dists < scoretobeat & dists > 0, 1 / max.set.size, 0)
+      # }
+      
+      if(sum(dists < scoretobeat) < max.set.size) #change this if we want to be more strict about max.set.size enforcements
       {
-        new.denom <- sum(dists <= scoretobeat & dists > 0)
-        newdists <- ifelse(dists <= scoretobeat & dists > 0, 1 / new.denom, 0)
+        new.denom <- sum(dists <= scoretobeat)
+        newdists <- ifelse(dists <= scoretobeat, 1 / new.denom, 0)
       }
       else
       {
@@ -467,7 +480,7 @@ handle_mahalanobis_calculations <- function(mahal.nested.list, msets, max.size, 
     return(newdists)
 
   }
-
+  
   scores <- mapply(FUN = handle_set, sub.list = mahal.nested.list, idx = 1:length(msets), MoreArgs = list(max.set.size = max.size), SIMPLIFY = FALSE)
   for(i in 1:length(msets))
   {
