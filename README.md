@@ -1,5 +1,6 @@
 # PanelMatch: Matching Methods for Causal Inference with Time-Series Cross-Section Data 
-[![Build Status](https://travis-ci.org/insongkim/PanelMatch.svg?branch=master)](https://travis-ci.org/insongkim/PanelMatch) ![CRAN downloads](http://cranlogs.r-pkg.org/badges/grand-total/PanelMatch)  [![CRAN status](https://www.r-pkg.org/badges/version/PanelMatch)](https://CRAN.R-project.org/package=PanelMatch)
+[![Build Status](https://travis-ci.org/insongkim/PanelMatch.svg?branch=master)](https://travis-ci.org/insongkim/PanelMatch) ![CRAN downloads](http://cranlogs.r-pkg.org/badges/grand-total/PanelMatch)  [![CRAN status](https://www.r-pkg.org/badges/version/PanelMatch)](https://CRAN.R-project.org/package=PanelMatch) [![R build
+status](https://github.com/r-lib/usethis/workflows/R-CMD-check/badge.svg)](https://github.com/r-lib/usethis/actions)
 
 Authors: In Song Kim (insong@mit.edu), Adam Rauh (adamrauh@mit.edu), Erik Wang (haixiaow@Princeton.edu), Kosuke Imai (imai@harvard.edu)
 
