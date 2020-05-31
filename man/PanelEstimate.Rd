@@ -9,6 +9,7 @@ PanelEstimate(
   number.iterations = 1000,
   df.adjustment = FALSE,
   confidence.level = 0.95,
+  moderating.variable = NULL,
   data
 )
 }
@@ -25,6 +26,8 @@ calculation. The default is \code{FALSE}.}
 
 \item{confidence.level}{A numerical value specifying the confidence level and range of interval
 estimates for statistical inference. The default is .95.}
+
+\item{moderating.variable}{The name of a moderating variable, provided as a character string.}
 
 \item{data}{The same time series cross sectional data set provided to the PanelMatch function used to produce 
 the matched sets}

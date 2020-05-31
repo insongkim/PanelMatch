@@ -1,3 +1,96 @@
+handle_moderating_variable <- function(ordered.data, att.sets, atc.sets, PM.object, 
+                                       moderator, unit.id, time.id)
+{
+  .reconstruct_pm_objects <- function(att.set = NULL, atc.set = NULL, PM.object_)
+  {
+    
+    t.pm.object <- list()
+    if(!is.null(att.set))
+    {
+      t.pm.object[["att"]] <- att.set  
+    }
+    if(!is.null(atc.set))
+    {
+      t.pm.object[["atc"]] <- atc.set  
+    }
+    attrib <- names(attributes(PM.object_))[names(attributes(PM.object_)) != "names"]
+    for(tatt in attrib)
+    {
+      attr(t.pm.object, tatt) <- attr(PM.object_, tatt)
+    }
+    return(t.pm.object)
+  }
+  
+  ref.names <- paste0(ordered.data[, unit.id], ".", ordered.data[, time.id])
+  moderator.vector <- ordered.data[, moderator]
+  names(moderator.vector) <- ref.names
+  moderated.sets.att <- list()
+  moderated.sets.atc <- list()
+  subset.list <- list()
+  moderating.values <- unique(ordered.data[, moderator])
+  for(val in moderating.values)
+  {
+    #make sure we handle empty set situation
+    if(!is.null(att.sets))
+    {
+      indx.set <- moderator.vector[names(att.sets)] == val
+      t.set <- att.sets[indx.set]
+      if(length(t.set) > 0)
+      {
+        moderated.sets.att[[make.names(val)]] <- t.set
+      }
+      else 
+      {
+        moderated.sets.att[[make.names(val)]] <- NULL
+      }
+    }
+    if(!is.null(atc.sets))
+    {
+      indx.set <- moderator.vector[names(atc.sets)] == val
+      t.set <- atc.sets[indx.set]
+      if(length(t.set) > 0)
+      {
+        moderated.sets.atc[[make.names(val)]] <- t.set
+      }
+      else 
+      {
+        moderated.sets.atc[[make.names(val)]] <- NULL
+      }
+      
+    }
+  }
+  if(!is.null(att.sets) & !is.null(atc.sets))
+  {
+    if(!identical(names(moderated.sets.att), names(moderated.sets.atc)))
+    {
+      stop("Data insufficient for calculating ATE with moderating variables")
+    }
+  }
+  
+  if(is.null(atc.sets))
+  {
+    #do att
+    ret.obj <-lapply(moderated.sets.att, FUN = .reconstruct_pm_objects, PM.object_ = PM.object, atc.set = NULL)
+  }
+  else if(is.null(att.sets))
+  {
+    #do atc
+    ret.obj <-lapply(moderated.sets.atc, FUN = .reconstruct_pm_objects, PM.object_ = PM.object, att.set = NULL)
+  }
+  else 
+  {
+    
+    ret.obj <- mapply(FUN = .reconstruct_pm_objects, SIMPLIFY = FALSE, 
+                      att.set = moderated.sets.att, atc.set = moderated.sets.atc,
+                      MoreArgs = list(PM.object_ = PM.object))
+  }
+  
+  return(ret.obj)
+}
+
+
+
+
 #pcs and pts create data frames with the time/id combinations--that need to be found so that they can be easily looked up in the data frame via a hash table. The data frame also contains information
 # about the weight of that unit at particular times, so we use the hashtable to look up where to put this data so that we can easily assign the appropriate weights in the original data frame containing the problem data.
 # pcs does this for all control units in a matched set
@@ -58,8 +151,6 @@ pts <- function(sets, lead.in, method)
 # lead. So, for instance if our lead window is 0,1,2,3,4, these function must be called for each of those -- so for 0, then for 1, etc.
 getWits <- function(matched_sets, lead, data, estimation.method)
 {
-  
-  
   
   #sort the data
   t.var <- attr(matched_sets, "t.var")
