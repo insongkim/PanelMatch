@@ -123,14 +123,17 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
                        forbid.treatment.reversal = FALSE,
                        matching = TRUE,
                        listwise.delete = FALSE,
-                       use.diagonal.variance.matrix = FALSE
+                       use.diagonal.variance.matrix = FALSE,
+                       edge.matrix = NULL,
+                       neighborhood.degree = NULL
                        ) 
 {
   if(class(lag) == "list" & class(time.id) == "list" & class(unit.id) == "list" & class(treatment) == "list" & 
      class(refinement.method) == "list" & class(size.match) == "list" & class(match.missing) == "list" & 
      class(covs.formula) == "list" & class(verbose) == "list" & class(qoi) == "list" & class(lead) == "list" & 
      class(outcome.var) == "list" & class(exact.match.variables) == "list" & class(forbid.treatment.reversal) == "list" &
-     class(matching) == "list" & class(listwise.delete) == "list" & class(use.diagonal.variance.matrix) == "list") #everything but data must be provided explicitly
+     class(matching) == "list" & class(listwise.delete) == "list" & class(use.diagonal.variance.matrix) == "list" & class(edge.matrix) == "list" &
+     class(neighborhood.degree) == "list") #everything but data must be provided explicitly
   {
     if(length(unique(length(lag) , length(time.id)  , length(unit.id)  , length(treatment)  , 
                      length(refinement.method)  , length(size.match)  , length(match.missing)  , 
@@ -154,6 +157,8 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
              matching = matching,
              listwise.delete = listwise.delete,
              use.diagonal.variance.matrix = use.diagonal.variance.matrix,
+             edge.matrix = edge.matrix,
+             neighborhood.degree = neighborhood.degree,
              MoreArgs = list(data = data)
              , SIMPLIFY = F)
      return(list.res)
@@ -178,7 +183,9 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
                 forbid.treatment.reversal,
                 matching,
                 listwise.delete,
-                use.diagonal.variance.matrix)
+                use.diagonal.variance.matrix,
+                edge.matrix,
+                neighborhood.degree)
   }
   
 }
@@ -197,7 +204,9 @@ panel_match <- function(lag, time.id, unit.id, treatment,
                         forbid.treatment.reversal,
                         matching,
                         listwise.delete,
-                        use.diagonal.variance.matrix)
+                        use.diagonal.variance.matrix,
+                        edge.matrix,
+                        neighborhood.degree)
 {
   
   if(!matching & match.missing)
@@ -274,6 +283,12 @@ panel_match <- function(lag, time.id, unit.id, treatment,
       ordered.data[, variable] <- as.numeric(as.factor(ordered.data[, variable]))
     }  
   }
+  browser()
+  if(!is.null(edge.matrix) & !is.null(neighborhood.degree))
+  {
+    ordered.data <- calculate_neighbor_treatment(ordered.data, edge.matrix, neighborhood.degree, unit.id, time.id, treatment)  
+  }
+  
   
   if(qoi == "atc")
   {
