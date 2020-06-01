@@ -101,14 +101,18 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
 
   if(refinement.method == "mahalanobis")
   {
-    #browser()
+    print("mahalanobis distance calculations started....")
     old.lag <- lag
     lag <- 0 
     tlist <- expand.treated.ts(lag, treated.ts = treated.ts)
+    print("treatment list obtained........")
     idxlist <- get_yearly_dmats(ordered.data, treated.ids, tlist, paste0(ordered.data[,unit.id], ".",
                                                                          ordered.data[, time.id]), matched_sets = msets, lag)
+    print("distance matrix index created............")
     mahalmats <- build_maha_mats(ordered_expanded_data = ordered.data, idx =  idxlist)
+    print('mahalanobis distance matrices calculated........')
     msets <- handle_mahalanobis_calculations(mahalmats, msets, size.match, verbose, use.diagonal.covmat = use.diag.covmat)
+    print("mahalanobis distance calculations *completed*.........")
     lag <- old.lag
   }
   if(refinement.method == "ps.msm.weight" | refinement.method == "CBPS.msm.weight")
