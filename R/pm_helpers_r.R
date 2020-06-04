@@ -20,11 +20,12 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
   }
   else
   {
-
+    print("refinement started")
     temp.treateds <- findAllTreated(ordered.data, treatedvar = treatment, time.var = time.id,
                                     unit.var = unit.id, hasbeensorted = TRUE)
     idx <- !((temp.treateds[, time.id] - lag) < min(ordered.data[, time.id]))
     temp.treateds <- temp.treateds[idx, ]
+    print("treated units identified")
     if(nrow(temp.treateds) == 0)
     {
       warn.str <- paste0("no viable treated units for ", qoi, " specification")
@@ -34,9 +35,9 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
                              lag, time.id, unit.id, treatment, hasbeensorted = TRUE, match.on.missingness = match.missing, matching)
     e.sets <- msets[sapply(msets, length) == 0]
     msets <- msets[sapply(msets, length) > 0 ]
-
+    print("matched sets identified")
     msets <- clean_leads(msets, ordered.data, max(lead), time.id, unit.id, outcome.var)
-
+    print("lead window data cleaned")
     if(forbid.treatment.reversal)
     {
       msets <- enforce_lead_restrictions(msets, ordered.data, max(lead), time.id, unit.id, treatment.var = treatment)
@@ -76,8 +77,9 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
 
   treated.ts <- as.numeric(unlist(strsplit(names(msets), split = "[.]"))[c(F,T)])
   treated.ids <- as.numeric(unlist(strsplit(names(msets), split = "[.]"))[c(T,F)])
-
+  print("data pre-processing started")
   ordered.data <- parse_and_prep(formula = covs.formula, data = ordered.data)
+  print("data pre-processing completed")
   if(any(apply(ordered.data, 2, FUN = function(x) any(is.infinite(x)))))
   {
     stop("Data needed for refinement contains infinite values. Code cannot proceed!")
