@@ -28,7 +28,7 @@ handle_moderating_variable <- function(ordered.data, att.sets, atc.sets, PM.obje
   moderated.sets.atc <- list()
   subset.list <- list()
   moderating.values <- unique(ordered.data[, moderator])
-  for(val in moderating.values)
+  for(val in as.vector(na.omit(moderating.values)))
   {
     #make sure we handle empty set situation
     if(!is.null(att.sets))

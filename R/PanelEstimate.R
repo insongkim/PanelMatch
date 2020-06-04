@@ -21,7 +21,10 @@
 #' calculation. The default is \code{FALSE}.
 #' @param confidence.level A numerical value specifying the confidence level and range of interval
 #' estimates for statistical inference. The default is .95.
-#' @param moderating.variable The name of a moderating variable, provided as a character string.
+#' @param moderating.variable The name of a moderating variable, provided as a character string. If a moderating variable is provided
+#' the returned object will be a list of \code{PanelEstimate} objects. The names of the list will reflect the different values of the 
+#' moderating variable. More specifically, the moderating variable values will be converted to syntactically proper names using 
+#' \code{make.names}.
 #' @param data The same time series cross sectional data set provided to the PanelMatch function used to produce 
 #' the matched sets
 #' @return \code{PanelEstimate} returns a list of class
@@ -61,41 +64,56 @@ PanelEstimate <- function(sets,
                           data) 
 {
   inference <- "bootstrap"
+  
   if(inference == "wfe") stop("wfe is no longer supported. Please specify inference = 'bootstrap'")
-  if(class(number.iterations) == "list" & class(df.adjustment) == "list" & class(confidence.level) == "list" & class(sets) == "list")
+  if(class(number.iterations) == "list" & class(df.adjustment) == "list" & 
+     class(confidence.level) == "list" & class(sets) == "list")
   {
     if(length(unique(length(inference), length(number.iterations), length(df.adjustment), 
                      length(confidence.level), length(sets))) == 1)
     {
-      
       if(!is.null(moderating.variable))
       {
-        if(attr(sets, "qoi") == "att")
-        {
-          s1 = sets[["att"]]
-          unit.id <- attr(s1, "id.var")
-          time.id <- attr(s1, "t.var")
-        }
-        if(attr(sets, "qoi") == "atc")
-        {
-          s1 = sets[["atc"]]
-          unit.id <- attr(s1, "id.var")
-          time.id <- attr(s1, "t.var")
-        }
-        if(attr(sets, "qoi") == "ate")
-        { #can assume they are the same
-          s1 <- sets[["att"]]
-          # sets[["atc"]]
-          unit.id <- attr(s1, "id.var")
-          time.id <- attr(s1, "t.var")
-        }
         
-        ordered.data <- data[order(data[,unit.id], data[,time.id]), ]
-        set.list <- handle_moderating_variable(ordered.data = ordered.data, att.sets = sets[["att"]], atc.sets = sets[["atc"]],
-                                               moderator = moderating.variable, unit.id = unit.id, time.id = time.id,
-                                               PM.object = sets)
-        res <- lapply(set.list, FUN = panel_estimate, inference = inference, number.iterations = number.iterations, 
-                      df.adjustment = df.adjustment, confidence.level = confidence.level, data = data)
+      
+        handle.nesting <- function(data, sets.in, moderating.variable.in,
+                                   inference.in, number.iterations.in, df.adjustment.in, confidence.level.in) 
+        {
+            if(attr(sets.in, "qoi") == "att")
+            {
+              s1 = sets.in[["att"]]
+              unit.id <- attr(s1, "id.var")
+              time.id <- attr(s1, "t.var")
+            }
+            if(attr(sets.in, "qoi") == "atc")
+            {
+              s1 = sets.in[["atc"]]
+              unit.id <- attr(s1, "id.var")
+              time.id <- attr(s1, "t.var")
+            }
+            if(attr(sets.in, "qoi") == "ate")
+            { #can assume they are the same
+              s1 <- sets.in[["att"]]
+              # sets[["atc"]]
+              unit.id <- attr(s1, "id.var")
+              time.id <- attr(s1, "t.var")
+            }
+              
+              ordered.data <- data[order(data[,unit.id], data[,time.id]), ]
+          
+              set.list <- handle_moderating_variable(ordered.data = ordered.data, att.sets = sets.in[["att"]], 
+                                                  atc.sets = sets.in[["atc"]],
+                                                 moderator = moderating.variable.in, unit.id = unit.id, time.id = time.id,
+                                                 PM.object = sets.in)
+            
+              res <- lapply(set.list, FUN = panel_estimate, inference = inference, number.iterations = number.iterations.in, 
+                          df.adjustment = df.adjustment.in, confidence.level = confidence.level.in, data = data)
+              return(res)
+        }
+        res <- mapply(FUN = handle.nesting, number.iterations.in = number.iterations, 
+                     df.adjustment.in = df.adjustment, confidence.level.in= confidence.level, sets.in = sets, 
+                     MoreArgs = list(data = data, inference = inference, moderating.variable.in = moderating.variable), 
+                     SIMPLIFY = FALSE)
       }
       else
       {
