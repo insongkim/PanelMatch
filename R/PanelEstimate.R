@@ -271,7 +271,7 @@ panel_estimate <- function(inference = "bootstrap",
   
   if (qoi == "att" | qoi == "ate") 
   {
-    treated.unit.ids <- as.numeric(unlist(strsplit(names(sets), split = "[.]"))[c(T,F)])
+    treated.unit.ids <- as.numeric(sub("\\..*", "", names(sets)))
     
     for(j in lead)
     {
@@ -288,7 +288,7 @@ panel_estimate <- function(inference = "bootstrap",
   } 
   if (qoi == "atc" | qoi == "ate") 
   {
-    treated.unit.ids2 <- as.numeric(unlist(strsplit(names(sets2), split = "[.]"))[c(T,F)])
+    treated.unit.ids2 <- as.numeric(sub("\\..*", "", names(sets2)))
     
     for(j in lead)
     {

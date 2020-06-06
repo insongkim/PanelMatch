@@ -98,7 +98,7 @@ handle_moderating_variable <- function(ordered.data, att.sets, atc.sets, PM.obje
 pcs <- function(sets, lead.in, method)
 {
   L <- attr(sets, "lag")
-  ts <- as.numeric(unlist(strsplit(names(sets), split = "[.]"))[c(F,T)])
+  ts <- as.numeric(sub(".*\\.", "", names(sets)))
   make.years <- function(t, lead, repnum)
   {
     q <- rep( c((t - 1), (t + lead)), repnum)
@@ -127,9 +127,9 @@ pts <- function(sets, lead.in, method)
 {
   include <- sapply(sets, length) > 0
   num.empty <- sum(!include)
-  tids <- as.numeric(unlist(strsplit(names(sets), split = "[.]"))[c(T,F)])[include]
+  tids <- as.numeric(sub("\\..*", "", names(sets)))[include]
   tids <- rep(tids, rep(2, length(tids)))
-  ts <- as.numeric(unlist(strsplit(names(sets), split = "[.]"))[c(F,T)])[include]
+  ts <- as.numeric(sub(".*\\.", "", names(sets)))[include]
   make.years <- function(t, lead, repnum)
   {
     q <- rep( c((t - 1), (t + lead)), repnum)
@@ -196,11 +196,10 @@ getDits <- function(matched_sets, data)
 prep_for_leads <- function(matched_sets, ordered.data, max.lead, t.var, id.var, outcome.var) 
 {
   #CHECK TO MAKE SURE COLUMNS ARE IN ORDER
-  
   ordered.data <- ordered.data[order(ordered.data[,id.var], ordered.data[,t.var]), ]
   compmat <- data.table::dcast(data.table::as.data.table(ordered.data), formula = paste0(id.var, "~", t.var), value.var = outcome.var)
-  ts <- as.numeric(unlist(strsplit(names(matched_sets), split = "[.]"))[c(F,T)])
-  tids <- as.numeric(unlist(strsplit(names(matched_sets), split = "[.]"))[c(T,F)])
+  ts <- as.numeric(sub(".*\\.", "", names(matched_sets)))
+  tids <- as.numeric(sub("\\..*", "", names(matched_sets)))
   class(matched_sets) <- "list" #so that Rcpp::List is accurate when we pass it into cpp functions
   compmat <- data.matrix(compmat)
   

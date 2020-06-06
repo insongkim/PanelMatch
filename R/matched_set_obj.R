@@ -356,8 +356,8 @@ get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.wei
       names(attr(matched.sets[[i]], "weights")) <- matched.sets[[i]]
     }
   }
-  treated.ts <- as.integer(unlist(strsplit(names(matched.sets), split = "[.]"))[c(F,T)])
-  treated.ids <- as.integer(unlist(strsplit(names(matched.sets), split = "[.]"))[c(T,F)])
+  treated.ts <- as.integer(sub(".*\\.", "", names(matched.sets)))
+  treated.ids <- as.integer(sub("\\..*", "", names(matched.sets)))
   tlist <- expand.treated.ts(lag, treated.ts = treated.ts)
   
   idxlist <- get_yearly_dmats(matrix(nrow = 0, ncol = 0), treated.ids, tlist, paste0(ordered.data[,unit.id], ".", 
@@ -571,8 +571,8 @@ decode_index <- function(mset, unit.index, original.unit.id)#, original.time.id)
     
     return(paste0(n.ids, ".", ts))
   }
-  treated.ts <- as.numeric(unlist(strsplit(names(mset), split = "[.]"))[c(F,T)])
-  treated.ids <- as.numeric(unlist(strsplit(names(mset), split = "[.]"))[c(T,F)])
+  treated.ts <- as.numeric(sub(".*\\.", "", names(mset)))
+  treated.ids <- as.numeric(sub("\\..*", "", names(mset)))
   attributes(new.mset) <- attributes(mset)
   names(new.mset) <- decode.treated.units(treated.ts, treated.ids, unit.index)
   attr(new.mset, "id.var") <- original.unit.id
@@ -605,8 +605,8 @@ encode_index <- function(mset, unit.index, new.unit.id)
     
     return(paste0(n.ids, ".", ts))
   }
-  treated.ts <- (unlist(strsplit(names(mset), split = "[.]"))[c(F,T)])
-  treated.ids <- (unlist(strsplit(names(mset), split = "[.]"))[c(T,F)])
+  treated.ts <- sub(".*\\.", "", names(mset))
+  treated.ids <- sub("\\..*", "", names(mset))
   attributes(new.mset) <- attributes(mset)
   names(new.mset) <- encode.treated.units(treated.ts, treated.ids, unit.index)
   attr(new.mset, "id.var") <- new.unit.id

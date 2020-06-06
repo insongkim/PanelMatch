@@ -617,11 +617,10 @@ handle_ps_match <- function(just.ps.sets, msets, refinement.method, verbose, max
 clean_leads <- function(matched_sets, ordered.data, max.lead, t.var, id.var, outcome.var)
 {
   #CHECK TO MAKE SURE COLUMNS ARE IN ORDER
-
   ordered.data <- ordered.data[order(ordered.data[,id.var], ordered.data[,t.var]), ]
   compmat <- data.table::dcast(data.table::as.data.table(ordered.data), formula = paste0(id.var, "~", t.var), value.var = outcome.var)
-  ts <- as.numeric(unlist(strsplit(names(matched_sets), split = "[.]"))[c(F,T)])
-  tids <- as.numeric(unlist(strsplit(names(matched_sets), split = "[.]"))[c(T,F)])
+  ts <- as.numeric(sub(".*\\.", "", names(matched_sets)))
+  tids <- as.numeric(sub("\\..*", "", names(matched_sets)))
   class(matched_sets) <- "list" #so that Rcpp::List is accurate when we pass it into cpp functions
   compmat <- data.matrix(compmat)
 
@@ -678,11 +677,10 @@ clean_leads <- function(matched_sets, ordered.data, max.lead, t.var, id.var, out
 enforce_lead_restrictions <- function(matched_sets, ordered.data, max.lead, t.var, id.var, treatment.var)
 {
   #CHECK TO MAKE SURE COLUMNS ARE IN ORDER
-
   ordered.data <- ordered.data[order(ordered.data[,id.var], ordered.data[,t.var]), ]
   compmat <- data.table::dcast(data.table::as.data.table(ordered.data), formula = paste0(id.var, "~", t.var), value.var = treatment.var)
-  ts <- as.numeric(unlist(strsplit(names(matched_sets), split = "[.]"))[c(F,T)])
-  tids <- as.numeric(unlist(strsplit(names(matched_sets), split = "[.]"))[c(T,F)])
+  ts <- as.numeric(sub(".*\\.", "", names(matched_sets)))
+  tids <- as.numeric(sub("\\..*", "", names(matched_sets)))
   class(matched_sets) <- "list" #so that Rcpp::List is accurate when we pass it into cpp functions
   compmat <- data.matrix(compmat)
 

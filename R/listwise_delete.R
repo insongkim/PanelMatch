@@ -97,8 +97,8 @@ lwd_refinement <- function(msets, global.data, treated.ts,
   idx <- sapply(t.newsets, function(x) !any(is.na(x)))
   t.newsets <- t.newsets[idx]
   if(length(t.newsets) == 0) stop("There are no matched sets!")
-  treated.ts <- as.numeric(unlist(strsplit(names(t.newsets), split = "[.]"))[c(F,T)])
-  treated.ids <- as.numeric(unlist(strsplit(names(t.newsets), split = "[.]"))[c(T,F)])
+  treated.ts <- as.numeric(sub(".*\\.", "", names(t.newsets)))
+  treated.ids <- as.numeric(sub("\\..*", "", names(t.newsets)))
   if(refinement.method != "mahalanobis")
   {
     t.newsets <- set_lwd_refinement(t.newsets, global.data, treated.ts, treated.ids, lag, refinement.method, lead, 
@@ -108,8 +108,8 @@ lwd_refinement <- function(msets, global.data, treated.ts,
   
   class(e.sets) <- 'list'
   
-  treated.ts <- as.numeric(unlist(strsplit(names(e.sets), split = "[.]"))[c(F,T)])
-  treated.ids <- as.numeric(unlist(strsplit(names(e.sets), split = "[.]"))[c(T,F)])
+  treated.ts <- as.numeric(sub(".*\\.", "", names(e.sets)))
+  treated.ids <- as.numeric(sub("\\..*", "", names(e.sets)))
   
   esetlist <- logical(length(e.sets))
   if(length(e.sets) > 0)
