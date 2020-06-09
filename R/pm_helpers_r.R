@@ -76,8 +76,14 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
 
   treated.ts <- as.numeric(unlist(strsplit(names(msets), split = "[.]"))[c(F,T)])
   treated.ids <- as.numeric(unlist(strsplit(names(msets), split = "[.]"))[c(T,F)])
-
+  
+  ####apply calipers here 
+  #msets <- handle_calipers(plain.ordered.data = ordered.data, covs.formula, matched.sets = msets)
+  
   ordered.data <- parse_and_prep(formula = covs.formula, data = ordered.data)
+  
+  
+  
   if(any(apply(ordered.data, 2, FUN = function(x) any(is.infinite(x)))))
   {
     stop("Data needed for refinement contains infinite values. Code cannot proceed!")
@@ -267,6 +273,11 @@ parse_and_prep <- function(formula, data)
     sapply(lwindow, internal.lag, x = y)
   }
 
+  caliper <- function(y, lwindow)
+  {
+    return(y)
+  }
+  
   apply_formula <- function(x, form)
   {
     attr(form, ".Environment") <- environment()
@@ -754,66 +765,6 @@ gather_msm_sets <- function(lead.data.list)
 
   return(reassembled.sets)
 }
-
-
-calculate_neighbor_treatment <- function(data, edge.matrix, n.degree, unit.id, time.id, treatment.variable)
-{
-    g1 <- graph_from_data_frame(edge.matrix, directed = FALSE)
-    
-    ref.names <- paste0(data[, unit.id], ".", data[, time.id])
-    treatment.vector <- ordered.data[, treatment.variable]
-    names(treatment.vector) <- ref.names
-    browser()
-    adjusted.neighborhood <- function(graph.in, degree)
-    {
-      straight.neighborhoods <- ego(graph.in, order = degree)
-      if(degree > 1)
-      {
-        t.neighborhood <- ego(graph.in, order = (degree - 1))
-        ret.list <- mapply(difference, big = straight.neighborhoods, small = t.neighborhood, SIMPLIFY = FALSE)
-      }
-      else
-      {
-        ret.list <- straight.neighborhoods
-      }
-      ret.list <- lapply(ret.list, as.integer)
-      names(ret.list) <- as.character(V(graph.in))
-      return(ret.list)
-    }
-    
-    neighborhood.lookup <- lapply(1:n.degree, adjusted.neighborhood, graph.in = g1)
-    
-    get.neighborhood.treatment.per.time <- function(treatment.lookup, neighborhood.vector, time)
-    {
-      
-      lookups <- paste0(neighborhood.vector, '.', time)
-      prop.treatment <- mean(treatment.lookup[lookups], na.rm = TRUE)
-      return(prop.treatment)
-    }
-    
-    get.treatment.prop.per.row <- function(t.id.pair, degree, neighborhood.lookup, treatment.vector)
-    {
-      
-      id <- as.numeric(unlist(strsplit(t.id.pair, split = "[.]"))[c(T,F)])
-      t <- as.numeric(unlist(strsplit(t.id.pair, split = "[.]"))[c(F,T)])
-      neighbor.res <- neighborhood.lookup[[degree]][[as.character(id)]]
-      if(is.null(neighbor.res) | length(neighbor.res) == 0)
-      {
-        return.proportion <- NA  
-      }
-      else
-      {
-        return.proportion <- get.neighborhood.treatment.per.time(treatment.vector, neighbor.res, t)  
-      }
-      
-      return(return.proportion)
-    }
-    ll <- lapply(1:n.degree, FUN = function(x) {sapply(ref.names, get.treatment.prop.per.row, 
-                                        neighborhood.lookup = neighborhood.lookup, treatment.vector = treatment.vector, degree = x)})
-    data[, make.names(paste0('neighborhood_t_prop', '.', 1:n.degree))] = ll
-    return(data)
-}
-
 
 
 

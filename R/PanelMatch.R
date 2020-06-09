@@ -283,7 +283,7 @@ panel_match <- function(lag, time.id, unit.id, treatment,
       ordered.data[, variable] <- as.numeric(as.factor(ordered.data[, variable]))
     }  
   }
-  browser()
+  
   if(!is.null(edge.matrix) & !is.null(neighborhood.degree))
   {
     ordered.data <- calculate_neighbor_treatment(ordered.data, edge.matrix, neighborhood.degree, unit.id, time.id, treatment)  
