@@ -3,8 +3,9 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
                                ordered.data, match.missing, covs.formula, verbose,
                                mset.object = NULL, lead, outcome.var = NULL, forbid.treatment.reversal = FALSE, qoi = "",
                                matching = TRUE, exact.matching.variables = NULL, listwise.deletion,
-                               use.diag.covmat = FALSE)
+                               use.diag.covmat = FALSE, caliper.formula = NULL, calipers.in.refinement = FALSE)
 {
+  
   if(!is.null(mset.object))
   {
     lag = attr(mset.object, "lag")
@@ -77,13 +78,21 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
   treated.ts <- as.numeric(unlist(strsplit(names(msets), split = "[.]"))[c(F,T)])
   treated.ids <- as.numeric(unlist(strsplit(names(msets), split = "[.]"))[c(T,F)])
   
-  ####apply calipers here 
-  #msets <- handle_calipers(plain.ordered.data = ordered.data, covs.formula, matched.sets = msets)
+  ####apply calipers here
+  if(!is.null(caliper.formula))
+  {
+    msets <- handle_calipers(plain.ordered.data = ordered.data, caliper.formula, matched.sets = msets, lag.window = 0:lag)
+    browser()
+    if(calipers.in.refinement)
+    {
+      #merge the formulae
+    }
+  }
+  
   
   ordered.data <- parse_and_prep(formula = covs.formula, data = ordered.data)
   
-  
-  
+
   if(any(apply(ordered.data, 2, FUN = function(x) any(is.infinite(x)))))
   {
     stop("Data needed for refinement contains infinite values. Code cannot proceed!")

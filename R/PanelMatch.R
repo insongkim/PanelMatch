@@ -125,7 +125,9 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
                        listwise.delete = FALSE,
                        use.diagonal.variance.matrix = FALSE,
                        edge.matrix = NULL,
-                       neighborhood.degree = NULL
+                       neighborhood.degree = NULL,
+                       caliper.formula = NULL,
+                       calipers.in.refinement = FALSE
                        ) 
 {
   if(class(lag) == "list" & class(time.id) == "list" & class(unit.id) == "list" & class(treatment) == "list" & 
@@ -159,6 +161,8 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
              use.diagonal.variance.matrix = use.diagonal.variance.matrix,
              edge.matrix = edge.matrix,
              neighborhood.degree = neighborhood.degree,
+             caliper.formula = caliper.formula,
+             calipers.in.refinement = calipers.in.refinement,
              MoreArgs = list(data = data)
              , SIMPLIFY = F)
      return(list.res)
@@ -185,7 +189,9 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
                 listwise.delete,
                 use.diagonal.variance.matrix,
                 edge.matrix,
-                neighborhood.degree)
+                neighborhood.degree,
+                caliper.formula,
+                calipers.in.refinement)
   }
   
 }
@@ -206,7 +212,9 @@ panel_match <- function(lag, time.id, unit.id, treatment,
                         listwise.delete,
                         use.diagonal.variance.matrix,
                         edge.matrix,
-                        neighborhood.degree)
+                        neighborhood.degree, 
+                        caliper.formula,
+                        calipers.in.refinement)
 {
   
   if(!matching & match.missing)
@@ -297,7 +305,8 @@ panel_match <- function(lag, time.id, unit.id, treatment,
                                 match.missing, covs.formula, verbose, lead= lead, outcome.var = outcome.var, 
                                 forbid.treatment.reversal = forbid.treatment.reversal, qoi = qoi, matching = matching,
                                 exact.matching.variables = exact.match.variables, listwise.deletion = listwise.delete,
-                                use.diag.covmat = use.diagonal.variance.matrix)
+                                use.diag.covmat = use.diagonal.variance.matrix, caliper.formula = caliper.formula, 
+                                calipers.in.refinement = calipers.in.refinement)
     msets <- decode_index(msets, unit.index.map, og.unit.id)
     if(!matching & match.missing)
     {
@@ -316,7 +325,8 @@ panel_match <- function(lag, time.id, unit.id, treatment,
                                 match.missing, covs.formula, verbose, lead = lead, outcome.var = outcome.var, 
                                 forbid.treatment.reversal = forbid.treatment.reversal, qoi = qoi, matching = matching,
                                 exact.matching.variables = exact.match.variables, listwise.deletion = listwise.delete,
-                                use.diag.covmat = use.diagonal.variance.matrix)
+                                use.diag.covmat = use.diagonal.variance.matrix, caliper.formula = caliper.formula,
+                                calipers.in.refinement = calipers.in.refinement)
     msets <- decode_index(msets, unit.index.map, og.unit.id)
     if(!matching & match.missing)
     {
@@ -335,13 +345,15 @@ panel_match <- function(lag, time.id, unit.id, treatment,
                                 match.missing, covs.formula, verbose, lead = lead, outcome.var = outcome.var, 
                                 forbid.treatment.reversal = forbid.treatment.reversal, qoi = qoi, matching = matching,
                                 exact.matching.variables = exact.match.variables, listwise.deletion = listwise.delete,
-                                use.diag.covmat = use.diagonal.variance.matrix)
+                                use.diag.covmat = use.diagonal.variance.matrix, caliper.formula = caliper.formula,
+                                calipers.in.refinement = calipers.in.refinement)
     ordered.data[, treatment] <- ifelse(ordered.data[, treatment] == 1,0,1) #flip the treatment variables 
     msets2 <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data,
                                  match.missing, covs.formula, verbose, lead = lead, outcome.var = outcome.var, 
                                  forbid.treatment.reversal = forbid.treatment.reversal, qoi = qoi, matching = matching,
                                  exact.matching.variables = exact.match.variables, listwise.deletion = listwise.delete,
-                                 use.diag.covmat = use.diagonal.variance.matrix)
+                                 use.diag.covmat = use.diagonal.variance.matrix, caliper.formula = caliper.formula,
+                                 calipers.in.refinement = calipers.in.refinement)
     msets <- decode_index(msets, unit.index.map, og.unit.id)
     if(!matching & match.missing)
     {
