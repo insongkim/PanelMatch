@@ -22,7 +22,11 @@ PanelMatch(
   forbid.treatment.reversal = FALSE,
   matching = TRUE,
   listwise.delete = FALSE,
-  use.diagonal.variance.matrix = FALSE
+  use.diagonal.variance.matrix = FALSE,
+  edge.matrix = NULL,
+  neighborhood.degree = NULL,
+  caliper.formula = NULL,
+  calipers.in.refinement = FALSE
 )
 }
 \arguments{

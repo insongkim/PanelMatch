@@ -372,7 +372,6 @@ get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.wei
     for(i in 1:length(covariates))
     {
       variable <- covariates[i]
-      browser()
       sd.val <- sd(sapply(unlistedmats[seq(from = 1, to = (length(matched.sets) * (lag + 1)), by = lag + 1)], 
                           function(x){x[nrow(x), variable]}), na.rm = T)
       if(isTRUE(all.equal(sd.val, 0)))

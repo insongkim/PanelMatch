@@ -293,8 +293,12 @@ panel_match <- function(lag, time.id, unit.id, treatment,
   }
   
   if(!is.null(edge.matrix) & !is.null(neighborhood.degree))
-  {
-    ordered.data <- calculate_neighbor_treatment(ordered.data, edge.matrix, neighborhood.degree, unit.id, time.id, treatment)  
+  { #needs to update the data and the covariate formula
+    ordered.data <- calculate_neighbor_treatment(ordered.data, edge.matrix, neighborhood.degree, unit.id, time.id, treatment)
+    propstring.formula <- paste0('neighborhood_t_prop', '.', neighborhood.degree)
+    countstring.formula <- paste0('neighborhood_t_count', '.', neighborhood.degree)
+    covs.formula <- merge_formula(covs.formula, 
+                                  reformulate(c(propstring.formula, countstring.formula)))
   }
   
   

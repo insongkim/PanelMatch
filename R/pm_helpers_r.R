@@ -82,10 +82,9 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
   if(!is.null(caliper.formula))
   {
     msets <- handle_calipers(plain.ordered.data = ordered.data, caliper.formula, matched.sets = msets, lag.window = 0:lag)
-    browser()
     if(calipers.in.refinement)
     {
-      #merge the formulae
+      covs.formula <- merge_formula(covs.formula, caliper.formula)
     }
   }
   
@@ -282,9 +281,28 @@ parse_and_prep <- function(formula, data)
     sapply(lwindow, internal.lag, x = y)
   }
 
-  caliper <- function(y, lwindow)
+  internal.caliper <- function (x, n = 1L, default = NA)
   {
-    return(y)
+    if(class(x) == "factor")
+    {
+      x <- as.numeric(as.character(x))
+    }
+    if (n == 0) return(x)
+    xlen <- length(x)
+    n <- pmin(n, xlen)
+    out <- c(rep(default, n), x[seq_len(xlen - n)])
+    attributes(out) <- attributes(x)
+    out
+  }
+  
+  caliper <- function(y, method, caliper.distance, data_type, lwindow = lag.window)
+  {
+    
+    if(is.null(method) || is.null(caliper.distance))
+    {
+      stop("arguments missing from caliper function")
+    }
+    sapply(lwindow, internal.caliper, x = y)
   }
   
   apply_formula <- function(x, form)
@@ -776,7 +794,28 @@ gather_msm_sets <- function(lead.data.list)
 }
 
 
-
+merge_formula <- function(form1, form2)
+{
+  # assuming one sided formulae
+  # form1 should be the covs.formula argument
+  
+  # get character strings of the right hand sides
+  rhs1 <- strsplit(deparse(form1[[2]]), " \\+ ")[[1]]
+  rhs2 <- strsplit(deparse(form2[[2]]), " \\+ ")[[1]]
+  
+  # create the merged rhs and lhs in character string form
+  rhs <- c(rhs1, rhs2)
+  
+  # put the two sides together with the amazing 
+  # reformulate function
+  out <- reformulate(rhs)
+  
+  # set the environment of the formula (i.e. where should
+  # R look for variables when data aren't specified?)
+  environment(out) <- environment(form1)
+  
+  return(out)
+}
 
 
 
