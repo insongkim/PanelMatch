@@ -442,7 +442,7 @@ get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.wei
 #' @param data the same time series cross sectional data set used to create the matched sets.
 #' @param ... optional arguments to be passed to \code{plot} 
 #' @author In Song Kim <insong@mit.edu>, Erik Wang
-#' <haixiao@Princeton.edu>, Adam Rauh <adamrauh@mit.edu>, and Kosuke Imai <imai@harvard.edu>
+#' <haixiao@Princeton.edu>, Adam Rauh <amrauh@umich.edu>, and Kosuke Imai <imai@harvard.edu>
 #'
 #' @examples
 #' # get a matched set without refinement

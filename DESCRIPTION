@@ -5,7 +5,7 @@ Version: 1.0.1
 Date: 2020-02-10
 Authors@R: c(
   person("In Song", "Kim", email = "insong@mit.edu", role = c("aut", "cre")),
-  person("Adam", "Rauh", email = "adamrauh@mit.edu", role = c("aut")),
+  person("Adam", "Rauh", email = "amrauh@umich.edu", role = c("aut")),
   person("Erik", "Wang", email = "haixiaow@Princeton.edu", role = c("aut")),
   person("Kosuke", "Imai", email = "imai@harvard.edu", role = c("aut"))
   )

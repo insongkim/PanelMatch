@@ -42,7 +42,7 @@
 #' 
 #' @references Imai, Kosuke, In Song Kim, and Erik Wang (2018)
 #' @author In Song Kim <insong@mit.edu>, Erik Wang
-#' <haixiao@Princeton.edu>, Adam Rauh <adamrauh@mit.edu>, and Kosuke Imai <imai@harvard.edu>
+#' <haixiao@Princeton.edu>, Adam Rauh <amrauh@umich.edu>, and Kosuke Imai <imai@harvard.edu>
 #'
 #' @examples
 #' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
@@ -51,7 +51,7 @@
 #'                          covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
 #'                          size.match = 5, qoi = "att",
 #'                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = TRUE)
-#' PE.results <- PanelEstimate(sets = PM.results, data = dem)
+#' PE.results <- PanelEstimate(sets = PM.results, data = dem, number.iterations = 500)
 #'
 #' 
 #'

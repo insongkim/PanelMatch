@@ -2,7 +2,7 @@
 [![R build
 status](https://github.com/r-lib/usethis/workflows/R-CMD-check/badge.svg)](https://github.com/r-lib/usethis/actions) [![Build Status](https://travis-ci.org/insongkim/PanelMatch.svg?branch=master)](https://travis-ci.org/insongkim/PanelMatch) ![CRAN downloads](http://cranlogs.r-pkg.org/badges/grand-total/PanelMatch)  [![CRAN status](https://www.r-pkg.org/badges/version/PanelMatch)](https://CRAN.R-project.org/package=PanelMatch) 
 
-Authors: In Song Kim (insong@mit.edu), Adam Rauh (adamrauh@mit.edu), Erik Wang (haixiaow@Princeton.edu), Kosuke Imai (imai@harvard.edu)
+Authors: In Song Kim (insong@mit.edu), Adam Rauh (amrauh@umich.edu), Erik Wang (haixiaow@Princeton.edu), Kosuke Imai (imai@harvard.edu)
 
 This R package provides a set of methodological tools that enable
 researchers to apply matching methods to time-series cross-sectional
