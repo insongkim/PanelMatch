@@ -1,8 +1,9 @@
 calculate_neighbor_treatment <- function(data, edge.matrix, n.degree, unit.id, time.id, treatment.variable)
 {
+  edge.matrix <- edge.matrix[ edge.matrix[,3] == 1, ] #probably want to change how this is done
   g1 <- igraph::graph_from_data_frame(edge.matrix, directed = FALSE)
   ref.names <- paste0(data[, unit.id], ".", data[, time.id])
-  treatment.vector <- ordered.data[, treatment.variable]
+  treatment.vector <- data[, treatment.variable]
   names(treatment.vector) <- ref.names
   # update this so that it uses <= degree only, rather than separate adjusted ones
   adjusted.neighborhood <- function(graph.in, degree)
@@ -18,11 +19,11 @@ calculate_neighbor_treatment <- function(data, edge.matrix, n.degree, unit.id, t
     #   ret.list <- straight.neighborhoods
     # }
     ret.list <- straight.neighborhoods
-    ret.list <- lapply(ret.list, as.integer)
-    names(ret.list) <- as.character(igraph::V(graph.in))
+    ret.list <- lapply(straight.neighborhoods, function(x){return(igraph::as_ids(x)[-1])})
+    names(ret.list) <- igraph::as_ids(igraph::V(graph.in))
     return(ret.list)
   }
-  
+
   neighborhood.lookup <- lapply(1:n.degree, adjusted.neighborhood, graph.in = g1)
   
   get.neighborhood.treatment.per.time <- function(treatment.lookup, neighborhood.vector, time, return.average = TRUE)

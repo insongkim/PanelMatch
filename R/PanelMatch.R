@@ -216,7 +216,6 @@ panel_match <- function(lag, time.id, unit.id, treatment,
                         caliper.formula,
                         calipers.in.refinement)
 {
-  
   if(!matching & match.missing)
   {
     old.lag <- lag
@@ -260,6 +259,16 @@ panel_match <- function(lag, time.id, unit.id, treatment,
   if(any(is.na(data[, unit.id]))) stop("Cannot have NA unit ids")
   ordered.data <- data[order(data[,unit.id], data[,time.id]), ]
   
+  if(!is.null(edge.matrix) & !is.null(neighborhood.degree)) #do early to avoid the encoding/index change, should be safe? 
+  { #needs to update the data and the covariate formula
+    ordered.data <- calculate_neighbor_treatment(ordered.data, edge.matrix, neighborhood.degree, unit.id, time.id, treatment)
+    propstring.formula <- paste0('neighborhood_t_prop', '.', neighborhood.degree)
+    countstring.formula <- paste0('neighborhood_t_count', '.', neighborhood.degree)
+    covs.formula <- merge_formula(covs.formula, 
+                                  reformulate(c(propstring.formula, countstring.formula)))
+  }
+  
+  
   ordered.data[, paste0(unit.id, ".int")] <- as.integer(as.factor(ordered.data[, unit.id]))
   if(class(data[, unit.id]) == "character") {
     unit.index.map <- data.frame(original.id = make.names(as.character(unique(ordered.data[, unit.id]))), 
@@ -292,14 +301,7 @@ panel_match <- function(lag, time.id, unit.id, treatment,
     }  
   }
   
-  if(!is.null(edge.matrix) & !is.null(neighborhood.degree))
-  { #needs to update the data and the covariate formula
-    ordered.data <- calculate_neighbor_treatment(ordered.data, edge.matrix, neighborhood.degree, unit.id, time.id, treatment)
-    propstring.formula <- paste0('neighborhood_t_prop', '.', neighborhood.degree)
-    countstring.formula <- paste0('neighborhood_t_count', '.', neighborhood.degree)
-    covs.formula <- merge_formula(covs.formula, 
-                                  reformulate(c(propstring.formula, countstring.formula)))
-  }
+
   
   
   if(qoi == "atc")
