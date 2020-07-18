@@ -33,7 +33,7 @@ Imai, Kosuke, In Song Kim and Erik Wang. (2018)
 }
 \author{
 In Song Kim <insong@mit.edu>, Erik Wang
-<haixiao@Princeton.edu>, Adam Rauh <adamrauh@mit.edu>, and Kosuke Imai <imai@harvard.edu>
+<haixiao@Princeton.edu>, Adam Rauh <amrauh@umich.edu>, and Kosuke Imai <imai@harvard.edu>
 
 Maintainer: In Song Kim \email{insong@mit.edu}
 }

@@ -157,6 +157,6 @@ list.of.results = PanelMatch(lag = list(4,3),
 Imai, Kosuke, In Song Kim, and Erik Wang (2018)
 }
 \author{
-Adam Rauh <adamrauh@mit.edu>, In Song Kim <insong@mit.edu>, Erik Wang
+Adam Rauh <amrauh@umich.edu>, In Song Kim <insong@mit.edu>, Erik Wang
 <haixiao@Princeton.edu>, and Kosuke Imai <imai@harvard.edu>
 }
