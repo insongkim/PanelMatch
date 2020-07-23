@@ -100,7 +100,8 @@ handle_calipers <- function(plain.ordered.data, caliper.formula, matched.sets, l
     n <- pmin(n, xlen)
     out <- c(rep(default, n), x[seq_len(xlen - n)])
     attributes(out) <- attributes(x)
-    out
+    
+    return(out)
   }
   
   caliper <- function(y, method, caliper.distance, data_type, lwindow = lag.window)
@@ -110,37 +111,35 @@ handle_calipers <- function(plain.ordered.data, caliper.formula, matched.sets, l
     {
       stop("arguments missing from caliper function")
     }
-    sapply(lwindow, internal.caliper, x = y)
+
+    return(sapply(lwindow, internal.caliper, x = y))
   }
   
   
   apply_formula <- function(x, form)
   {
-    
-    attr(form, ".Environment") <- environment()
-    tdf <- model.frame(form, x, na.action = NULL)
-    cbind(x[, c(1, 2, 3)], model.matrix(form, tdf)[, -1])
-  }
-  
 
+    attr(form, ".Environment") <- environment()
+    tdf <- as.data.frame(as.matrix(model.frame(form, x, na.action = NULL)))
+    
+    return(cbind(x[, c(1, 2, 3)], tdf))
+  }
+  # browser()
   t.data <- do.call(rbind, by(plain.ordered.data, as.factor(plain.ordered.data[, 1]), FUN = apply_formula, form = caliper.formula))
   #may not be necessary?
   
   t.data <- t.data[order(t.data[,1], t.data[,2]), ]
   rownames(t.data) <- NULL
   
-
-  
-  msets <- matched.sets #initialize the matched sets
   for(i in 1:ncol(caliper.metadata))
   {
     col.idx <- i * max(lag.window + 1) + 3
-    
+    #browser()
     .IS_FACTOR_VAR <- caliper.metadata[5, i] == "categorical"
-    msets <- handle.single.caliper.per.lag(t.data, msets, caliper.metadata[2,i], caliper.metadata[3, i], c(1:3,  (col.idx-max(lag.window)):col.idx), .IS_FACTOR_VAR)
+    matched.sets <- handle.single.caliper.per.lag(t.data, matched.sets, caliper.metadata[2,i], caliper.metadata[3, i], c(1:3,  (col.idx-max(lag.window)):col.idx), .IS_FACTOR_VAR)
   }
   
-  return(msets)
+  return(matched.sets)
   
 }
 
@@ -171,7 +170,13 @@ handle.single.caliper.per.lag <- function(plain.ordered.data, matched.sets, cali
                                               caliper.value = caliper.distance, caliper.method = caliper.method, is.factor.var)
   lag.in <- old.lag
   
-  return(matched.sets)
+  class(msets) <- c("matched.set", "list")
+  attr(msets, 'refinement.method') <- NULL
+  attr(msets, "lag") <- lag.in
+  attr(msets, "t.var") <- time.var
+  attr(msets, "id.var" ) <- id.var
+  attr(msets, "treatment.var") <- treat.var
+  return(msets)
   
 }
 
@@ -210,7 +215,8 @@ handle_perlag_caliper_calculations <- function(nested.list, msets, caliper.metho
     # tmat <- tmat[, 1:(ncol(tmat)-1), drop = FALSE]
     meets_caliper <- function(col, cal, cal.method, sd.vals, IS_FACTOR)
     {
-      
+      # browser()
+      # print(cal)
       if(IS_FACTOR)
       {
         if(cal.method == "max")
@@ -283,6 +289,7 @@ handle_perlag_caliper_calculations <- function(nested.list, msets, caliper.metho
                           cal.method = caliper.method, 
                           standard.deviations = sd.vals, 
                           is.factor = is.factor.var)
+  # browser()
   msets <- mapply(function(x, y) return(x[y]), x = msets, y = indices.msets)
   msets <- msets[sapply(msets, length) > 0]
   return(msets)

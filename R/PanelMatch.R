@@ -124,17 +124,19 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
                        matching = TRUE,
                        listwise.delete = FALSE,
                        use.diagonal.variance.matrix = FALSE,
-                       edge.matrix = NULL,
+                       adjacency.matrix = NULL,
                        neighborhood.degree = NULL,
                        caliper.formula = NULL,
-                       calipers.in.refinement = FALSE
+                       calipers.in.refinement = FALSE,
+                       network.caliper.info = NULL,
+                       network.refinement.info = NULL
                        ) 
 {
   if(class(lag) == "list" & class(time.id) == "list" & class(unit.id) == "list" & class(treatment) == "list" & 
      class(refinement.method) == "list" & class(size.match) == "list" & class(match.missing) == "list" & 
      class(covs.formula) == "list" & class(verbose) == "list" & class(qoi) == "list" & class(lead) == "list" & 
      class(outcome.var) == "list" & class(exact.match.variables) == "list" & class(forbid.treatment.reversal) == "list" &
-     class(matching) == "list" & class(listwise.delete) == "list" & class(use.diagonal.variance.matrix) == "list" & class(edge.matrix) == "list" &
+     class(matching) == "list" & class(listwise.delete) == "list" & class(use.diagonal.variance.matrix) == "list" & class(adjacency.matrix) == "list" &
      class(neighborhood.degree) == "list") #everything but data must be provided explicitly
   {
     if(length(unique(length(lag) , length(time.id)  , length(unit.id)  , length(treatment)  , 
@@ -159,10 +161,12 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
              matching = matching,
              listwise.delete = listwise.delete,
              use.diagonal.variance.matrix = use.diagonal.variance.matrix,
-             edge.matrix = edge.matrix,
+             adjacency.matrix = adjacency.matrix,
              neighborhood.degree = neighborhood.degree,
              caliper.formula = caliper.formula,
              calipers.in.refinement = calipers.in.refinement,
+             network.caliper.info,
+             network.refinement.info,
              MoreArgs = list(data = data)
              , SIMPLIFY = F)
      return(list.res)
@@ -188,10 +192,12 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
                 matching,
                 listwise.delete,
                 use.diagonal.variance.matrix,
-                edge.matrix,
+                adjacency.matrix,
                 neighborhood.degree,
                 caliper.formula,
-                calipers.in.refinement)
+                calipers.in.refinement,
+                network.caliper.info,
+                network.refinement.info)
   }
   
 }
@@ -211,10 +217,12 @@ panel_match <- function(lag, time.id, unit.id, treatment,
                         matching,
                         listwise.delete,
                         use.diagonal.variance.matrix,
-                        edge.matrix,
+                        adjacency.matrix,
                         neighborhood.degree, 
                         caliper.formula,
-                        calipers.in.refinement)
+                        calipers.in.refinement,
+                        network.caliper.info,
+                        network.refinement.info)
 {
   if(!matching & match.missing)
   {
@@ -259,13 +267,89 @@ panel_match <- function(lag, time.id, unit.id, treatment,
   if(any(is.na(data[, unit.id]))) stop("Cannot have NA unit ids")
   ordered.data <- data[order(data[,unit.id], data[,time.id]), ]
   
-  if(!is.null(edge.matrix) & !is.null(neighborhood.degree)) #do early to avoid the encoding/index change, should be safe? 
-  { #needs to update the data and the covariate formula
-    ordered.data <- calculate_neighbor_treatment(ordered.data, edge.matrix, neighborhood.degree, unit.id, time.id, treatment)
+  #if(!is.null(edge.matrix) & !is.null(neighborhood.degree)) #do early to avoid the encoding/index change, should be safe? 
+  if(!is.null(network.caliper.info) || !is.null(network.refinement.info))
+  { 
+    # browser()
+    ordered.data <- calculate_neighbor_treatment(ordered.data, adjacency.matrix, neighborhood.degree, unit.id, time.id, treatment)
     propstring.formula <- paste0('neighborhood_t_prop', '.', neighborhood.degree)
     countstring.formula <- paste0('neighborhood_t_count', '.', neighborhood.degree)
-    covs.formula <- merge_formula(covs.formula, 
-                                  reformulate(c(propstring.formula, countstring.formula)))
+    if(!is.null(network.refinement.info))
+    {
+      if(network.refinement.info[["use.proportion.data"]])
+      {
+        if(max(network.refinement.info[['proportion.lags']] == 0))
+        {
+          covs.formula <- merge_formula(covs.formula, reformulate(propstring.formula))
+        }
+        else if (max(network.refinement.info[["proportion.lags"]] > 0))
+        {
+          propstring.formula.lag <- paste0("I(lag(", propstring.formula, ",", 
+                 deparse(network.refinement.info[["proportion.lags"]]), "))")
+          covs.formula <- merge_formula(covs.formula, reformulate(propstring.formula.lag))
+        }
+        else {
+          stop("please enter a valid lag number")
+        }
+      }
+      if(network.refinement.info[["use.count.data"]])
+      {
+        if(max(network.refinement.info[['count.lags']] == 0))
+        {
+          covs.formula <- merge_formula(covs.formula, reformulate(countstring.formula))
+        }
+        else if (max(network.refinement.info[["count.lags"]] > 0))
+        {
+          countstring.formula.lag <-paste0("I(lag(", countstring.formula, ",", 
+                 deparse(network.refinement.info[["count.lags"]]), "))")
+          covs.formula <- merge_formula(covs.formula, reformulate(countstring.formula.lag))
+        }
+        else {
+          stop("please enter a valid lag number")
+        }
+      }
+
+    }
+    if(!is.null(network.caliper.info))
+    {
+      if(network.caliper.info[["use.proportion.data"]])
+      {
+      
+        propstring.formula.caliper <- paste0("I(caliper(", propstring.formula, ",", 
+               "'", network.caliper.info[["proportion.caliper.method"]], "'", ",",
+               network.caliper.info[["proportion.caliper.threshold"]], ",",
+               '"numeric"',
+               "))")
+        if(is.null(caliper.formula))
+        {
+          caliper.formula <- reformulate(propstring.formula.caliper)
+          environment(caliper.formula) <- environment(covs.formula)
+        } else
+        {
+          caliper.formula <- merge_formula(caliper.formula, reformulate(propstring.formula.caliper))  
+        }
+        
+      }
+      if(network.caliper.info[["use.count.data"]])
+      {
+        countstring.formula.caliper <- paste0("I(caliper(", countstring.formula, ",",
+               "'", network.caliper.info[["count.caliper.method"]], "'", ",",
+               network.caliper.info[["count.caliper.threshold"]], ",",
+               '"numeric"',
+               "))")
+        if(is.null(caliper.formula))
+        {
+          caliper.formula <- reformulate(countstring.formula.caliper)
+          environment(caliper.formula) <- environment(covs.formula)
+        } else
+        {
+          caliper.formula <- merge_formula(caliper.formula, reformulate(countstring.formula.caliper))  
+        }
+        
+      }
+    }
+    #covs.formula <- merge_formula(covs.formula, 
+    #                              reformulate(c(propstring.formula, countstring.formula)))
   }
   
   
@@ -327,6 +411,7 @@ panel_match <- function(lag, time.id, unit.id, treatment,
     return(pm.obj)
   } else if(qoi == "att")
   { #note that ordered.data at this point is in column order: unit, time, treatment, everything else
+    
     msets <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data,
                                 match.missing, covs.formula, verbose, lead = lead, outcome.var = outcome.var, 
                                 forbid.treatment.reversal = forbid.treatment.reversal, qoi = qoi, matching = matching,

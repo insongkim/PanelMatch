@@ -77,7 +77,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
 
   treated.ts <- as.numeric(unlist(strsplit(names(msets), split = "[.]"))[c(F,T)])
   treated.ids <- as.numeric(unlist(strsplit(names(msets), split = "[.]"))[c(T,F)])
-  
+
   ####apply calipers here
   if(!is.null(caliper.formula))
   {
@@ -99,7 +99,6 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
   ################################################################################################
   if(listwise.deletion) #code will just return from here when listwise.deletion = T
   {
-
     msets <- lwd_refinement(msets, ordered.data, treated.ts, treated.ids, lag,
                             time.id, unit.id, lead, refinement.method, treatment, size.match,
                             match.missing, covs.formula, verbose, outcome.var, e.sets,
@@ -278,37 +277,40 @@ parse_and_prep <- function(formula, data)
 
   lag <- function(y, lwindow)
   {
+    
     sapply(lwindow, internal.lag, x = y)
   }
 
-  internal.caliper <- function (x, n = 1L, default = NA)
-  {
-    if(class(x) == "factor")
-    {
-      x <- as.numeric(as.character(x))
-    }
-    if (n == 0) return(x)
-    xlen <- length(x)
-    n <- pmin(n, xlen)
-    out <- c(rep(default, n), x[seq_len(xlen - n)])
-    attributes(out) <- attributes(x)
-    out
-  }
-  
-  caliper <- function(y, method, caliper.distance, data_type, lwindow = lag.window)
-  {
-    
-    if(is.null(method) || is.null(caliper.distance))
-    {
-      stop("arguments missing from caliper function")
-    }
-    sapply(lwindow, internal.caliper, x = y)
-  }
+  # internal.caliper <- function (x, n = 1L, default = NA)
+  # {
+  #   if(class(x) == "factor")
+  #   {
+  #     x <- as.numeric(as.character(x))
+  #   }
+  #   if (n == 0) return(x)
+  #   xlen <- length(x)
+  #   n <- pmin(n, xlen)
+  #   out <- c(rep(default, n), x[seq_len(xlen - n)])
+  #   attributes(out) <- attributes(x)
+  #   out
+  # }
+  # 
+  # caliper <- function(y, method, caliper.distance, data_type, lwindow = lag.window)
+  # {
+  #   
+  #   if(is.null(method) || is.null(caliper.distance))
+  #   {
+  #     stop("arguments missing from caliper function")
+  #   }
+  #   
+  #   sapply(lwindow, internal.caliper, x = y, simplify = FALSE)
+  # }
   
   apply_formula <- function(x, form)
   {
     attr(form, ".Environment") <- environment()
     tdf <- model.frame(form, x, na.action = NULL)
+    
     cbind(x[, c(1, 2, 3)], model.matrix(form, tdf)[, -1])
   }
 
@@ -798,9 +800,9 @@ merge_formula <- function(form1, form2)
 {
   # assuming one sided formulae
   # form1 should be the covs.formula argument
-  
   # get character strings of the right hand sides
-  rhs1 <- strsplit(deparse(form1[[2]]), " \\+ ")[[1]]
+  #rhs1 <- strsplit(deparse(form1[[2]]), " \\+ ")[[1]]
+  rhs1 <- trimws(unlist(strsplit(as.character(form1)[2], "\\+")))
   rhs2 <- strsplit(deparse(form2[[2]]), " \\+ ")[[1]]
   
   # create the merged rhs and lhs in character string form
