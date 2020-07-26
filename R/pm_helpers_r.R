@@ -626,7 +626,7 @@ clean_leads <- function(matched_sets, ordered.data, max.lead, t.var, id.var, out
   class(matched_sets) <- "list" #so that Rcpp::List is accurate when we pass it into cpp functions
 
   
-  idx <- check_missing_data_treated_units(subset_data = as.matrix(ordered.data[, c(1,2,5)]), 
+  idx <- check_missing_data_treated_units(subset_data = as.matrix(ordered.data[, c(id.var,t.var,outcome.var)]), 
                                            sets = matched_sets, tid_pairs = paste0(ordered.data[, id.var], ".", ordered.data[, t.var]), treated_tid_pairs = names(matched_sets),
                                            treated_ids = tids, lead =  max.lead)
   
@@ -650,7 +650,7 @@ clean_leads <- function(matched_sets, ordered.data, max.lead, t.var, id.var, out
     
     prepped_sets <- mapply(create_control_maps, matched_set = matched_sets, time = ts)
     
-    tpx <- check_missing_data_control_units(subset_data = as.matrix(ordered.data[, c(1,2,5)]), 
+    tpx <- check_missing_data_control_units(subset_data = as.matrix(ordered.data[, c(id.var,t.var,outcome.var)]), 
                                             sets = matched_sets, 
                                             prepared_sets = prepped_sets,
                                             tid_pairs = paste0(ordered.data[, id.var], ".", ordered.data[, t.var]),
