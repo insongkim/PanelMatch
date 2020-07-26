@@ -631,12 +631,8 @@ clean_leads <- function(matched_sets, ordered.data, max.lead, t.var, id.var, out
   
   # idx <- check_treated_units(compmat = compmat, compmat_row_units = as.numeric(compmat[, 1]), 
   #                            compmat_cols = as.numeric(colnames(compmat)[2:ncol(compmat)]), lead = max.lead, treated_ids = tids, treated_ts = ts)
-  print(class(matched_sets))
-  print(class(paste0(ordered.data[, id.var], ".", ordered.data[, t.var])))
-  print(class(names(matched_sets)))
-  print(class(tids))
-  print(class(as.integer(max.lead)))
-  idx <- check_missing_data_treated_units(subset_data = as.matrix(ordered.data[, c(1,2,5)]), 
+  
+  idx <- check_missing_data_treated_units(subset_data = as.matrix(ordered.data[, c(id.var,t.var,outcome.var)]), 
                                            sets = matched_sets, tid_pairs = paste0(ordered.data[, id.var], ".", ordered.data[, t.var]), treated_tid_pairs = names(matched_sets),
                                            treated_ids = tids, lead =  as.integer(max.lead))
   print("treated units checked")
@@ -665,7 +661,7 @@ clean_leads <- function(matched_sets, ordered.data, max.lead, t.var, id.var, out
     
     prepped_sets <- mapply(create_control_maps, matched_set = matched_sets, time = ts)
     
-    tpx <- check_missing_data_control_units(subset_data = as.matrix(ordered.data[, c(1,2,5)]), 
+    tpx <- check_missing_data_control_units(subset_data = as.matrix(ordered.data[, c(id.var,t.var,outcome.var)]), 
                                             sets = matched_sets, 
                                             prepared_sets = prepped_sets,
                                             tid_pairs = paste0(ordered.data[, id.var], ".", ordered.data[, t.var]),
