@@ -631,10 +631,14 @@ clean_leads <- function(matched_sets, ordered.data, max.lead, t.var, id.var, out
   
   # idx <- check_treated_units(compmat = compmat, compmat_row_units = as.numeric(compmat[, 1]), 
   #                            compmat_cols = as.numeric(colnames(compmat)[2:ncol(compmat)]), lead = max.lead, treated_ids = tids, treated_ts = ts)
-  
+  print(class(matched_sets))
+  print(class(paste0(ordered.data[, id.var], ".", ordered.data[, t.var])))
+  print(class(names(matched_sets)))
+  print(class(tids))
+  print(class(as.integer(max.lead)))
   idx <- check_missing_data_treated_units(subset_data = as.matrix(ordered.data[, c(1,2,5)]), 
                                            sets = matched_sets, tid_pairs = paste0(ordered.data[, id.var], ".", ordered.data[, t.var]), treated_tid_pairs = names(matched_sets),
-                                           treated_ids = tids, lead =  max.lead)
+                                           treated_ids = tids, lead =  as.integer(max.lead))
   print("treated units checked")
   if(all(!idx)) stop("estimation not possible: All treated units are missing data necessary for the calculations to proceed")
   if(any(!idx))
