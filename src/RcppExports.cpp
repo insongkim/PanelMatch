@@ -44,38 +44,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// re_norm_index
-Rcpp::List re_norm_index(Rcpp::NumericMatrix compmat, Rcpp::NumericVector compmat_row_units, Rcpp::NumericVector compmat_cols, int lead, Rcpp::List sets, Rcpp::NumericVector control_start_years);
-RcppExport SEXP _PanelMatch_re_norm_index(SEXP compmatSEXP, SEXP compmat_row_unitsSEXP, SEXP compmat_colsSEXP, SEXP leadSEXP, SEXP setsSEXP, SEXP control_start_yearsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type compmat(compmatSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type compmat_row_units(compmat_row_unitsSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type compmat_cols(compmat_colsSEXP);
-    Rcpp::traits::input_parameter< int >::type lead(leadSEXP);
-    Rcpp::traits::input_parameter< Rcpp::List >::type sets(setsSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type control_start_years(control_start_yearsSEXP);
-    rcpp_result_gen = Rcpp::wrap(re_norm_index(compmat, compmat_row_units, compmat_cols, lead, sets, control_start_years));
-    return rcpp_result_gen;
-END_RCPP
-}
-// check_treated_units
-Rcpp::LogicalVector check_treated_units(Rcpp::NumericMatrix compmat, Rcpp::NumericVector compmat_row_units, Rcpp::NumericVector compmat_cols, int lead, Rcpp::NumericVector treated_ids, Rcpp::NumericVector treated_ts);
-RcppExport SEXP _PanelMatch_check_treated_units(SEXP compmatSEXP, SEXP compmat_row_unitsSEXP, SEXP compmat_colsSEXP, SEXP leadSEXP, SEXP treated_idsSEXP, SEXP treated_tsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type compmat(compmatSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type compmat_row_units(compmat_row_unitsSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type compmat_cols(compmat_colsSEXP);
-    Rcpp::traits::input_parameter< int >::type lead(leadSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type treated_ids(treated_idsSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type treated_ts(treated_tsSEXP);
-    rcpp_result_gen = Rcpp::wrap(check_treated_units(compmat, compmat_row_units, compmat_cols, lead, treated_ids, treated_ts));
-    return rcpp_result_gen;
-END_RCPP
-}
 // needs_renormalization
 Rcpp::LogicalVector needs_renormalization(Rcpp::List set_index_list);
 RcppExport SEXP _PanelMatch_needs_renormalization(SEXP set_index_listSEXP) {

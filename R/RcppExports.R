@@ -13,14 +13,6 @@ prep_lead_years <- function(ts, lead_window) {
     .Call('_PanelMatch_prep_lead_years', PACKAGE = 'PanelMatch', ts, lead_window)
 }
 
-re_norm_index <- function(compmat, compmat_row_units, compmat_cols, lead, sets, control_start_years) {
-    .Call('_PanelMatch_re_norm_index', PACKAGE = 'PanelMatch', compmat, compmat_row_units, compmat_cols, lead, sets, control_start_years)
-}
-
-check_treated_units <- function(compmat, compmat_row_units, compmat_cols, lead, treated_ids, treated_ts) {
-    .Call('_PanelMatch_check_treated_units', PACKAGE = 'PanelMatch', compmat, compmat_row_units, compmat_cols, lead, treated_ids, treated_ts)
-}
-
 needs_renormalization <- function(set_index_list) {
     .Call('_PanelMatch_needs_renormalization', PACKAGE = 'PanelMatch', set_index_list)
 }

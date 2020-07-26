@@ -191,68 +191,6 @@ getDits <- function(matched_sets, data)
   dit.vect <- get_dits(refnames, nms)
 }
 
-# this will return a new matched.set object containing only treated/controls that can be used to calculate a point estimate. In particular, this function looks from time = t - 1 to t + lead
-# and verifies that the necessary data is present. If not, those units are removed. The matched.set object that comes out of this function will need to be reweighted
-prep_for_leads <- function(matched_sets, ordered.data, max.lead, t.var, id.var, outcome.var) 
-{
-  #CHECK TO MAKE SURE COLUMNS ARE IN ORDER
-  ordered.data <- ordered.data[order(ordered.data[,id.var], ordered.data[,t.var]), ]
-  compmat <- data.table::dcast(data.table::as.data.table(ordered.data), formula = paste0(id.var, "~", t.var), value.var = outcome.var)
-  ts <- as.numeric(sub(".*\\.", "", names(matched_sets)))
-  tids <- as.numeric(sub("\\..*", "", names(matched_sets)))
-  class(matched_sets) <- "list" #so that Rcpp::List is accurate when we pass it into cpp functions
-  compmat <- data.matrix(compmat)
-  
-  idx <- check_treated_units(compmat = compmat, compmat_row_units = as.numeric(compmat[, 1]), compmat_cols = as.numeric(colnames(compmat)[2:ncol(compmat)]), lead = max.lead, treated_ids = tids, treated_ts = ts)
-  if(all(!idx)) stop("estimation not possible: All treated units are missing data necessary for the calculations to proceed")
-  if(any(!idx))
-  {
-    class(matched_sets) <- c("matched.set", "list") #to get the matched.set subsetting with attributes
-    matched_sets <- matched_sets[idx]
-    ts <- ts[idx]
-    
-  }
-  #colnames must be numeric in some form because we must be able to sort them into an ascending column order
-  class(matched_sets) <- "list" # for rcpp reasons again
-  ll <- re_norm_index(compmat = compmat, compmat_row_units = as.numeric(compmat[, 1]), compmat_cols = as.numeric(colnames(compmat)[2:ncol(compmat)]), lead = max.lead, sets = matched_sets, control_start_years = ts)
-  idx <- needs_renormalization(ll)
-  class(matched_sets) <- c("matched.set", "list")
-  if(any(idx))
-  {
-    sub.index <- ll[idx]
-    sub.set <- matched_sets[idx]
-    create_new_sets <- function(set, index)
-    {
-      return(set[index])
-    }
-    sub.set.new <- mapply(FUN = create_new_sets, sub.set, sub.index, SIMPLIFY = FALSE)
-    attributes(sub.set.new) <- attributes(sub.set)
-    all.gone.counter <- sapply(sub.set.new, function(x){sum(x)})
-    if(sum(all.gone.counter == 0) > 0) #case in which all the controls in a particular group were dropped
-    {
-      #warning("all controls in a particular matched set were removed due to missing data")
-      
-      idx[all.gone.counter == 0] <- FALSE
-      sub.index <- ll[idx]
-      sub.set <- matched_sets[idx]
-      create_new_sets <- function(set, index)
-      {
-        return(set[index])
-      }
-      sub.set.new <- mapply(FUN = create_new_sets, sub.set, sub.index, SIMPLIFY = FALSE)
-      attributes(sub.set.new) <- attributes(sub.set)
-    }
-    if(all(sapply(sub.set.new, length) == 0)) stop('estimation not possible: none of the matched sets have viable control units due to a lack of necessary data')
-    pm2 <- perform_refinement(ordered.data = ordered.data, mset.object = sub.set.new)
-    
-    
-    matched_sets[idx] <- pm2
-    
-    matched_sets <- matched_sets[sapply(matched_sets, length) > 0]
-  }
-  return(matched_sets)
-  
-}
 #function that ultimately calculates the point estimate values
 equality_four <- function(x, y, z){
     return(sum(x*y)/sum(z))
