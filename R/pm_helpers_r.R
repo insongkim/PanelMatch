@@ -684,7 +684,7 @@ clean_leads <- function(matched_sets, ordered.data, max.lead, t.var, id.var, out
     }
     
   }
-  class(matched_sets) <- c("matched.set", "list")
+  class(matched_sets) <- c("matched.set")
   
   return(matched_sets)
   
