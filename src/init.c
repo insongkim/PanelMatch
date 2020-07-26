@@ -9,6 +9,8 @@
 
 /* .Call calls */
 extern SEXP _PanelMatch_check_control_units_for_treatment_restriction(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP _PanelMatch_check_missing_data_control_units(SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP _PanelMatch_check_missing_data_treated_units(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP _PanelMatch_check_treated_units(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP _PanelMatch_check_treated_units_for_treatment_reversion(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP _PanelMatch_do_exact_matching_refinement(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
@@ -29,6 +31,8 @@ extern SEXP _PanelMatch_re_norm_index(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 
 static const R_CallMethodDef CallEntries[] = {
   {"_PanelMatch_check_control_units_for_treatment_restriction", (DL_FUNC) &_PanelMatch_check_control_units_for_treatment_restriction, 6},
+  {"_PanelMatch_check_missing_data_control_units",              (DL_FUNC) &_PanelMatch_check_missing_data_control_units,              5},
+  {"_PanelMatch_check_missing_data_treated_units",              (DL_FUNC) &_PanelMatch_check_missing_data_treated_units,              6},
   {"_PanelMatch_check_treated_units",                           (DL_FUNC) &_PanelMatch_check_treated_units,                           6},
   {"_PanelMatch_check_treated_units_for_treatment_reversion",   (DL_FUNC) &_PanelMatch_check_treated_units_for_treatment_reversion,   6},
   {"_PanelMatch_do_exact_matching_refinement",                  (DL_FUNC) &_PanelMatch_do_exact_matching_refinement,                  6},

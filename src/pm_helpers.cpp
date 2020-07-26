@@ -282,6 +282,133 @@ Rcpp::List do_exact_matching_refinement(Rcpp::NumericMatrix balanced_data,
   return(exact_match_control_lists); //then will need to take the combination of all of these (everything in corresponding indices must be TRUE)
 }
 
+//assume that the data is just id, time, and a third column that is going to be checked IN THAT ORDER
 
+// [[Rcpp::export]]
+Rcpp::LogicalVector check_missing_data_treated_units(Rcpp::NumericMatrix subset_data,
+                                                     Rcpp::List sets,
+                                                     Rcpp::CharacterVector tid_pairs,
+                                                     Rcpp::CharacterVector treated_tid_pairs,
+                                                     Rcpp::NumericVector treated_ids,
+                                                     int lead
+) //lead is max(leads)
+{
+  
+  std::unordered_map<std::string, int> indexMap;
+  for (int i = 0; i < tid_pairs.size(); ++i)
+  {
+    std::string key;
+    key = tid_pairs[i];
+    indexMap[key] = i;
+  } //
+  
+  Rcpp::LogicalVector treatment_index(treated_tid_pairs.size());
+  for(int i = 0; i < treated_tid_pairs.size(); ++i)
+  {
+    treatment_index[i] = true; //initialize to true
+    std::string key;
+    key = treated_tid_pairs[i];
+    //Rcpp::Rcout << key << std::endl;
+    int treatpoint = indexMap[key];
+    int startpoint = treatpoint - 1; // need to visit t-1 
+    
+    //Rcpp::Rcout << startpoint << std::endl;
+    for (int j = 0; j <= (lead + 1); ++j) //go from t-l when j = 0, to t+max(lead)
+    {
+      //Rcpp::Rcout << subset_data(startpoint + j, 0) << std::endl;
+      //Rcpp::Rcout << subset_data(startpoint + j, 1) << std::endl;
+      if( (startpoint + j < 0) || (startpoint + j >= subset_data.nrow() ))
+      {
+        treatment_index[i] = false;
+        break;
+      } 
+      else if(subset_data(startpoint + j, 0) != treated_ids[i]) // assume id column is first
+      {
+        //Rcpp::Rcout << subset_data(startpoint + j, 0) << std::endl;
+        //Rcpp::Rcout << treated_ids[i] << std::endl;
+        //Rcpp::Rcout << "this got flaggged" << std::endl;
+        
+        treatment_index[i] = false;
+        break;
+      } 
+      else if(Rcpp::internal::Rcpp_IsNA(subset_data(startpoint + j, 2)) )
+      {
+        treatment_index[i] = false;
+        break;
+      }
+      else {
+        treatment_index[i] = true;
+      }
+    }
+  }
+  return treatment_index;
+}
+
+
+// [[Rcpp::export]]
+Rcpp::List check_missing_data_control_units(Rcpp::NumericMatrix subset_data,
+                                            Rcpp::List sets,
+                                            Rcpp::List prepared_sets,
+                                            Rcpp::CharacterVector tid_pairs,
+                                            int lead
+)
+{
+  Rcpp::List control_idx(sets.size());
+  
+  
+  std::unordered_map<std::string, int> indexMap;
+  for (int i = 0; i < tid_pairs.size(); ++i)
+  {
+    std::string key;
+    key = tid_pairs[i];
+    indexMap[key] = i;
+  }
+  
+  for(int i = 0; i < sets.size(); ++i) //iterating over the matched sets
+  {
+    Rcpp::NumericVector control_ids = sets[i];
+    Rcpp::CharacterVector t_id_pairs = prepared_sets[i];
+    Rcpp::LogicalVector t_idx(t_id_pairs.size());
+    
+    for (int y = 0; y < t_id_pairs.size(); ++y) //iterating over the controls in a particular matched set
+    {
+      
+      std::string key;
+      key = t_id_pairs[y];
+      
+      int treatpoint = indexMap[key];
+      int startpoint = treatpoint - 1; // need to visit t-1 
+      
+      
+      for (int j = 0; j <= (lead + 1); ++j) //go from t-l when j = 0, to t+max(lead) //iterating over the years for each control unit
+      {
+        
+        if( (startpoint + j < 0) || (startpoint + j >= subset_data.nrow() )) //have we gone over time boundaries?
+        {
+          t_idx[y] = false;
+          break;
+        } 
+        else if(subset_data(startpoint + j, 0) !=  control_ids[y]) // assume id column is first
+        { //have we run over the time periods we have for a given unit?
+          
+          t_idx[y] = false;
+          break;
+        } 
+        else if(Rcpp::internal::Rcpp_IsNA(subset_data(startpoint + j, 2)) ) //are we actually missing anything?
+        {
+          t_idx[y] = false;
+          break;
+        }
+        else {
+          t_idx[y] = true;
+        }
+      }
+      
+    }
+    control_idx[i] = t_idx;
+  }
+  return control_idx;
+  
+}
 
 

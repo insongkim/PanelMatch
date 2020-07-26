@@ -73,3 +73,11 @@ do_exact_matching_refinement <- function(balanced_data, lag, row_key, control_da
     .Call('_PanelMatch_do_exact_matching_refinement', PACKAGE = 'PanelMatch', balanced_data, lag, row_key, control_data, treatment_data, exact_match_variable_column_index)
 }
 
+check_missing_data_treated_units <- function(subset_data, sets, tid_pairs, treated_tid_pairs, treated_ids, lead) {
+    .Call('_PanelMatch_check_missing_data_treated_units', PACKAGE = 'PanelMatch', subset_data, sets, tid_pairs, treated_tid_pairs, treated_ids, lead)
+}
+
+check_missing_data_control_units <- function(subset_data, sets, prepared_sets, tid_pairs, lead) {
+    .Call('_PanelMatch_check_missing_data_control_units', PACKAGE = 'PanelMatch', subset_data, sets, prepared_sets, tid_pairs, lead)
+}
+

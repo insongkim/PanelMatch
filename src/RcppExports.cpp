@@ -268,3 +268,34 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// check_missing_data_treated_units
+Rcpp::LogicalVector check_missing_data_treated_units(Rcpp::NumericMatrix subset_data, Rcpp::List sets, Rcpp::CharacterVector tid_pairs, Rcpp::CharacterVector treated_tid_pairs, Rcpp::NumericVector treated_ids, int lead);
+RcppExport SEXP _PanelMatch_check_missing_data_treated_units(SEXP subset_dataSEXP, SEXP setsSEXP, SEXP tid_pairsSEXP, SEXP treated_tid_pairsSEXP, SEXP treated_idsSEXP, SEXP leadSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type subset_data(subset_dataSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type sets(setsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type tid_pairs(tid_pairsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type treated_tid_pairs(treated_tid_pairsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type treated_ids(treated_idsSEXP);
+    Rcpp::traits::input_parameter< int >::type lead(leadSEXP);
+    rcpp_result_gen = Rcpp::wrap(check_missing_data_treated_units(subset_data, sets, tid_pairs, treated_tid_pairs, treated_ids, lead));
+    return rcpp_result_gen;
+END_RCPP
+}
+// check_missing_data_control_units
+Rcpp::List check_missing_data_control_units(Rcpp::NumericMatrix subset_data, Rcpp::List sets, Rcpp::List prepared_sets, Rcpp::CharacterVector tid_pairs, int lead);
+RcppExport SEXP _PanelMatch_check_missing_data_control_units(SEXP subset_dataSEXP, SEXP setsSEXP, SEXP prepared_setsSEXP, SEXP tid_pairsSEXP, SEXP leadSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type subset_data(subset_dataSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type sets(setsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type prepared_sets(prepared_setsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type tid_pairs(tid_pairsSEXP);
+    Rcpp::traits::input_parameter< int >::type lead(leadSEXP);
+    rcpp_result_gen = Rcpp::wrap(check_missing_data_control_units(subset_data, sets, prepared_sets, tid_pairs, lead));
+    return rcpp_result_gen;
+END_RCPP
+}

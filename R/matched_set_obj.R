@@ -88,9 +88,10 @@ summary.matched.set <- function(object, ..., verbose = TRUE)
 {
   set <- object
   Lengthcol <- sapply(set, length)
-  temp <-unlist(strsplit(names(set), split = ".", fixed = TRUE))
-  ids <- temp[c(T,F)]
-  ts <- temp[c(F,T)]
+  
+  ts <- as.integer(sub(".*\\.", "", names(set)))
+  ids <- as.integer(sub("\\..*", "", names(set)))
+  
   df <- data.frame(i = ids, t = ts, matched.set.size = Lengthcol)
   colnames(df)[1:2] <- c(attr(set, "id.var"), attr(set, "t.var"))
   rownames(df) <- NULL
