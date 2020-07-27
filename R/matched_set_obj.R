@@ -246,7 +246,8 @@ build_balance_mats <- function(idx, ordered_expanded_data, msets)
   }
   unnest <- function(mset.idx, mset)
   {
-    
+    # print(mset.idx)
+    # browser()
     lapply(mset.idx, subset.per.matchedset, set = mset)
   }
   result <- mapply(FUN = unnest, mset.idx = idx, mset = msets, SIMPLIFY = FALSE)
@@ -316,8 +317,9 @@ get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.wei
     data <- as.data.frame(data)
     #data <- make.pbalanced(data, balance.type = "fill", index = c(unit.id, time.id))
   }
+  
   ordered.data <- data[order(data[,unit.id], data[,time.id]), ]
-  ordered.data[, paste0(unit.id, ".int")] <- as.integer(as.factor(data[, unit.id]))
+  ordered.data[, paste0(unit.id, ".int")] <- as.integer(as.factor(ordered.data[, unit.id]))
   
   if(class(ordered.data[, unit.id]) == "character") {
     unit.index.map <- data.frame(original.id = make.names(as.character(unique(ordered.data[, unit.id]))), 
