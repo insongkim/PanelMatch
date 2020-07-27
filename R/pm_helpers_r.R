@@ -617,20 +617,12 @@ handle_ps_match <- function(just.ps.sets, msets, refinement.method, verbose, max
 #right now this function just checks outcome data and cleans up based on that, but when msm is implemented, we will also need to check reversion of treatment
 clean_leads <- function(matched_sets, ordered.data, max.lead, t.var, id.var, outcome.var)
 {
-  #CHECK TO MAKE SURE COLUMNS ARE IN ORDER
-  #ordered.data <- ordered.data[order(ordered.data[,id.var], ordered.data[,t.var]), ]
-  #compmat <- data.table::dcast(data.table::as.data.table(ordered.data), formula = paste0(id.var, "~", t.var), value.var = outcome.var)
   
   old.attributes <- attributes(matched_sets)[names(attributes(matched_sets)) != "names"]
   print("long to wide conversion complete")
   ts <- as.numeric(sub(".*\\.", "", names(matched_sets)))
   tids <- as.numeric(sub("\\..*", "", names(matched_sets)))
   class(matched_sets) <- "list" #so that Rcpp::List is accurate when we pass it into cpp functions
-  #compmat <- data.matrix(compmat)
-  
-  
-  # idx <- check_treated_units(compmat = compmat, compmat_row_units = as.numeric(compmat[, 1]), 
-  #                            compmat_cols = as.numeric(colnames(compmat)[2:ncol(compmat)]), lead = max.lead, treated_ids = tids, treated_ts = ts)
   
   idx <- check_missing_data_treated_units(subset_data = as.matrix(ordered.data[, c(id.var,t.var,outcome.var)]), 
                                            sets = matched_sets, tid_pairs = paste0(ordered.data[, id.var], ".", ordered.data[, t.var]), treated_tid_pairs = names(matched_sets),
@@ -646,37 +638,23 @@ clean_leads <- function(matched_sets, ordered.data, max.lead, t.var, id.var, out
   }
   #colnames must be numeric in some form because we must be able to sort them into an ascending column order
   class(matched_sets) <- "list" # for rcpp reasons again
-  # ll <- re_norm_index(compmat = compmat, compmat_row_units = as.numeric(compmat[, 1]), compmat_cols = as.numeric(colnames(compmat)[2:ncol(compmat)]), lead = max.lead, sets = matched_sets, control_start_years = ts)
-  # idx <- needs_renormalization(ll)
-  # class(matched_sets) <- c("matched.set", "list")
-  
-  
+
   
   if(any(idx)) #bit of a trivial condition, if there are any treated units with matched sets left
   {
-    create_control_maps <- function(matched_set, time)
-    {
-      return(paste0(matched_set, ".", time))
-    }
     
-    prepped_sets <- mapply(create_control_maps, matched_set = matched_sets, time = ts)
     
-    tpx <- check_missing_data_control_units(subset_data = as.matrix(ordered.data[, c(id.var,t.var,outcome.var)]), 
+    sub_sets <- check_missing_data_control_units(subset_data = as.matrix(ordered.data[, c(id.var,t.var,outcome.var)]), 
                                             sets = matched_sets, 
-                                            prepared_sets = prepped_sets,
-                                            tid_pairs = paste0(ordered.data[, id.var], ".", ordered.data[, t.var]),
+                                            times = ts,
                                             lead =  max.lead)
     print('control units checked')
-    create_new_sets <- function(set, index)
-    {
-      return(set[index])
-    }
-    sub_sets <- mapply(FUN = create_new_sets, matched_sets, tpx, SIMPLIFY = FALSE)
     
     if(all(sapply(sub_sets, length) == 0)) stop('estimation not possible: none of the matched sets have viable control units due to a lack of necessary data')
     
     matched_sets <- sub_sets[sapply(sub_sets, length) > 0]
     
+    print("subsetting process complete")
     for(idx in names(old.attributes))
     {
       
@@ -685,7 +663,7 @@ clean_leads <- function(matched_sets, ordered.data, max.lead, t.var, id.var, out
     
   }
   class(matched_sets) <- c("matched.set")
-  
+  print("bookkeeping completed")
   return(matched_sets)
   
   

@@ -344,16 +344,67 @@ Rcpp::LogicalVector check_missing_data_treated_units(Rcpp::NumericMatrix subset_
   return treatment_index;
 }
 
+// [[Rcpp::export]]
+Rcpp::CharacterVector create_tid_pairs(Rcpp::NumericMatrix data)
+{
+  Rcpp::CharacterVector tid_pairs(data.nrow());
+  for(int i = 0; i < data.nrow(); ++i)
+  {
+    int id = data(i, 0);
+    int t = data(i, 1);
+    
+    std::string id_string;
+    std::string t_string;
+    
+    id_string = std::to_string(id);
+    t_string = std::to_string(t);
+    
+    std::string print_string = id_string + "." + t_string;
+    tid_pairs[i] = print_string;
+    //Rcpp::Rcout << print_string << std::endl;
+  }
+  return tid_pairs;
+}
+
+// [[Rcpp::export]]
+Rcpp::List prepare_control_units(Rcpp::List msets, Rcpp::NumericVector times)
+{
+  Rcpp::List prepared_sets(msets.size());
+  
+  for(int i = 0; i < msets.size(); i++)
+  {
+    Rcpp::NumericVector temp_set = msets[i];
+    Rcpp::CharacterVector prepped_set(temp_set.size());
+    for(int j = 0; j < temp_set.size(); j++)
+    {
+      int id = temp_set[j];
+      int t = times[i];
+      
+      std::string id_string;
+      std::string t_string;
+      
+      id_string = std::to_string(id);
+      t_string = std::to_string(t);
+      
+      std::string print_string = id_string + "." + t_string;
+      
+      prepped_set[j] = print_string;
+    }
+    prepared_sets[i] = prepped_set;
+  }
+  return prepared_sets;
+}
 
 // [[Rcpp::export]]
 Rcpp::List check_missing_data_control_units(Rcpp::NumericMatrix subset_data,
                                             Rcpp::List sets,
-                                            Rcpp::List prepared_sets,
-                                            Rcpp::CharacterVector tid_pairs,
+                                            Rcpp::NumericVector times,
                                             int lead
 )
 {
   Rcpp::List control_idx(sets.size());
+  Rcpp::List prepared_sets = prepare_control_units(sets, times);
+  Rcpp::CharacterVector tid_pairs = create_tid_pairs(subset_data);
   
   
   std::unordered_map<std::string, int> indexMap;
@@ -407,8 +458,25 @@ Rcpp::List check_missing_data_control_units(Rcpp::NumericMatrix subset_data,
     }
     control_idx[i] = t_idx;
   }
-  return control_idx;
-  
+  // return control_idx;
+  Rcpp::List return_sets(sets.size());
+  for(int i = 0; i < sets.size(); i++)
+  {
+    Rcpp::NumericVector tset = sets[i];
+    Rcpp::LogicalVector idx = control_idx[i];
+    return_sets[i] = tset[idx];
+  }
+  return_sets.attr("names") = sets.attr("names");
+  return return_sets;
 }
+
+
+
+
+
+
+
+
+
 
 

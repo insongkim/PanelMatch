@@ -69,7 +69,15 @@ check_missing_data_treated_units <- function(subset_data, sets, tid_pairs, treat
     .Call('_PanelMatch_check_missing_data_treated_units', PACKAGE = 'PanelMatch', subset_data, sets, tid_pairs, treated_tid_pairs, treated_ids, lead)
 }
 
-check_missing_data_control_units <- function(subset_data, sets, prepared_sets, tid_pairs, lead) {
-    .Call('_PanelMatch_check_missing_data_control_units', PACKAGE = 'PanelMatch', subset_data, sets, prepared_sets, tid_pairs, lead)
+create_tid_pairs <- function(data) {
+    .Call('_PanelMatch_create_tid_pairs', PACKAGE = 'PanelMatch', data)
+}
+
+prepare_control_units <- function(msets, times) {
+    .Call('_PanelMatch_prepare_control_units', PACKAGE = 'PanelMatch', msets, times)
+}
+
+check_missing_data_control_units <- function(subset_data, sets, times, lead) {
+    .Call('_PanelMatch_check_missing_data_control_units', PACKAGE = 'PanelMatch', subset_data, sets, times, lead)
 }
 
