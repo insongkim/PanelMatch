@@ -473,6 +473,49 @@ Rcpp::List check_missing_data_control_units(Rcpp::NumericMatrix subset_data,
 
 
 
+// [[Rcpp::export]]
+List clean_leads_cpp(Rcpp::NumericMatrix subset_data,
+                     Rcpp::List sets,
+                     Rcpp::CharacterVector treated_tid_pairs,
+                     Rcpp::NumericVector treated_ids,
+                     int lead,
+                     NumericVector times
+) 
+{
+  CharacterVector tid_pairs(subset_data.nrow());
+  for(int i = 0; i < subset_data.nrow(); i++)
+  {
+    int id_1 = subset_data(i,0);
+    int t_1 = subset_data(i,1);
+    
+    std::string id = std::to_string(id_1);
+    std::string t = std::to_string(t_1);
+    
+    std::string key = id + "." + t;
+    tid_pairs[i] = key;
+    // Rcout << key << std::endl;
+  }
+  //create the tid_pairs to avoid the paste function
+  
+  LogicalVector idx = check_missing_data_treated_units(subset_data, sets, 
+                                         tid_pairs, treated_tid_pairs, treated_ids, lead);
+  if(is_true(any(idx)))
+  {
+    sets = sets[idx];
+    times = times[idx];
+  }
+  else
+  {
+    //note that no treatments are viable
+  }
+  if(sets.length() > 0)
+  {
+    sets = check_missing_data_control_units(subset_data, sets, times, lead);
+  }
+  return sets;
+}
+
+
 
 
 

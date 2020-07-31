@@ -619,36 +619,41 @@ clean_leads <- function(matched_sets, ordered.data, max.lead, t.var, id.var, out
 {
   
   old.attributes <- attributes(matched_sets)[names(attributes(matched_sets)) != "names"]
-  print("long to wide conversion complete")
+  print('using regex')
   ts <- as.numeric(sub(".*\\.", "", names(matched_sets)))
   tids <- as.numeric(sub("\\..*", "", names(matched_sets)))
   class(matched_sets) <- "list" #so that Rcpp::List is accurate when we pass it into cpp functions
+  print('starting cpp cleaning process')
   
-  idx <- check_missing_data_treated_units(subset_data = as.matrix(ordered.data[, c(id.var,t.var,outcome.var)]), 
-                                           sets = matched_sets, tid_pairs = paste0(ordered.data[, id.var], ".", ordered.data[, t.var]), treated_tid_pairs = names(matched_sets),
-                                           treated_ids = tids, lead =  as.integer(max.lead))
-  print("treated units checked")
-  if(all(!idx)) stop("estimation not possible: All treated units are missing data necessary for the calculations to proceed")
-  if(any(!idx))
-  {
-    class(matched_sets) <- c("matched.set", "list") #to get the matched.set subsetting with attributes
-    matched_sets <- matched_sets[idx]
-    ts <- ts[idx]
-
-  }
-  #colnames must be numeric in some form because we must be able to sort them into an ascending column order
-  class(matched_sets) <- "list" # for rcpp reasons again
-
-  
-  if(any(idx)) #bit of a trivial condition, if there are any treated units with matched sets left
-  {
-    
-    
-    sub_sets <- check_missing_data_control_units(subset_data = as.matrix(ordered.data[, c(id.var,t.var,outcome.var)]), 
-                                            sets = matched_sets, 
-                                            times = ts,
-                                            lead =  max.lead)
-    print('control units checked')
+  sub_sets <- clean_leads_cpp(subset_data = as.matrix(ordered.data[, c(id.var,t.var,outcome.var)]), 
+                                       sets = matched_sets, treated_tid_pairs = names(matched_sets),
+                                       treated_ids = tids, lead =  as.integer(max.lead), times = ts)
+  print('cleaning complete')
+  # idx <- check_missing_data_treated_units(subset_data = as.matrix(ordered.data[, c(id.var,t.var,outcome.var)]), 
+  #                                          sets = matched_sets, tid_pairs = paste0(ordered.data[, id.var], ".", ordered.data[, t.var]), treated_tid_pairs = names(matched_sets),
+  #                                          treated_ids = tids, lead =  as.integer(max.lead))
+  # print("treated units checked")
+  # if(all(!idx)) stop("estimation not possible: All treated units are missing data necessary for the calculations to proceed")
+  # if(any(!idx))
+  # {
+  #   class(matched_sets) <- c("matched.set", "list") #to get the matched.set subsetting with attributes
+  #   matched_sets <- matched_sets[idx]
+  #   ts <- ts[idx]
+  # 
+  # }
+  # #colnames must be numeric in some form because we must be able to sort them into an ascending column order
+  # class(matched_sets) <- "list" # for rcpp reasons again
+  # 
+  # 
+  # if(any(idx)) #bit of a trivial condition, if there are any treated units with matched sets left
+  # {
+  #   
+  #   
+  #   sub_sets <- check_missing_data_control_units(subset_data = as.matrix(ordered.data[, c(id.var,t.var,outcome.var)]), 
+  #                                           sets = matched_sets, 
+  #                                           times = ts,
+  #                                           lead =  max.lead)
+    print('all units checked')
     
     if(all(sapply(sub_sets, length) == 0)) stop('estimation not possible: none of the matched sets have viable control units due to a lack of necessary data')
     
@@ -661,7 +666,7 @@ clean_leads <- function(matched_sets, ordered.data, max.lead, t.var, id.var, out
       attr(matched_sets, idx) <- old.attributes[[idx]]
     }
     
-  }
+  #}
   class(matched_sets) <- c("matched.set")
   print("bookkeeping completed")
   return(matched_sets)

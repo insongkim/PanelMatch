@@ -289,3 +289,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// clean_leads_cpp
+List clean_leads_cpp(Rcpp::NumericMatrix subset_data, Rcpp::List sets, Rcpp::CharacterVector treated_tid_pairs, Rcpp::NumericVector treated_ids, int lead, NumericVector times);
+RcppExport SEXP _PanelMatch_clean_leads_cpp(SEXP subset_dataSEXP, SEXP setsSEXP, SEXP treated_tid_pairsSEXP, SEXP treated_idsSEXP, SEXP leadSEXP, SEXP timesSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type subset_data(subset_dataSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type sets(setsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type treated_tid_pairs(treated_tid_pairsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type treated_ids(treated_idsSEXP);
+    Rcpp::traits::input_parameter< int >::type lead(leadSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type times(timesSEXP);
+    rcpp_result_gen = Rcpp::wrap(clean_leads_cpp(subset_data, sets, treated_tid_pairs, treated_ids, lead, times));
+    return rcpp_result_gen;
+END_RCPP
+}
