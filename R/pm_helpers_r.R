@@ -671,45 +671,6 @@ clean_leads <- function(matched_sets, ordered.data, max.lead, t.var, id.var, out
   print("bookkeeping completed")
   return(matched_sets)
   
-  
-  
-  # if(any(idx))
-  # {
-  #   browser()
-  # 
-  #   
-  #   ### OLD STUFF
-  #   sub.index <- ll[idx]
-  #   sub.set <- matched_sets[idx]
-  #   create_new_sets <- function(set, index)
-  #   {
-  #     return(set[index])
-  #   }
-  #   sub.set.new <- mapply(FUN = create_new_sets, sub.set, sub.index, SIMPLIFY = FALSE)
-  #   attributes(sub.set.new) <- attributes(sub.set)
-  #   all.gone.counter <- sapply(sub.set.new, function(x){sum(x)})
-  #   if(sum(all.gone.counter == 0) > 0) #case in which all the controls in a particular group were dropped
-  #   {
-  #     #warning("all controls in a particular matched set were removed due to missing data")
-  # 
-  #     idx[all.gone.counter == 0] <- FALSE
-  #     sub.index <- ll[idx]
-  #     sub.set <- matched_sets[idx]
-  #     create_new_sets <- function(set, index)
-  #     {
-  #       return(set[index])
-  #     }
-  #     sub.set.new <- mapply(FUN = create_new_sets, sub.set, sub.index, SIMPLIFY = FALSE)
-  #     attributes(sub.set.new) <- attributes(sub.set)
-  #   }
-  #   print("control unit checking complete")
-  #   if(all(sapply(sub.set.new, length) == 0)) stop('estimation not possible: none of the matched sets have viable control units due to a lack of necessary data')
-  #   #pm2 <- perform_refinement(ordered.data = ordered.data, mset.object = sub.set.new)
-  #   #matched_sets[idx] <- pm2
-  #   matched_sets[idx] <- sub.set.new
-  #   matched_sets <- matched_sets[sapply(matched_sets, length) > 0]
-  # }
-  return(matched_sets)
 
 }
 
