@@ -648,7 +648,7 @@ clean_leads <- function(matched_sets, ordered.data, max.lead, t.var, id.var, out
       return(paste0(matched_set, ".", time))
     }
     
-    prepped_sets <- mapply(create_control_maps, matched_set = matched_sets, time = ts)
+    prepped_sets <- mapply(create_control_maps, matched_set = matched_sets, time = ts, SIMPLIFY = FALSE)
     
     tpx <- check_missing_data_control_units(subset_data = as.matrix(ordered.data[, c(id.var,t.var,outcome.var)]), 
                                             sets = matched_sets, 
