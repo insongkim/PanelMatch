@@ -410,5 +410,329 @@ test_that("complex variation", {
   expect_true(all(d2[d2$id %in% c(3,5,7,9) & input.data$time %in% c(1,3,5,7,9), 'neighborhood_t_count.1'] == 0))
 })
 
+test_that("max, numeric, adjusting caliper", {
+  
+  #####Next few tests is just changing the caliper up to see if the refinement responds appropriately
+  ## using max method, numeric data
+  input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+  input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+  input.data[input.data$id %in% c(2,4,6) & input.data$time > 5, 'treatment'] <- 1
+  input.data$cal.data <- input.data$id
+  input.data$outcome <- rnorm(nrow(input.data))
+  ###How does caliper work? 
+  
+  
+  PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
+                           treatment = "treatment", refinement.method = "none", # should be none for all of them
+                           data = input.data, match.missing = TRUE, 
+                           size.match = 5, qoi = "att" , outcome.var = "outcome",
+                           lead = 0:4, forbid.treatment.reversal = FALSE,
+                           caliper.formula = ~ I(caliper(cal.data,"max", 1, "numeric", "raw")) )
+  
+  expect_true(length(PM.results$att) == 3)
+  expect_true(all(PM.results$att[[1]] == c(1,3)))
+  expect_true(all(PM.results$att[[2]] == c(3,5)))
+  expect_true(all(PM.results$att[[3]] == c(5, 7)))
+  
+  
+  ####*****#####******
+  
+  
+  input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+  input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+  input.data[input.data$id %in% c(2,4,6) & input.data$time > 5, 'treatment'] <- 1
+  input.data$cal.data <- input.data$id
+  input.data$outcome <- rnorm(nrow(input.data))
+  ###How does caliper work? 
+  
+  
+  PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
+                           treatment = "treatment", refinement.method = "none", # should be none for all of them
+                           data = input.data, match.missing = TRUE, 
+                           size.match = 5, qoi = "att" , outcome.var = "outcome",
+                           lead = 0:4, forbid.treatment.reversal = FALSE,
+                           caliper.formula = ~ I(caliper(cal.data,"max", 2, "numeric", "raw")) )
+  
+  expect_true(length(PM.results$att) == 3)
+  expect_true(all(PM.results$att[[1]] == c(1,3)))
+  expect_true(all(PM.results$att[[2]] == c(3,5)))
+  expect_true(all(PM.results$att[[3]] == c(5,7,8)))
+  
+  ####*****#####******
+  
+  
+  input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+  input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+  input.data[input.data$id %in% c(2,4,6) & input.data$time > 5, 'treatment'] <- 1
+  input.data$cal.data <- input.data$id
+  input.data$outcome <- rnorm(nrow(input.data))
+  ###How does caliper work? 
+  
+  
+  PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
+                           treatment = "treatment", refinement.method = "none", # should be none for all of them
+                           data = input.data, match.missing = TRUE, 
+                           size.match = 5, qoi = "att" , outcome.var = "outcome",
+                           lead = 0:4, forbid.treatment.reversal = FALSE,
+                           caliper.formula = ~ I(caliper(cal.data,"max", 3, "numeric", "raw")) )
+  
+  expect_true(length(PM.results$att) == 3)
+  expect_true(all(PM.results$att[[1]] == c(1,3, 5)))
+  expect_true(all(PM.results$att[[2]] == c(1, 3, 5, 7)))
+  expect_true(all(PM.results$att[[3]] == c(3, 5, 7, 8, 9)))
+  
+  
+})
+
+
+test_that("average, numerical", {
+  input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+  input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+  input.data[input.data$id %in% c(2,4,6) & input.data$time > 5, 'treatment'] <- 1
+  input.data$cal.data <- input.data$id
+  input.data[input.data$id %in% c(1), 'cal.data'] <- c(rep(1, 5), rep(0, 5))
+  input.data[input.data$id %in% c(3), 'cal.data'] <- c(rep(3, 5), rep(2, 5))
+  
+  input.data$outcome <- rnorm(nrow(input.data))
+  
+  
+  PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
+                           treatment = "treatment", refinement.method = "none", # should be none for all of them
+                           data = input.data, match.missing = TRUE, 
+                           size.match = 5, qoi = "att" , outcome.var = "outcome",
+                           lead = 0:4, forbid.treatment.reversal = FALSE,
+                           caliper.formula = ~ I(caliper(cal.data,"average", 1, "numeric", "raw")) )
+  
+  expect_true(length(PM.results$att) == 3)
+  expect_true(all(PM.results$att[[1]] == c(3)))
+  expect_true(all(PM.results$att[[2]] == c(5)))
+  expect_true(all(PM.results$att[[3]] == c(5, 7)))
+})
+
+
+
+test_that("categorical, max", {
+  input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+  input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+  input.data[input.data$id %in% c(2,4,6) & input.data$time > 5, 'treatment'] <- 1 #created treated units
+  input.data$cal.data <- input.data$id
+  input.data[input.data$id %in% c(1,3), 'cal.data'] <- 2
+  input.data[input.data$id %in% c(5), 'cal.data'] <- 4
+  input.data[input.data$id %in% c(7,8,9,10), 'cal.data'] <- 6
+  input.data$outcome <- rnorm(nrow(input.data))
+  
+  
+  
+  PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
+                           treatment = "treatment", refinement.method = "none", # should be none for all of them
+                           data = input.data, match.missing = TRUE, 
+                           size.match = 5, qoi = "att" , outcome.var = "outcome",
+                           lead = 0:4, forbid.treatment.reversal = FALSE,
+                           caliper.formula = ~ I(caliper(cal.data,"max", 1, "categorical", "raw")) )
+  
+  expect_true(length(PM.results$att) == 3)
+  expect_true(all(PM.results$att[[1]] == c(1,3)))
+  expect_true(all(PM.results$att[[2]] == c(5)))
+  expect_true(all(PM.results$att[[3]] == c(7,8,9, 10) ))
+})
+
+
+
+test_that("categorical, average", {
+  input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+  input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+  input.data[input.data$id %in% c(2,4,6) & input.data$time > 5, 'treatment'] <- 1 #created treated units
+  input.data$cal.data <- input.data$id
+  input.data[input.data$id %in% c(1,3), 'cal.data'] <- 2
+  input.data[input.data$id %in% c(1,3) & input.data$time %in% 4:5, 'cal.data'] <- 3 #not 2
+  
+  input.data[input.data$id %in% c(5), 'cal.data'] <- 4
+  input.data[input.data$id %in% c(7,8,9,10), 'cal.data'] <- 6
+  input.data[input.data$id %in% c(7,8) & input.data$time %in% 3:5, 'cal.data'] <- 7 #not six, these should drop out
+  
+  input.data$outcome <- rnorm(nrow(input.data))
+  
+  
+  
+  PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
+                           treatment = "treatment", refinement.method = "none", # should be none for all of them
+                           data = input.data, match.missing = TRUE, 
+                           size.match = 5, qoi = "att" , outcome.var = "outcome",
+                           lead = 0:4, forbid.treatment.reversal = FALSE,
+                           caliper.formula = ~ I(caliper(cal.data,"average", .5, "categorical", "raw")) )
+  
+  expect_true(length(PM.results$att) == 3)
+  expect_true(all(PM.results$att[[1]] == c(1,3)))
+  expect_true(all(PM.results$att[[2]] == c(5)))
+  expect_true(all(PM.results$att[[3]] == c(9, 10) ))
+})
+
+
+test_that("network caliper and refinement tests", {
+  ### verify that formulas are updated:
+
+  network.refinement.info = list(use.proportion.data = TRUE,
+                                 proportion.lags = 0:4,
+                                 use.count.data = TRUE,
+                                 count.lags = 0:4)
+  network.caliper.info = list(use.proportion.data = TRUE,
+                              proportion.caliper.method = "average",
+                              proportion.caliper.threshold = .5,
+                              prop.unit.type = "raw",
+                              use.count.data = TRUE,
+                              count.caliper.method = "max",
+                              count.caliper.threshold = 1, 
+                              count.unit.type = "raw")
+
+
+  ejmat = data.frame(v1 = seq(from = 1, to = 10, by = 2), v2 = seq(from = 2, to = 10, by = 2), e = 1)
+
+  input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+  input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+  input.data[input.data$id %in% c(2,4,6,8, 10), 'treatment'] <- 1
+  input.data$outcome <- rnorm(nrow(input.data))
+  input.data$cal.data <- input.data$id
+
+  d2 <- PanelMatch:::calculate_neighbor_treatment(input.data, ejmat, 1, 'id', 'time', 'treatment')
+
+  ll <- PanelMatch:::handle_network_caliper_and_refinement(network.caliper.info, network.refinement.info, d2,
+                                                           ejmat, 1, 'id', 'time', 'treatment',
+                                                           NULL, NULL)
+  covs.formula <- ll[[1]]
+  expect_true(identical(covs.formula, ~I(lag(neighborhood_t_prop.1, 0:4)) + I(lag(neighborhood_t_count.1, 
+                                                                                  0:4))))
+  caliper.formula <- ll[[2]]
+  expect_true(identical(caliper.formula, ~I(caliper(neighborhood_t_prop.1, "average", 0.5, "numeric", "raw")) + I(caliper(neighborhood_t_count.1, "max", 1, "numeric", 
+                                                              "raw"))))
+
+
+  network.refinement.info = list(use.proportion.data = FALSE,
+                                 proportion.lags = 0,
+                                 use.count.data = TRUE,
+                                 count.lags = 0:2)
+  network.caliper.info = list(use.proportion.data = TRUE,
+                              proportion.caliper.method = "max",
+                              proportion.caliper.threshold = .5,
+                              prop.unit.type = "raw",
+                              use.count.data = TRUE,
+                              count.caliper.method = "max",
+                              count.caliper.threshold = 1,
+                              count.unit.type = "raw")
+
+  ll <- PanelMatch:::handle_network_caliper_and_refinement(network.caliper.info, network.refinement.info, d2,
+                                                           ejmat, 1, 'id', 'time', 'treatment',
+                                                           ~ outcome, NULL)
+  covs.formula <- ll[[1]]
+  caliper.formula <- ll[[2]]
+  
+  
+  covs.formula <- ll[[1]]
+  expect_true(identical(covs.formula, ~ outcome + I(lag(neighborhood_t_count.1, 0:2))))
+  caliper.formula <- ll[[2]]
+  expect_true(identical(caliper.formula, ~I(caliper(neighborhood_t_prop.1, "max", 0.5, "numeric", "raw")) + I(caliper(neighborhood_t_count.1, "max", 1, "numeric", 
+                                                                                                                          "raw"))))
+  
+  
+  
+
+  network.refinement.info = list(use.proportion.data = FALSE,
+                                 proportion.lags = 0,
+                                 use.count.data = FALSE,
+                                 count.lags = 2)
+  network.caliper.info = list(use.proportion.data = TRUE,
+                              proportion.caliper.method = "average",
+                              proportion.caliper.threshold = .2,
+                              prop.unit.type = "raw",
+                              use.count.data = TRUE,
+                              count.caliper.method = "max",
+                              count.caliper.threshold = 4,
+                              count.unit.type = "sd")
+
+  ll <- PanelMatch:::handle_network_caliper_and_refinement(network.caliper.info, network.refinement.info, d2,
+                                                           ejmat, 1, 'id', 'time', 'treatment',
+                                                           ~ outcome,
+                                                           ~ I(caliper(cal.data,"average", .5, "categorical", "raw")))
+  
+  
+  covs.formula <- ll[[1]]
+  expect_true(identical(covs.formula, ~ outcome))
+  caliper.formula <- ll[[2]]
+  expect_true(identical(caliper.formula, ~I(caliper(cal.data,"average", .5, "categorical", "raw")) + I(caliper(neighborhood_t_prop.1, "average", 0.2, "numeric", "raw")) + I(caliper(neighborhood_t_count.1, "max", 4, "numeric", 
+                                                                                                                      "sd"))))
+
+
+  network.refinement.info = list(use.proportion.data = TRUE,
+                                 proportion.lags = 0:4,
+                                 use.count.data = TRUE,
+                                 count.lags = 0:4)
+  network.caliper.info = list(use.proportion.data = FALSE,
+                              proportion.caliper.method = "average",
+                              proportion.caliper.threshold = .2,
+                              prop.unit.type = "raw",
+                              use.count.data = FALSE,
+                              count.caliper.method = "max",
+                              count.caliper.threshold = 4,
+                              count.unit.type = "sd")
+  ll <- PanelMatch:::handle_network_caliper_and_refinement(network.caliper.info, network.refinement.info, d2,
+                                                           ejmat, 1, 'id', 'time', 'treatment',
+                                                           NULL,
+                                                           ~ I(caliper(cal.data,"average", .5, "categorical", "raw")))
+  
+  covs.formula <- ll[[1]]
+  expect_true(identical(covs.formula, ~I(lag(neighborhood_t_prop.1, 0:4)) + I(lag(neighborhood_t_count.1, 
+                                                                                  0:4))))
+  caliper.formula <- ll[[2]]
+  expect_true(identical(caliper.formula, ~ I(caliper(cal.data,"average", .5, "categorical", "raw"))))
+
+
+
+  network.refinement.info = list(use.proportion.data = TRUE,
+                                 proportion.lags = 0:2,
+                                 use.count.data = TRUE,
+                                 count.lags = 0:2)
+  network.caliper.info = list(use.proportion.data = FALSE,
+                              proportion.caliper.method = "average",
+                              proportion.caliper.threshold = .2,
+                              prop.unit.type = "raw",
+                              use.count.data = TRUE,
+                              count.caliper.method = "max",
+                              count.caliper.threshold = 4,
+                              count.unit.type = "sd")
+  ll <- PanelMatch:::handle_network_caliper_and_refinement(network.caliper.info, network.refinement.info, d2,
+                                                           ejmat, 1, 'id', 'time', 'treatment',
+                                                           ~ outcome,
+                                                           ~ I(caliper(cal.data,"max", .2, "numeric", "sd")))
+  covs.formula <- ll[[1]]
+  expect_true(identical(covs.formula, ~outcome + I(lag(neighborhood_t_prop.1, 0:2)) + I(lag(neighborhood_t_count.1, 
+                                                                                  0:2))))
+  caliper.formula <- ll[[2]]
+  expect_true(identical(caliper.formula, ~ I(caliper(cal.data,"max", .2, "numeric", "sd"))+ I(caliper(neighborhood_t_count.1, "max", 4, "numeric", "sd"))))
+
+
+
+  network.refinement.info = list(use.proportion.data = TRUE,
+                                 proportion.lags = 0:4,
+                                 use.count.data = TRUE,
+                                 count.lags = 0:4)
+  network.caliper.info = list(use.proportion.data = TRUE,
+                              proportion.caliper.method = "average",
+                              proportion.caliper.threshold = .2,
+                              prop.unit.type = "raw",
+                              use.count.data = FALSE,
+                              count.caliper.method = "max",
+                              count.caliper.threshold = 4,
+                              count.unit.type = "sd")
+  ll <- PanelMatch:::handle_network_caliper_and_refinement(network.caliper.info, network.refinement.info, d2,
+                                                           ejmat, 1, 'id', 'time', 'treatment',
+                                                           ~ outcome,
+                                                           ~ I(caliper(cal.data, "max", .2, "categorical", "raw")))
+  covs.formula <- ll[[1]]
+  expect_true(identical(covs.formula, ~outcome + I(lag(neighborhood_t_prop.1, 0:4)) + I(lag(neighborhood_t_count.1, 
+                                                                                            0:4))))
+  caliper.formula <- ll[[2]]
+  expect_true(identical(caliper.formula, ~ I(caliper(cal.data,"max", .2, "categorical", "raw"))+ I(caliper(neighborhood_t_prop.1, "average", .2, "numeric", "raw"))))
+})
+
+
 
 

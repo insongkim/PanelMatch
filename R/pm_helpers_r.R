@@ -37,7 +37,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
     e.sets <- msets[sapply(msets, length) == 0]
     msets <- msets[sapply(msets, length) > 0 ]
 
-    browser()
+    
     msets <- clean_leads(msets, ordered.data, max(lead), time.id, unit.id, outcome.var)
 
     if(forbid.treatment.reversal)
@@ -61,7 +61,8 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
   ####apply calipers here
   if(!is.null(caliper.formula))
   {
-    msets <- handle_calipers(plain.ordered.data = ordered.data, caliper.formula, matched.sets = msets, lag.window = 0:lag)
+    msets <- handle_calipers(plain.ordered.data = ordered.data, caliper.formula,
+                             matched.sets = msets, lag.window = 0:lag)
     if(calipers.in.refinement)
     {
       covs.formula <- merge_formula(covs.formula, caliper.formula)
@@ -475,7 +476,7 @@ handle_mahalanobis_calculations <- function(mahal.nested.list, msets, max.size, 
   }
   handle_set <- function(sub.list, max.set.size, idx)
   {
-    #browser()
+    
     results.temp <- lapply(sub.list, do.calcs)
     tmat <- do.call(rbind, results.temp)
     colnames(tmat) <- NULL
@@ -666,7 +667,7 @@ clean_leads <- function(matched_sets, ordered.data, max.lead, t.var, id.var, out
   tids <- as.numeric(sub("\\..*", "", names(matched_sets)))
   class(matched_sets) <- "list" #so that Rcpp::List is accurate when we pass it into cpp functions
 
-  browser()
+  
   idx <- check_missing_data_treated_units(subset_data = as.matrix(ordered.data[, c(id.var,t.var,outcome.var)]),
                                            sets = matched_sets, tid_pairs = paste0(ordered.data[, id.var], ".", ordered.data[, t.var]), treated_tid_pairs = names(matched_sets),
                                            treated_ids = tids, lead =  max.lead)

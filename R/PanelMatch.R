@@ -271,83 +271,93 @@ panel_match <- function(lag, time.id, unit.id, treatment,
   if(!is.null(network.caliper.info) || !is.null(network.refinement.info))
   { 
     # browser()
-    ordered.data <- calculate_neighbor_treatment(ordered.data, adjacency.matrix, neighborhood.degree, unit.id, time.id, treatment)
-    propstring.formula <- paste0('neighborhood_t_prop', '.', neighborhood.degree)
-    countstring.formula <- paste0('neighborhood_t_count', '.', neighborhood.degree)
-    if(!is.null(network.refinement.info))
-    {
-      if(network.refinement.info[["use.proportion.data"]])
-      {
-        if(max(network.refinement.info[['proportion.lags']] == 0))
-        {
-          covs.formula <- merge_formula(covs.formula, reformulate(propstring.formula))
-        }
-        else if (max(network.refinement.info[["proportion.lags"]] > 0))
-        {
-          propstring.formula.lag <- paste0("I(lag(", propstring.formula, ",", 
-                 deparse(network.refinement.info[["proportion.lags"]]), "))")
-          covs.formula <- merge_formula(covs.formula, reformulate(propstring.formula.lag))
-        }
-        else {
-          stop("please enter a valid lag number")
-        }
-      }
-      if(network.refinement.info[["use.count.data"]])
-      {
-        if(max(network.refinement.info[['count.lags']] == 0))
-        {
-          covs.formula <- merge_formula(covs.formula, reformulate(countstring.formula))
-        }
-        else if (max(network.refinement.info[["count.lags"]] > 0))
-        {
-          countstring.formula.lag <-paste0("I(lag(", countstring.formula, ",", 
-                 deparse(network.refinement.info[["count.lags"]]), "))")
-          covs.formula <- merge_formula(covs.formula, reformulate(countstring.formula.lag))
-        }
-        else {
-          stop("please enter a valid lag number")
-        }
-      }
-
-    }
-    if(!is.null(network.caliper.info))
-    {
-      if(network.caliper.info[["use.proportion.data"]])
-      {
-      
-        propstring.formula.caliper <- paste0("I(caliper(", propstring.formula, ",", 
-               "'", network.caliper.info[["proportion.caliper.method"]], "'", ",",
-               network.caliper.info[["proportion.caliper.threshold"]], ",",
-               '"numeric"',
-               "))")
-        if(is.null(caliper.formula))
-        {
-          caliper.formula <- reformulate(propstring.formula.caliper)
-          environment(caliper.formula) <- environment(covs.formula)
-        } else
-        {
-          caliper.formula <- merge_formula(caliper.formula, reformulate(propstring.formula.caliper))  
-        }
-        
-      }
-      if(network.caliper.info[["use.count.data"]])
-      {
-        countstring.formula.caliper <- paste0("I(caliper(", countstring.formula, ",",
-               "'", network.caliper.info[["count.caliper.method"]], "'", ",",
-               network.caliper.info[["count.caliper.threshold"]], ",",
-               '"numeric"',
-               "))")
-        if(is.null(caliper.formula))
-        {
-          caliper.formula <- reformulate(countstring.formula.caliper)
-          environment(caliper.formula) <- environment(covs.formula)
-        } else
-        {
-          caliper.formula <- merge_formula(caliper.formula, reformulate(countstring.formula.caliper))  
-        }
-        
-      }
-    }
+    ordered.data <- calculate_neighbor_treatment(ordered.data, adjacency.matrix, 
+                                                 neighborhood.degree, unit.id, time.id, treatment)
+    ll <- handle_network_caliper_and_refinement(network.caliper.info, network.refinement.info, ordered.data,
+                                                adjacency.matrix, neighborhood.degree, unit.id, time.id, treatment,
+                                                covs.formula, caliper.formula)
+    covs.formula <- ll[[1]]
+    caliper.formula <- ll[[2]]
+    # (network.caliper.info = NULL, network.refinement.info = NULL,
+    #   ordered.data, adjacency.matrix, neighborhood.degree, unit.id, time.id,
+    #   treatment, covs.formula)
+    ## start function here
+    # propstring.formula <- paste0('neighborhood_t_prop', '.', neighborhood.degree)
+    # countstring.formula <- paste0('neighborhood_t_count', '.', neighborhood.degree)
+    # if(!is.null(network.refinement.info))
+    # {
+    #   if(network.refinement.info[["use.proportion.data"]])
+    #   {
+    #     if(max(network.refinement.info[['proportion.lags']] == 0))
+    #     {
+    #       covs.formula <- merge_formula(covs.formula, reformulate(propstring.formula))
+    #     }
+    #     else if (max(network.refinement.info[["proportion.lags"]] > 0))
+    #     {
+    #       propstring.formula.lag <- paste0("I(lag(", propstring.formula, ",", 
+    #              deparse(network.refinement.info[["proportion.lags"]]), "))")
+    #       covs.formula <- merge_formula(covs.formula, reformulate(propstring.formula.lag))
+    #     }
+    #     else {
+    #       stop("please enter a valid lag number")
+    #     }
+    #   }
+    #   if(network.refinement.info[["use.count.data"]])
+    #   {
+    #     if(max(network.refinement.info[['count.lags']] == 0))
+    #     {
+    #       covs.formula <- merge_formula(covs.formula, reformulate(countstring.formula))
+    #     }
+    #     else if (max(network.refinement.info[["count.lags"]] > 0))
+    #     {
+    #       countstring.formula.lag <-paste0("I(lag(", countstring.formula, ",", 
+    #              deparse(network.refinement.info[["count.lags"]]), "))")
+    #       covs.formula <- merge_formula(covs.formula, reformulate(countstring.formula.lag))
+    #     }
+    #     else {
+    #       stop("please enter a valid lag number")
+    #     }
+    #   }
+    # 
+    # }
+    # if(!is.null(network.caliper.info))
+    # {
+    #   if(network.caliper.info[["use.proportion.data"]])
+    #   {
+    #   
+    #     propstring.formula.caliper <- paste0("I(caliper(", propstring.formula, ",", 
+    #            "'", network.caliper.info[["proportion.caliper.method"]], "'", ",",
+    #            network.caliper.info[["proportion.caliper.threshold"]], ",",
+    #            '"numeric"',
+    #            "))")
+    #     if(is.null(caliper.formula))
+    #     {
+    #       caliper.formula <- reformulate(propstring.formula.caliper)
+    #       environment(caliper.formula) <- environment(covs.formula)
+    #     } else
+    #     {
+    #       caliper.formula <- merge_formula(caliper.formula, reformulate(propstring.formula.caliper))  
+    #     }
+    #     
+    #   }
+    #   if(network.caliper.info[["use.count.data"]])
+    #   {
+    #     countstring.formula.caliper <- paste0("I(caliper(", countstring.formula, ",",
+    #            "'", network.caliper.info[["count.caliper.method"]], "'", ",",
+    #            network.caliper.info[["count.caliper.threshold"]], ",",
+    #            '"numeric"',
+    #            "))")
+    #     if(is.null(caliper.formula))
+    #     {
+    #       caliper.formula <- reformulate(countstring.formula.caliper)
+    #       environment(caliper.formula) <- environment(covs.formula)
+    #     } else
+    #     {
+    #       caliper.formula <- merge_formula(caliper.formula, reformulate(countstring.formula.caliper))  
+    #     }
+    #     
+    #   }
+    # }
     #covs.formula <- merge_formula(covs.formula, 
     #                              reformulate(c(propstring.formula, countstring.formula)))
   }
@@ -418,6 +428,7 @@ panel_match <- function(lag, time.id, unit.id, treatment,
                                 exact.matching.variables = exact.match.variables, listwise.deletion = listwise.delete,
                                 use.diag.covmat = use.diagonal.variance.matrix, caliper.formula = caliper.formula,
                                 calipers.in.refinement = calipers.in.refinement)
+    
     msets <- decode_index(msets, unit.index.map, og.unit.id)
     if(!matching & match.missing)
     {
@@ -428,6 +439,7 @@ panel_match <- function(lag, time.id, unit.id, treatment,
     attr(pm.obj, "qoi") <- qoi
     attr(pm.obj, "outcome.var") <- outcome.var
     attr(pm.obj, "lead") <- lead
+    
     attr(pm.obj, "forbid.treatment.reversal") <- forbid.treatment.reversal
     return(pm.obj)
   } else if(qoi == "ate")

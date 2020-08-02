@@ -554,7 +554,7 @@ decode_index <- function(mset, unit.index, original.unit.id)#, original.time.id)
 {
   decode.control.units <- function(in_, unit.index)
   {
-    news <- unit.index$original.id[match(in_, unit.index$new.id)]
+    news <- as.numeric(unit.index$original.id[match(in_, unit.index$new.id)])
     if(!is.null(attr(in_, "distances")))
     {
       attr(news, "distances") <- attr(in_, "distances")

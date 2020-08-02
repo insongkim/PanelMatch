@@ -79,10 +79,11 @@ calculate_neighbor_treatment <- function(data, edge.matrix, n.degree, unit.id, t
 handle_calipers <- function(plain.ordered.data, caliper.formula, matched.sets, lag.window)
 {
   
-  caliper <- function(y, method, caliper.distance, data_type, lwindow = lag.window)
+  caliper <- function(y, method, caliper.distance, data_type, calculation_type, lwindow = lag.window)
   {# redefine the function to extract the method types, variables, caliper distances, might be a better way of doing this
+    
     y <- deparse(substitute(y))
-    return(c(y, method, caliper.distance, max(lwindow), data_type))
+    return(c(y, method, caliper.distance, max(lwindow), data_type, calculation_type))
   }
   
   attr(caliper.formula, ".Environment") <- environment()
@@ -95,6 +96,7 @@ handle_calipers <- function(plain.ordered.data, caliper.formula, matched.sets, l
     {
       x <- as.numeric(as.character(x))
     }
+  
     if (n == 0) return(x)
     xlen <- length(x)
     n <- pmin(n, xlen)
@@ -104,7 +106,7 @@ handle_calipers <- function(plain.ordered.data, caliper.formula, matched.sets, l
     return(out)
   }
   
-  caliper <- function(y, method, caliper.distance, data_type, lwindow = lag.window)
+  caliper <- function(y, method, caliper.distance, data_type, calculation_type, lwindow = lag.window)
   {
     
     if(is.null(method) || is.null(caliper.distance))
@@ -118,7 +120,7 @@ handle_calipers <- function(plain.ordered.data, caliper.formula, matched.sets, l
   
   apply_formula <- function(x, form)
   {
-
+  
     attr(form, ".Environment") <- environment()
     tdf <- as.data.frame(as.matrix(model.frame(form, x, na.action = NULL)))
     
@@ -136,7 +138,7 @@ handle_calipers <- function(plain.ordered.data, caliper.formula, matched.sets, l
     col.idx <- i * max(lag.window + 1) + 3
     #browser()
     .IS_FACTOR_VAR <- caliper.metadata[5, i] == "categorical" # or numeric
-    .USE_SD_UNITS <- caliper.metadata[5, i] == "sd" # or raw
+    .USE_SD_UNITS <- caliper.metadata[6, i] == "sd" # or raw
     matched.sets <- handle.single.caliper.per.lag(t.data, matched.sets, caliper.metadata[2,i], 
                                                   caliper.metadata[3, i], c(1:3,  (col.idx-max(lag.window)):col.idx),
                                                   .IS_FACTOR_VAR, .USE_SD_UNITS)
@@ -186,14 +188,15 @@ handle.single.caliper.per.lag <- function(plain.ordered.data, matched.sets, cali
 
 handle_perlag_caliper_calculations <- function(nested.list, msets, caliper.method, caliper.value, is.factor.var, use.sd.units)
 {
-  browser()
-  do_calcs <- function(time.df, sd.vals__, is_factor_in, use.sd.units.in)
+  
+  do_calcs <- function(time.df, sd.vals__, is_factor_in)
   {
     cov.data <- time.df[, 4:ncol(time.df), drop = FALSE]
     
-    do.maths  <- function(control.unit.data, treated.unit.data, sd.vals_, is_factor, use.sd.units)
+    do.maths  <- function(control.unit.data, treated.unit.data, sd.vals_, is_factor)
     {
-      if(!is_factor && use.sd.units)
+      
+      if(!is_factor)
       {
         return(abs(treated.unit.data - control.unit.data) / sd.vals_) 
       } else
@@ -205,8 +208,7 @@ handle_perlag_caliper_calculations <- function(nested.list, msets, caliper.metho
     results <- apply(cov.data[1:((nrow(cov.data)  - 1)), , drop = FALSE] , MARGIN = 1, FUN  =  do.maths, 
           treated.unit.data = cov.data[nrow(cov.data), ], 
           sd.vals_ = sd.vals__, 
-          is_factor = is_factor_in,
-          use.sd.units.in = use.sd.units)
+          is_factor = is_factor_in)
     
     return(results)
     
@@ -214,7 +216,10 @@ handle_perlag_caliper_calculations <- function(nested.list, msets, caliper.metho
   
   handle_set <- function(sub.list, cal.value, cal.method, standard.deviations, is.factor)
   {
-    results.temp <- lapply(sub.list, do_calcs, sd.vals__ = standard.deviations, is_factor_in = is.factor)
+    
+    results.temp <- lapply(sub.list, do_calcs, sd.vals__ = standard.deviations, 
+                           is_factor_in = is.factor)
+    
     tmat <- do.call(rbind, results.temp)
     colnames(tmat) <- NULL
     # tmat <- tmat[, 1:(ncol(tmat)-1), drop = FALSE]
@@ -236,7 +241,8 @@ handle_perlag_caliper_calculations <- function(nested.list, msets, caliper.metho
         }
         if(cal.method == "average")
         {
-          m.val <- mean(col != 0)
+          m.val <- mean(col == 0)
+          
           if(is.na(m.val) || m.val < cal) #looking at proportion of matches, so higher is more similar
           {
             return(FALSE)
@@ -287,16 +293,144 @@ handle_perlag_caliper_calculations <- function(nested.list, msets, caliper.metho
   #get standard deviation values
   tdf <- do.call(rbind, lapply(unlist(nested.list, recursive = F),
                                function(x) return(x[nrow(x), ])))
-  sd.vals <- apply(tdf[, 4:ncol(tdf)], MARGIN = 2, FUN = sd, na.rm = TRUE)
+  
+  if(use.sd.units)
+  {
+    sd.vals <- apply(tdf[, 4:ncol(tdf)], MARGIN = 2, FUN = sd, na.rm = TRUE)  
+  } else {
+    sd.vals <- 1
+  }
+  
   
   indices.msets <- lapply(nested.list, handle_set, 
                           cal.value = caliper.value, 
                           cal.method = caliper.method, 
                           standard.deviations = sd.vals, 
                           is.factor = is.factor.var)
-  # browser()
-  msets <- mapply(function(x, y) return(x[y]), x = msets, y = indices.msets)
+  
+  msets <- mapply(function(x, y) return(as.numeric(x[y])), x = msets, y = indices.msets, SIMPLIFY = FALSE)
   msets <- msets[sapply(msets, length) > 0]
+  
   return(msets)
 }
+
+
+handle_network_caliper_and_refinement <- function(network.caliper.info = NULL, network.refinement.info = NULL,
+                                                  ordered.data, adjacency.matrix, neighborhood.degree, unit.id, time.id,
+                                                  treatment, covs.formula, caliper.formula)
+{
+  
+  if(!is.null(network.caliper.info) || !is.null(network.refinement.info))
+  { 
+    propstring.formula <- paste0('neighborhood_t_prop', '.', neighborhood.degree)
+    countstring.formula <- paste0('neighborhood_t_count', '.', neighborhood.degree)
+    if(!is.null(network.refinement.info))
+    {
+      
+      if(network.refinement.info[["use.proportion.data"]])
+      {
+        if(identical(max(network.refinement.info[['proportion.lags']]), 0))
+        {
+          if(is.null(covs.formula))
+          {
+            covs.formula <- reformulate(propstring.formula)
+            environment(covs.formula) <- globalenv()
+          } else {
+            covs.formula <- merge_formula(covs.formula, reformulate(propstring.formula))
+          }
+          
+        }
+        else if (max(network.refinement.info[["proportion.lags"]]) > 0)
+        {
+          propstring.formula.lag <- paste0("I(lag(", propstring.formula, ",", 
+                                           deparse(network.refinement.info[["proportion.lags"]]), "))")
+          if(is.null(covs.formula))
+          {
+            covs.formula <- reformulate(propstring.formula.lag)
+            environment(covs.formula) <- globalenv()
+          } else {
+            covs.formula <- merge_formula(covs.formula, reformulate(propstring.formula.lag))
+          }
+          
+        }
+        else {
+          stop("please enter a valid lag number")
+        }
+      }
+      if(network.refinement.info[["use.count.data"]])
+      {
+        if(identical(max(network.refinement.info[['count.lags']]), 0))
+        {
+          if(is.null(covs.formula))
+          {
+            covs.formula <- reformulate(countstring.formula)
+            environment(covs.formula) <- globalenv()
+          } else {
+            covs.formula <- merge_formula(covs.formula, reformulate(countstring.formula))
+          }
+          
+        }
+        else if (max(network.refinement.info[["count.lags"]]) > 0)
+        {
+          countstring.formula.lag <-paste0("I(lag(", countstring.formula, ",", 
+                                           deparse(network.refinement.info[["count.lags"]]), "))")
+          if(is.null(covs.formula))
+          {
+            covs.formula <- reformulate(countstring.formula.lag)
+            environment(covs.formula) <- globalenv()
+          } else {
+            covs.formula <- merge_formula(covs.formula, reformulate(countstring.formula.lag))
+          }
+          
+        }
+        else {
+          stop("please enter a valid lag number")
+        }
+      }
+      
+    }
+    if(!is.null(network.caliper.info))
+    {
+      if(network.caliper.info[["use.proportion.data"]])
+      {
+        
+        propstring.formula.caliper <- paste0("I(caliper(", propstring.formula, ",", 
+                                             "'", network.caliper.info[["proportion.caliper.method"]], "'", ",",
+                                             network.caliper.info[["proportion.caliper.threshold"]], ",",
+                                             '"numeric"', "," ,"'", network.caliper.info[["prop.unit.type"]],"'", 
+                                             "))")
+        if(is.null(caliper.formula))
+        {
+          caliper.formula <- reformulate(propstring.formula.caliper)
+          environment(caliper.formula) <- environment(covs.formula)
+        } else
+        {
+          caliper.formula <- merge_formula(caliper.formula, reformulate(propstring.formula.caliper))  
+        }
+        
+      }
+      if(network.caliper.info[["use.count.data"]])
+      {
+        countstring.formula.caliper <- paste0("I(caliper(", countstring.formula, ",",
+                                              "'", network.caliper.info[["count.caliper.method"]], "'", ",",
+                                              network.caliper.info[["count.caliper.threshold"]], ",",
+                                              '"numeric"', ",", "'", network.caliper.info[["count.unit.type"]], "'",
+                                              "))")
+        if(is.null(caliper.formula))
+        {
+          caliper.formula <- reformulate(countstring.formula.caliper)
+          environment(caliper.formula) <- environment(covs.formula)
+        } else
+        {
+          caliper.formula <- merge_formula(caliper.formula, reformulate(countstring.formula.caliper))  
+        }
+        
+      }
+    }
+    
+  }
+  return(list(covs.formula, caliper.formula))
+  
+}
+
 
