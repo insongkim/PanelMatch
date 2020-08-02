@@ -46,7 +46,7 @@ Visualizing the standardized mean differences for covariates via a scatter plot.
 }
 \details{
 \code{balance_scatter} visualizes the standardized mean differences for each covariate.
-Although users can use the scatter plot in a variety of ways, it is recommended that 
+Although users can use the scatter plot in a variety of ways, it is recommended that
 the x-axis refers to balance for covariates before refinement, and y-axis
 refers to balance after refinement. Users can utilize parameters powered by \code{plot}
 in base R to further customize the figure.
@@ -61,7 +61,7 @@ sets0 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                     outcome.var = "y",
                     lead = 0:4, forbid.treatment.reversal = FALSE)
 
-# get a matched set with refinement using CBPS.match, setting the 
+# get a matched set with refinement using CBPS.match, setting the
 # size of matched set to 5
 sets1 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                     treatment = "dem", refinement.method = "mahalanobis",
@@ -86,8 +86,8 @@ balance_scatter(non_refined_set = sets0$att,
               refined_list = list(sets1$att, sets2$att),
               data = dem,
               covariates = c("y", "tradewb"))
-# add legend 
-legend(x = 0, y = 0.8,  
+# add legend
+legend(x = 0, y = 0.8,
 legend = c("mahalanobis",
            "PS weighting"),
 y.intersp = 0.65,

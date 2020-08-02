@@ -39,22 +39,22 @@ get_covariate_balance(
 \item{...}{Additional graphical parameters to be passed to the \code{plot} function in base R.}
 }
 \description{
-Calculate covariate balance for user specified covariates across matched sets. Balance is assessed by taking the average 
-of the difference between the values of the specified covariates for the treated unit(s) and the weighted average of 
-the control units across all matched sets. Results are standardized and are expressed in standard deviations. 
+Calculate covariate balance for user specified covariates across matched sets. Balance is assessed by taking the average
+of the difference between the values of the specified covariates for the treated unit(s) and the weighted average of
+the control units across all matched sets. Results are standardized and are expressed in standard deviations.
 Balance is calculated for each period in the specified lag window.
 }
 \examples{
 #add some additional data to data set for demonstration purposes
-dem$rdata <- runif(runif(nrow(dem))) 
+dem$rdata <- runif(runif(nrow(dem)))
 pm.obj <- PanelMatch(lead = 0:3, lag = 4, time.id = "year", unit.id = "wbcode2", treatment = "dem",
-                    outcome.var ="y", refinement.method = "mahalanobis", 
+                    outcome.var ="y", refinement.method = "mahalanobis",
                     data = dem, match.missing = TRUE,
-                    covs.formula = ~ tradewb + rdata + I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
+                    covs.formula = ~ tradewb + rdata + I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
                     size.match = 5, qoi = "att")
-get_covariate_balance(pm.obj$att, dem, covariates = c("tradewb", "rdata"), 
+get_covariate_balance(pm.obj$att, dem, covariates = c("tradewb", "rdata"),
                          ylim = c(-2,2))
-get_covariate_balance(pm.obj$att, dem, covariates = c("tradewb", "rdata"), 
+get_covariate_balance(pm.obj$att, dem, covariates = c("tradewb", "rdata"),
                          plot = TRUE, ylim = c(-2,2))
 
 }

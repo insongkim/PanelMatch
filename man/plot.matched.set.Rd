@@ -39,16 +39,16 @@
 \item{include.empty.sets}{logical value indicating whether or not empty sets should be included in the histogram. default is FALSE. If FALSE, then empty sets will be noted as a separate vertical bar at x = 0. If TRUE, empty sets will be included as normal sets.}
 }
 \description{
-A plot method for creating a histogram of the distribution of the sizes of matched sets. 
-This method accepts all standard optional \code{hist} arguments via the \code{...} argument. 
-By default, empty matched sets (treated units that could not be 
-matched with any control units) are noted as a vertical bar at x = 0 and not included in the 
+A plot method for creating a histogram of the distribution of the sizes of matched sets.
+This method accepts all standard optional \code{hist} arguments via the \code{...} argument.
+By default, empty matched sets (treated units that could not be
+matched with any control units) are noted as a vertical bar at x = 0 and not included in the
 regular histogram. See the \code{include.empty.sets} argument for more information about this.
 }
 \examples{
-PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
-                         treatment = "dem", refinement.method = "mahalanobis", 
-                         data = dem, match.missing = TRUE, 
+PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
+                         treatment = "dem", refinement.method = "mahalanobis",
+                         data = dem, match.missing = TRUE,
                          covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
                          size.match = 5, qoi = "att",
                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)

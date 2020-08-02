@@ -21,16 +21,16 @@ matched_set(matchedsets, id, t, L, t.var, id.var, treatment.var)
 
 \item{treatment.var}{string specifying the treatment variable.
 
-The constructor function returns a \code{matched.set} object. 
-\code{matched.set} objects are a modified lists. Each element in the list is a vector of ids 
-corresponding to the control unit ids in a matched set. 
-Additionally, these vectors might have additional attributes -- "weights". These correspond to the 
-weights assigned to each control unit, 
+The constructor function returns a \code{matched.set} object.
+\code{matched.set} objects are a modified lists. Each element in the list is a vector of ids
+corresponding to the control unit ids in a matched set.
+Additionally, these vectors might have additional attributes -- "weights". These correspond to the
+weights assigned to each control unit,
 as determined by the specified refinement method.
-Each element in the list also has a name, which corresponds to the unit id of the treated unit and time of treatment, 
-concatenated together and separated by a period. \code{matched.set} objects also have a number of 
+Each element in the list also has a name, which corresponds to the unit id of the treated unit and time of treatment,
+concatenated together and separated by a period. \code{matched.set} objects also have a number of
 methods defined: \code{summary}, \code{plot}, and \code{`[`}. \code{matched.set} objects can be modified manually
-as long as these conventions (and conventions about other attributes) are maintained. It is important to note that \code{matched.set} objects 
+as long as these conventions (and conventions about other attributes) are maintained. It is important to note that \code{matched.set} objects
 are distinct from \code{PanelMatch} objects. \code{matched.set} objects are often contained within \code{PanelMatch} objects.}
 }
 \value{

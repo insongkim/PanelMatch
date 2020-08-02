@@ -23,10 +23,12 @@ PanelMatch(
   matching = TRUE,
   listwise.delete = FALSE,
   use.diagonal.variance.matrix = FALSE,
-  edge.matrix = NULL,
+  adjacency.matrix = NULL,
   neighborhood.degree = NULL,
   caliper.formula = NULL,
-  calipers.in.refinement = FALSE
+  calipers.in.refinement = FALSE,
+  network.caliper.info = NULL,
+  network.refinement.info = NULL
 )
 }
 \arguments{
