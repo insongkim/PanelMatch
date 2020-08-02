@@ -37,7 +37,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
     e.sets <- msets[sapply(msets, length) == 0]
     msets <- msets[sapply(msets, length) > 0 ]
 
-
+    browser()
     msets <- clean_leads(msets, ordered.data, max(lead), time.id, unit.id, outcome.var)
 
     if(forbid.treatment.reversal)
@@ -57,7 +57,17 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
     e.sets <- c(e.sets, msets[sapply(msets, length) == 0])
     msets <- msets[sapply(msets, length) > 0 ]
   }
-
+  
+  ####apply calipers here
+  if(!is.null(caliper.formula))
+  {
+    msets <- handle_calipers(plain.ordered.data = ordered.data, caliper.formula, matched.sets = msets, lag.window = 0:lag)
+    if(calipers.in.refinement)
+    {
+      covs.formula <- merge_formula(covs.formula, caliper.formula)
+    }
+  }
+  
   if(refinement.method == "none")
   {
     for(i in 1:length(msets))
@@ -80,15 +90,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
   treated.ts <- as.integer(sub(".*\\.", "", names(msets)))
   treated.ids <- as.integer(sub("\\..*", "", names(msets)))
 
-  ####apply calipers here
-  if(!is.null(caliper.formula))
-  {
-    msets <- handle_calipers(plain.ordered.data = ordered.data, caliper.formula, matched.sets = msets, lag.window = 0:lag)
-    if(calipers.in.refinement)
-    {
-      covs.formula <- merge_formula(covs.formula, caliper.formula)
-    }
-  }
+
 
 
   ordered.data <- parse_and_prep(formula = covs.formula, data = ordered.data)
@@ -664,7 +666,7 @@ clean_leads <- function(matched_sets, ordered.data, max.lead, t.var, id.var, out
   tids <- as.numeric(sub("\\..*", "", names(matched_sets)))
   class(matched_sets) <- "list" #so that Rcpp::List is accurate when we pass it into cpp functions
 
-
+  browser()
   idx <- check_missing_data_treated_units(subset_data = as.matrix(ordered.data[, c(id.var,t.var,outcome.var)]),
                                            sets = matched_sets, tid_pairs = paste0(ordered.data[, id.var], ".", ordered.data[, t.var]), treated_tid_pairs = names(matched_sets),
                                            treated_ids = tids, lead =  max.lead)
@@ -679,7 +681,7 @@ clean_leads <- function(matched_sets, ordered.data, max.lead, t.var, id.var, out
   }
   #colnames must be numeric in some form because we must be able to sort them into an ascending column order
   class(matched_sets) <- "list" # for rcpp reasons again
-
+  
   if(any(idx)) #bit of a trivial condition, if there are any treated units with matched sets left
   {
     create_control_maps <- function(matched_set, time)
@@ -687,8 +689,10 @@ clean_leads <- function(matched_sets, ordered.data, max.lead, t.var, id.var, out
       return(paste0(matched_set, ".", time))
     }
 
-    prepped_sets <- mapply(create_control_maps, matched_set = matched_sets, time = ts)
+    prepped_sets <- mapply(create_control_maps, matched_set = matched_sets, time = ts, SIMPLIFY = FALSE)
 
+    
+    
     tpx <- check_missing_data_control_units(subset_data = as.matrix(ordered.data[, c(id.var,t.var,outcome.var)]),
                                             sets = matched_sets,
                                             prepared_sets = prepped_sets,

@@ -135,8 +135,11 @@ handle_calipers <- function(plain.ordered.data, caliper.formula, matched.sets, l
   {
     col.idx <- i * max(lag.window + 1) + 3
     #browser()
-    .IS_FACTOR_VAR <- caliper.metadata[5, i] == "categorical"
-    matched.sets <- handle.single.caliper.per.lag(t.data, matched.sets, caliper.metadata[2,i], caliper.metadata[3, i], c(1:3,  (col.idx-max(lag.window)):col.idx), .IS_FACTOR_VAR)
+    .IS_FACTOR_VAR <- caliper.metadata[5, i] == "categorical" # or numeric
+    .USE_SD_UNITS <- caliper.metadata[5, i] == "sd" # or raw
+    matched.sets <- handle.single.caliper.per.lag(t.data, matched.sets, caliper.metadata[2,i], 
+                                                  caliper.metadata[3, i], c(1:3,  (col.idx-max(lag.window)):col.idx),
+                                                  .IS_FACTOR_VAR, .USE_SD_UNITS)
   }
   
   return(matched.sets)
@@ -146,7 +149,8 @@ handle_calipers <- function(plain.ordered.data, caliper.formula, matched.sets, l
 
 
 
-handle.single.caliper.per.lag <- function(plain.ordered.data, matched.sets, caliper.method, caliper.distance, data.index, is.factor.var)
+handle.single.caliper.per.lag <- function(plain.ordered.data, matched.sets, caliper.method, caliper.distance, 
+                                          data.index, is.factor.var, use.sd.units)
 {
   
   time.var <- attr(matched.sets, "t.var")
@@ -167,7 +171,7 @@ handle.single.caliper.per.lag <- function(plain.ordered.data, matched.sets, cali
                                                                        ordered.data[, time.var]), matched_sets = matched.sets, lag.in)
   mahalmats <- build_maha_mats(ordered_expanded_data = as.matrix(ordered.data), idx =  idxlist)
   msets <- handle_perlag_caliper_calculations(mahalmats, matched.sets, 
-                                              caliper.value = caliper.distance, caliper.method = caliper.method, is.factor.var)
+                                              caliper.value = caliper.distance, caliper.method = caliper.method, is.factor.var, use.sd.units)
   lag.in <- old.lag
   
   class(msets) <- c("matched.set", "list")
@@ -180,16 +184,16 @@ handle.single.caliper.per.lag <- function(plain.ordered.data, matched.sets, cali
   
 }
 
-handle_perlag_caliper_calculations <- function(nested.list, msets, caliper.method, caliper.value, is.factor.var)
+handle_perlag_caliper_calculations <- function(nested.list, msets, caliper.method, caliper.value, is.factor.var, use.sd.units)
 {
-  
-  do_calcs <- function(time.df, sd.vals__, is_factor_in)
+  browser()
+  do_calcs <- function(time.df, sd.vals__, is_factor_in, use.sd.units.in)
   {
     cov.data <- time.df[, 4:ncol(time.df), drop = FALSE]
     
-    do.maths  <- function(control.unit.data, treated.unit.data, sd.vals_, is_factor)
+    do.maths  <- function(control.unit.data, treated.unit.data, sd.vals_, is_factor, use.sd.units)
     {
-      if(!is_factor)
+      if(!is_factor && use.sd.units)
       {
         return(abs(treated.unit.data - control.unit.data) / sd.vals_) 
       } else
@@ -201,7 +205,8 @@ handle_perlag_caliper_calculations <- function(nested.list, msets, caliper.metho
     results <- apply(cov.data[1:((nrow(cov.data)  - 1)), , drop = FALSE] , MARGIN = 1, FUN  =  do.maths, 
           treated.unit.data = cov.data[nrow(cov.data), ], 
           sd.vals_ = sd.vals__, 
-          is_factor = is_factor_in)
+          is_factor = is_factor_in,
+          use.sd.units.in = use.sd.units)
     
     return(results)
     
