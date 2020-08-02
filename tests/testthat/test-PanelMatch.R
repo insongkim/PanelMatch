@@ -261,19 +261,153 @@ test_that("summary.PanelEstimate", {
   
 })
 
+test_that("Basic Network test", {
+  #each odd unit is neighboring the even unit after it, each even unit is treated
+  ejmat = data.frame(v1 = seq(from = 1, to = 10, by = 2), v2 = seq(from = 2, to = 10, by = 2), e = 1)
+  
+  input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+  input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+  input.data[input.data$id %in% c(2,4,6,8, 10), 'treatment'] <- 1
+  
+  d2 <- PanelMatch:::calculate_neighbor_treatment(input.data, ejmat, 1, 'id', 'time', 'treatment')
+  
+  ## expect proportions to all be 100% and 1 treated neighbor
+  expect_true(all(d2[d2$id %in% c(1,3,5,7,9), 'neighborhood_t_prop.1'] == 1))
+  
+  expect_true(all(d2[d2$id %in% c(1,3,5,7,9), 'neighborhood_t_count.1'] == 1))
+  
+})
+
+
+test_that("Variation in treated neighbors", {
+  #each odd unit is neighboring the even unit after it, not everything is treated
+  ejmat = data.frame(v1 = seq(from = 1, to = 10, by = 2), v2 = seq(from = 2, to = 10, by = 2), e = 1)
+  
+  input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+  input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+  input.data[input.data$id %in% c(2,4,6), 'treatment'] <- 1
+  
+  d2 <- PanelMatch:::calculate_neighbor_treatment(input.data, ejmat, 1, 'id', 'time', 'treatment')
+  
+  ## expect some to be 100 percent and 1, others to have no trated neighbors, 0%
+  expect_true(all(d2[d2$id %in% c(1,3,5), 'neighborhood_t_prop.1'] == 1))
+  
+  expect_true(all(d2[d2$id %in% c(1,3,5), 'neighborhood_t_count.1'] == 1))
+  
+  expect_true(all(d2[d2$id %in% c(7,9), 'neighborhood_t_prop.1'] == 0))
+  
+  expect_true(all(d2[d2$id %in% c(7,9), 'neighborhood_t_count.1'] == 0))
+  
+})
+
+test_that("Multiple Neighbors, mix of treated", {
+  ##mix of treated and untreated neighbors
+  ejmat = data.frame(v1 = seq(from = 1, to = 10, by = 2), v2 = seq(from = 2, to = 10, by = 2), e = 1)
+  ejmat = rbind(ejmat, data.frame(v1 = c(1,5), v2 = 3, e =1))
+  ### we give 1 and 5 a second neighbor: 3, which is untreated, so they have a mix of treated/untreated neighbors
+  
+  input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+  input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+  input.data[input.data$id %in% c(2,4,6,8, 10), 'treatment'] <- 1
+  
+  d2 <- PanelMatch:::calculate_neighbor_treatment(input.data, ejmat, 1, 'id', 'time', 'treatment')
+  
+  
+  expect_true(all(d2[d2$id %in% c(1,5), 'neighborhood_t_prop.1'] == .5))
+  
+  expect_true(all(d2[d2$id %in% c(1,5), 'neighborhood_t_count.1'] == 1))
+  
+  expect_true(all(d2[d2$id %in% c(7,9), 'neighborhood_t_prop.1'] == 1))
+  
+  expect_true(all(d2[d2$id %in% c(7,9), 'neighborhood_t_count.1'] == 1))
+  
+  expect_true(all(d2[d2$id %in% c(3), 'neighborhood_t_prop.1'] == (1/3)))
+  
+  expect_true(all(d2[d2$id %in% c(3), 'neighborhood_t_count.1'] == 1))
+  
+})
 
 
 
+test_that("time variation", {
+  ##adding some time variation across units for treated neighbor count and status
+  
+  ejmat = data.frame(v1 = seq(from = 1, to = 10, by = 2), v2 = seq(from = 2, to = 10, by = 2), e = 1)
+  
+  input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+  input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+  input.data[input.data$id %in% c(2,4,6,8,10) & input.data$time %in% c(2,4,6,8,10), 'treatment'] <- 1
+  
+  d2 <- PanelMatch:::calculate_neighbor_treatment(input.data, ejmat, 1, 'id', 'time', 'treatment')
+  
+  
+  
+  expect_true(all(d2[d2$id %in% c(1,3,5,7,9) & input.data$time %in% c(2,4,6,8,10), 'neighborhood_t_prop.1'] == 1))
+  
+  expect_true(all(d2[d2$id %in% c(1,3,5,7,9) & input.data$time %in% c(2,4,6,8,10), 'neighborhood_t_count.1'] == 1))
+  
+  
+  expect_true(all(d2[d2$id %in% c(1,3,5,7,9) & input.data$time %in% c(1,3,5,7,9), 'neighborhood_t_prop.1'] == 0))
+  
+  expect_true(all(d2[d2$id %in% c(1,3,5,7,9) & input.data$time %in% c(1,3,5,7,9), 'neighborhood_t_count.1'] == 0))
+  
+})
+
+test_that("more neighbor variation", {
+  ejmat = data.frame(v1 = seq(from = 1, to = 10, by = 2), v2 = seq(from = 2, to = 10, by = 2), e = 1)
+  ejmat = rbind(ejmat, data.frame(v1 = c(1,5), v2 = 4, e =1))
+  
+  
+  input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+  input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+  input.data[input.data$id %in% c(2,4,6,8, 10), 'treatment'] <- 1
+  
+  d2 <- PanelMatch:::calculate_neighbor_treatment(input.data, ejmat, 1, 'id', 'time', 'treatment')
+  
+  
+  expect_true(all(d2[d2$id %in% c(1,5), 'neighborhood_t_prop.1'] == 1))
+  
+  expect_true(all(d2[d2$id %in% c(1,5), 'neighborhood_t_count.1'] == 2))
+  
+  expect_true(all(d2[d2$id %in% c(3, 7,9), 'neighborhood_t_prop.1'] == 1))
+  
+  expect_true(all(d2[d2$id %in% c(3, 7,9), 'neighborhood_t_count.1'] == 1))
+  
+  expect_true(all(d2[d2$id %in% c(4), 'neighborhood_t_prop.1'] == 0))
+  
+  expect_true(all(d2[d2$id %in% c(4), 'neighborhood_t_count.1'] == 0))
+})
 
 
-
-
-
-
-
-
-
-
+test_that("complex variation", {
+  ejmat = data.frame(v1 = seq(from = 1, to = 10, by = 2), v2 = seq(from = 2, to = 10, by = 2), e = 1)
+  ejmat = rbind(ejmat, data.frame(v1 = c(1), v2 = 10, e =1))
+  
+  
+  input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+  input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+  input.data[input.data$id %in% c(2,4,6,8,10) & input.data$time %in% c(2,4,6,8,10), 'treatment'] <- 1
+  input.data[input.data$id %in% c(2) & input.data$time %in% c(1,3), 'treatment'] <- 1
+  
+  
+  d2 <- PanelMatch:::calculate_neighbor_treatment(input.data, ejmat, 1, 'id', 'time', 'treatment')
+  
+  
+  expect_true(all(d2[d2$id %in% c(1) & d2$time %in% c(1,3) , 'neighborhood_t_prop.1'] == .5))
+  expect_true(all(d2[d2$id %in% c(1) & d2$time %in% c(1,3) , 'neighborhood_t_count.1'] == 1))
+  expect_true(all(d2[d2$id %in% c(1) & d2$time %in% c(2) , 'neighborhood_t_prop.1'] == 1))
+  expect_true(all(d2[d2$id %in% c(1) & d2$time %in% c(2) , 'neighborhood_t_count.1'] == 2))
+  
+  expect_true(all(d2[d2$id %in% c(1) & d2$time %in% c(4,6,8,10) , 'neighborhood_t_prop.1'] == 1))
+  
+  expect_true(all(d2[d2$id %in% c(3,5,7,9) & input.data$time %in% c(2,4,6,8,10), 'neighborhood_t_prop.1'] == 1))
+  
+  expect_true(all(d2[d2$id %in% c(3,5,7,9) & input.data$time %in% c(2,4,6,8,10), 'neighborhood_t_count.1'] == 1))
+  
+  expect_true(all(d2[d2$id %in% c(3,5,7,9) & input.data$time %in% c(1,3,5,7,9), 'neighborhood_t_prop.1'] == 0))
+  
+  expect_true(all(d2[d2$id %in% c(3,5,7,9) & input.data$time %in% c(1,3,5,7,9), 'neighborhood_t_count.1'] == 0))
+})
 
 
 
