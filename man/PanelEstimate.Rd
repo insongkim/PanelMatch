@@ -27,7 +27,10 @@ calculation. The default is \code{FALSE}.}
 \item{confidence.level}{A numerical value specifying the confidence level and range of interval
 estimates for statistical inference. The default is .95.}
 
-\item{moderating.variable}{The name of a moderating variable, provided as a character string.}
+\item{moderating.variable}{The name of a moderating variable, provided as a character string. If a moderating variable is provided
+the returned object will be a list of \code{PanelEstimate} objects. The names of the list will reflect the different values of the 
+moderating variable. More specifically, the moderating variable values will be converted to syntactically proper names using 
+\code{make.names}.}
 
 \item{data}{The same time series cross sectional data set provided to the PanelMatch function used to produce 
 the matched sets}
@@ -66,7 +69,7 @@ PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                          covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
                          size.match = 5, qoi = "att",
                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = TRUE)
-PE.results <- PanelEstimate(sets = PM.results, data = dem)
+PE.results <- PanelEstimate(sets = PM.results, data = dem, number.iterations = 500)
 
 
 
@@ -76,5 +79,5 @@ Imai, Kosuke, In Song Kim, and Erik Wang (2018)
 }
 \author{
 In Song Kim <insong@mit.edu>, Erik Wang
-<haixiao@Princeton.edu>, Adam Rauh <adamrauh@mit.edu>, and Kosuke Imai <imai@harvard.edu>
+<haixiao@Princeton.edu>, Adam Rauh <amrauh@umich.edu>, and Kosuke Imai <imai@harvard.edu>
 }

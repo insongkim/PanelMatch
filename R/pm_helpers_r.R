@@ -5,7 +5,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
                                matching = TRUE, exact.matching.variables = NULL, listwise.deletion,
                                use.diag.covmat = FALSE, caliper.formula = NULL, calipers.in.refinement = FALSE)
 {
-  
+
   if(!is.null(mset.object))
   {
     lag = attr(mset.object, "lag")
@@ -26,6 +26,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
                                     unit.var = unit.id, hasbeensorted = TRUE)
     idx <- !((temp.treateds[, time.id] - lag) < min(ordered.data[, time.id]))
     temp.treateds <- temp.treateds[idx, ]
+
     if(nrow(temp.treateds) == 0)
     {
       warn.str <- paste0("no viable treated units for ", qoi, " specification")
@@ -35,6 +36,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
                              lag, time.id, unit.id, treatment, hasbeensorted = TRUE, match.on.missingness = match.missing, matching)
     e.sets <- msets[sapply(msets, length) == 0]
     msets <- msets[sapply(msets, length) > 0 ]
+
 
     msets <- clean_leads(msets, ordered.data, max(lead), time.id, unit.id, outcome.var)
 
@@ -75,8 +77,8 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
     return(msets)
   }
 
-  treated.ts <- as.numeric(unlist(strsplit(names(msets), split = "[.]"))[c(F,T)])
-  treated.ids <- as.numeric(unlist(strsplit(names(msets), split = "[.]"))[c(T,F)])
+  treated.ts <- as.integer(sub(".*\\.", "", names(msets)))
+  treated.ids <- as.integer(sub("\\..*", "", names(msets)))
 
   ####apply calipers here
   if(!is.null(caliper.formula))
@@ -87,8 +89,8 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
       covs.formula <- merge_formula(covs.formula, caliper.formula)
     }
   }
-  
-  
+
+
   ordered.data <- parse_and_prep(formula = covs.formula, data = ordered.data)
   
 
@@ -114,14 +116,18 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
 
   if(refinement.method == "mahalanobis")
   {
-    #browser()
+
     old.lag <- lag
-    lag <- 0 
+    lag <- 0
     tlist <- expand.treated.ts(lag, treated.ts = treated.ts)
+
     idxlist <- get_yearly_dmats(ordered.data, treated.ids, tlist, paste0(ordered.data[,unit.id], ".",
                                                                          ordered.data[, time.id]), matched_sets = msets, lag)
+
     mahalmats <- build_maha_mats(ordered_expanded_data = ordered.data, idx =  idxlist)
+
     msets <- handle_mahalanobis_calculations(mahalmats, msets, size.match, verbose, use.diagonal.covmat = use.diag.covmat)
+
     lag <- old.lag
   }
   if(refinement.method == "ps.msm.weight" | refinement.method == "CBPS.msm.weight")
@@ -277,7 +283,7 @@ parse_and_prep <- function(formula, data)
 
   lag <- function(y, lwindow)
   {
-    
+
     sapply(lwindow, internal.lag, x = y)
   }
 
@@ -294,23 +300,23 @@ parse_and_prep <- function(formula, data)
   #   attributes(out) <- attributes(x)
   #   out
   # }
-  # 
+  #
   # caliper <- function(y, method, caliper.distance, data_type, lwindow = lag.window)
   # {
-  #   
+  #
   #   if(is.null(method) || is.null(caliper.distance))
   #   {
   #     stop("arguments missing from caliper function")
   #   }
-  #   
+  #
   #   sapply(lwindow, internal.caliper, x = y, simplify = FALSE)
   # }
-  
+
   apply_formula <- function(x, form)
   {
     attr(form, ".Environment") <- environment()
     tdf <- model.frame(form, x, na.action = NULL)
-    
+
     cbind(x[, c(1, 2, 3)], model.matrix(form, tdf)[, -1])
   }
 
@@ -481,8 +487,8 @@ handle_mahalanobis_calculations <- function(mahal.nested.list, msets, max.size, 
     #  newdists <- rep(w, length(newdists))
     #}
     #if(length(n.dists) == 0 ) browser()#stop("a matched set contain only identical units. Please examine the data and remove this set.")
-    #else 
-  
+    #else
+
     if(length(n.dists) < max.set.size) #case where total number of units in matched set < max.set size
     {
       w <- 1 / length(n.dists)
@@ -505,7 +511,7 @@ handle_mahalanobis_calculations <- function(mahal.nested.list, msets, max.size, 
       # {
       #   newdists <- ifelse(dists < scoretobeat & dists > 0, 1 / max.set.size, 0)
       # }
-      
+
       if(sum(dists < scoretobeat) < max.set.size) #change this if we want to be more strict about max.set.size enforcements
       {
         new.denom <- sum(dists <= scoretobeat)
@@ -521,7 +527,7 @@ handle_mahalanobis_calculations <- function(mahal.nested.list, msets, max.size, 
     return(newdists)
 
   }
-  
+
   scores <- mapply(FUN = handle_set, sub.list = mahal.nested.list, idx = 1:length(msets), MoreArgs = list(max.set.size = max.size), SIMPLIFY = FALSE)
   for(i in 1:length(msets))
   {
@@ -568,7 +574,7 @@ handle_ps_weighted <- function(just.ps.sets, msets, refinement.method)
     }
     else
     {
-      wts <- ( vec.ratio ) / sum( vec.ratio )  
+      wts <- ( vec.ratio ) / sum( vec.ratio )
     }
     return(as.vector(wts))
   }
@@ -652,14 +658,17 @@ clean_leads <- function(matched_sets, ordered.data, max.lead, t.var, id.var, out
 {
   #CHECK TO MAKE SURE COLUMNS ARE IN ORDER
 
-  ordered.data <- ordered.data[order(ordered.data[,id.var], ordered.data[,t.var]), ]
-  compmat <- data.table::dcast(data.table::as.data.table(ordered.data), formula = paste0(id.var, "~", t.var), value.var = outcome.var)
-  ts <- as.numeric(unlist(strsplit(names(matched_sets), split = "[.]"))[c(F,T)])
-  tids <- as.numeric(unlist(strsplit(names(matched_sets), split = "[.]"))[c(T,F)])
-  class(matched_sets) <- "list" #so that Rcpp::List is accurate when we pass it into cpp functions
-  compmat <- data.matrix(compmat)
+  old.attributes <- attributes(matched_sets)[names(attributes(matched_sets)) != "names"]
 
-  idx <- check_treated_units(compmat = compmat, compmat_row_units = as.numeric(compmat[, 1]), compmat_cols = as.numeric(colnames(compmat)[2:ncol(compmat)]), lead = max.lead, treated_ids = tids, treated_ts = ts)
+  ts <- as.numeric(sub(".*\\.", "", names(matched_sets)))
+  tids <- as.numeric(sub("\\..*", "", names(matched_sets)))
+  class(matched_sets) <- "list" #so that Rcpp::List is accurate when we pass it into cpp functions
+
+
+  idx <- check_missing_data_treated_units(subset_data = as.matrix(ordered.data[, c(id.var,t.var,outcome.var)]),
+                                           sets = matched_sets, tid_pairs = paste0(ordered.data[, id.var], ".", ordered.data[, t.var]), treated_tid_pairs = names(matched_sets),
+                                           treated_ids = tids, lead =  max.lead)
+
   if(all(!idx)) stop("estimation not possible: All treated units are missing data necessary for the calculations to proceed")
   if(any(!idx))
   {
@@ -670,40 +679,46 @@ clean_leads <- function(matched_sets, ordered.data, max.lead, t.var, id.var, out
   }
   #colnames must be numeric in some form because we must be able to sort them into an ascending column order
   class(matched_sets) <- "list" # for rcpp reasons again
-  ll <- re_norm_index(compmat = compmat, compmat_row_units = as.numeric(compmat[, 1]), compmat_cols = as.numeric(colnames(compmat)[2:ncol(compmat)]), lead = max.lead, sets = matched_sets, control_start_years = ts)
-  idx <- needs_renormalization(ll)
-  class(matched_sets) <- c("matched.set", "list")
-  if(any(idx))
+
+  if(any(idx)) #bit of a trivial condition, if there are any treated units with matched sets left
   {
-    sub.index <- ll[idx]
-    sub.set <- matched_sets[idx]
+    create_control_maps <- function(matched_set, time)
+    {
+      return(paste0(matched_set, ".", time))
+    }
+
+    prepped_sets <- mapply(create_control_maps, matched_set = matched_sets, time = ts)
+
+    tpx <- check_missing_data_control_units(subset_data = as.matrix(ordered.data[, c(id.var,t.var,outcome.var)]),
+                                            sets = matched_sets,
+                                            prepared_sets = prepped_sets,
+                                            tid_pairs = paste0(ordered.data[, id.var], ".", ordered.data[, t.var]),
+                                            lead =  max.lead)
+
     create_new_sets <- function(set, index)
     {
       return(set[index])
     }
-    sub.set.new <- mapply(FUN = create_new_sets, sub.set, sub.index, SIMPLIFY = FALSE)
-    attributes(sub.set.new) <- attributes(sub.set)
-    all.gone.counter <- sapply(sub.set.new, function(x){sum(x)})
-    if(sum(all.gone.counter == 0) > 0) #case in which all the controls in a particular group were dropped
-    {
-      #warning("all controls in a particular matched set were removed due to missing data")
+    sub_sets <- mapply(FUN = create_new_sets, matched_sets, tpx, SIMPLIFY = FALSE)
 
-      idx[all.gone.counter == 0] <- FALSE
-      sub.index <- ll[idx]
-      sub.set <- matched_sets[idx]
-      create_new_sets <- function(set, index)
-      {
-        return(set[index])
-      }
-      sub.set.new <- mapply(FUN = create_new_sets, sub.set, sub.index, SIMPLIFY = FALSE)
-      attributes(sub.set.new) <- attributes(sub.set)
+    if(all(sapply(sub_sets, length) == 0)) stop('estimation not possible: none of the matched sets have viable control units due to a lack of necessary data')
+
+    matched_sets <- sub_sets[sapply(sub_sets, length) > 0]
+
+    for(idx in names(old.attributes))
+    {
+
+      attr(matched_sets, idx) <- old.attributes[[idx]]
     }
-    if(all(sapply(sub.set.new, length) == 0)) stop('estimation not possible: none of the matched sets have viable control units due to a lack of necessary data')
-    #pm2 <- perform_refinement(ordered.data = ordered.data, mset.object = sub.set.new)
-    #matched_sets[idx] <- pm2
-    matched_sets[idx] <- sub.set.new
-    matched_sets <- matched_sets[sapply(matched_sets, length) > 0]
+
   }
+  class(matched_sets) <- c("matched.set")
+
+  return(matched_sets)
+
+
+
+
   return(matched_sets)
 
 }
@@ -712,11 +727,10 @@ clean_leads <- function(matched_sets, ordered.data, max.lead, t.var, id.var, out
 enforce_lead_restrictions <- function(matched_sets, ordered.data, max.lead, t.var, id.var, treatment.var)
 {
   #CHECK TO MAKE SURE COLUMNS ARE IN ORDER
-
   ordered.data <- ordered.data[order(ordered.data[,id.var], ordered.data[,t.var]), ]
   compmat <- data.table::dcast(data.table::as.data.table(ordered.data), formula = paste0(id.var, "~", t.var), value.var = treatment.var)
-  ts <- as.numeric(unlist(strsplit(names(matched_sets), split = "[.]"))[c(F,T)])
-  tids <- as.numeric(unlist(strsplit(names(matched_sets), split = "[.]"))[c(T,F)])
+  ts <- as.numeric(sub(".*\\.", "", names(matched_sets)))
+  tids <- as.numeric(sub("\\..*", "", names(matched_sets)))
   class(matched_sets) <- "list" #so that Rcpp::List is accurate when we pass it into cpp functions
   compmat <- data.matrix(compmat)
 
@@ -804,28 +818,17 @@ merge_formula <- function(form1, form2)
   #rhs1 <- strsplit(deparse(form1[[2]]), " \\+ ")[[1]]
   rhs1 <- trimws(unlist(strsplit(as.character(form1)[2], "\\+")))
   rhs2 <- strsplit(deparse(form2[[2]]), " \\+ ")[[1]]
-  
+
   # create the merged rhs and lhs in character string form
   rhs <- c(rhs1, rhs2)
-  
-  # put the two sides together with the amazing 
+
+  # put the two sides together with the amazing
   # reformulate function
   out <- reformulate(rhs)
-  
+
   # set the environment of the formula (i.e. where should
   # R look for variables when data aren't specified?)
   environment(out) <- environment(form1)
-  
+
   return(out)
 }
-
-
-
-
-
-
-
-
-
-
-

@@ -69,7 +69,7 @@
 #' \item{outcome.var}{character string matching the outcome variable provided in the original function call.}
 #' 
 #' @references Imai, Kosuke, In Song Kim, and Erik Wang (2018)
-#' @author Adam Rauh <adamrauh@mit.edu>, In Song Kim <insong@mit.edu>, Erik Wang
+#' @author Adam Rauh <amrauh@umich.edu>, In Song Kim <insong@mit.edu>, Erik Wang
 #' <haixiao@Princeton.edu>, and Kosuke Imai <imai@harvard.edu>
 #'
 #' @examples

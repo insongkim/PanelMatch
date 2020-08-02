@@ -2,7 +2,7 @@ do_exact_matching <- function(sets, balanced.panel.data, exact.match.vars)
 {
   L <- attr(sets, "lag")
 
-  ts <- as.numeric(unlist(strsplit(names(sets), split = "[.]"))[c(F,T)])
+  ts <- as.numeric(sub(".*\\.", "", names(sets)))
   make.years <- function(t, repnum)
   {
     q <- rep(c((t - 0):t), repnum)

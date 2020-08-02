@@ -32,7 +32,7 @@
 #' @return \code{DisplayTreatment} returns a treatment variation plot (using ggplot2),
 #' which visualizes the variation of treatment across unit and time.
 #' @author In Song Kim <insong@mit.edu>, Erik Wang
-#' <haixiao@Princeton.edu>, Adam Rauh <adamrauh@mit.edu>, and Kosuke Imai <imai@harvard.edu>
+#' <haixiao@Princeton.edu>, Adam Rauh <amrauh@umich.edu>, and Kosuke Imai <imai@harvard.edu>
 #'
 #' @examples 
 #' 
@@ -75,7 +75,7 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
   ###############
   if(class(data) != "data.frame") stop("please convert data to data.frame class")
   if(any(is.na(data[, unit.id]))) stop("Cannot have NA unit ids")
-  if(!class(data[, unit.id]) %in% c("integer", "numeric")) stop("please convert unit id column to integer or numeric")
+  # if(!class(data[, unit.id]) %in% c("integer", "numeric")) stop("please convert unit id column to integer or numeric")
   if(class(data[, time.id]) != "integer") stop("please convert time id to consecutive integers")
   if(show.set.only & !is.null(matched.set) & length(matched.set) == 1 & class(matched.set) == "matched.set")
   {

@@ -101,5 +101,5 @@ bty = "n", ncol = 1, cex = 1, bg = "white")
 }
 \author{
 In Song Kim <insong@mit.edu>, Erik Wang
-<haixiao@Princeton.edu>, Adam Rauh <adamrauh@mit.edu>, and Kosuke Imai <imai@harvard.edu>
+<haixiao@Princeton.edu>, Adam Rauh <amrauh@umich.edu>, and Kosuke Imai <imai@harvard.edu>
 }

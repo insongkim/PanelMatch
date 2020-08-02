@@ -13,14 +13,6 @@ prep_lead_years <- function(ts, lead_window) {
     .Call('_PanelMatch_prep_lead_years', PACKAGE = 'PanelMatch', ts, lead_window)
 }
 
-re_norm_index <- function(compmat, compmat_row_units, compmat_cols, lead, sets, control_start_years) {
-    .Call('_PanelMatch_re_norm_index', PACKAGE = 'PanelMatch', compmat, compmat_row_units, compmat_cols, lead, sets, control_start_years)
-}
-
-check_treated_units <- function(compmat, compmat_row_units, compmat_cols, lead, treated_ids, treated_ts) {
-    .Call('_PanelMatch_check_treated_units', PACKAGE = 'PanelMatch', compmat, compmat_row_units, compmat_cols, lead, treated_ids, treated_ts)
-}
-
 needs_renormalization <- function(set_index_list) {
     .Call('_PanelMatch_needs_renormalization', PACKAGE = 'PanelMatch', set_index_list)
 }
@@ -71,5 +63,13 @@ multiply_weights_msm <- function(weights, number_of_sets) {
 
 do_exact_matching_refinement <- function(balanced_data, lag, row_key, control_data, treatment_data, exact_match_variable_column_index) {
     .Call('_PanelMatch_do_exact_matching_refinement', PACKAGE = 'PanelMatch', balanced_data, lag, row_key, control_data, treatment_data, exact_match_variable_column_index)
+}
+
+check_missing_data_treated_units <- function(subset_data, sets, tid_pairs, treated_tid_pairs, treated_ids, lead) {
+    .Call('_PanelMatch_check_missing_data_treated_units', PACKAGE = 'PanelMatch', subset_data, sets, tid_pairs, treated_tid_pairs, treated_ids, lead)
+}
+
+check_missing_data_control_units <- function(subset_data, sets, prepared_sets, tid_pairs, lead) {
+    .Call('_PanelMatch_check_missing_data_control_units', PACKAGE = 'PanelMatch', subset_data, sets, prepared_sets, tid_pairs, lead)
 }
 
