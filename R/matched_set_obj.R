@@ -287,7 +287,12 @@ build_balance_mats <- function(idx, ordered_expanded_data, msets)
 #' @export
 get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.weights = FALSE,
                                   verbose = TRUE, plot = FALSE,
-                                  reference.line = TRUE, legend = TRUE, ylab = "SD",...)
+                                  reference.line = TRUE, legend = TRUE, ylab = "SD",
+                                  calculate.network.proportion.balance = FALSE,
+                                  calculate.network.count.blance = FALSE,
+                                  adjacency.matrix = NULL,
+                                  neighborhood.degree,
+                                  ...)
 {
   if(is.null(covariates))
   {
@@ -319,6 +324,30 @@ get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.wei
   }
 
   ordered.data <- data[order(data[,unit.id], data[,time.id]), ]
+  if(calculate.network.proportion.balance || calculate.network.count.blance)
+  {
+    if(is.null(adjacency.matrix))
+    {
+      stop("Please provide adjacency matrix")
+    }
+    ordered.data <- calculate_neighbor_treatment(data = ordered.data, 
+                                                 edge.matrix = adjacency.matrix, 
+                                                 n.degree = neighborhood.degree, 
+                                                 unit.id = unit.id, time.id = time.id, 
+                                                 treatment.variable = treatment)
+    
+    if(!is.null(calculate.network.proportion.balance))
+    {
+      covariates <- c(covariates,
+                      make.names(paste0('neighborhood_t_prop', '.', 1:neighborhood.degree)))
+    } 
+    if(!is.null(calculate.network.count.blance))
+    {
+      covariates <- c(covariates,
+                      make.names(paste0('neighborhood_t_count', '.', 1:neighborhood.degree)))
+    }
+  }
+  
   ordered.data[, paste0(unit.id, ".int")] <- as.integer(as.factor(ordered.data[, unit.id]))
 
   if(class(ordered.data[, unit.id]) == "character") {

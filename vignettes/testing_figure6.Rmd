@@ -1,0 +1,293 @@
+---
+title: "fig_6_new_features"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+We first prepare the data and build the adjacency matrix. We are using the Acemoglu data set and the configurations specified in Figure 6. 
+
+In this case, "adjacency" is marked by whether or not a country shares a border with another country. 
+```{r}
+library(dplyr)
+library(countrycode)
+# read in the adjacancy matrix, prepare for merging with the acemoglu data
+country.adj.mat <- read.csv("/Users/adamrauh/Downloads/country_adjacency.csv")
+country.adj.mat$cty1.wbcode <- countrycode(country.adj.mat$imf1, 
+                                           origin = "imf", destination ="wb")
+country.adj.mat$cty2.wbcode <- countrycode(country.adj.mat$imf2, 
+                                           origin = "imf", destination ="wb")
+load("/Users/adamrauh/Downloads/Acemoglu.rda")
+# load acemoglu data
+
+
+dem2 <- merge(dem, unique(Acemoglu[, c("wbcode", "NAME", "wbcode2")]), by = "wbcode2", all.x = TRUE) 
+
+merge(country.adj.mat, dem2, by.x = "cty1.wbcode", by.y = "wbcode", all.x = TRUE) %>% 
+  mutate(., wbcode2_cty1 = wbcode2) %>% 
+  select(., cty1name, cty2name, imf1, imf2, border, comlang, comcol, ldist, wbcode2_cty1, cty1.wbcode, cty2.wbcode) %>% unique() %>%
+  merge(x = ., y = dem2, by.x = "cty2.wbcode", by.y = "wbcode", all.x = TRUE) %>% 
+  mutate(., wbcode2_cty2 = wbcode2) %>% 
+  select(., cty1name, cty2name, imf1, imf2, border, comlang, comcol, ldist, wbcode2_cty1, wbcode2_cty2) %>% unique() -> adjmat2
+
+#do some manual clean up
+adjmat2[adjmat2[, "cty1name"] == "UNITED ARAB EMIRATES", 'wbcode2_cty1'] <- 185
+adjmat2[adjmat2[, "cty2name"] == "UNITED ARAB EMIRATES", 'wbcode2_cty2'] <- 185
+
+adjmat2[adjmat2[, "cty1name"] == "SINGAPORE", 'wbcode2_cty1'] <- 161
+adjmat2[adjmat2[, "cty2name"] == "SINGAPORE", 'wbcode2_cty2'] <- 161
+
+adjmat2 <- adjmat2[complete.cases(adjmat2), ] %>% select(wbcode2_cty1, wbcode2_cty2, border)
+
+covs.formulae <- as.list(lapply(c(
+  rep("~ I(lag(Populationages014oftotal, 1)) + 
+      I(lag(Populationages1564oftota, 1)) + I(lag(unrest, 1)) + 
+      I(lag(tradewb, 1)) + I(lag(nfagdp, 1)) + I(lag(logpop, 1))", 35), 
+  rep("~ I(lag(Populationages014oftotal, 1:4)) + 
+      I(lag(Populationages1564oftota, 1:4)) + I(lag(unrest, 1:4)) + 
+      I(lag(tradewb, 1:4)) + I(lag(nfagdp, 1:4)) + I(lag(logpop, 1:4))", 35)),
+  as.formula))
+
+L1.form <- ~ I(lag(Populationages014oftotal, 1)) + 
+      I(lag(Populationages1564oftota, 1)) + I(lag(unrest, 1)) + 
+      I(lag(tradewb, 1)) + I(lag(nfagdp, 1)) + I(lag(logpop, 1))
+
+l4.form <- ~ I(lag(Populationages014oftotal, 1:4)) + 
+      I(lag(Populationages1564oftota, 1:4)) + I(lag(unrest, 1:4)) + 
+      I(lag(tradewb, 1:4)) + I(lag(nfagdp, 1:4)) + I(lag(logpop, 1:4))
+
+Acemoglu$year <- as.integer(Acemoglu$year)
+Acemoglu$wbcode2 <- as.integer(Acemoglu$wbcode2)
+Acemoglu$logpop <- 100 * log(Acemoglu$PopulationtotalSPPOPTOTL)
+```
+
+First, we do the analysis without incorporating any network information.
+```{r}
+pm.sets.nonetwork <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
+                      treatment = "dem", refinement.method = "mahalanobis", 
+                      data = Acemoglu, match.missing = TRUE, 
+                      covs.formula = l4.form, # lags
+                      size.match = 5, qoi = "att", outcome.var = "y",
+                      lead = 0:4, forbid.treatment.reversal = FALSE, 
+                      use.diagonal.variance.matrix = TRUE)
+```
+Create lists with information about how to use the network information in the matching and refinement process.
+
+
+```{r}
+network.refinement.info = list(use.proportion.data = TRUE,
+                                 proportion.lags = 0:4,
+                                 use.count.data = TRUE,
+                                 count.lags = 0:4)
+#relatively lax caliper requirements
+network.caliper.info = list(use.proportion.data = TRUE,
+                              proportion.caliper.method = "average",
+                              proportion.caliper.threshold = .5,
+                              prop.unit.type = "raw",
+                              use.count.data = FALSE,
+                              count.caliper.method = "max",
+                              count.caliper.threshold = 8,
+                              count.unit.type = "raw")
+
+pm.sets.network <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
+           treatment = "dem", refinement.method = "mahalanobis", 
+           data = Acemoglu, match.missing = TRUE, 
+           covs.formula = l4.form, 
+           size.match = 5, qoi = "att", outcome.var = "y",
+           lead = 0:4, forbid.treatment.reversal = FALSE, 
+           use.diagonal.variance.matrix = TRUE, 
+           adjacency.matrix = adjmat2,
+           neighborhood.degree = 1,
+           network.refinement.info = network.refinement.info,
+           network.caliper.info = network.caliper.info)
+```
+
+
+```{r}
+plot(pm.sets.network$att)
+plot(pm.sets.nonetwork$att)
+
+get_covariate_balance(pm.sets.network$att, Acemoglu, covariates = c("Populationages014oftotal",
+                                                                    "Populationages1564oftota",
+                                                                    "unrest", "tradewb",
+                                                                    "nfagdp", "logpop"), 
+                      plot = TRUE, calculate.network.count.blance = TRUE,
+                      calculate.network.proportion.balance = TRUE,
+                      adjacency.matrix = adjmat2, neighborhood.degree = 1, legend = FALSE,
+                      ylim = c(-.4, .6))
+
+get_covariate_balance(pm.sets.nonetwork$att, Acemoglu, covariates = c("Populationages014oftotal",
+                                                                    "Populationages1564oftota",
+                                                                    "unrest", "tradewb",
+                                                                    "nfagdp", "logpop"),
+                      plot = TRUE, legend = FALSE, ylim = c(-.4, .6))
+
+```
+
+
+```{r}
+pe.sets1 = PanelEstimate(sets = pm.sets.network, data = dem)
+
+pe.sets2 = PanelEstimate(sets = pm.sets.nonetwork, data= dem)
+
+
+
+plot(pe.sets1, ylim = c(-6,6), main = "Estimated Effects of Treatment Over Time (mild caliper)")
+plot(pe.sets2, ylim = c(-6,6), main = "Estimated Effects of Treatment Over Time (No network data in refinement)")
+
+```
+
+
+
+```{r}
+network.refinement.info = list(use.proportion.data = TRUE,
+                                 proportion.lags = 0:4,
+                                 use.count.data = TRUE,
+                                 count.lags = 0:4)
+#relatively lax caliper requirements
+network.caliper.info = list(use.proportion.data = TRUE,
+                              proportion.caliper.method = "average",
+                              proportion.caliper.threshold = .3,
+                              prop.unit.type = "raw",
+                              use.count.data = FALSE,
+                              count.caliper.method = "max",
+                              count.caliper.threshold = 5,
+                              count.unit.type = "raw")
+
+pm.sets.network <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
+           treatment = "dem", refinement.method = "mahalanobis", 
+           data = Acemoglu, match.missing = TRUE, 
+           covs.formula = l4.form, 
+           size.match = 5, qoi = "att", outcome.var = "y",
+           lead = 0:4, forbid.treatment.reversal = FALSE, 
+           use.diagonal.variance.matrix = TRUE, 
+           adjacency.matrix = adjmat2,
+           neighborhood.degree = 1,
+           network.refinement.info = network.refinement.info,
+           network.caliper.info = network.caliper.info)
+
+plot(pm.sets.network$att)
+
+get_covariate_balance(pm.sets.network$att, Acemoglu, covariates = c("Populationages014oftotal",
+                                                                    "Populationages1564oftota",
+                                                                    "unrest", "tradewb",
+                                                                    "nfagdp", "logpop"), 
+                      plot = TRUE, calculate.network.count.blance = TRUE,
+                      calculate.network.proportion.balance = TRUE,
+                      adjacency.matrix = adjmat2, neighborhood.degree = 1, legend = FALSE,
+                      ylim = c(-.4, .5))
+
+pe.sets1 = PanelEstimate(sets = pm.sets.network, data = dem)
+
+plot(pe.sets1, ylim = c(-6,6), main = "Estimated Effects of Treatment Over Time (tighter caliper)")
+```
+```{r}
+network.refinement.info = list(use.proportion.data = TRUE,
+                                 proportion.lags = 0:4,
+                                 use.count.data = TRUE,
+                                 count.lags = 0:4)
+#relatively lax caliper requirements
+network.caliper.info = list(use.proportion.data = TRUE,
+                              proportion.caliper.method = "average",
+                              proportion.caliper.threshold = .2,
+                              prop.unit.type = "raw",
+                              use.count.data = FALSE,
+                              count.caliper.method = "max",
+                              count.caliper.threshold = 3,
+                              count.unit.type = "raw")
+
+pm.sets.network <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
+           treatment = "dem", refinement.method = "mahalanobis", 
+           data = Acemoglu, match.missing = TRUE, 
+           covs.formula = l4.form, 
+           size.match = 5, qoi = "att", outcome.var = "y",
+           lead = 0:4, forbid.treatment.reversal = FALSE, 
+           use.diagonal.variance.matrix = TRUE, 
+           adjacency.matrix = adjmat2,
+           neighborhood.degree = 1,
+           network.refinement.info = network.refinement.info,
+           network.caliper.info = network.caliper.info)
+
+plot(pm.sets.network$att)
+
+get_covariate_balance(pm.sets.network$att, Acemoglu, covariates = c("Populationages014oftotal",
+                                                                    "Populationages1564oftota",
+                                                                    "unrest", "tradewb",
+                                                                    "nfagdp", "logpop"), 
+                      plot = TRUE, calculate.network.count.blance = TRUE,
+                      calculate.network.proportion.balance = TRUE,
+                      adjacency.matrix = adjmat2, neighborhood.degree = 1, legend  = FALSE,
+                      ylim = c(-.4, .5))
+
+pe.sets1 = PanelEstimate(sets = pm.sets.network, data = dem)
+
+plot(pe.sets1, ylim = c(-6,6), main = "Estimated Effects of Treatment Over Time (tight caliper)")
+```
+medium caliper, not using data in refinement.
+```{r}
+network.refinement.info = list(use.proportion.data = FALSE,
+                                 proportion.lags = 0:4,
+                                 use.count.data = FALSE,
+                                 count.lags = 0:4)
+#relatively lax caliper requirements
+network.caliper.info = list(use.proportion.data = TRUE,
+                              proportion.caliper.method = "average",
+                              proportion.caliper.threshold = .3,
+                              prop.unit.type = "raw",
+                              use.count.data = FALSE,
+                              count.caliper.method = "max",
+                              count.caliper.threshold = 5,
+                              count.unit.type = "raw")
+
+pm.sets.network <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
+           treatment = "dem", refinement.method = "mahalanobis", 
+           data = Acemoglu, match.missing = TRUE, 
+           covs.formula = l4.form, 
+           size.match = 5, qoi = "att", outcome.var = "y",
+           lead = 0:4, forbid.treatment.reversal = FALSE, 
+           use.diagonal.variance.matrix = TRUE, 
+           adjacency.matrix = adjmat2,
+           neighborhood.degree = 1,
+           network.refinement.info = network.refinement.info,
+           network.caliper.info = network.caliper.info)
+
+plot(pm.sets.network$att)
+
+get_covariate_balance(pm.sets.network$att, Acemoglu, covariates = c("Populationages014oftotal",
+                                                                    "Populationages1564oftota",
+                                                                    "unrest", "tradewb",
+                                                                    "nfagdp", "logpop"), 
+                      plot = TRUE, calculate.network.count.blance = TRUE,
+                      calculate.network.proportion.balance = TRUE,
+                      adjacency.matrix = adjmat2, neighborhood.degree = 1, legend = FALSE,
+                      ylim = c(-.4, .5))
+
+pe.sets1 = PanelEstimate(sets = pm.sets.network, data = dem)
+plot(pe.sets1)
+```
+no network for comparison
+```{r}
+
+pm.sets.nonetwork <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
+                      treatment = "dem", refinement.method = "mahalanobis", 
+                      data = Acemoglu, match.missing = TRUE, 
+                      covs.formula = l4.form, # lags
+                      size.match = 5, qoi = "att", outcome.var = "y",
+                      lead = 0:4, forbid.treatment.reversal = FALSE, 
+                      use.diagonal.variance.matrix = TRUE)
+
+plot(pm.sets.nonetwork$att)
+
+
+get_covariate_balance(pm.sets.nonetwork$att, Acemoglu, covariates = c("Populationages014oftotal",
+                                                                    "Populationages1564oftota",
+                                                                    "unrest", "tradewb",
+                                                                    "nfagdp", "logpop"),
+                      plot = TRUE, legend = FALSE, ylim = c(-.4, .6))
+
+pe.sets.nonetwork = PanelEstimate(sets = pm.sets.nonetwork, data = dem)
+plot(pe.sets.nonetwork)
+
+```

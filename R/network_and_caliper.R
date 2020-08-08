@@ -1,4 +1,5 @@
-calculate_neighbor_treatment <- function(data, edge.matrix, n.degree, unit.id, time.id, treatment.variable)
+calculate_neighbor_treatment <- function(data, edge.matrix, n.degree, 
+                                         unit.id, time.id, treatment.variable)
 {
   edge.matrix <- edge.matrix[ edge.matrix[,3] == 1, ] #probably want to change how this is done
   g1 <- igraph::graph_from_data_frame(edge.matrix, directed = FALSE)
