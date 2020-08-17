@@ -17,7 +17,7 @@ get_covariate_balance(
   calculate.network.proportion.balance = FALSE,
   calculate.network.count.blance = FALSE,
   adjacency.matrix = NULL,
-  neighborhood.degree,
+  neighborhood.degree = NULL,
   ...
 )
 }

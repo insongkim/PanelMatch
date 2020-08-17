@@ -125,7 +125,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
     tlist <- expand.treated.ts(lag, treated.ts = treated.ts)
 
     idxlist <- get_yearly_dmats(ordered.data, treated.ids, tlist, matched_sets = msets, lag)
-
+    
     mahalmats <- build_maha_mats(ordered_expanded_data = ordered.data, idx =  idxlist)
 
     msets <- handle_mahalanobis_calculations(mahalmats, msets, size.match, verbose, use.diagonal.covmat = use.diag.covmat)
