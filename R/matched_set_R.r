@@ -107,6 +107,8 @@ get.matchedsets <- function(t, id, data, L, t.column, id.column, treatedvar,
   if(!is.numeric(d)) stop('data in treated, time, or id columns is not numeric')
   #CHECK TO MAKE SURE COLUMNS ARE IN ORDER!!!
   #fix factor conversion to be more smooth and allow for different data types.
+  
+  #dont think these are necessary anymore? since we balance up front...
   compmat <- data.table::dcast(data.table::as.data.table(d), formula = paste0(id.column, "~", t.column), 
                                value.var = treatedvar) #reshape the data so each row corresponds to a unit, columns specify treatment over time
   d <- data.table::melt(compmat, id = id.column, variable = t.column, value = treatedvar, 
@@ -118,7 +120,7 @@ get.matchedsets <- function(t, id, data, L, t.column, id.column, treatedvar,
   #d <-  d[order(d[,..id.column], d[,..t.column]), ] #cast -> melt fills in missing data with NA's but order is not preserved, so second sort necessary
   d <- d[order(d[, get(id.column)], d[,get(t.column)]), ]
   d <- data.matrix(d)
-
+  ## try deleting all of the above up to note above
   if(match.on.missingness)
   {
     d[is.na(d[,treatedvar]), treatedvar] <- -1

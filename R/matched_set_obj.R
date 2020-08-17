@@ -291,7 +291,7 @@ get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.wei
                                   calculate.network.proportion.balance = FALSE,
                                   calculate.network.count.blance = FALSE,
                                   adjacency.matrix = NULL,
-                                  neighborhood.degree,
+                                  neighborhood.degree = NULL,
                                   ...)
 {
   if(is.null(covariates))
@@ -392,11 +392,10 @@ get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.wei
   treated.ids <- as.integer(sub("\\..*", "", names(matched.sets)))
   tlist <- expand.treated.ts(lag, treated.ts = treated.ts)
 
-  idxlist <- get_yearly_dmats(matrix(nrow = 0, ncol = 0), treated.ids, tlist, paste0(ordered.data[,unit.id], ".",
-                                                                       ordered.data[, time.id]), matched_sets = matched.sets, lag)
+  idxlist <- get_yearly_dmats(matrix(nrow = 0, ncol = 0), treated.ids, tlist, matched_sets = matched.sets, lag)
   balance_mats <- build_balance_mats(ordered_expanded_data = ordered.data, idx =  idxlist, msets = matched.sets)
   unlistedmats <- unlist(balance_mats, recursive = F)
-
+  browser()
   plotpoints <- list()
   for(k in 1:(lag+1))
   {
@@ -446,6 +445,7 @@ get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.wei
 
   if(plot)
   {
+    
     graphics::matplot(pointmatrix, type = "l", col = 1:ncol(pointmatrix), lty =1, ylab = ylab, xaxt = "n", ...)
     graphics::axis(side = 1, labels = paste0("t-", (nrow(pointmatrix) - 1):0), at = 1:nrow(pointmatrix))
     if(legend) legend("topleft", legend = colnames(pointmatrix), col=1:ncol(pointmatrix), lty = 1)

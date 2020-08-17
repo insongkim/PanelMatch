@@ -128,7 +128,8 @@ handle_calipers <- function(plain.ordered.data, caliper.formula, matched.sets, l
     return(cbind(x[, c(1, 2, 3)], tdf))
   }
   # browser()
-  t.data <- do.call(rbind, by(plain.ordered.data, as.factor(plain.ordered.data[, 1]), FUN = apply_formula, form = caliper.formula))
+  t.data <- do.call(rbind, by(plain.ordered.data, as.factor(plain.ordered.data[, 1]),
+                              FUN = apply_formula, form = caliper.formula))
   #may not be necessary?
   
   t.data <- t.data[order(t.data[,1], t.data[,2]), ]
@@ -141,7 +142,7 @@ handle_calipers <- function(plain.ordered.data, caliper.formula, matched.sets, l
     .IS_FACTOR_VAR <- caliper.metadata[5, i] == "categorical" # or numeric
     .USE_SD_UNITS <- caliper.metadata[6, i] == "sd" # or raw
     matched.sets <- handle.single.caliper.per.lag(t.data, matched.sets, caliper.metadata[2,i], 
-                                                  caliper.metadata[3, i], c(1:3,  (col.idx-max(lag.window)):col.idx),
+                                                  as.numeric(caliper.metadata[3, i]), c(1:3,  (col.idx-max(lag.window)):col.idx),
                                                   .IS_FACTOR_VAR, .USE_SD_UNITS)
   }
   
@@ -163,18 +164,25 @@ handle.single.caliper.per.lag <- function(plain.ordered.data, matched.sets, cali
   
   old.lag <- lag.in
   lag.in <- 0 
-  
-  treated.ts <- as.numeric(unlist(strsplit(names(matched.sets), split = "[.]"))[c(F,T)])
-  treated.ids <- as.numeric(unlist(strsplit(names(matched.sets), split = "[.]"))[c(T,F)])
+  #use more efficient regex version
+  treated.ts <- as.numeric(sub(".*\\.", "", names(matched.sets)))
+  treated.ids <- as.numeric(sub("\\..*", "", names(matched.sets)))
   
   ordered.data <- plain.ordered.data[, data.index]
+  ##TODO: change everything to numeric matrix? 
   
-  tlist <- expand.treated.ts(lag.in, treated.ts = treated.ts)
-  idxlist <- get_yearly_dmats(as.matrix(ordered.data), treated.ids, tlist, paste0(ordered.data[,id.var], ".",
-                                                                       ordered.data[, time.var]), matched_sets = matched.sets, lag.in)
-  mahalmats <- build_maha_mats(ordered_expanded_data = as.matrix(ordered.data), idx =  idxlist)
-  msets <- handle_perlag_caliper_calculations(mahalmats, matched.sets, 
-                                              caliper.value = caliper.distance, caliper.method = caliper.method, is.factor.var, use.sd.units)
+  # tlist <- expand.treated.ts(lag.in, treated.ts = treated.ts)
+  # idxlist <- get_yearly_dmats(as.matrix(ordered.data), treated.ids, tlist, 
+  #                             matched_sets = matched.sets, lag.in)
+    
+  msets <- handle_distance_matrices(as.matrix(ordered.data), matched.sets, caliper.distance,
+                           caliper.method, is.factor.var, use.sd.units, id.var, time.var, lag.in)
+  #mahalmats <- build_maha_mats(ordered_expanded_data = as.matrix(ordered.data), idx =  idxlist)
+  # msets <- handle_perlag_caliper_calculations(mahalmats, matched.sets, 
+  #                                             caliper.value = caliper.distance, 
+  #                                             caliper.method = caliper.method, 
+  #                                             is.factor.var, use.sd.units)
+  
   lag.in <- old.lag
   
   class(msets) <- c("matched.set", "list")
@@ -187,11 +195,13 @@ handle.single.caliper.per.lag <- function(plain.ordered.data, matched.sets, cali
   
 }
 
-handle_perlag_caliper_calculations <- function(nested.list, msets, caliper.method, caliper.value, is.factor.var, use.sd.units)
+handle_perlag_caliper_calculations <- function(nested.list, msets, caliper.method, 
+                                               caliper.value, is.factor.var, use.sd.units, full.data, id.var, time.var)
 {
   
   do_calcs <- function(time.df, sd.vals__, is_factor_in)
   {
+    
     cov.data <- time.df[, 4:ncol(time.df), drop = FALSE]
     
     do.maths  <- function(control.unit.data, treated.unit.data, sd.vals_, is_factor)
@@ -218,10 +228,11 @@ handle_perlag_caliper_calculations <- function(nested.list, msets, caliper.metho
   handle_set <- function(sub.list, cal.value, cal.method, standard.deviations, is.factor)
   {
     
-    results.temp <- lapply(sub.list, do_calcs, sd.vals__ = standard.deviations, 
-                           is_factor_in = is.factor)
-    
-    tmat <- do.call(rbind, results.temp)
+    # results.temp <- lapply(sub.list, do_calcs, sd.vals__ = standard.deviations, 
+    #                        is_factor_in = is.factor)
+    tmat <- do_calcs(sub.list[[1]], sd.vals__ = standard.deviations, is_factor_in = is.factor)
+    # tmat <- do.call(rbind, results.temp) 
+    ## two things commented out for more efficient refinement implemented 
     colnames(tmat) <- NULL
     # tmat <- tmat[, 1:(ncol(tmat)-1), drop = FALSE]
     meets_caliper <- function(col, cal, cal.method, sd.vals, IS_FACTOR)
@@ -292,8 +303,12 @@ handle_perlag_caliper_calculations <- function(nested.list, msets, caliper.metho
   }
   
   #get standard deviation values
-  tdf <- do.call(rbind, lapply(unlist(nested.list, recursive = F),
-                               function(x) return(x[nrow(x), ])))
+  
+  row.names(full.data) <- paste0(full.data[, id.var], ".", full.data[, time.var])
+  tdf <- full.data[names(msets), ]
+  
+  # tdf <- do.call(rbind, lapply(unlist(nested.list, recursive = F),
+  #                              function(x) return(x[nrow(x), ])))
   
   if(use.sd.units)
   {
@@ -303,15 +318,16 @@ handle_perlag_caliper_calculations <- function(nested.list, msets, caliper.metho
   }
   
   
-  indices.msets <- lapply(nested.list, handle_set, 
-                          cal.value = caliper.value, 
-                          cal.method = caliper.method, 
-                          standard.deviations = sd.vals, 
-                          is.factor = is.factor.var)
+  # indices.msets <- lapply(nested.list, handle_set, 
+  #                         cal.value = caliper.value, 
+  #                         cal.method = caliper.method, 
+  #                         standard.deviations = sd.vals, 
+  #                         is.factor = is.factor.var)
+  indices.msets <- handle_set(nested.list, caliper.value, caliper.method, sd.vals, is.factor.var)
+  #msets <- mapply(function(x, y) return(as.numeric(x[y])), x = msets, y = indices.msets, SIMPLIFY = FALSE)
+  #msets <- msets[sapply(msets, length) > 0]
   
-  msets <- mapply(function(x, y) return(as.numeric(x[y])), x = msets, y = indices.msets, SIMPLIFY = FALSE)
-  msets <- msets[sapply(msets, length) > 0]
-  
+  msets <- msets[indices.msets]
   return(msets)
 }
 

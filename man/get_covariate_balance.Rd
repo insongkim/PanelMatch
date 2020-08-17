@@ -14,6 +14,10 @@ get_covariate_balance(
   reference.line = TRUE,
   legend = TRUE,
   ylab = "SD",
+  calculate.network.proportion.balance = FALSE,
+  calculate.network.count.blance = FALSE,
+  adjacency.matrix = NULL,
+  neighborhood.degree,
   ...
 )
 }

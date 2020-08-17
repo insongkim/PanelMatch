@@ -124,8 +124,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
     lag <- 0
     tlist <- expand.treated.ts(lag, treated.ts = treated.ts)
 
-    idxlist <- get_yearly_dmats(ordered.data, treated.ids, tlist, paste0(ordered.data[,unit.id], ".",
-                                                                         ordered.data[, time.id]), matched_sets = msets, lag)
+    idxlist <- get_yearly_dmats(ordered.data, treated.ids, tlist, matched_sets = msets, lag)
 
     mahalmats <- build_maha_mats(ordered_expanded_data = ordered.data, idx =  idxlist)
 
@@ -140,8 +139,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
     {
         f <- lead[i]
         tf <- expand.treated.ts(lag, treated.ts = treated.ts + f)
-        tf.index <- get_yearly_dmats(ordered.data, treated.ids, tf, paste0(ordered.data[,unit.id], ".",
-                                                                           ordered.data[, time.id]), matched_sets = msets, lag)
+        tf.index <- get_yearly_dmats(ordered.data, treated.ids, tf, matched_sets = msets, lag)
         expanded.sets.tf <- build_ps_data(tf.index, ordered.data, lag)
         #pre.pooled <- ordered.data[ordered.data[, time.id] %in% (treated.ts + f), ]
         pre.pooled <- rbindlist(expanded.sets.tf)
@@ -200,8 +198,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
   {
     if(!all(refinement.method %in% c("CBPS.weight", "CBPS.match", "ps.weight", "ps.match"))) stop("please choose valid refinement method")
     tlist <- expand.treated.ts(lag, treated.ts = treated.ts)
-    idxlist <- get_yearly_dmats(ordered.data, treated.ids, tlist, paste0(ordered.data[,unit.id], ".",
-                                                                         ordered.data[, time.id]), matched_sets = msets, lag)
+    idxlist <- get_yearly_dmats(ordered.data, treated.ids, tlist, matched_sets = msets, lag)
     expanded.sets.t0 <- build_ps_data(idxlist, ordered.data, lag)
     pre.pooled <- rbindlist(expanded.sets.t0)
     pooled <- unique(pre.pooled[complete.cases(pre.pooled), ])
@@ -357,6 +354,42 @@ build_maha_mats <- function(idx, ordered_expanded_data)
   return(result)
 }
 
+
+#modified version of build mahah mats but with refinement handled immediately 
+handle_distance_matrices <- function(ordered_expanded_data, matched.sets, calipervalue, 
+                                     calipermethod, isfactor, use.sd, id.var, time.var, lag.in)
+{
+
+  unnest <- function(matched.set, treated.unit.info, 
+                     lag.in_, ordered_expanded_data_)
+  {
+    treated.ts <- as.integer(sub(".*\\.", "", treated.unit.info))
+    treated.ids <- as.integer(sub("\\..*", "", treated.unit.info))
+    
+    tlist <- expand.treated.ts(lag.in_, treated.ts = treated.ts)
+    
+    idxlist <- get_yearly_dmats(ordered_expanded_data_, treated.ids, tlist, 
+                                matched_sets = list(matched.set), lag.in_)
+    rr <- lapply(unlist(idxlist, recursive = FALSE), function(x) {ordered_expanded_data_[x, ]})
+    
+    #rr <- lapply(mset, subset.per.matchedset)
+    
+    tset <- handle_perlag_caliper_calculations(rr, matched.set, calipermethod, calipervalue, 
+                                        isfactor, use.sd, ordered_expanded_data, id.var, time.var) #sloppy style, fix later
+    ## apply the individual refinements here
+    
+    return(tset)
+  }
+  
+  #result <- lapply(idx, unnest, matched.set)
+  result <- mapply(FUN = unnest, matched.set = matched.sets, treated.unit.info = names(matched.sets), 
+                   MoreArgs = list(lag.in_ = lag.in, 
+                                   ordered_expanded_data_ = ordered_expanded_data))
+  #result <- mapply(FUN = unnest, mset.idx = idx, matched.set = matched.sets, SIMPLIFY = FALSE)
+  names(result) <- names(matched.sets)
+  result <- result[sapply(result, length) > 0]
+  return(result)
+}
 
 #use col.index to determine which columns we want to "scan" for missing data
 # Note that in earlier points in the code, we rearrange the columns and prepare the data frame such that cols 1-4 are bookkeeping (unit id, time id, treated variable, unlagged outcome variable)
