@@ -223,6 +223,7 @@ panel_match <- function(lag, time.id, unit.id, treatment,
   if(!is.null(restrict.control.period))
   {
     if(restrict.control.period < 1) stop("restricted control period specification must be >=1")
+    if(restrict.control.period > lag) stop("restricted control period specification cannot be greater than lag")
   }
   
   #######take this out when negative lead is implemented:
