@@ -3,52 +3,41 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
                                ordered.data, match.missing, covs.formula, verbose,
                                mset.object = NULL, lead, outcome.var = NULL, forbid.treatment.reversal = FALSE, qoi = "",
                                matching = TRUE, exact.matching.variables = NULL, listwise.deletion,
-                               use.diag.covmat = FALSE)
+                               use.diag.covmat = FALSE, restrict.control.period = NULL)
 {
-  if(!is.null(mset.object))
+
+  
+  
+  print("refinement started")
+  temp.treateds <- findAllTreated(ordered.data, treatedvar = treatment, time.var = time.id,
+                                  unit.var = unit.id, hasbeensorted = TRUE)
+  idx <- !((temp.treateds[, time.id] - lag) < min(ordered.data[, time.id]))
+  temp.treateds <- temp.treateds[idx, ]
+  print("treated units identified")
+  if(nrow(temp.treateds) == 0)
   {
-    lag = attr(mset.object, "lag")
-    time.id = attr(mset.object, "t.var")
-    unit.id = attr(mset.object, "id.var")
-    treatment = attr(mset.object, "treatment.var")
-    refinement.method = attr(mset.object, "refinement.method")
-    size.match = attr(mset.object, "max.match.size")
-    covs.formula = attr(mset.object, "covs.formula")
-    match.missing <- attr(mset.object, "match.missing")
-    verbose = FALSE
-    msets <- mset.object
+    warn.str <- paste0("no viable treated units for ", qoi, " specification")
+    stop(warn.str)
   }
-  else
+  msets <- get.matchedsets(temp.treateds[, time.id], temp.treateds[, unit.id], ordered.data,
+                           lag, time.id, unit.id, treatment, hasbeensorted = TRUE, 
+                           match.on.missingness = match.missing, matching, restrict.control.period)
+  e.sets <- msets[sapply(msets, length) == 0]
+  msets <- msets[sapply(msets, length) > 0 ]
+  print("matched sets identified")
+  
+  msets <- clean_leads(msets, ordered.data, max(lead), time.id, unit.id, outcome.var)
+  print("lead window data cleaned")
+  if(forbid.treatment.reversal)
   {
-    print("refinement started")
-    temp.treateds <- findAllTreated(ordered.data, treatedvar = treatment, time.var = time.id,
-                                    unit.var = unit.id, hasbeensorted = TRUE)
-    idx <- !((temp.treateds[, time.id] - lag) < min(ordered.data[, time.id]))
-    temp.treateds <- temp.treateds[idx, ]
-    print("treated units identified")
-    if(nrow(temp.treateds) == 0)
-    {
-      warn.str <- paste0("no viable treated units for ", qoi, " specification")
-      stop(warn.str)
-    }
-    msets <- get.matchedsets(temp.treateds[, time.id], temp.treateds[, unit.id], ordered.data,
-                             lag, time.id, unit.id, treatment, hasbeensorted = TRUE, match.on.missingness = match.missing, matching)
-    e.sets <- msets[sapply(msets, length) == 0]
-    msets <- msets[sapply(msets, length) > 0 ]
-    print("matched sets identified")
-    
-    msets <- clean_leads(msets, ordered.data, max(lead), time.id, unit.id, outcome.var)
-    print("lead window data cleaned")
-    if(forbid.treatment.reversal)
-    {
-      msets <- enforce_lead_restrictions(msets, ordered.data, max(lead), time.id, unit.id, treatment.var = treatment)
-    }
-    if(length(msets) == 0)
-    {
-      warn.str <- paste0("no matched sets for ", qoi, " specification")
-      stop(warn.str)
-    }
+    msets <- enforce_lead_restrictions(msets, ordered.data, max(lead), time.id, unit.id, treatment.var = treatment)
   }
+  if(length(msets) == 0)
+  {
+    warn.str <- paste0("no matched sets for ", qoi, " specification")
+    stop(warn.str)
+  }
+
   if(!is.null(exact.matching.variables))
   {
     msets <- do_exact_matching(msets, ordered.data, exact.matching.variables)

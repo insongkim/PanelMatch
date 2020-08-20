@@ -230,3 +230,24 @@ Rcpp:: List non_matching_matcher(const Rcpp::List &control_history_list,
   return matched_sets;
 }
 
+// [[Rcpp::export()]]
+Rcpp::LogicalVector enforce_strict_histories(Rcpp::List control_histories, int strict_period)
+{
+  Rcpp::LogicalVector indx(control_histories.length());
+  
+  for(int i = 0; i < control_histories.length(); i++)
+  {
+    indx[i] = true;
+    NumericVector temp = control_histories[i];
+    for(int j = temp.length() - 1 - strict_period; j < temp.length(); j++)
+    {
+      if ( NumericVector::is_na(temp[j]) || temp[j] != 0)
+      {
+        indx[i] = false;
+      }
+    }
+  }
+  return indx;
+}
+
+

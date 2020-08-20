@@ -123,7 +123,8 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
                        forbid.treatment.reversal = FALSE,
                        matching = TRUE,
                        listwise.delete = FALSE,
-                       use.diagonal.variance.matrix = FALSE
+                       use.diagonal.variance.matrix = FALSE,
+                       restrict.control.period = NULL
                        ) 
 {
   if(class(lag) == "list" & class(time.id) == "list" & class(unit.id) == "list" & class(treatment) == "list" & 
@@ -154,6 +155,7 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
              matching = matching,
              listwise.delete = listwise.delete,
              use.diagonal.variance.matrix = use.diagonal.variance.matrix,
+             restrict.control.period = restrict.control.period,
              MoreArgs = list(data = data)
              , SIMPLIFY = F)
      return(list.res)
@@ -178,7 +180,8 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
                 forbid.treatment.reversal,
                 matching,
                 listwise.delete,
-                use.diagonal.variance.matrix)
+                use.diagonal.variance.matrix, 
+                restrict.control.period)
   }
   
 }
@@ -197,7 +200,8 @@ panel_match <- function(lag, time.id, unit.id, treatment,
                         forbid.treatment.reversal,
                         matching,
                         listwise.delete,
-                        use.diagonal.variance.matrix)
+                        use.diagonal.variance.matrix,
+                        restrict.control.period)
 {
   
   if(!matching & match.missing)
@@ -216,6 +220,10 @@ panel_match <- function(lag, time.id, unit.id, treatment,
   if(any(duplicated(data[, c(unit.id, time.id)]))) stop("Time, unit combinations should uniquely identify rows. Please remove duplicates")
   if(!class(data[, unit.id]) %in% c("integer", "numeric")) stop("please convert unit id column to integer or numeric")
   if(class(data[, time.id]) != "integer") stop("please convert time id to consecutive integers")
+  if(!is.null(restrict.control.period))
+  {
+    if(restrict.control.period < 1) stop("restricted control period specification must be >=1")
+  }
   
   #######take this out when negative lead is implemented:
   if(any(lead < 0)) stop("Please provide positive lead values. Negative lead values will be supported in future versions")
@@ -282,7 +290,7 @@ panel_match <- function(lag, time.id, unit.id, treatment,
                                 match.missing, covs.formula, verbose, lead= lead, outcome.var = outcome.var, 
                                 forbid.treatment.reversal = forbid.treatment.reversal, qoi = qoi, matching = matching,
                                 exact.matching.variables = exact.match.variables, listwise.deletion = listwise.delete,
-                                use.diag.covmat = use.diagonal.variance.matrix)
+                                use.diag.covmat = use.diagonal.variance.matrix, restrict.control.period = restrict.control.period)
     msets <- decode_index(msets, unit.index.map, og.unit.id)
     if(!matching & match.missing)
     {
@@ -301,7 +309,7 @@ panel_match <- function(lag, time.id, unit.id, treatment,
                                 match.missing, covs.formula, verbose, lead = lead, outcome.var = outcome.var, 
                                 forbid.treatment.reversal = forbid.treatment.reversal, qoi = qoi, matching = matching,
                                 exact.matching.variables = exact.match.variables, listwise.deletion = listwise.delete,
-                                use.diag.covmat = use.diagonal.variance.matrix)
+                                use.diag.covmat = use.diagonal.variance.matrix, restrict.control.period = restrict.control.period)
     msets <- decode_index(msets, unit.index.map, og.unit.id)
     if(!matching & match.missing)
     {
@@ -320,13 +328,13 @@ panel_match <- function(lag, time.id, unit.id, treatment,
                                 match.missing, covs.formula, verbose, lead = lead, outcome.var = outcome.var, 
                                 forbid.treatment.reversal = forbid.treatment.reversal, qoi = qoi, matching = matching,
                                 exact.matching.variables = exact.match.variables, listwise.deletion = listwise.delete,
-                                use.diag.covmat = use.diagonal.variance.matrix)
+                                use.diag.covmat = use.diagonal.variance.matrix, restrict.control.period = restrict.control.period)
     ordered.data[, treatment] <- ifelse(ordered.data[, treatment] == 1,0,1) #flip the treatment variables 
     msets2 <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data,
                                  match.missing, covs.formula, verbose, lead = lead, outcome.var = outcome.var, 
                                  forbid.treatment.reversal = forbid.treatment.reversal, qoi = qoi, matching = matching,
                                  exact.matching.variables = exact.match.variables, listwise.deletion = listwise.delete,
-                                 use.diag.covmat = use.diagonal.variance.matrix)
+                                 use.diag.covmat = use.diagonal.variance.matrix, restrict.control.period = restrict.control.period)
     msets <- decode_index(msets, unit.index.map, og.unit.id)
     if(!matching & match.missing)
     {

@@ -45,6 +45,10 @@ non_matching_matcher <- function(control_history_list, widemat, t_as_col_nums, i
     .Call('_PanelMatch_non_matching_matcher', PACKAGE = 'PanelMatch', control_history_list, widemat, t_as_col_nums, ids, L, missing_window)
 }
 
+enforce_strict_histories <- function(control_histories, strict_period) {
+    .Call('_PanelMatch_enforce_strict_histories', PACKAGE = 'PanelMatch', control_histories, strict_period)
+}
+
 get_yearly_dmats <- function(expanded_data, treated_ids, ts_to_fetch, row_key, matched_sets, lag) {
     .Call('_PanelMatch_get_yearly_dmats', PACKAGE = 'PanelMatch', expanded_data, treated_ids, ts_to_fetch, row_key, matched_sets, lag)
 }

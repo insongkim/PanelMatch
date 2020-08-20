@@ -15,6 +15,7 @@ extern SEXP _PanelMatch_check_treated_units_for_treatment_reversion(SEXP, SEXP, 
 extern SEXP _PanelMatch_clean_leads_cpp(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP _PanelMatch_create_tid_pairs(SEXP);
 extern SEXP _PanelMatch_do_exact_matching_refinement(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP _PanelMatch_enforce_strict_histories(SEXP, SEXP);
 extern SEXP _PanelMatch_equality_four_cpp(SEXP, SEXP, SEXP);
 extern SEXP _PanelMatch_get_comparison_histories(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP _PanelMatch_get_dits(SEXP, SEXP);
@@ -38,6 +39,7 @@ static const R_CallMethodDef CallEntries[] = {
   {"_PanelMatch_clean_leads_cpp",                               (DL_FUNC) &_PanelMatch_clean_leads_cpp,                               6},
   {"_PanelMatch_create_tid_pairs",                              (DL_FUNC) &_PanelMatch_create_tid_pairs,                              1},
   {"_PanelMatch_do_exact_matching_refinement",                  (DL_FUNC) &_PanelMatch_do_exact_matching_refinement,                  6},
+  {"_PanelMatch_enforce_strict_histories",                      (DL_FUNC) &_PanelMatch_enforce_strict_histories,                      2},
   {"_PanelMatch_equality_four_cpp",                             (DL_FUNC) &_PanelMatch_equality_four_cpp,                             3},
   {"_PanelMatch_get_comparison_histories",                      (DL_FUNC) &_PanelMatch_get_comparison_histories,                      7},
   {"_PanelMatch_get_dits",                                      (DL_FUNC) &_PanelMatch_get_dits,                                      2},
