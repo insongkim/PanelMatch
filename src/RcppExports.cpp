@@ -173,18 +173,17 @@ BEGIN_RCPP
 END_RCPP
 }
 // get_yearly_dmats
-List get_yearly_dmats(NumericMatrix expanded_data, NumericVector treated_ids, List ts_to_fetch, CharacterVector row_key, List matched_sets, int lag);
-RcppExport SEXP _PanelMatch_get_yearly_dmats(SEXP expanded_dataSEXP, SEXP treated_idsSEXP, SEXP ts_to_fetchSEXP, SEXP row_keySEXP, SEXP matched_setsSEXP, SEXP lagSEXP) {
+List get_yearly_dmats(NumericMatrix expanded_data, NumericVector treated_ids, List ts_to_fetch, List matched_sets, int lag);
+RcppExport SEXP _PanelMatch_get_yearly_dmats(SEXP expanded_dataSEXP, SEXP treated_idsSEXP, SEXP ts_to_fetchSEXP, SEXP matched_setsSEXP, SEXP lagSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericMatrix >::type expanded_data(expanded_dataSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type treated_ids(treated_idsSEXP);
     Rcpp::traits::input_parameter< List >::type ts_to_fetch(ts_to_fetchSEXP);
-    Rcpp::traits::input_parameter< CharacterVector >::type row_key(row_keySEXP);
     Rcpp::traits::input_parameter< List >::type matched_sets(matched_setsSEXP);
     Rcpp::traits::input_parameter< int >::type lag(lagSEXP);
-    rcpp_result_gen = Rcpp::wrap(get_yearly_dmats(expanded_data, treated_ids, ts_to_fetch, row_key, matched_sets, lag));
+    rcpp_result_gen = Rcpp::wrap(get_yearly_dmats(expanded_data, treated_ids, ts_to_fetch, matched_sets, lag));
     return rcpp_result_gen;
 END_RCPP
 }

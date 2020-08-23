@@ -221,7 +221,7 @@ The parameters and refinement methods that work best will depend on your data an
 
 We can also create plots showing covariate balance throughout the lag window period by setting the `plot` argument to `TRUE`, as shown below.
 ```{r}
-get_covariate_balance(PM.results1$att,
+get_covariate_balance(matched.sets = PM.results1$att,
                       data = dem,
                       covariates = c("tradewb", "y"), 
                       plot = TRUE, # visualize by setting plot to TRUE

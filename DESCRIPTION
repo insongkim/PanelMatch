@@ -39,6 +39,7 @@ Imports:
     grDevices,
     MASS,
     Matrix,
+    igraph,
     methods
 Depends:
     R (>= 2.14.0)

@@ -11,15 +11,33 @@ This function will return a list of lists. The outer list length is equal to the
 */ 
 // [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::export]]
-List get_yearly_dmats(NumericMatrix expanded_data, NumericVector treated_ids, List ts_to_fetch, CharacterVector row_key, List matched_sets, int lag) 
+List get_yearly_dmats(NumericMatrix expanded_data, NumericVector treated_ids, List ts_to_fetch,
+                      List matched_sets, int lag) 
 {
+  
   std::unordered_map<std::string, int> indexMap;
-  for(int i = 0; i < row_key.size(); i++)
+  for(int i = 0; i < expanded_data.nrow(); i++)
   {
-    std::string key;
-    key = row_key[i];
+    int id_1 = expanded_data(i,0);
+    int t_1 = expanded_data(i,1);
+    
+    std::string id = std::to_string(id_1);
+    std::string t = std::to_string(t_1);
+    
+    std::string key = id + "." + t;
     indexMap[key] = i;
-  } 
+    // Rcout << key << std::endl;
+  }
+  
+  //using the above to replace below to avoid using paste
+  
+  // std::unordered_map<std::string, int> indexMap;
+  // for(int i = 0; i < row_key.size(); i++)
+  // {
+  //   std::string key;
+  //   key = row_key[i];
+  //   indexMap[key] = i;
+  // } 
   
   List df_list(matched_sets.size());
   for(int i = 0; i < matched_sets.size(); i++)

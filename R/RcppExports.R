@@ -49,8 +49,8 @@ enforce_strict_histories <- function(control_histories, strict_period) {
     .Call('_PanelMatch_enforce_strict_histories', PACKAGE = 'PanelMatch', control_histories, strict_period)
 }
 
-get_yearly_dmats <- function(expanded_data, treated_ids, ts_to_fetch, row_key, matched_sets, lag) {
-    .Call('_PanelMatch_get_yearly_dmats', PACKAGE = 'PanelMatch', expanded_data, treated_ids, ts_to_fetch, row_key, matched_sets, lag)
+get_yearly_dmats <- function(expanded_data, treated_ids, ts_to_fetch, matched_sets, lag) {
+    .Call('_PanelMatch_get_yearly_dmats', PACKAGE = 'PanelMatch', expanded_data, treated_ids, ts_to_fetch, matched_sets, lag)
 }
 
 check_treated_units_for_treatment_reversion <- function(compmat, compmat_row_units, compmat_cols, lead, treated_ids, treated_ts) {
@@ -88,4 +88,3 @@ check_missing_data_control_units <- function(subset_data, sets, times, lead) {
 clean_leads_cpp <- function(subset_data, sets, treated_tid_pairs, treated_ids, lead, times) {
     .Call('_PanelMatch_clean_leads_cpp', PACKAGE = 'PanelMatch', subset_data, sets, treated_tid_pairs, treated_ids, lead, times)
 }
-

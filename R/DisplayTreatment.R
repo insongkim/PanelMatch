@@ -75,7 +75,7 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
   ###############
   if(class(data) != "data.frame") stop("please convert data to data.frame class")
   if(any(is.na(data[, unit.id]))) stop("Cannot have NA unit ids")
-  if(!class(data[, unit.id]) %in% c("integer", "numeric")) stop("please convert unit id column to integer or numeric")
+  # if(!class(data[, unit.id]) %in% c("integer", "numeric")) stop("please convert unit id column to integer or numeric")
   if(class(data[, time.id]) != "integer") stop("please convert time id to consecutive integers")
   if(show.set.only & !is.null(matched.set) & length(matched.set) == 1 & class(matched.set) == "matched.set")
   {
@@ -447,8 +447,13 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
   {
     pj <- p
   }
-  pjp <- pj + scale_x_discrete(expand = c(0, 0), labels = unique(as.character(data$old.index))) +
-    theme(axis.text.y = element_text(color = clrs)) + coord_flip() + ggtitle(title) + xlab(ylab) + ylab(xlab) #flip them because of how the plot is generated, should probably fix this
+  # pjp <- pj + scale_x_discrete(expand = c(0, 0), labels = unique(as.character(data$old.index))) +
+  #   theme(axis.text.y = element_text(color = clrs)) + coord_flip() + ggtitle(title) + xlab(ylab) + ylab(xlab) #flip them because of how the plot is generated, should probably fix this
+  # ggplot does not like vectorized input to element_text anymore
+  
+  pjp <- pj + scale_x_discrete(expand = c(0, 0), labels = unique(as.character(data$old.index))) + 
+    coord_flip() + ggtitle(title) + xlab(ylab) + ylab(xlab)
+  
   if(hide.x.axis.label & !hide.y.axis.label)
   {
     return(pjp + theme(axis.text.x = element_blank(), axis.ticks.x = element_blank()))
