@@ -77,7 +77,8 @@ calculate_neighbor_treatment <- function(data, edge.matrix, n.degree,
   return(data)
 }
 
-handle_calipers <- function(plain.ordered.data, caliper.formula, matched.sets, lag.window)
+handle_calipers <- function(plain.ordered.data, caliper.formula, 
+                            matched.sets, lag.window, is.continuous.matching = FALSE)
 {
   
   caliper <- function(y, method, caliper.distance, data_type, calculation_type, lwindow = lag.window)
@@ -143,18 +144,15 @@ handle_calipers <- function(plain.ordered.data, caliper.formula, matched.sets, l
     .USE_SD_UNITS <- caliper.metadata[6, i] == "sd" # or raw
     matched.sets <- handle.single.caliper.per.lag(t.data, matched.sets, caliper.metadata[2,i], 
                                                   as.numeric(caliper.metadata[3, i]), c(1:3,  (col.idx-max(lag.window)):col.idx),
-                                                  .IS_FACTOR_VAR, .USE_SD_UNITS)
+                                                  .IS_FACTOR_VAR, .USE_SD_UNITS, is.continuous.matching)
   }
   
   return(matched.sets)
   
 }
 
-
-
-
 handle.single.caliper.per.lag <- function(plain.ordered.data, matched.sets, caliper.method, caliper.distance, 
-                                          data.index, is.factor.var, use.sd.units)
+                                          data.index, is.factor.var, use.sd.units, do.continuous.matching = FALSE)
 {
   
   time.var <- attr(matched.sets, "t.var")
@@ -171,17 +169,9 @@ handle.single.caliper.per.lag <- function(plain.ordered.data, matched.sets, cali
   ordered.data <- plain.ordered.data[, data.index]
   ##TODO: change everything to numeric matrix? 
   
-  # tlist <- expand.treated.ts(lag.in, treated.ts = treated.ts)
-  # idxlist <- get_yearly_dmats(as.matrix(ordered.data), treated.ids, tlist, 
-  #                             matched_sets = matched.sets, lag.in)
-    
   msets <- handle_distance_matrices(as.matrix(ordered.data), matched.sets, caliper.distance,
-                           caliper.method, is.factor.var, use.sd.units, id.var, time.var, lag.in)
-  #mahalmats <- build_maha_mats(ordered_expanded_data = as.matrix(ordered.data), idx =  idxlist)
-  # msets <- handle_perlag_caliper_calculations(mahalmats, matched.sets, 
-  #                                             caliper.value = caliper.distance, 
-  #                                             caliper.method = caliper.method, 
-  #                                             is.factor.var, use.sd.units)
+                           caliper.method, is.factor.var, use.sd.units, id.var, time.var, lag.in, do.continuous.matching)
+
   
   lag.in <- old.lag
   

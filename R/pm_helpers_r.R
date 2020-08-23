@@ -3,7 +3,8 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
                                ordered.data, match.missing, covs.formula, verbose,
                                mset.object = NULL, lead, outcome.var = NULL, forbid.treatment.reversal = FALSE, qoi = "",
                                matching = TRUE, exact.matching.variables = NULL, listwise.deletion,
-                               use.diag.covmat = FALSE, caliper.formula = NULL, calipers.in.refinement = FALSE)
+                               use.diag.covmat = FALSE, caliper.formula = NULL, calipers.in.refinement = FALSE,
+                               continuous.treatment = FALSE, continuous.treatment.formula = NULL)
 {
 
   if(!is.null(mset.object))
@@ -21,19 +22,31 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
   }
   else
   {
+    browser()
+    if (continuous.treatment)
+    {
+      temp.treateds <- findContinuousTreated(dmat = ordered.data, treatedvar = treatment, time.var = time.id,
+                            unit.var = unit.id)
+    } else
+    {
+      
+      temp.treateds <- findBinaryTreated(ordered.data, treatedvar = treatment, time.var = time.id,
+                                         unit.var = unit.id, hasbeensorted = TRUE)
 
-    temp.treateds <- findAllTreated(ordered.data, treatedvar = treatment, time.var = time.id,
-                                    unit.var = unit.id, hasbeensorted = TRUE)
+    }
+    
     idx <- !((temp.treateds[, time.id] - lag) < min(ordered.data[, time.id]))
-    temp.treateds <- temp.treateds[idx, ]
-
-    if(nrow(temp.treateds) == 0)
+    temp.treateds <- temp.treateds[idx, ]  
+    if (nrow(temp.treateds) == 0)
     {
       warn.str <- paste0("no viable treated units for ", qoi, " specification")
       stop(warn.str)
     }
-    msets <- get.matchedsets(temp.treateds[, time.id], temp.treateds[, unit.id], ordered.data,
-                             lag, time.id, unit.id, treatment, hasbeensorted = TRUE, match.on.missingness = match.missing, matching)
+    msets <- get.matchedsets(temp.treateds[, time.id], temp.treateds[, unit.id], data = ordered.data,
+                             L = lag, t.column = time.id, id.column = unit.id, 
+                             treatedvar = treatment, hasbeensorted = TRUE, 
+                             match.on.missingness = match.missing, matching = TRUE,
+                             continuous = continuous.treatment, continuous.treatment.formula = NULL)
     e.sets <- msets[sapply(msets, length) == 0]
     msets <- msets[sapply(msets, length) > 0 ]
 
@@ -236,7 +249,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
     }
     if(refinement.method == "CBPS.weight" | refinement.method == "CBPS.match")
     {
-      dummy <-capture.output(fit0 <- (CBPS::CBPS(reformulate(response = treatment, termlabels = colnames(pooled)[-c(1:3)]),
+      dummy <- capture.output(fit0 <- (CBPS::CBPS(reformulate(response = treatment, termlabels = colnames(pooled)[-c(1:3)]),
                                           family = binomial(link = "logit"), data = pooled)))
     }
     if(refinement.method == "ps.weight" | refinement.method == "ps.match")
@@ -357,38 +370,46 @@ build_maha_mats <- function(idx, ordered_expanded_data)
 
 #modified version of build mahah mats but with refinement handled immediately 
 handle_distance_matrices <- function(ordered_expanded_data, matched.sets, calipervalue, 
-                                     calipermethod, isfactor, use.sd, id.var, time.var, lag.in)
+                                     calipermethod, isfactor, use.sd, id.var, 
+                                     time.var, lag.in, continuous.matching = FALSE)
 {
 
   unnest <- function(matched.set, treated.unit.info, 
-                     lag.in_, ordered_expanded_data_)
+                     lag.in_, ordered_expanded_data_, is.continuous.matching = FALSE,
+                     idvar)
   {
     treated.ts <- as.integer(sub(".*\\.", "", treated.unit.info))
     treated.ids <- as.integer(sub("\\..*", "", treated.unit.info))
     
+    if (is.continuous.matching)
+    {
+      full.controls <- unique(ordered_expanded_data_[, idvar])
+      matched.set <- full.controls[!full.controls %in% treated.ts]
+    }
     tlist <- expand.treated.ts(lag.in_, treated.ts = treated.ts)
     
     idxlist <- get_yearly_dmats(ordered_expanded_data_, treated.ids, tlist, 
                                 matched_sets = list(matched.set), lag.in_)
     rr <- lapply(unlist(idxlist, recursive = FALSE), function(x) {ordered_expanded_data_[x, ]})
     
-    #rr <- lapply(mset, subset.per.matchedset)
+    
     
     tset <- handle_perlag_caliper_calculations(rr, matched.set, calipermethod, calipervalue, 
                                         isfactor, use.sd, ordered_expanded_data, id.var, time.var) #sloppy style, fix later
-    ## apply the individual refinements here
-    
     return(tset)
   }
   
-  #result <- lapply(idx, unnest, matched.set)
   result <- mapply(FUN = unnest, matched.set = matched.sets, treated.unit.info = names(matched.sets), 
                    MoreArgs = list(lag.in_ = lag.in, 
-                                   ordered_expanded_data_ = ordered_expanded_data))
+                                   ordered_expanded_data_ = ordered_expanded_data, 
+                                   is.continuous.matching = continuous.matching,
+                                   idvar = id.var))
   #result <- mapply(FUN = unnest, mset.idx = idx, matched.set = matched.sets, SIMPLIFY = FALSE)
   names(result) <- names(matched.sets)
   result <- result[sapply(result, length) > 0]
-  return(result)
+  return(result)  
+  
+  
 }
 
 #use col.index to determine which columns we want to "scan" for missing data
