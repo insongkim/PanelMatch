@@ -389,12 +389,13 @@ handle_distance_matrices_maha <- function(ordered_expanded_data, matched.sets, i
 
     return(tset)
   }
-  
+  print("new refinement beginning")
   result <- mapply(FUN = unnest, matched.set = matched.sets, treated.unit.info = names(matched.sets),
                    MoreArgs = list(lag.in_ = lag.in,
                                    ordered_expanded_data_ = ordered_expanded_data,
                                    idvar = id.var))
   #result <- mapply(FUN = unnest, mset.idx = idx, matched.set = matched.sets, SIMPLIFY = FALSE)
+  print("new refinement finished")
   names(result) <- names(matched.sets)
   result <- result[sapply(result, length) > 0]
   

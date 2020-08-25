@@ -49,7 +49,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
     stop(warn.str)
   }
 
-
+  print("refinement process can now begin")
   if(!is.null(exact.matching.variables))
   {
     msets <- do_exact_matching(msets, ordered.data, exact.matching.variables)
@@ -93,10 +93,10 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
 
 
 
-
+  print("data reformatting beginning")
   ordered.data <- parse_and_prep(formula = covs.formula, data = ordered.data)
-
-
+  print("data reformatting complete")
+  
   if (any(apply(ordered.data, 2, FUN = function(x) any(is.infinite(x)))))
   {
     stop("Data needed for refinement contains infinite values. Code cannot proceed!")
@@ -123,7 +123,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
     old.lag <- lag
     lag <- 0
     ## new version
-    
+    print("mahalanobis refinement starting")
     msets <- handle_distance_matrices_maha(ordered_expanded_data = ordered.data,
                                            matched.sets = msets, id.var = unit.id,
                                            time.var = time.id, lag.in = lag, maxSize = size.match,
@@ -141,6 +141,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
     #                                          verbose, use.diagonal.covmat = use.diag.covmat)
 
     lag <- old.lag
+    print("Refinement complete!")
   }
   if(refinement.method == "ps.msm.weight" | refinement.method == "CBPS.msm.weight")
   {

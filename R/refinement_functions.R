@@ -154,13 +154,16 @@ handle_mahalanobis_calculations <- function(mahal.nested.list, msets,
   #                  SIMPLIFY = FALSE)
   
   scores <- handle_set(sub.list = mahal.nested.list[[1]], max.set.size = max.size)
-  for(i in 1:length(msets))
-  {
-    names(scores[[i]]) <- msets[[i]]
-    attr(msets[[i]], "weights") <- scores[[i]]
-  }
+  
+  # for(i in 1:length(msets))
+  # {
+  #   names(scores[[i]]) <- msets[[i]]
+  #   attr(msets[[i]], "weights") <- scores[[i]]
+  # }
+  attr(msets, "weights") <- scores
   if(verbose) #in future versions, avoid doing the same calculations twice
   {
+    warning("verbose mode temporarily deprecated")
     # handle_set_verbose <- function(sub.list)
     # {
     #   results.temp <- lapply(sub.list, do.calcs)
@@ -177,7 +180,6 @@ handle_mahalanobis_calculations <- function(mahal.nested.list, msets,
     #   attr(msets[[i]], "distances") <- full.scores[[i]]
     # }
   }
-  
   
   return(msets)
 }
