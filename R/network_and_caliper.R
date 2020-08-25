@@ -321,6 +321,92 @@ handle_perlag_caliper_calculations <- function(nested.list, msets, caliper.metho
   return(msets)
 }
 
+#modified version of build mahah mats but with refinement handled immediately
+handle_distance_matrices <- function(ordered_expanded_data, matched.sets, calipervalue,
+                                     calipermethod, isfactor, use.sd, id.var,
+                                     time.var, lag.in, continuous.matching = FALSE)
+{
+  
+  unnest <- function(matched.set, treated.unit.info,
+                     lag.in_, ordered_expanded_data_, is.continuous.matching = FALSE,
+                     idvar)
+  {
+    treated.ts <- as.integer(sub(".*\\.", "", treated.unit.info))
+    treated.ids <- as.integer(sub("\\..*", "", treated.unit.info))
+    
+    if (is.continuous.matching)
+    {
+      full.controls <- unique(ordered_expanded_data_[, idvar])
+      matched.set <- full.controls[!full.controls %in% treated.ts]
+    }
+    tlist <- expand.treated.ts(lag.in_, treated.ts = treated.ts)
+    
+    idxlist <- get_yearly_dmats(ordered_expanded_data_, treated.ids, tlist,
+                                matched_sets = list(matched.set), lag.in_)
+    rr <- lapply(unlist(idxlist, recursive = FALSE), function(x) {ordered_expanded_data_[x, ]})
+    
+    
+    
+    tset <- handle_perlag_caliper_calculations(rr, matched.set, calipermethod, calipervalue,
+                                               isfactor, use.sd, ordered_expanded_data, id.var, time.var) #sloppy style, fix later
+    return(tset)
+  }
+  
+  result <- mapply(FUN = unnest, matched.set = matched.sets, treated.unit.info = names(matched.sets),
+                   MoreArgs = list(lag.in_ = lag.in,
+                                   ordered_expanded_data_ = ordered_expanded_data,
+                                   is.continuous.matching = continuous.matching,
+                                   idvar = id.var))
+  #result <- mapply(FUN = unnest, mset.idx = idx, matched.set = matched.sets, SIMPLIFY = FALSE)
+  names(result) <- names(matched.sets)
+  result <- result[sapply(result, length) > 0]
+  return(result)
+  
+}
+
+
+handle_distance_matrices_maha <- function(ordered_expanded_data, matched.sets, id.var,
+                                     time.var, lag.in, maxSize, verbose.in, useDiagonalCovmat, treat.var)
+{
+  
+  unnest <- function(matched.set, treated.unit.info,
+                     lag.in_, ordered_expanded_data_,
+                     idvar)
+  {
+    treated.ts <- as.integer(sub(".*\\.", "", treated.unit.info))
+    treated.ids <- as.integer(sub("\\..*", "", treated.unit.info))
+    
+    tlist <- expand.treated.ts(lag.in_, treated.ts = treated.ts)
+    
+    idxlist <- get_yearly_dmats(ordered_expanded_data_, treated.ids, tlist,
+                                matched_sets = list(matched.set), lag.in_)
+    rr <- lapply(unlist(idxlist, recursive = FALSE), function(x) {ordered_expanded_data_[x, ]})
+    
+    tset <- handle_mahalanobis_calculations(rr, matched.set, max.size = maxSize, 
+                                            verbose = verbose.in, 
+                                            use.diagonal.covmat = useDiagonalCovmat
+                                            )
+
+    return(tset)
+  }
+  
+  result <- mapply(FUN = unnest, matched.set = matched.sets, treated.unit.info = names(matched.sets),
+                   MoreArgs = list(lag.in_ = lag.in,
+                                   ordered_expanded_data_ = ordered_expanded_data,
+                                   idvar = id.var))
+  #result <- mapply(FUN = unnest, mset.idx = idx, matched.set = matched.sets, SIMPLIFY = FALSE)
+  names(result) <- names(matched.sets)
+  result <- result[sapply(result, length) > 0]
+  
+  class(result) <- c("matched.set", "list")
+  attr(result, "refinement.method") <- "mahalanobis"
+  attr(result, "lag") <- lag.in
+  attr(result, "t.var") <- time.var
+  attr(result, "id.var" ) <- id.var
+  attr(result, "treatment.var") <- treat.var
+  return(result)
+  
+}
 
 handle_network_caliper_and_refinement <- function(network.caliper.info = NULL, network.refinement.info = NULL,
                                                   ordered.data, adjacency.matrix, neighborhood.degree, unit.id, time.id,

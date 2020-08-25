@@ -88,3 +88,4 @@ check_missing_data_control_units <- function(subset_data, sets, times, lead) {
 clean_leads_cpp <- function(subset_data, sets, treated_tid_pairs, treated_ids, lead, times) {
     .Call('_PanelMatch_clean_leads_cpp', PACKAGE = 'PanelMatch', subset_data, sets, treated_tid_pairs, treated_ids, lead, times)
 }
+

@@ -160,10 +160,11 @@ set_lwd_refinement <- function(mset, local.data, time, id,
   {
     old.lag <- lag
     lag <- 0
-    tlist <- expand.treated.ts(lag, treated.ts = treated.ts)
-    idxlist <- get_yearly_dmats(ordered.data, treated.ids, tlist, matched_sets = msets, lag)
-    mahalmats <- build_maha_mats(ordered_expanded_data = ordered.data, idx =  idxlist)
-    msets <- handle_mahalanobis_calculations(mahalmats, msets, size.match, verbose, use.diagonal.covmat = use.diag.covmat)
+    msets <- handle_distance_matrices_maha(ordered_expanded_data = ordered.data,
+                                           matched.sets = msets, id.var = unit.id,
+                                           time.var = time.id, lag.in = lag, maxSize = size.match,
+                                           useDiagonalCovmat = use.diag.covmat, 
+                                           verbose.in = verbose, treat.var = treatment)
     lag <- old.lag
   }
   if(refinement.method == "ps.msm.weight" | refinement.method == "CBPS.msm.weight")
