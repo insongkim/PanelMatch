@@ -28,11 +28,13 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
     warn.str <- paste0("no viable treated units for ", qoi, " specification")
     stop(warn.str)
   }
+  
   msets <- get.matchedsets(temp.treateds[, time.id], temp.treateds[, unit.id], data = ordered.data,
                              L = lag, t.column = time.id, id.column = unit.id,
                              treatedvar = treatment, hasbeensorted = TRUE,
                              match.on.missingness = match.missing, matching = TRUE,
-                             continuous = continuous.treatment, continuous.treatment.formula = NULL)
+                             continuous = continuous.treatment, continuous.treatment.formula = NULL,
+                           restrict.control.period = restrict.control.period)
   e.sets <- msets[sapply(msets, length) == 0]
   msets <- msets[sapply(msets, length) > 0 ]
 
