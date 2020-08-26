@@ -96,6 +96,11 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
 
 
   print("data reformatting beginning")
+  print("covs.formula")
+  print(covs.formula)
+  print("preview of data:")
+  print(head(ordered.data))
+  print(class(ordered.data))
   ordered.data <- parse_and_prep(formula = covs.formula, data = ordered.data)
   print("data reformatting complete")
   
@@ -284,6 +289,8 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
 #data has unit, time, treatment, everything else column order at this point
 parse_and_prep <- function(formula, data)
 {
+  print("class of data:")
+  print(class(data))
   internal.lag <- function (x, n = 1L, default = NA)
   {
     if (n == 0) return(x)
@@ -300,11 +307,15 @@ parse_and_prep <- function(formula, data)
     sapply(lwindow, internal.lag, x = y)
   }
 
-
-
   apply_formula <- function(x, form)
   {
     attr(form, ".Environment") <- environment()
+    print("class of x:")
+    print(class(x))
+    print("preview of x:")
+    print(head(x))
+    print("dimensions of x:")
+    print(dim(x))
     tdf <- model.frame(form, x, na.action = NULL)
 
     cbind(x[, c(1, 2, 3)], model.matrix(form, tdf)[, -1])

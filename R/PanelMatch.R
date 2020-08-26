@@ -361,7 +361,8 @@ panel_match <- function(lag, time.id, unit.id, treatment,
     return(pm.obj)
   } else if(qoi == "att")
   { #note that ordered.data at this point is in column order: unit, time, treatment, everything else
-
+    print("class of ordered data:")
+    print(class(ordered.data))
     msets <- perform_refinement(lag = lag, time.id = time.id, unit.id = unit.id, 
                                 treatment = treatment, refinement.method = refinement.method, 
                                 size.match = size.match, ordered.data = ordered.data,
