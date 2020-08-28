@@ -378,9 +378,11 @@ handle_distance_matrices_maha <- function(ordered_expanded_data, matched.sets, i
     
     tlist <- expand.treated.ts(lag.in_, treated.ts = treated.ts)
     
-    idxlist <- get_yearly_dmats(ordered_expanded_data_, treated.ids, tlist,
-                                matched_sets = list(matched.set), lag.in_)
-    rr <- lapply(unlist(idxlist, recursive = FALSE), function(x) {ordered_expanded_data_[x, ]})
+    r1 <- paste0(c(matched.set, treated.ids), '.', treated.ts)
+    rr <- ordered_expanded_data_[r1, ] ## use rownames to extract the data
+    # idxlist <- get_yearly_dmats(ordered_expanded_data_, treated.ids, tlist,
+    #                             matched_sets = list(matched.set), lag.in_)
+    # r2 <- lapply(unlist(idxlist, recursive = FALSE), function(x) {ordered_expanded_data_[x, ]})
     
     tset <- handle_mahalanobis_calculations(rr, matched.set, max.size = maxSize, 
                                             verbose = verbose.in, 

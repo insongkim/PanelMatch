@@ -131,6 +131,9 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
     lag <- 0
     ## new version
     print("mahalanobis refinement starting")
+    
+    rownames(ordered.data) <- paste0(ordered.data[, unit.id], ".", ordered.data[, time.id])
+    ##now we assume that rownames have been given
     msets <- handle_distance_matrices_maha(ordered_expanded_data = ordered.data,
                                            matched.sets = msets, id.var = unit.id,
                                            time.var = time.id, lag.in = lag, maxSize = size.match,

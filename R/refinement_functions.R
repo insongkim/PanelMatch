@@ -153,8 +153,8 @@ handle_mahalanobis_calculations <- function(mahal.nested.list, msets,
   #                  MoreArgs = list(max.set.size = max.size),
   #                  SIMPLIFY = FALSE)
   
-  scores <- handle_set(sub.list = mahal.nested.list[[1]], max.set.size = max.size)
-  
+  #scores <- handle_set(sub.list = mahal.nested.list[[1]], max.set.size = max.size)
+  scores <- handle_set(sub.list = mahal.nested.list, max.set.size = max.size)
   # for(i in 1:length(msets))
   # {
   #   names(scores[[i]]) <- msets[[i]]
