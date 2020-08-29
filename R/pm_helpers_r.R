@@ -101,7 +101,12 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
   # print("preview of data:")
   # print(head(ordered.data))
   # print(class(ordered.data))
-  ordered.data <- parse_and_prep(formula = covs.formula, data = ordered.data)
+  
+  ordered.data <- parse_and_prep(formula = covs.formula, 
+                                 data = ordered.data, 
+                                 unit.id = unit.id,
+                                 time.id = time.id,
+                                 treatment.variable = treatment)
   print("data reformatting complete")
   
   if (any(apply(ordered.data, 2, FUN = function(x) any(is.infinite(x)))))
@@ -290,10 +295,9 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
 }
 
 #data has unit, time, treatment, everything else column order at this point
-parse_and_prep <- function(formula, data)
+parse_and_prep <- function(formula, data, unit.id, 
+                           time.id, treatment.variable)
 {
-  print("class of data:")
-  print(class(data))
   internal.lag <- function (x, n = 1L, default = NA)
   {
     if (n == 0) return(x)
@@ -306,7 +310,7 @@ parse_and_prep <- function(formula, data)
 
   lag <- function(y, lwindow)
   {
-
+    
     sapply(lwindow, internal.lag, x = y)
   }
 
@@ -320,15 +324,30 @@ parse_and_prep <- function(formula, data)
     # print("dimensions of x:")
     # print(dim(x))
     tdf <- model.frame(form, x, na.action = NULL)
-
-    cbind(x[, c(1, 2, 3)], model.matrix(form, tdf)[, -1])
+    #tdf2 <- model.frame(form, x, na.action = NULL)
+    
+    #return(cbind(x[, c(1, 2, 3)], model.matrix(form, tdf)[, -1]))
+    
+    return(as.matrix(tdf))
+    #cbind(x[, c(1, 2)], model.matrix(form, tdf)[, -1])
   }
-
+  ###assuming everything is ordered when it comes in!!!!!!
   #by(data, as.factor(data[, unit.id]), FUN = tfunc, form = formula)
+  #original.id <- sub("\\..*", "", unit.id)
+  #DT <- data.table(data)
+  # DT[,(original.id):=NULL]
   t.data <- do.call(rbind, by(data, as.factor(data[, 1]), FUN = apply_formula, form = formula))
+  #idk.dt <- DT[, := apply_formula(x = .SD, form = formula), by = unit.id]
   #may not be necessary?
-  t.data <- t.data[order(t.data[,1], t.data[,2]), ]
+  #idk.dt[, !original.id]
+  #t.data <- as.data.frame(idk.dt)
+  
+  t.data <- cbind(data[, c(unit.id, time.id, treatment.variable)], t.data)
+  #othercols <- colnames(t.data)[!colnames(t.data) %in% c(time.id, unit.id, treatment.variable)]
+  #t.data <- t.data[, c(unit.id, time.id, treatment.variable, othercols)]
+  #t.data <- t.data[order(t.data[,1], t.data[,2]), ]
   rownames(t.data) <- NULL
+  
   return(t.data)
 }
 
