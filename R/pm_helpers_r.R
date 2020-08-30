@@ -323,12 +323,14 @@ parse_and_prep <- function(formula, data, unit.id,
     # print(head(x))
     # print("dimensions of x:")
     # print(dim(x))
+    #browser()
     tdf <- model.frame(form, x, na.action = NULL)
     #tdf2 <- model.frame(form, x, na.action = NULL)
     
     #return(cbind(x[, c(1, 2, 3)], model.matrix(form, tdf)[, -1]))
-    
-    return(as.matrix(tdf))
+    #tdf <- as.matrix(tdf)
+    #browser()
+    return(tdf)
     #cbind(x[, c(1, 2)], model.matrix(form, tdf)[, -1])
   }
   ###assuming everything is ordered when it comes in!!!!!!
@@ -336,7 +338,26 @@ parse_and_prep <- function(formula, data, unit.id,
   #original.id <- sub("\\..*", "", unit.id)
   #DT <- data.table(data)
   # DT[,(original.id):=NULL]
-  t.data <- do.call(rbind, by(data, as.factor(data[, 1]), FUN = apply_formula, form = formula))
+  
+  n.units <- length(unique(data[, 1]))
+  n.time <- length(unique(data[, 2]))
+  attr(formula, ".Environment") <- environment()
+  t.data <- vector("list", length = n.units)
+  for(i in 1:n.units)
+  {
+    
+    t.idx <- (i * n.time) - (n.time - 1)
+    t.data[[i]] <- as.matrix(model.frame(formula, data[t.idx:(t.idx + n.time - 1), ], na.action = NULL)) # fix this after i fix the formula stuff
+    #data <- data[-(1:n.time), ] ##Does this free the memory?
+  }
+  
+  #tdata <- by(data, as.factor(data[, 1]), FUN = apply_formula, form = formula)
+  #class(tdata) <- "list"
+  #t.data <- data.table::rbindlist(tdata)
+  
+  #t.data <- data.table::rbindlist(ll)
+  
+  t.data <- do.call(rbind, t.data)
   #idk.dt <- DT[, := apply_formula(x = .SD, form = formula), by = unit.id]
   #may not be necessary?
   #idk.dt[, !original.id]
