@@ -175,13 +175,16 @@ get.matchedsets <- function(t, id, data, L, t.column, id.column, treatedvar,
       named.sets <- matched_set(matchedsets = sets, id = id, t = t, L = L,
                                 t.var = t.column, id.var = id.column, treatment.var = treatedvar)
     }
-
-    return(named.sets)
+    
+    #return(named.sets)
   } else # continuous
   {
-    handle_calipers(plain.ordered.data = d, caliper.formula = continuous.treatment.formula,
+    named.sets <- handle_calipers(plain.ordered.data = d, caliper.formula = continuous.treatment.formula,
                             matched.sets = NULL, lag.window = L, is.continuous.matching = TRUE)
   }
+  
+  attr(named.sets, "restrict.control.period") <- restrict.control.period
+  return(named.sets)
 }
 
 

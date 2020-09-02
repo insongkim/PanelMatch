@@ -139,21 +139,21 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
     
     rownames(ordered.data) <- paste0(ordered.data[, unit.id], ".", ordered.data[, time.id])
     ##now we assume that rownames have been given
-    msets <- handle_distance_matrices_maha(ordered_expanded_data = ordered.data,
-                                           matched.sets = msets, id.var = unit.id,
-                                           time.var = time.id, lag.in = lag, maxSize = size.match,
-                                           useDiagonalCovmat = use.diag.covmat, 
-                                           verbose.in = verbose, treat.var = treatment)
+    # msets <- handle_distance_matrices_maha(ordered_expanded_data = ordered.data,
+    #                                        matched.sets = msets, id.var = unit.id,
+    #                                        time.var = time.id, lag.in = lag, maxSize = size.match,
+    #                                        useDiagonalCovmat = use.diag.covmat, 
+    #                                        verbose.in = verbose, treat.var = treatment)
     
     ###old code
-    # tlist <- expand.treated.ts(lag, treated.ts = treated.ts)
-    # 
-    # idxlist <- get_yearly_dmats(ordered.data, treated.ids, tlist, matched_sets = msets, lag)
-    # 
-    # mahalmats <- build_maha_mats(ordered_expanded_data = ordered.data, idx =  idxlist)
-    # 
-    # msets <- handle_mahalanobis_calculations(mahalmats, msets, size.match, 
-    #                                          verbose, use.diagonal.covmat = use.diag.covmat)
+    tlist <- expand.treated.ts(lag, treated.ts = treated.ts)
+
+    idxlist <- get_yearly_dmats(ordered.data, treated.ids, tlist, matched_sets = msets, lag)
+
+    mahalmats <- build_maha_mats(ordered_expanded_data = ordered.data, idx =  idxlist)
+
+    msets <- handle_mahalanobis_calculations(mahalmats, msets, size.match,
+                                             verbose, use.diagonal.covmat = use.diag.covmat)
 
     lag <- old.lag
     print("Refinement complete!")
