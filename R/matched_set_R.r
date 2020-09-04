@@ -80,7 +80,8 @@ findBinaryTreated <- function(dmat, treatedvar, time.var, unit.var, hasbeensorte
 #' 
 get.matchedsets <- function(t, id, data, L, t.column, id.column, treatedvar, 
                             hasbeensorted = FALSE, match.on.missingness = TRUE, 
-                            matching = TRUE, continuous = FALSE, continuous.treatment.formula = NULL) 
+                            matching = TRUE, continuous = FALSE, 
+                            continuous.treatment.info = NULL) 
 {
   
   if (length(t) == 0 | length(id) == 0)
@@ -171,8 +172,26 @@ get.matchedsets <- function(t, id, data, L, t.column, id.column, treatedvar,
     return(named.sets)
   } else # continuous
   {
-    handle_calipers(plain.ordered.data = d, caliper.formula = continuous.treatment.formula, 
-                            matched.sets = NULL, lag.window = L, is.continuous.matching = TRUE)
+    ##convert to caliper formula here...
+    
+    continuous.treatment.formula <- as.formula(paste0("~ I(caliper(", treatedvar,",", "'", continuous.treatment.info[["method"]], "'", 
+                                                      ",", continuous.treatment.info[["matching.threshold"]],
+                                                      ",", "'",continuous.treatment.info[["type"]],"'",
+                                                      ",", "'", continuous.treatment.info[["units"]],"'" ,"))"))
+    #~ I(caliper(cal.data,"max", 3, "numeric", "raw"))
+    attr(continuous.treatment.formula, ".Environment") <- environment()
+    matched.sets <- vector("list", length(id))
+    attr(matched.sets, "")
+    names(matched.sets) <- paste0(id, ".", t)
+    
+    attr(matched.sets, "lag") <- L
+    attr(matched.sets, "t.var") <- t.column
+    attr(matched.sets, "id.var" ) <- id.column
+    attr(matched.sets, "treatment.var") <- treatedvar
+    
+    continuous.matched.sets <- handle_calipers(plain.ordered.data = d, caliper.formula = continuous.treatment.formula, 
+                            matched.sets = matched.sets, lag.window = 0:L, is.continuous.matching = TRUE)
+    return(continuous.matched.sets) #should maybe attach extra attributes for continuously matched msets
   }
 }
 
@@ -191,17 +210,32 @@ get.matchedsets <- function(t, id, data, L, t.column, id.column, treatedvar,
 #'
 #' @keywords internal
 #' 
-findContinuousTreated <- function(dmat, treatedvar, time.var, unit.var)
+findContinuousTreated <- function(dmat, treatedvar, time.var, unit.var,
+                                  qoi, continuous.treatment.info)
 {
-  identifyContinuousIndex <- function(x, treatedvar.in)
+  identifyContinuousIndex <- function(x, treatedvar.in, 
+                                      qoi, threshold)
   {
-    unitIndex <- which(diff(x[, treatedvar]) != 0) + 1 ## need to add one since it does not pad with NA values
+    if (qoi == "att")
+    {
+      unitIndex <- which(diff(x[, treatedvar]) >= threshold) + 1 ## need to add one since it does not pad with NA values
+    } else if (qoi == "atc") 
+    {
+      unitIndex <- which(diff(x[, treatedvar]) <= threshold) + 1 ## need to add one since it does not pad with NA values
+    } else {
+      warning("Undefined qoi for continuous matching!")
+    }
+    
     return(x[unitIndex, ])
   }
+  # TODO: fix this
+  ##evaluate the function here to extract threshold
+  treatment.threshold <- continuous.treatment.info[["treatment.threshold"]] #F(continuous.treatment.formula)
   treatedUnits <- by(dmat, INDICES = dmat[, unit.var], FUN = identifyContinuousIndex, 
-     treatedvar.in = treatedvar, simplify = FALSE)
+     treatedvar.in = treatedvar, qoi = qoi, threshold = treatment.threshold, simplify = FALSE)
   
   treatedDF <- do.call(rbind, treatedUnits)
+  if (nrow(treatedDF) == 0) stop("No viable treated units for continuous matching specification")
   rownames(treatedDF) <- NULL
   return(treatedDF)
 }

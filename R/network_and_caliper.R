@@ -81,7 +81,8 @@ handle_calipers <- function(plain.ordered.data, caliper.formula,
                             matched.sets, lag.window, is.continuous.matching = FALSE)
 {
   
-  caliper <- function(y, method, caliper.distance, data_type, calculation_type, lwindow = lag.window)
+  caliper <- function(y, method, caliper.distance, data_type, 
+                      calculation_type, lwindow = lag.window)
   {# redefine the function to extract the method types, variables, caliper distances, might be a better way of doing this
     
     y <- deparse(substitute(y))
@@ -94,7 +95,7 @@ handle_calipers <- function(plain.ordered.data, caliper.formula,
   
   internal.caliper <- function (x, n = 1L, default = NA)
   {
-    if(class(x) == "factor")
+    if (class(x) == "factor")
     {
       x <- as.numeric(as.character(x))
     }
@@ -115,7 +116,7 @@ handle_calipers <- function(plain.ordered.data, caliper.formula,
     {
       stop("arguments missing from caliper function")
     }
-
+    
     return(sapply(lwindow, internal.caliper, x = y))
   }
   
@@ -128,7 +129,7 @@ handle_calipers <- function(plain.ordered.data, caliper.formula,
     
     return(cbind(x[, c(1, 2, 3)], tdf))
   }
-  # browser()
+  
   t.data <- do.call(rbind, by(plain.ordered.data, as.factor(plain.ordered.data[, 1]),
                               FUN = apply_formula, form = caliper.formula))
   #may not be necessary?
@@ -142,8 +143,10 @@ handle_calipers <- function(plain.ordered.data, caliper.formula,
     #browser()
     .IS_FACTOR_VAR <- caliper.metadata[5, i] == "categorical" # or numeric
     .USE_SD_UNITS <- caliper.metadata[6, i] == "sd" # or raw
+    
     matched.sets <- handle.single.caliper.per.lag(t.data, matched.sets, caliper.metadata[2,i], 
-                                                  as.numeric(caliper.metadata[3, i]), c(1:3,  (col.idx-max(lag.window)):col.idx),
+                                                  as.numeric(caliper.metadata[3, i]), 
+                                                  c(1:3,  (col.idx-max(lag.window)):col.idx),
                                                   .IS_FACTOR_VAR, .USE_SD_UNITS, is.continuous.matching)
   }
   
@@ -163,14 +166,15 @@ handle.single.caliper.per.lag <- function(plain.ordered.data, matched.sets, cali
   old.lag <- lag.in
   lag.in <- 0 
   #use more efficient regex version
-  treated.ts <- as.numeric(sub(".*\\.", "", names(matched.sets)))
-  treated.ids <- as.numeric(sub("\\..*", "", names(matched.sets)))
+  #treated.ts <- as.numeric(sub(".*\\.", "", names(matched.sets)))
+  #treated.ids <- as.numeric(sub("\\..*", "", names(matched.sets)))
   
   ordered.data <- plain.ordered.data[, data.index]
   ##TODO: change everything to numeric matrix? 
-  
+
   msets <- handle_distance_matrices(as.matrix(ordered.data), matched.sets, caliper.distance,
-                           caliper.method, is.factor.var, use.sd.units, id.var, time.var, lag.in, do.continuous.matching)
+                           caliper.method, is.factor.var, use.sd.units, id.var, 
+                           time.var, lag.in, do.continuous.matching)
 
   
   lag.in <- old.lag
@@ -229,11 +233,11 @@ handle_perlag_caliper_calculations <- function(nested.list, msets, caliper.metho
     {
       # browser()
       # print(cal)
-      if(IS_FACTOR)
+      if (IS_FACTOR)
       {
-        if(cal.method == "max")
+        if (cal.method == "max")
         {
-          if(any(is.na(col)) || any(col != 0)) #everything must match
+          if (any(is.na(col)) || any(col != 0)) #everything must match
           {
             return(FALSE)
           } else 
@@ -241,11 +245,11 @@ handle_perlag_caliper_calculations <- function(nested.list, msets, caliper.metho
             return(TRUE)
           }  
         }
-        if(cal.method == "average")
+        if (cal.method == "average")
         {
           m.val <- mean(col == 0)
           
-          if(is.na(m.val) || m.val < cal) #looking at proportion of matches, so higher is more similar
+          if (is.na(m.val) || m.val < cal) #looking at proportion of matches, so higher is more similar
           {
             return(FALSE)
           } else 

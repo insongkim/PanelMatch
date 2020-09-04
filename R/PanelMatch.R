@@ -130,7 +130,7 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
                        calipers.in.refinement = FALSE,
                        network.caliper.info = NULL,
                        network.refinement.info = NULL, 
-                       continuous.treatment = FALSE
+                       continuous.treatment.info = NULL
                        ) 
 {
   if(class(lag) == "list" & class(time.id) == "list" & class(unit.id) == "list" & class(treatment) == "list" & 
@@ -168,7 +168,7 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
              calipers.in.refinement = calipers.in.refinement,
              network.caliper.info = network.caliper.info,
              network.refinement.info = network.refinement.info,
-             continuous.treatment = continuous.treatment,
+             continuous.treatment.info = continuous.treatment.info,
              MoreArgs = list(data = data)
              , SIMPLIFY = F)
      return(list.res)
@@ -200,7 +200,7 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
                 calipers.in.refinement,
                 network.caliper.info,
                 network.refinement.info,
-                continuous.treatment)
+                continuous.treatment.info)
   }
   
 }
@@ -226,29 +226,29 @@ panel_match <- function(lag, time.id, unit.id, treatment,
                         calipers.in.refinement,
                         network.caliper.info,
                         network.refinement.info, 
-                        continuous.treatment)
+                        continuous.treatment.info)
 {
-  if(!matching & match.missing)
+  if (!matching & match.missing)
   {
     old.lag <- lag
     lag <- 1
   }
-  if(refinement.method == "CBPS.msm.weight" | refinement.method == "ps.msm.weight")
+  if (refinement.method == "CBPS.msm.weight" | refinement.method == "ps.msm.weight")
   {
     warning("Note that for msm methods, PanelMatch will attempt to find the estimated average treatment effect of being treated for the entire specified 'lead' time periods.")
   }
-  if(listwise.delete & match.missing) stop("set match.missing = F when listwise.delete = TRUE")
-  if(lag < 1) stop("please specify a lag value >= 1")
-  if(class(data) != "data.frame") stop("please convert data to data.frame class")
-  if(!all(refinement.method %in% c("mahalanobis", "ps.weight", "ps.match", "CBPS.weight", "CBPS.match", "ps.msm.weight", "CBPS.msm.weight", "none"))) stop("please choose a valid refinement method")
-  if(any(duplicated(data[, c(unit.id, time.id)]))) stop("Time, unit combinations should uniquely identify rows. Please remove duplicates")
-  if(!class(data[, unit.id]) %in% c("integer", "numeric")) stop("please convert unit id column to integer or numeric")
-  if(class(data[, time.id]) != "integer") stop("please convert time id to consecutive integers")
+  if (listwise.delete & match.missing) stop("set match.missing = F when listwise.delete = TRUE")
+  if (lag < 1) stop("please specify a lag value >= 1")
+  if (class(data) != "data.frame") stop("please convert data to data.frame class")
+  if (!all(refinement.method %in% c("mahalanobis", "ps.weight", "ps.match", "CBPS.weight", "CBPS.match", "ps.msm.weight", "CBPS.msm.weight", "none"))) stop("please choose a valid refinement method")
+  if (any(duplicated(data[, c(unit.id, time.id)]))) stop("Time, unit combinations should uniquely identify rows. Please remove duplicates")
+  if (!class(data[, unit.id]) %in% c("integer", "numeric")) stop("please convert unit id column to integer or numeric")
+  if (class(data[, time.id]) != "integer") stop("please convert time id to consecutive integers")
   
   #######take this out when negative lead is implemented:
-  if(any(lead < 0)) stop("Please provide positive lead values. Negative lead values will be supported in future versions")
+  if (any(lead < 0)) stop("Please provide positive lead values. Negative lead values will be supported in future versions")
   
-  if(any(table(data[, unit.id]) != max(table(data[, unit.id]))))
+  if (any(table(data[, unit.id]) != max(table(data[, unit.id]))))
   {
     testmat <- data.table::dcast(data.table::as.data.table(data), formula = paste0(unit.id, "~", time.id),
                                  value.var = treatment)
@@ -328,7 +328,7 @@ panel_match <- function(lag, time.id, unit.id, treatment,
                                 forbid.treatment.reversal = forbid.treatment.reversal, qoi = qoi, matching = matching,
                                 exact.matching.variables = exact.match.variables, listwise.deletion = listwise.delete,
                                 use.diag.covmat = use.diagonal.variance.matrix, caliper.formula = caliper.formula, 
-                                calipers.in.refinement = calipers.in.refinement, continuous.treatment = continuous.treatment)
+                                calipers.in.refinement = calipers.in.refinement, continuous.treatment.info = continuous.treatment.info)
     msets <- decode_index(msets, unit.index.map, og.unit.id)
     if(!matching & match.missing)
     {
@@ -349,7 +349,8 @@ panel_match <- function(lag, time.id, unit.id, treatment,
                                 forbid.treatment.reversal = forbid.treatment.reversal, qoi = qoi, matching = matching,
                                 exact.matching.variables = exact.match.variables, listwise.deletion = listwise.delete,
                                 use.diag.covmat = use.diagonal.variance.matrix, caliper.formula = caliper.formula,
-                                calipers.in.refinement = calipers.in.refinement, continuous.treatment = continuous.treatment)
+                                calipers.in.refinement = calipers.in.refinement, 
+                                continuous.treatment.info = continuous.treatment.info)
     
     msets <- decode_index(msets, unit.index.map, og.unit.id)
     if(!matching & match.missing)
@@ -371,14 +372,16 @@ panel_match <- function(lag, time.id, unit.id, treatment,
                                 forbid.treatment.reversal = forbid.treatment.reversal, qoi = qoi, matching = matching,
                                 exact.matching.variables = exact.match.variables, listwise.deletion = listwise.delete,
                                 use.diag.covmat = use.diagonal.variance.matrix, caliper.formula = caliper.formula,
-                                calipers.in.refinement = calipers.in.refinement, continuous.treatment = continuous.treatment)
+                                calipers.in.refinement = calipers.in.refinement, 
+                                continuous.treatment.info = continuous.treatment.info)
     ordered.data[, treatment] <- ifelse(ordered.data[, treatment] == 1,0,1) #flip the treatment variables 
     msets2 <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data,
                                  match.missing, covs.formula, verbose, lead = lead, outcome.var = outcome.var, 
                                  forbid.treatment.reversal = forbid.treatment.reversal, qoi = qoi, matching = matching,
                                  exact.matching.variables = exact.match.variables, listwise.deletion = listwise.delete,
                                  use.diag.covmat = use.diagonal.variance.matrix, caliper.formula = caliper.formula,
-                                 calipers.in.refinement = calipers.in.refinement, continuous.treatment = continuous.treatment)
+                                 calipers.in.refinement = calipers.in.refinement, 
+                                 continuous.treatment.info = continuous.treatment.info)
     msets <- decode_index(msets, unit.index.map, og.unit.id)
     if(!matching & match.missing)
     {

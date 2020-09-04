@@ -4,7 +4,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
                                mset.object = NULL, lead, outcome.var = NULL, forbid.treatment.reversal = FALSE, qoi = "",
                                matching = TRUE, exact.matching.variables = NULL, listwise.deletion,
                                use.diag.covmat = FALSE, caliper.formula = NULL, calipers.in.refinement = FALSE,
-                               continuous.treatment = FALSE, continuous.treatment.formula = NULL)
+                               continuous.treatment.info = NULL)
 {
 
   if(!is.null(mset.object))
@@ -22,11 +22,13 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
   }
   else
   {
-    browser()
+    
+    continuous.treatment <- !is.null(continuous.treatment.info) #to make this easier 
     if (continuous.treatment)
     {
       temp.treateds <- findContinuousTreated(dmat = ordered.data, treatedvar = treatment, time.var = time.id,
-                            unit.var = unit.id)
+                            unit.var = unit.id, qoi = qoi, 
+                            continuous.treatment.info = continuous.treatment.info)
     } else
     {
       
@@ -46,7 +48,8 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
                              L = lag, t.column = time.id, id.column = unit.id, 
                              treatedvar = treatment, hasbeensorted = TRUE, 
                              match.on.missingness = match.missing, matching = TRUE,
-                             continuous = continuous.treatment, continuous.treatment.formula = NULL)
+                             continuous = continuous.treatment, 
+                             continuous.treatment.info = continuous.treatment.info)
     e.sets <- msets[sapply(msets, length) == 0]
     msets <- msets[sapply(msets, length) > 0 ]
 
@@ -376,15 +379,19 @@ handle_distance_matrices <- function(ordered_expanded_data, matched.sets, calipe
 
   unnest <- function(matched.set, treated.unit.info, 
                      lag.in_, ordered_expanded_data_, is.continuous.matching = FALSE,
-                     idvar)
+                     idvar, timevar, all.treated.info)
   {
     treated.ts <- as.integer(sub(".*\\.", "", treated.unit.info))
     treated.ids <- as.integer(sub("\\..*", "", treated.unit.info))
     
+    all.treated.ts <- as.integer(sub(".*\\.", "", all.treated.info))
+    all.treated.ids <- as.integer(sub("\\..*", "", all.treated.info))
     if (is.continuous.matching)
     {
       full.controls <- unique(ordered_expanded_data_[, idvar])
-      matched.set <- full.controls[!full.controls %in% treated.ts]
+      not.valid.ids <- all.treated.ids[all.treated.ts %in% treated.ts] #cant include other treated units from the same time
+      matched.set <- full.controls[!full.controls %in% not.valid.ids] # start with everything, then remove any units that are treated 
+      # during the same period as the current t/id pair under consideration
     }
     tlist <- expand.treated.ts(lag.in_, treated.ts = treated.ts)
     
@@ -399,11 +406,15 @@ handle_distance_matrices <- function(ordered_expanded_data, matched.sets, calipe
     return(tset)
   }
   
+  
   result <- mapply(FUN = unnest, matched.set = matched.sets, treated.unit.info = names(matched.sets), 
                    MoreArgs = list(lag.in_ = lag.in, 
                                    ordered_expanded_data_ = ordered_expanded_data, 
                                    is.continuous.matching = continuous.matching,
-                                   idvar = id.var))
+                                   idvar = id.var,
+                                   timevar = time.var,
+                                   all.treated.info = names(matched.sets)), 
+                   SIMPLIFY = FALSE)
   #result <- mapply(FUN = unnest, mset.idx = idx, matched.set = matched.sets, SIMPLIFY = FALSE)
   names(result) <- names(matched.sets)
   result <- result[sapply(result, length) > 0]
