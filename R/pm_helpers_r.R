@@ -376,7 +376,7 @@ handle_distance_matrices <- function(ordered_expanded_data, matched.sets, calipe
                                      calipermethod, isfactor, use.sd, id.var, 
                                      time.var, lag.in, continuous.matching = FALSE)
 {
-
+  
   unnest <- function(matched.set, treated.unit.info, 
                      lag.in_, ordered_expanded_data_, is.continuous.matching = FALSE,
                      idvar, timevar, all.treated.info)

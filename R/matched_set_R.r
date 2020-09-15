@@ -173,11 +173,17 @@ get.matchedsets <- function(t, id, data, L, t.column, id.column, treatedvar,
   } else # continuous
   {
     ##convert to caliper formula here...
+    ## NOT ALLOWING THE AVERAGE STYLE CALCULATION
+    # continuous.treatment.formula <- as.formula(paste0("~ I(caliper(", treatedvar,",", "'", continuous.treatment.info[["method"]], "'", 
+    #                                                   ",", continuous.treatment.info[["matching.threshold"]],
+    #                                                   ",", "'",continuous.treatment.info[["type"]],"'",
+    #                                                   ",", "'", continuous.treatment.info[["units"]],"'" ,"))"))
     
-    continuous.treatment.formula <- as.formula(paste0("~ I(caliper(", treatedvar,",", "'", continuous.treatment.info[["method"]], "'", 
+    continuous.treatment.formula <- as.formula(paste0("~ I(caliper(", treatedvar,",", "'", "max", "'", 
                                                       ",", continuous.treatment.info[["matching.threshold"]],
                                                       ",", "'",continuous.treatment.info[["type"]],"'",
                                                       ",", "'", continuous.treatment.info[["units"]],"'" ,"))"))
+    
     #~ I(caliper(cal.data,"max", 3, "numeric", "raw"))
     attr(continuous.treatment.formula, ".Environment") <- environment()
     matched.sets <- vector("list", length(id))
@@ -190,7 +196,7 @@ get.matchedsets <- function(t, id, data, L, t.column, id.column, treatedvar,
     attr(matched.sets, "treatment.var") <- treatedvar
     
     continuous.matched.sets <- handle_calipers(plain.ordered.data = d, caliper.formula = continuous.treatment.formula, 
-                            matched.sets = matched.sets, lag.window = 0:L, is.continuous.matching = TRUE)
+                            matched.sets = matched.sets, lag.window = 1:L, is.continuous.matching = TRUE)
     return(continuous.matched.sets) #should maybe attach extra attributes for continuously matched msets
   }
 }
@@ -221,7 +227,8 @@ findContinuousTreated <- function(dmat, treatedvar, time.var, unit.var,
       unitIndex <- which(diff(x[, treatedvar]) >= threshold) + 1 ## need to add one since it does not pad with NA values
     } else if (qoi == "atc") 
     {
-      unitIndex <- which(diff(x[, treatedvar]) <= threshold) + 1 ## need to add one since it does not pad with NA values
+      
+      unitIndex <- which(diff(x[, treatedvar]) <= -1 * threshold) + 1 ## need to add one since it does not pad with NA values
     } else {
       warning("Undefined qoi for continuous matching!")
     }
@@ -229,8 +236,9 @@ findContinuousTreated <- function(dmat, treatedvar, time.var, unit.var,
     return(x[unitIndex, ])
   }
   # TODO: fix this
+  
   ##evaluate the function here to extract threshold
-  treatment.threshold <- continuous.treatment.info[["treatment.threshold"]] #F(continuous.treatment.formula)
+  treatment.threshold <- continuous.treatment.info[["treatment.threshold"]] #(continuous.treatment.formula)
   treatedUnits <- by(dmat, INDICES = dmat[, unit.var], FUN = identifyContinuousIndex, 
      treatedvar.in = treatedvar, qoi = qoi, threshold = treatment.threshold, simplify = FALSE)
   

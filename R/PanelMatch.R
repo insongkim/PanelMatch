@@ -245,6 +245,15 @@ panel_match <- function(lag, time.id, unit.id, treatment,
   if (!class(data[, unit.id]) %in% c("integer", "numeric")) stop("please convert unit id column to integer or numeric")
   if (class(data[, time.id]) != "integer") stop("please convert time id to consecutive integers")
   
+  if (!is.null(continuous.treatment.info))
+  {
+    if (!(all(c("treatment.threshold", "type", "units", "matching.threshold") 
+            %in% names(continuous.treatment.info))))
+    {
+      stop("Missing parameter in continuous matching specification. Please include all of the treatment.threshold,type, units, and matching.threshold parameters")
+    }
+  }
+  
   #######take this out when negative lead is implemented:
   if (any(lead < 0)) stop("Please provide positive lead values. Negative lead values will be supported in future versions")
   
@@ -317,18 +326,20 @@ panel_match <- function(lag, time.id, unit.id, treatment,
     }  
   }
   
-
-  
-  
   if(qoi == "atc")
   {
-    ordered.data[, treatment] <- ifelse(ordered.data[, treatment] == 1,0,1) #flip the treatment variables 
+    if(is.null(continuous.treatment.info))
+    {
+      ordered.data[, treatment] <- ifelse(ordered.data[, treatment] == 1,0,1) #flip the treatment variables   
+    }
+    
     msets <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data, 
-                                match.missing, covs.formula, verbose, lead= lead, outcome.var = outcome.var, 
+                                match.missing, covs.formula, verbose, lead = lead, outcome.var = outcome.var, 
                                 forbid.treatment.reversal = forbid.treatment.reversal, qoi = qoi, matching = matching,
                                 exact.matching.variables = exact.match.variables, listwise.deletion = listwise.delete,
                                 use.diag.covmat = use.diagonal.variance.matrix, caliper.formula = caliper.formula, 
-                                calipers.in.refinement = calipers.in.refinement, continuous.treatment.info = continuous.treatment.info)
+                                calipers.in.refinement = calipers.in.refinement, 
+                                continuous.treatment.info = continuous.treatment.info)
     msets <- decode_index(msets, unit.index.map, og.unit.id)
     if(!matching & match.missing)
     {
@@ -367,6 +378,11 @@ panel_match <- function(lag, time.id, unit.id, treatment,
     return(pm.obj)
   } else if(qoi == "ate")
   {
+    if (!is.null(continuous.treatment.info))
+    {
+      qoi <- "att"
+    }
+    
     msets <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data, 
                                 match.missing, covs.formula, verbose, lead = lead, outcome.var = outcome.var, 
                                 forbid.treatment.reversal = forbid.treatment.reversal, qoi = qoi, matching = matching,
@@ -374,7 +390,15 @@ panel_match <- function(lag, time.id, unit.id, treatment,
                                 use.diag.covmat = use.diagonal.variance.matrix, caliper.formula = caliper.formula,
                                 calipers.in.refinement = calipers.in.refinement, 
                                 continuous.treatment.info = continuous.treatment.info)
-    ordered.data[, treatment] <- ifelse(ordered.data[, treatment] == 1,0,1) #flip the treatment variables 
+    
+    if (is.null(continuous.treatment.info))
+    {
+      ordered.data[, treatment] <- ifelse(ordered.data[, treatment] == 1,0,1) #flip the treatment variables   
+    }
+    if (!is.null(continuous.treatment.info))
+    {
+      qoi <- "atc"
+    }
     msets2 <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data,
                                  match.missing, covs.formula, verbose, lead = lead, outcome.var = outcome.var, 
                                  forbid.treatment.reversal = forbid.treatment.reversal, qoi = qoi, matching = matching,
@@ -382,8 +406,12 @@ panel_match <- function(lag, time.id, unit.id, treatment,
                                  use.diag.covmat = use.diagonal.variance.matrix, caliper.formula = caliper.formula,
                                  calipers.in.refinement = calipers.in.refinement, 
                                  continuous.treatment.info = continuous.treatment.info)
+    
+    if (!is.null(continuous.treatment.info)) qoi <- "ate"
+    
     msets <- decode_index(msets, unit.index.map, og.unit.id)
-    if(!matching & match.missing)
+    
+    if (!matching & match.missing)
     {
       attr(msets, "lag") <- old.lag
     }

@@ -139,14 +139,24 @@ handle_calipers <- function(plain.ordered.data, caliper.formula,
   
   for(i in 1:ncol(caliper.metadata))
   {
-    col.idx <- i * max(lag.window + 1) + 3
-    #browser()
+    if (is.continuous.matching)
+    {
+      col.idx <- i * max(lag.window) + 3
+      data.index <- (col.idx - (max(lag.window) - 1)):col.idx
+    } else
+    {
+      col.idx <- i * max(lag.window + 1) + 3
+      data.index <- (col.idx - max(lag.window)):col.idx
+    }
+    #col.idx <- i * max(lag.window + 1) + 3
+    
     .IS_FACTOR_VAR <- caliper.metadata[5, i] == "categorical" # or numeric
     .USE_SD_UNITS <- caliper.metadata[6, i] == "sd" # or raw
     
     matched.sets <- handle.single.caliper.per.lag(t.data, matched.sets, caliper.metadata[2,i], 
                                                   as.numeric(caliper.metadata[3, i]), 
-                                                  c(1:3,  (col.idx-max(lag.window)):col.idx),
+                                                  c(1:3, data.index),
+                                                  #c(1:3,  (col.idx - max(lag.window)):col.idx),
                                                   .IS_FACTOR_VAR, .USE_SD_UNITS, is.continuous.matching)
   }
   
