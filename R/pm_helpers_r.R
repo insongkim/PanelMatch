@@ -3,7 +3,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
                                ordered.data, match.missing, covs.formula, verbose,
                                mset.object = NULL, lead, outcome.var = NULL, forbid.treatment.reversal = FALSE, qoi = "",
                                matching = TRUE, exact.matching.variables = NULL, listwise.deletion,
-                               use.diag.covmat = FALSE, caliper.formula = NULL, calipers.in.refinement = FALSE,
+                               use.diag.covmat = FALSE, caliper.formula = NULL, 
                                continuous.treatment.info = NULL)
 {
 
@@ -79,10 +79,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
   {
     msets <- handle_calipers(plain.ordered.data = ordered.data, caliper.formula,
                              matched.sets = msets, lag.window = 0:lag)
-    if(calipers.in.refinement)
-    {
-      covs.formula <- merge_formula(covs.formula, caliper.formula)
-    }
+    
   }
   
   if(refinement.method == "none")
