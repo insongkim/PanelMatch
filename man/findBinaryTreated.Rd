@@ -21,7 +21,7 @@ findBinaryTreated(dmat, treatedvar, time.var, unit.var, hasbeensorted = FALSE)
 \code{findBinaryTreated} returns a subset of the data in the \code{dmat} data frame, containing only treated units for which a matched set might exist
 }
 \description{
-\code{findBinaryTreated} is used to identify t,id pairs of units for which a matched set might exist. 
+\code{findBinaryTreated} is used to identify t,id pairs of units for which a matched set might exist.
 More precisely, it finds units for which at time t, the specified treatment has been applied, but at time t - 1, the treatment has not.
 }
 \keyword{internal}

@@ -202,7 +202,7 @@ handle.single.caliper.per.lag <- function(plain.ordered.data, matched.sets, cali
 handle_perlag_caliper_calculations <- function(nested.list, msets, caliper.method, 
                                                caliper.value, is.factor.var, use.sd.units, full.data, id.var, time.var)
 {
-  
+  if (length(msets) == 0) return(numeric(0))
   do_calcs <- function(time.df, sd.vals__, is_factor_in)
   {
     
@@ -321,12 +321,7 @@ handle_perlag_caliper_calculations <- function(nested.list, msets, caliper.metho
     sd.vals <- 1
   }
   
-  
-  # indices.msets <- lapply(nested.list, handle_set, 
-  #                         cal.value = caliper.value, 
-  #                         cal.method = caliper.method, 
-  #                         standard.deviations = sd.vals, 
-  #                         is.factor = is.factor.var)
+
   indices.msets <- handle_set(nested.list, caliper.value, caliper.method, sd.vals, is.factor.var)
   #msets <- mapply(function(x, y) return(as.numeric(x[y])), x = msets, y = indices.msets, SIMPLIFY = FALSE)
   #msets <- msets[sapply(msets, length) > 0]
@@ -341,18 +336,18 @@ handle_network_caliper_and_refinement <- function(network.caliper.info = NULL, n
                                                   treatment, covs.formula, caliper.formula)
 {
   
-  if(!is.null(network.caliper.info) || !is.null(network.refinement.info))
+  if (!is.null(network.caliper.info) || !is.null(network.refinement.info))
   { 
     propstring.formula <- paste0('neighborhood_t_prop', '.', neighborhood.degree)
     countstring.formula <- paste0('neighborhood_t_count', '.', neighborhood.degree)
-    if(!is.null(network.refinement.info))
+    if (!is.null(network.refinement.info))
     {
       
-      if(network.refinement.info[["use.proportion.data"]])
+      if (network.refinement.info[["use.proportion.data"]])
       {
-        if(identical(max(network.refinement.info[['proportion.lags']]), 0))
+        if (identical(max(network.refinement.info[['proportion.lags']]), 0))
         {
-          if(is.null(covs.formula))
+          if (is.null(covs.formula))
           {
             covs.formula <- reformulate(propstring.formula)
             environment(covs.formula) <- globalenv()
@@ -365,7 +360,7 @@ handle_network_caliper_and_refinement <- function(network.caliper.info = NULL, n
         {
           propstring.formula.lag <- paste0("I(lag(", propstring.formula, ",", 
                                            deparse(network.refinement.info[["proportion.lags"]]), "))")
-          if(is.null(covs.formula))
+          if (is.null(covs.formula))
           {
             covs.formula <- reformulate(propstring.formula.lag)
             environment(covs.formula) <- globalenv()

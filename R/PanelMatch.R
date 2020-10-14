@@ -105,26 +105,7 @@
 #'                          covs.formula = ~ tradewb, 
 #'                          size.match = 5, qoi = "att",
 #'                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
-#' # Running multiple configurations at once
-#' list.of.results = PanelMatch(lag = list(4,3), 
-#'                                  time.id = list("year", "year"),
-#'                                  unit.id = list("wbcode2", "wbcode2"),
-#'                                  treatment = list("dem", "dem"),
-#'                                  refinement.method = list("mahalanobis", "ps.weight"),
-#'                                  data = dem,
-#'                                  match.missing = list(TRUE, TRUE),
-#'                                  covs.formula = list(~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
-#'                                  ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4))),
-#'                                  size.match = list(5,5),
-#'                                  qoi = list("att", "att"),
-#'                                  outcome.var = list("y", "y"),
-#'                                  lead = list(0:4, 0:3),
-#'                                  forbid.treatment.reversal = list(FALSE, FALSE),
-#'                                  verbose = list(FALSE, FALSE),
-#'                                  listwise.delete = list(FALSE,FALSE),
-#'                                  use.diagonal.variance.matrix = list(TRUE, NULL),
-#'                                  exact.match.variables = list(NULL, NULL),
-#'                                  matching = list(TRUE, TRUE))
+#' # Running multiple configurations at once REMOVED FOR NOW...
 #'
 #'
 #' @export
@@ -154,10 +135,10 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
   if(class(lag) == "list" & class(time.id) == "list" & class(unit.id) == "list" & class(treatment) == "list" & 
      class(refinement.method) == "list" & class(size.match) == "list" & class(match.missing) == "list" & 
      class(covs.formula) == "list" & class(verbose) == "list" & class(qoi) == "list" & class(lead) == "list" & 
-     class(outcome.var) == "list" & class(exact.match.variables) == "list" & class(forbid.treatment.reversal) == "list" &
-     class(matching) == "list" & class(listwise.delete) == "list" & class(use.diagonal.variance.matrix) == "list" & class(adjacency.matrix) == "list" &
-     class(neighborhood.degree) == "list") #everything but data must be provided explicitly
+     class(outcome.var) == "list" & class(forbid.treatment.reversal) == "list" &
+     class(matching) == "list" & class(listwise.delete) == "list" & class(use.diagonal.variance.matrix) == "list") #everything but data must be provided explicitly
   {
+    stop("looped version of PanelMatch currently unavailable")
     if(length(unique(length(lag) , length(time.id)  , length(unit.id)  , length(treatment)  , 
                      length(refinement.method)  , length(size.match)  , length(match.missing)  , 
                      length(covs.formula)  , length(verbose)  , length(qoi)  , length(lead)  , 

@@ -270,6 +270,10 @@ build_balance_mats <- function(idx, ordered_expanded_data, msets)
 #' @param legend logical indicating whether or not a legend identifying the variables should be included on the plot. Default is TRUE.
 #' @param ylab Label for y axis. Default is "SD". This is the same as the ylab argument to \code{plot}.
 #' @param use.equal.weights logical. If set to TRUE, then equal weights will be assigned to control units, rather than using whatever calculated weights have been assigned. This is helpful for assessing the improvement in covariate balance as a result of refining the matched sets.
+#' @param calculate.network.proportion.balance logical TRUE/FALSE. If TRUE, the proportion of treated neighbors will be included as a covariate in the balance calculations
+#' @param calculate.network.count.balance logical TRUE/FALSE. If TRUE, the number of treated neighbors will be included as a covariate in the balance calculations
+#' @param adjacency.matrix data.frame object. This first two columns of this data frame should contain the IDs of nodes in the network. The third column should be a binary indicator of adjacency between nodes.
+#' @param neighborhood.degree Integer that specifies the upper limit of the degree of neighbors that should be included in the network calculations
 #' @param ... Additional graphical parameters to be passed to the \code{plot} function in base R.
 #' @examples
 #' #add some additional data to data set for demonstration purposes
@@ -289,7 +293,7 @@ get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.wei
                                   verbose = TRUE, plot = FALSE,
                                   reference.line = TRUE, legend = TRUE, ylab = "SD",
                                   calculate.network.proportion.balance = FALSE,
-                                  calculate.network.count.blance = FALSE,
+                                  calculate.network.count.balance = FALSE,
                                   adjacency.matrix = NULL,
                                   neighborhood.degree = NULL,
                                   ...)
@@ -324,7 +328,7 @@ get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.wei
   }
 
   ordered.data <- data[order(data[,unit.id], data[,time.id]), ]
-  if(calculate.network.proportion.balance || calculate.network.count.blance)
+  if(calculate.network.proportion.balance || calculate.network.count.balance)
   {
     if(is.null(adjacency.matrix))
     {
@@ -341,7 +345,7 @@ get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.wei
       covariates <- c(covariates,
                       make.names(paste0('neighborhood_t_prop', '.', 1:neighborhood.degree)))
     } 
-    if(!is.null(calculate.network.count.blance))
+    if(!is.null(calculate.network.count.balance))
     {
       covariates <- c(covariates,
                       make.names(paste0('neighborhood_t_count', '.', 1:neighborhood.degree)))

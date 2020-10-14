@@ -161,26 +161,7 @@ PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                          covs.formula = ~ tradewb, 
                          size.match = 5, qoi = "att",
                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
-# Running multiple configurations at once
-list.of.results = PanelMatch(lag = list(4,3), 
-                                 time.id = list("year", "year"),
-                                 unit.id = list("wbcode2", "wbcode2"),
-                                 treatment = list("dem", "dem"),
-                                 refinement.method = list("mahalanobis", "ps.weight"),
-                                 data = dem,
-                                 match.missing = list(TRUE, TRUE),
-                                 covs.formula = list(~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
-                                 ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4))),
-                                 size.match = list(5,5),
-                                 qoi = list("att", "att"),
-                                 outcome.var = list("y", "y"),
-                                 lead = list(0:4, 0:3),
-                                 forbid.treatment.reversal = list(FALSE, FALSE),
-                                 verbose = list(FALSE, FALSE),
-                                 listwise.delete = list(FALSE,FALSE),
-                                 use.diagonal.variance.matrix = list(TRUE, NULL),
-                                 exact.match.variables = list(NULL, NULL),
-                                 matching = list(TRUE, TRUE))
+# Running multiple configurations at once REMOVED FOR NOW...
 
 
 }

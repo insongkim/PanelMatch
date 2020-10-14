@@ -736,7 +736,7 @@ test_that("network caliper and refinement tests", {
 })
 
 
-test_that("Testing Continuous Matching", {
+test_that("Testing Continuous Matching: basic, att", {
   input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
   input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
   input.data[input.data$id %in% c(2,4,6) & input.data$time > 5, 'treatment'] <- 1 + .43
@@ -750,7 +750,7 @@ test_that("Testing Continuous Matching", {
   
   
   continuous.treatment.info <- list(treatment.threshold = .5, type = "numeric", 
-                                    method = "max", units = "raw", matching.threshold = 2) #include everything 
+                                    units = "raw", matching.threshold = 2) #include everything 
   
   PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
                            treatment = "treatment", refinement.method = "none", # should be none for all of them
@@ -763,9 +763,9 @@ test_that("Testing Continuous Matching", {
   expect_true(all(PM.results$att[[1]] == c(1,3,5,7, 8, 9, 10)))
   expect_true(all(PM.results$att[[2]] == c(1,3,5,7, 8,9,10)))
   expect_true(all(PM.results$att[[3]] == c(1,3,5,7,8,9,10)))
+})
   
-  
-  ####*****#####******
+test_that("Continuous Matching, att, unmatchable controls", {
   
   # making two control units too far away to be matched with anything
   input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
@@ -780,7 +780,7 @@ test_that("Testing Continuous Matching", {
   
   
   continuous.treatment.info <- list(treatment.threshold = .5, type = "numeric", 
-                                    method = "max", units = "raw", matching.threshold = 2) #include everything 
+                                    units = "raw", matching.threshold = 2) #include everything 
   
   PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
                            treatment = "treatment", refinement.method = "none", # should be none for all of them
@@ -793,10 +793,10 @@ test_that("Testing Continuous Matching", {
   expect_true(all(PM.results$att[[1]] == c(1,3,5,7,8)))
   expect_true(all(PM.results$att[[2]] == c(1,3,5,7,8)))
   expect_true(all(PM.results$att[[3]] == c(1,3,5,7,8)))
+})
   
   
-  
-  ####*****#####******
+test_that("continuous matching, att, various exceptions", {
   
   # making one unit have one time period that will violate the caliper
   input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
@@ -812,7 +812,7 @@ test_that("Testing Continuous Matching", {
   
   
   continuous.treatment.info <- list(treatment.threshold = .5, type = "numeric", 
-                                    method = "max", units = "raw", matching.threshold = 2) #include everything 
+                                    units = "raw", matching.threshold = 2) #include everything 
   
   PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
                            treatment = "treatment", refinement.method = "none", # should be none for all of them
@@ -826,7 +826,7 @@ test_that("Testing Continuous Matching", {
   expect_true(all(PM.results$att[[2]] == c(1,3,5,7,8,9)))
   expect_true(all(PM.results$att[[3]] == c(1,3,5,7,8,9)))
   
-  
+
   
   
   ####*****#####*****
@@ -844,7 +844,7 @@ test_that("Testing Continuous Matching", {
   
   
   continuous.treatment.info <- list(treatment.threshold = .5, type = "numeric", 
-                                    method = "max", units = "raw", matching.threshold = 2) #include everything 
+                                    units = "raw", matching.threshold = 2) #include everything 
   
   PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
                            treatment = "treatment", refinement.method = "none", # should be none for all of them
@@ -875,7 +875,7 @@ test_that("Testing Continuous Matching", {
   
   
   continuous.treatment.info <- list(treatment.threshold = .5, type = "numeric", 
-                                    method = "max", units = "raw", matching.threshold = 2) #include everything 
+                                    units = "raw", matching.threshold = 2) #include everything 
   
   PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
                            treatment = "treatment", refinement.method = "none", # should be none for all of them
@@ -906,7 +906,7 @@ test_that("Testing Continuous Matching", {
   
   
   continuous.treatment.info <- list(treatment.threshold = .5, type = "numeric", 
-                                    method = "max", units = "raw", matching.threshold = 2) #include everything 
+                                    units = "raw", matching.threshold = 2) #include everything 
   
   PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
                            treatment = "treatment", refinement.method = "none", # should be none for all of them
@@ -920,10 +920,11 @@ test_that("Testing Continuous Matching", {
   expect_true(all(PM.results$att[[2]] == c(1,3,5,7,8,10)))
   expect_true(all(PM.results$att[[3]] == c(1,3,5,7,8,10)))
   
-  
-  
+})
+test_that("checking new definition of ATT (continuous) explicitly", {
+
   ####*****#####*****
-  # some treated units are only treated under atc conditions
+  # CHECKING NEW DEFINITION OF ATT
   input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
   input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
   
@@ -940,7 +941,7 @@ test_that("Testing Continuous Matching", {
   
   
   continuous.treatment.info <- list(treatment.threshold = .5, type = "numeric", 
-                                    method = "max", units = "raw", matching.threshold = 2) #include everything 
+                                    units = "raw", matching.threshold = 2) #include everything 
   
   PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
                            treatment = "treatment", refinement.method = "none", # should be none for all of them
@@ -949,11 +950,11 @@ test_that("Testing Continuous Matching", {
                            lead = 0:4, forbid.treatment.reversal = FALSE,
                            continuous.treatment.info = continuous.treatment.info)
   
-  expect_true(length(PM.results$att) == 2) # six is now included in the matched sets because we are only looking from 2,3,4,5, t = 6
-  expect_true(all(PM.results$att[[1]] == c(1,3,5,6, 7,8,10)))
-  expect_true(all(PM.results$att[[2]] == c(1,3,5,6, 7,8,10)))
+  expect_true(length(PM.results$att) == 3) 
+  expect_true(all(PM.results$att[[1]] == c(1,3,5,7,8,10)))
+  expect_true(all(PM.results$att[[2]] == c(1,3,5,7,8,10)))
   
-  
+
   
   
   ####*****#####*****
@@ -965,16 +966,17 @@ test_that("Testing Continuous Matching", {
   input.data[input.data$id %in% c(2,4,6) & input.data$time <= 5, 'treatment'] <- 1.1
   #input.data[input.data[, 'treatment'] == 0, 'treatment'] <- .035
   
-  vals <- runif(n = 4, min = .1, max = 2.1) #these actual values should not matter because of the distribution
-  input.data[input.data$id %in% c(1,3,5,7) & input.data$time %in% 2:5, 'treatment'] <- unlist(sapply(vals, rep, times = 4, simplify = FALSE))  #none of these should ever violate matching restriction
-  input.data[input.data$id %in% c(9) & input.data$time %in% 2:3, 'treatment'] <- 52
+  
+  input.data[input.data$id %in% c(1,3), 'treatment'] <- .5
+  input.data[input.data$id %in% c(5,7), 'treatment'] <- 2
+  input.data[input.data$id %in% c(9), 'treatment'] <- 52
   
   input.data$cal.data <- input.data$id
   input.data$outcome <- rnorm(nrow(input.data))
   
   
   continuous.treatment.info <- list(treatment.threshold = .05, type = "numeric", 
-                                    method = "max", units = "raw", matching.threshold = 1) #small threshold for att matching 
+                                    units = "raw", matching.threshold = 1) #small threshold for att matching 
   
   PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
                            treatment = "treatment", refinement.method = "none", # should be none for all of them
@@ -988,8 +990,7 @@ test_that("Testing Continuous Matching", {
   expect_true(all(PM.results$att[[2]] == c(1,3,5,7)))
   expect_true(all(PM.results$att[[3]] == c(1,3,5,7)))
   
-  
-  
+
   
   #########*************************************************
   ## including some control units in "both directions"
@@ -1006,7 +1007,7 @@ test_that("Testing Continuous Matching", {
   input.data$outcome <- rnorm(nrow(input.data))
   
   continuous.treatment.info <- list(treatment.threshold = .5, type = "numeric", 
-                                    method = "max", units = "raw", matching.threshold = 2) #include everything 
+                                    units = "raw", matching.threshold = 2) #include everything 
   
   PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
                            treatment = "treatment", refinement.method = "none", # should be none for all of them
@@ -1047,25 +1048,26 @@ test_that("Testing Continuous Matching", {
   expect_true(all(c("2.6","4.6") %in% names(PM.results$att)))
   
   expect_true(all(PM.results$att[[1]] == c(1,3,5, 6, 7, 8, 9, 10)))
-  expect_true(all(PM.results$att[[2]] == c(1,3,5,6, 7, 8,9,10))) #six is no longer a treated unit so it will be matched like everything else
-  
-  #TODO: remove the extra list items, add safeguards into the code to check for this...
-  
-  
+  expect_true(all(PM.results$att[[2]] == c(1,3,5,6, 7, 8,9,10))) #six is no longer a treated unit so it will be matched like everything else  
+})
+
+test_that("test new ATC (continuous) basic", {
   ##################################################################################################################
-  ######################################testing ATC functionality
+  ######################################testing NEW ATC functionality############################################################################
+  ##################################################################################################################
+  
   
   input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
   input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
-  input.data[input.data$id %in% c(2,4) & input.data$time > 5, 'treatment'] <- -.6
-  input.data[input.data$id %in% c(6) & input.data$time > 5, 'treatment'] <- .4
-  #input.data[input.data[, 'treatment'] == 0, 'treatment'] <- .035
+  input.data[,'treatment'] <- rep(seq(10, 100, by = 10), 10)
+  input.data[input.data$id %in% c(2,4, 6) & input.data$time == 6, 'treatment'] <- 50
+  
   
   input.data$cal.data <- input.data$id
   input.data$outcome <- rnorm(nrow(input.data))
   
   continuous.treatment.info <- list(treatment.threshold = .5, type = "numeric", 
-                                    method = "max", units = "raw", matching.threshold = 2) #include everything 
+                                    units = "raw", matching.threshold = 10) #include everything 
   
   PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
                            treatment = "treatment", refinement.method = "none", # should be none for all of them
@@ -1075,14 +1077,121 @@ test_that("Testing Continuous Matching", {
                            continuous.treatment.info = continuous.treatment.info)
   
   
-  expect_true(length(PM.results$atc) == 2) 
-  expect_true(all(c("2.6","4.6") %in% names(PM.results$atc)))
+  expect_true(length(PM.results$atc) == 3) 
+  expect_true(all(c("2.6","4.6", "6.6") %in% names(PM.results$atc)))
   
-  expect_true(all(PM.results$atc[[1]] == c(1,3,5, 6, 7, 8, 9, 10)))
-  expect_true(all(PM.results$atc[[2]] == c(1,3,5,6, 7, 8,9,10))) #six is no longer a treated unit so it will be matched like everything else
+  expect_true(all(PM.results$atc[[1]] == c(1,3,5,7,8,9,10)))
+  expect_true(all(PM.results$atc[[2]] == c(1,3,5,7,8,9,10))) #six is no longer a treated unit so it will be matched like everything else
+  
+})
+
+test_that("test new ATC (continuous) varied treatments", {
+  ##################################################################################################################
+  ######################################testing NEW ATC functionality############################################################################
+  ##################################################################################################################
   
   
+  input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+  input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+  input.data[,'treatment'] <- rep(seq(10, 100, by = 10), 10)
+  input.data[input.data$id %in% c(2,4, 6) & input.data$time == 6, 'treatment'] <- 50 
   
+  input.data[input.data$id %in% c(8, 9,10) , 'treatment'] <- rep(seq(5, 50, 5), 3) #exceeds treatment threshold (so are controls by ATC specification) but removed via filter
+  
+  input.data$cal.data <- input.data$id
+  input.data$outcome <- rnorm(nrow(input.data))
+  
+  continuous.treatment.info <- list(treatment.threshold = 4, type = "numeric", 
+                                    units = "raw", matching.threshold = 10) #do some filtering at the caliper stage
+  
+  PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
+                           treatment = "treatment", refinement.method = "none", # should be none for all of them
+                           data = input.data, match.missing = TRUE, 
+                           size.match = 5, qoi = "atc" , outcome.var = "outcome",
+                           lead = 0:4, forbid.treatment.reversal = FALSE,
+                           continuous.treatment.info = continuous.treatment.info)
+  
+  
+  expect_true(length(PM.results$atc) == 3) 
+  expect_true(all(c("2.6","4.6", "6.6") %in% names(PM.results$atc)))
+  
+  expect_true(all(PM.results$atc[[1]] == c(1,3,5,7)))
+  expect_true(all(PM.results$atc[[2]] == c(1,3,5,7))) #six is no longer a treated unit so it will be matched like everything else
+  expect_true(all(PM.results$atc[[3]] == c(1,3,5,7)))
+  
+  
+  input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+  input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+  input.data[,'treatment'] <- rep(seq(10, 100, by = 10), 10)
+  input.data[input.data$id %in% c(2,4, 6) & input.data$time == 6, 'treatment'] <- 50
+  
+  input.data[input.data$id %in% c(8, 9,10) , 'treatment'] <- rep(seq(5, 50, 5), 3)
+  
+  input.data$cal.data <- input.data$id
+  input.data$outcome <- rnorm(nrow(input.data))
+  
+  continuous.treatment.info <- list(treatment.threshold = 4, type = "numeric", 
+                                    units = "raw", matching.threshold = 30) #expand the caliper so that everything makes it through as a control...
+  
+  PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
+                           treatment = "treatment", refinement.method = "none", # should be none for all of them
+                           data = input.data, match.missing = TRUE, 
+                           size.match = 5, qoi = "atc" , outcome.var = "outcome",
+                           lead = 0:4, forbid.treatment.reversal = FALSE,
+                           continuous.treatment.info = continuous.treatment.info)
+  
+  
+  expect_true(length(PM.results$atc) == 3) 
+  expect_true(all(c("2.6","4.6", "6.6") %in% names(PM.results$atc)))
+  
+  expect_true(all(PM.results$atc[[1]] == c(1,3,5,7,8,9,10)))
+  expect_true(all(PM.results$atc[[2]] == c(1,3,5,7,8,9,10))) #six is no longer a treated unit so it will be matched like everything else
+  expect_true(all(PM.results$atc[[3]] == c(1,3,5,7,8,9,10)))
+  
+  
+})
+
+
+test_that("test new ATC (continuous) varied treatments and thresholds", {
+  ##################################################################################################################
+  ######################################testing NEW ATC functionality############################################################################
+  ##################################################################################################################
+  
+  
+  input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+  input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+  input.data[,'treatment'] <- rep(seq(10, 100, by = 10), 10)
+  input.data[input.data$id %in% c(2,4, 6) & input.data$time == 6, 'treatment'] <- 50
+  
+  input.data[input.data$id %in% c(8, 9,10) & input.data$time == 6 , 'treatment'] <- 53 #doing the opposite of before, it moves, but less than the threshold so these are still controls (treatments in atc)
+  
+  input.data$cal.data <- input.data$id
+  input.data$outcome <- rnorm(nrow(input.data))
+  
+  continuous.treatment.info <- list(treatment.threshold = 6, type = "numeric", #this should mean that 8, 9, 10 are now "treated" units in the ATC framework
+                                    units = "raw", matching.threshold = 50) 
+  
+  PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
+                           treatment = "treatment", refinement.method = "none", # should be none for all of them
+                           data = input.data, match.missing = TRUE, 
+                           size.match = 5, qoi = "atc" , outcome.var = "outcome",
+                           lead = 0:4, forbid.treatment.reversal = FALSE,
+                           continuous.treatment.info = continuous.treatment.info)
+  
+  
+  expect_true(length(PM.results$atc) == 6) 
+  expect_true(all(c("2.6","4.6", "6.6", "8.6", "9.6", "10.6") %in% names(PM.results$atc)))
+  
+  expect_true(all(PM.results$atc[[1]] == c(1,3,5,7)))
+  expect_true(all(PM.results$atc[[2]] == c(1,3,5,7))) 
+  expect_true(all(PM.results$atc[[3]] == c(1,3,5,7)))
+  
+  
+})
+
+
+
+test_that("test new ATE (continuous)", {
   ##################################################################################################################
   ######################################testing ATE functionality
   
@@ -1105,16 +1214,17 @@ test_that("Testing Continuous Matching", {
                            lead = 0:4, forbid.treatment.reversal = FALSE,
                            continuous.treatment.info = continuous.treatment.info)
   
-  expect_true(length(PM.results$atc) == 2) 
-  expect_true(all(c("2.6","4.6") %in% names(PM.results$atc)))
+  expect_true(length(PM.results$att) == 3) 
+  expect_true(all(c("2.6","4.6", "6.6") %in% names(PM.results$att)))
   
-  expect_true(all(PM.results$atc[[1]] == c(1,3,5, 6, 7, 8, 9, 10)))
-  expect_true(all(PM.results$atc[[2]] == c(1,3,5,6, 7, 8,9,10))) 
+  expect_true(all(PM.results$att[[1]] == c(1,3,5, 7, 8, 9, 10)))
+  expect_true(all(PM.results$att[[2]] == c(1,3,5, 7, 8,9,10))) 
+  expect_true(all(PM.results$att[[3]] == c(1,3,5, 7, 8,9,10))) 
   
-  expect_true(length(PM.results$att) == 1) 
-  expect_true(all(c("6.6") %in% names(PM.results$att)))
+  expect_true(length(PM.results$atc) == 7) 
+  expect_true(all(c("1.6", "3.6", "5.6", "7.6", "8.6", "9.6", "10.6") %in% names(PM.results$atc)))
   
-  expect_true(all(PM.results$att[[1]] == c(1,2,3,4,5,7,8,9,10)))
+  expect_true(all(PM.results$atc[[1]] == c(2,4,6)))
   
   
 })
