@@ -384,6 +384,9 @@ get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.wei
   matched.sets <- encode_index(matched.sets, unit.index.map, unit.id)
   
   othercols <- colnames(ordered.data)[!colnames(ordered.data) %in% c(time.id, unit.id, treatment)]
+  #subset to keep only needed covariates
+  othercols <- othercols[othercols %in% covariates]
+  
   ordered.data <- ordered.data[, c(unit.id, time.id, treatment, othercols)] #reorder columns 
   #they will either all have or not have weights, so we can check the first matched set to see if we need to add equal weighting
   #i dont think that its possible for sets to not have any weights now, but don't think it hurts to keep this in
@@ -398,9 +401,12 @@ get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.wei
   treated.ts <- as.integer(sub(".*\\.", "", names(matched.sets)))
   treated.ids <- as.integer(sub("\\..*", "", names(matched.sets)))
   tlist <- expand.treated.ts(lag, treated.ts = treated.ts)
-
+  
+  
   idxlist <- get_yearly_dmats(as.matrix(ordered.data), treated.ids, tlist, 
                               matched_sets = matched.sets, lag)
+  
+  
   balance_mats <- build_balance_mats(ordered_expanded_data = ordered.data, 
                                      idx =  idxlist, msets = matched.sets)
   unlistedmats <- unlist(balance_mats, recursive = F)
