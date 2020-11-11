@@ -52,8 +52,20 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
                              continuous.treatment.info = continuous.treatment.info)
     e.sets <- msets[sapply(msets, length) == 0]
     msets <- msets[sapply(msets, length) > 0 ]
-
-
+    if(length(msets) == 0)
+    {
+      t.attributes <- attributes(e.sets)[names(attributes(e.sets)) != "names"]
+      msets <- e.sets
+      for(idx in names(t.attributes))
+      {
+        attr(msets, idx) <- t.attributes[[idx]]
+      }
+      attr(msets, "covs.formula") <- covs.formula
+      attr(msets, "match.missing") <- match.missing
+      return(msets)
+      return(msets)
+    }
+  
     msets <- clean_leads(msets, ordered.data, max(lead), time.id, unit.id, outcome.var)
 
     if(forbid.treatment.reversal)
@@ -414,7 +426,11 @@ handle_distance_matrices <- function(ordered_expanded_data, matched.sets, calipe
                    SIMPLIFY = FALSE)
   #result <- mapply(FUN = unnest, mset.idx = idx, matched.set = matched.sets, SIMPLIFY = FALSE)
   names(result) <- names(matched.sets)
-  result <- result[sapply(result, length) > 0]
+  if (!continuous.matching)
+  {
+    result <- result[sapply(result, length) > 0]
+  }
+  
   return(result)
 
 

@@ -240,6 +240,7 @@ panel_match <- function(lag, time.id, unit.id, treatment,
   if (any(duplicated(data[, c(unit.id, time.id)]))) stop("Time, unit combinations should uniquely identify rows. Please remove duplicates")
   if (!class(data[, unit.id]) %in% c("integer", "numeric")) stop("please convert unit id column to integer or numeric")
   if (class(data[, time.id]) != "integer") stop("please convert time id to consecutive integers")
+  if ( !all(c(time.id, unit.id, treatment, outcome.var)  %in% colnames(data)) ) stop("time id, unit id, outcome, or treatment column name invalid")
   
   if (!is.null(continuous.treatment.info))
   {
