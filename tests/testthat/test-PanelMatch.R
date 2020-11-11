@@ -1034,6 +1034,8 @@ test_that("checking new definition of ATT (continuous) explicitly", {
   input.data$cal.data <- input.data$id
   input.data$outcome <- rnorm(nrow(input.data))
   
+  input.data[input.data$id %in% c(1,3,5, 6, 7, 8, 9, 10), 'treatment']  <- 100
+  
   continuous.treatment.info <- list(treatment.threshold = .5, type = "numeric", 
                                     method = "max", units = "raw", matching.threshold = 2) #include everything 
   
@@ -1050,6 +1052,40 @@ test_that("checking new definition of ATT (continuous) explicitly", {
   expect_true(all(PM.results$att[[1]] == c(1,3,5, 6, 7, 8, 9, 10)))
   expect_true(all(PM.results$att[[2]] == c(1,3,5,6, 7, 8,9,10))) #six is no longer a treated unit so it will be matched like everything else  
 })
+
+
+
+
+test_that("empty sets exist, continuous treatment", {
+  
+  ####*****#####*****
+  input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+  input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+  input.data[input.data$id %in% c(2,4) & input.data$time > 5, 'treatment'] <- .6
+  input.data[input.data$id %in% c(6) & input.data$time > 5, 'treatment'] <- .4
+  #input.data[input.data[, 'treatment'] == 0, 'treatment'] <- .035
+  
+  
+  input.data$cal.data <- input.data$id
+  input.data$outcome <- rnorm(nrow(input.data))
+  
+  input.data[input.data$id %in% c(1,3,5, 6, 7, 8, 9, 10), 'treatment']  <- 100
+  
+  continuous.treatment.info <- list(treatment.threshold = .5, type = "numeric", 
+                                    method = "max", units = "raw", matching.threshold = 2) #include everything 
+  
+  PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
+                           treatment = "treatment", refinement.method = "none", # should be none for all of them
+                           data = input.data, match.missing = TRUE, 
+                           size.match = 5, qoi = "att" , outcome.var = "outcome",
+                           lead = 0:4, forbid.treatment.reversal = FALSE,
+                           continuous.treatment.info = continuous.treatment.info)
+  
+  
+})
+
+
+
 
 test_that("test new ATC (continuous) basic", {
   ##################################################################################################################
