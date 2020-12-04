@@ -26,6 +26,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
     continuous.treatment <- !is.null(continuous.treatment.info) #to make this easier
     if (continuous.treatment)
     {
+      
       temp.treateds <- findContinuousTreated(dmat = ordered.data, treatedvar = treatment, time.var = time.id,
                             unit.var = unit.id, qoi = qoi,
                             continuous.treatment.info = continuous.treatment.info)
@@ -94,6 +95,17 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
 
   }
 
+  ####CALCULATE INFO ABOUT DIRECTIONAL CHANGE FOR CONTINUOUS TREATMENT HERE#####
+  
+  if(!is.null(continuous.treatment.info))
+  {
+    msets <- identifyDirectionalChanges(msets, ordered.data, 
+                                        unit.id, time.id, treatment)
+    e.sets <- identifyDirectionalChanges(e.sets, ordered.data, 
+                                        unit.id, time.id, treatment)
+  }
+  
+  
   if(refinement.method == "none")
   {
     for(i in 1:length(msets))
@@ -110,6 +122,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
     }
     attr(msets, "covs.formula") <- covs.formula
     attr(msets, "match.missing") <- match.missing
+    
     return(msets)
   }
 

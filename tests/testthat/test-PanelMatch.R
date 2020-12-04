@@ -780,7 +780,7 @@ test_that("Continuous Matching, att, unmatchable controls", {
   
   
   continuous.treatment.info <- list(treatment.threshold = .5, type = "numeric", 
-                                    units = "raw", matching.threshold = 2) #include everything 
+                                    units = "raw", matching.threshold = 2) 
   
   PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
                            treatment = "treatment", refinement.method = "none", # should be none for all of them
