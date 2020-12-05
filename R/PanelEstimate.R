@@ -156,7 +156,8 @@ PanelEstimate <- function(sets,
       set.list <- handle_moderating_variable(ordered.data = ordered.data, att.sets = sets[["att"]], atc.sets = sets[["atc"]],
                                              moderator = moderator, unit.id = unit.id, time.id = time.id,
                                              PM.object = sets)
-      
+  
+
       res <- lapply(set.list, FUN = panel_estimate, inference = inference, number.iterations = number.iterations, 
                     df.adjustment = df.adjustment, confidence.level = confidence.level, data = data)
       
@@ -182,7 +183,6 @@ panel_estimate <- function(inference = "bootstrap",
   
   lead <- attr(sets, "lead")
   outcome.variable <- attr(sets, "outcome.var")
-  
   if(class(sets) != "PanelMatch") stop("sets is not a PanelMatch object")
   qoi <- attr(sets, "qoi")
   if(qoi == "ate")
@@ -195,7 +195,10 @@ panel_estimate <- function(inference = "bootstrap",
     sets <- sets[[qoi]]  
   }
   sets <- sets[sapply(sets, length) > 0]
-  
+  if (length(sets) == 0)
+  {
+    return(NA)
+  }
   
   lag <- attr(sets, "lag")
   dependent = outcome.variable
@@ -257,6 +260,7 @@ panel_estimate <- function(inference = "bootstrap",
   
   if(qoi == "att")
   {
+    
     sets <- encode_index(sets, unit.index.map, unit.id)
   }
   if(qoi == "atc")

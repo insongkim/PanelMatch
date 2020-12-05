@@ -101,6 +101,7 @@ lwd_refinement <- function(msets, global.data, treated.ts,
   treated.ids <- as.numeric(sub("\\..*", "", names(t.newsets)))
   if(refinement.method != "mahalanobis")
   {
+    
     t.newsets <- set_lwd_refinement(t.newsets, global.data, treated.ts, treated.ids, lag, refinement.method, lead, 
                                               verbose, size.match, unit.id, time.id, covs.formula, match.missing, treatment,
                                     use.diag.covmat = use.diag.covmat)
@@ -154,7 +155,7 @@ set_lwd_refinement <- function(mset, local.data, time, id,
 {
   treated.ts <- time
   treated.ids <- id
-  ordered.data <- local.data 
+  ordered.data <- as.matrix(local.data)
   msets <- mset
   if(refinement.method == "mahalanobis")
   {

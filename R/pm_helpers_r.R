@@ -80,7 +80,10 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
   treated.ids <- as.integer(sub("\\..*", "", names(msets)))
   
   ordered.data <- parse_and_prep(formula = covs.formula, data = ordered.data)
-  
+  if (any(c("character", "factor") %in% sapply(ordered.data, class)))
+  {
+    stop("please convert covs.formula variables to numerical data")
+  }
   if(any(apply(ordered.data, 2, FUN = function(x) any(is.infinite(x)))))
   {
     stop("Data needed for refinement contains infinite values. Code cannot proceed!")
@@ -183,6 +186,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
   }  #not msm
   if(all(refinement.method %in% c("CBPS.weight", "CBPS.match", "ps.weight", "ps.match")))
   {
+    
     if(!all(refinement.method %in% c("CBPS.weight", "CBPS.match", "ps.weight", "ps.match"))) stop("please choose valid refinement method")
     tlist <- expand.treated.ts(lag, treated.ts = treated.ts)
     idxlist <- get_yearly_dmats(ordered.data, treated.ids, tlist, paste0(ordered.data[,unit.id], ".",
