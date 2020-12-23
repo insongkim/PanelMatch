@@ -249,6 +249,10 @@ panel_match <- function(lag, time.id, unit.id, treatment,
     {
       stop("Missing parameter in continuous matching specification. Please include all of the treatment.threshold,type, units, and matching.threshold parameters")
     }
+    if(continuous.treatment.info[["treatment.threshold"]] == 0)
+    {
+      stop("treatment.threshold must be > 0")
+    }
   }
   
   #######take this out when negative lead is implemented:
@@ -347,6 +351,12 @@ panel_match <- function(lag, time.id, unit.id, treatment,
     attr(pm.obj, "outcome.var") <- outcome.var
     attr(pm.obj, "lead") <- lead
     attr(pm.obj, "forbid.treatment.reversal") <- forbid.treatment.reversal
+    if(!is.null(continuous.treatment.info))
+    {
+      attr(pm.obj, "continuous.treatment") <- TRUE
+    } else {
+      attr(pm.obj, "continuous.treatment") <- FALSE
+    }
     return(pm.obj)
   } else if(qoi == "att")
   { #note that ordered.data at this point is in column order: unit, time, treatment, everything else
@@ -370,6 +380,12 @@ panel_match <- function(lag, time.id, unit.id, treatment,
     attr(pm.obj, "lead") <- lead
     
     attr(pm.obj, "forbid.treatment.reversal") <- forbid.treatment.reversal
+    if(!is.null(continuous.treatment.info))
+    {
+      attr(pm.obj, "continuous.treatment") <- TRUE
+    } else {
+      attr(pm.obj, "continuous.treatment") <- FALSE
+    }
     return(pm.obj)
   } else if(qoi == "ate")
   {
@@ -419,6 +435,12 @@ panel_match <- function(lag, time.id, unit.id, treatment,
     attr(pm.obj, "outcome.var") <- outcome.var
     attr(pm.obj, "lead") <- lead
     attr(pm.obj, "forbid.treatment.reversal") <- forbid.treatment.reversal
+    if(!is.null(continuous.treatment.info))
+    {
+      attr(pm.obj, "continuous.treatment") <- TRUE
+    } else {
+      attr(pm.obj, "continuous.treatment") <- FALSE
+    }
     return(pm.obj)
   } else
   {

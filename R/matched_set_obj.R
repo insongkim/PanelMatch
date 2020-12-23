@@ -608,6 +608,15 @@ decode_index <- function(mset, unit.index, original.unit.id)#, original.time.id)
       attr(news, "weights") <- attr(in_, "weights")
       names(attr(news, "weights")) <- news
     }
+    if(!is.null(attr(in_, "control.change")))
+    {
+      attr(news, "control.change") <- attr(in_, "control.change")
+      names(attr(news, "control.change")) <- news
+    }
+    if(!is.null(attr(in_, "treatment.change")))
+    {
+      attr(news, "treatment.change") <- attr(in_, "treatment.change")
+    }
     return(news)
   }
   new.mset <- sapply(mset, decode.control.units, unit.index = unit.index, simplify = F)
@@ -622,7 +631,12 @@ decode_index <- function(mset, unit.index, original.unit.id)#, original.time.id)
   attributes(new.mset) <- attributes(mset)
   names(new.mset) <- decode.treated.units(treated.ts, treated.ids, unit.index)
   attr(new.mset, "id.var") <- original.unit.id
-
+  
+  # treated.ids <- as.numeric(sub("\\..*", "", names(new.mset)))
+  # for (i in 1:length(new.mset))
+  # {
+  #   attr(new.mset[[i]], "treatment.change") <- treated.ids[i]
+  # }
   return(new.mset)
 }
 
@@ -642,6 +656,16 @@ encode_index <- function(mset, unit.index, new.unit.id)
       attr(news, "weights") <- attr(in_, "weights")
       names(attr(news, "weights")) <- news
     }
+    if(!is.null(attr(in_, "control.change")))
+    {
+      attr(news, "control.change") <- attr(in_, "control.change")
+      names(attr(news, "control.change")) <- news
+    }
+    
+    if(!is.null(attr(in_, "treatment.change")))
+    {
+      attr(news, "treatment.change") <- attr(in_, "treatment.change")
+    }
     return(news)
   }
   new.mset <- sapply(mset, encode.control.units, unit.index = unit.index, simplify = F)
@@ -656,6 +680,13 @@ encode_index <- function(mset, unit.index, new.unit.id)
   attributes(new.mset) <- attributes(mset)
   names(new.mset) <- encode.treated.units(treated.ts, treated.ids, unit.index)
   attr(new.mset, "id.var") <- new.unit.id
-
+  
+  # treated.ids <- sub("\\..*", "", names(new.mset))
+  # for (i in 1:length(new.mset))
+  # {
+  #   attr(new.mset[[i]], "treatment.change") <- treated.ids[i]
+  # }
+  # return(new.mset)
+  
   return(new.mset)
 }

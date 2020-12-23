@@ -182,6 +182,7 @@ panel_estimate <- function(inference = "bootstrap",
   
   lead <- attr(sets, "lead")
   outcome.variable <- attr(sets, "outcome.var")
+  continuous.treatment <- attr(sets,'continuous.treatment')
   
   if(class(sets) != "PanelMatch") stop("sets is not a PanelMatch object")
   qoi <- attr(sets, "qoi")
@@ -204,6 +205,7 @@ panel_estimate <- function(inference = "bootstrap",
   time.id <- attr(sets, "t.var")
   #method = inference
   method <- attr(sets, "refinement.method")
+  
   
   forbid.treatment.reversal <- attr(sets, "forbid.treatment.reversal") # this doesnt exist yet, not sure what it means.
   #add in checks about forbid.treatment.reversal and wfe, etc. 
@@ -272,10 +274,13 @@ panel_estimate <- function(inference = "bootstrap",
   if (qoi == "att" | qoi == "ate") 
   {
     treated.unit.ids <- as.numeric(sub("\\..*", "", names(sets)))
-    
+    #data$dit_att <- getDits(matched_sets = sets, data = data)
     for(j in lead)
     {
-      dense.wits <- getWits(lead = j, data = data, matched_sets = sets, estimation.method = inference)
+      
+      dense.wits <- getWits(lead = j, data = data, matched_sets = sets, 
+                            estimation.method = inference,
+                            continuous.treatment = continuous.treatment)
       data = merge(x = data, y = dense.wits, all.x = TRUE, by.x = colnames(data)[1:2], by.y = c("id", "t"))
       colnames(data)[length(data)] <- paste0("Wit_att", j)
       data[is.na(data[, length(data)]), length(data)] <- 0 #replace NAs with zeroes
@@ -315,6 +320,7 @@ panel_estimate <- function(inference = "bootstrap",
   {
     if (inference == "bootstrap")
     {
+      
       o.coefs <- sapply(data[, sapply(lead, function(x) paste0("Wit_att", x)), drop = FALSE],
                         equality_four,
                         y = data[c(dependent)][,1],

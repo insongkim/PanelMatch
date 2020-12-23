@@ -97,14 +97,20 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
 
   ####CALCULATE INFO ABOUT DIRECTIONAL CHANGE FOR CONTINUOUS TREATMENT HERE#####
   
-  if(!is.null(continuous.treatment.info))
+  if (!is.null(continuous.treatment.info))
   {
-    msets <- identifyDirectionalChanges(msets, ordered.data, 
-                                        unit.id, time.id, treatment)
-    e.sets <- identifyDirectionalChanges(e.sets, ordered.data, 
-                                        unit.id, time.id, treatment)
+    if (length(msets) > 0)
+    {
+      msets <- identifyDirectionalChanges(msets, ordered.data, 
+                                          unit.id, time.id, treatment)  
+    }
+    if (length(e.sets) > 0)
+    {
+      e.sets <- identifyDirectionalChanges(e.sets, ordered.data, 
+                                           unit.id, time.id, treatment)  
+    }
+    
   }
-  
   
   if(refinement.method == "none")
   {

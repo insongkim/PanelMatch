@@ -95,10 +95,11 @@ handle_moderating_variable <- function(ordered.data, att.sets, atc.sets, PM.obje
 # about the weight of that unit at particular times, so we use the hashtable to look up where to put this data so that we can easily assign the appropriate weights in the original data frame containing the problem data.
 # pcs does this for all control units in a matched set
 # ("Prepare Control unitS)
-pcs <- function(sets, lead.in, method)
+pcs <- function(sets, lead.in, method, continuous.treatment = FALSE)
 {
   L <- attr(sets, "lag")
   ts <- as.numeric(sub(".*\\.", "", names(sets)))
+  
   make.years <- function(t, lead, repnum)
   {
     q <- rep( c((t - 1), (t + lead)), repnum)
@@ -108,7 +109,13 @@ pcs <- function(sets, lead.in, method)
   ts <- unlist(mapply(FUN = make.years, t = ts, lead = lead.in, repnum = lsets, SIMPLIFY = F))
   ids <- rep(unlist(sets), rep((2), length(unlist(sets)) ) )
   names(ids) <- NULL
-  wts <- unlist(sapply(sets, function(s){return(attr(s, "weights"))}))
+  if (continuous.treatment)
+  {
+    wts <- unlist(sapply(sets, function(s){return(attr(s, "weights") / attr(s, 'treatment.change'))})) 
+  } else {
+    wts <- unlist(sapply(sets, function(s){return(attr(s, "weights"))}))  
+  }
+  
   names(wts) <- NULL
   if(method == "bootstrap")
   {
@@ -123,18 +130,20 @@ pcs <- function(sets, lead.in, method)
   data.frame(t = ts, id = ids, weight = wts, set.number = set.nums)
 }
 # refer to the description above -- pts works on treated units ("Prepare Treated unitS)
-pts <- function(sets, lead.in, method)
+pts <- function(sets, lead.in, method, continuous.treatment = FALSE)
 {
   include <- sapply(sets, length) > 0
   num.empty <- sum(!include)
+  
+  ts <- as.numeric(sub(".*\\.", "", names(sets)))[include]
   tids <- as.numeric(sub("\\..*", "", names(sets)))[include]
   tids <- rep(tids, rep(2, length(tids)))
-  ts <- as.numeric(sub(".*\\.", "", names(sets)))[include]
   make.years <- function(t, lead, repnum)
   {
     q <- rep( c((t - 1), (t + lead)), repnum)
     return(q)
   }
+  
   ts <- unlist(mapply(FUN = make.years, t = ts, lead = lead.in, repnum = 1, SIMPLIFY = F))
   if(method == "bootstrap")
   {
@@ -145,27 +154,41 @@ pts <- function(sets, lead.in, method)
     wts <- rep(c(1, 1), length(sets) - num.empty)
   }
   set.nums <- rep(0:(length(sets) - num.empty -1 ), rep(2, length(sets) - num.empty ))
-  data.frame(t = ts, id = tids, weight = wts, set.number = set.nums)
+  ldf = data.frame(t = ts, id = tids, weight = wts, set.number = set.nums)
+  if(continuous.treatment)
+  {
+    existing.sets <- sets[sapply(sets, length) > 0]
+    treatment.changes <- unlist(lapply(existing.sets, function(x) return(attr(x, "treatment.change"))))
+    x.std <- unlist(sapply(treatment.changes, function(x) rep(x, 2), simplify = FALSE))
+    names(x.std) <- NULL
+    ldf$weight <- ldf$weight / x.std
+  } 
+  return(ldf)
+
+  
 }
 #returns a vector of Wits, as defined in the paper (equation 25 or equation 23). They should be in the same order as the data frame containing the original problem data. The pts, pcs, and getWits functions act for a specific 
 # lead. So, for instance if our lead window is 0,1,2,3,4, these function must be called for each of those -- so for 0, then for 1, etc.
-getWits <- function(matched_sets, lead, data, estimation.method)
+getWits <- function(matched_sets, lead, data, estimation.method,
+                    continuous.treatment = FALSE)
 {
   
   #sort the data
   t.var <- attr(matched_sets, "t.var")
   id.var <- attr(matched_sets, "id.var")
   data <- data[order(data[,id.var], data[,t.var]), ]
-  include <- sapply(matched_sets, length) > 0
-  num.empty <- sum(!include)
+  #include <- sapply(matched_sets, length) > 0
+  #num.empty <- sum(!include)
   
   
   #prep control sets, prep treatment sets for search/summation vector
-  p.df <- pcs(matched_sets, lead, estimation.method)
-  t.df <- pts(matched_sets, lead, estimation.method)
+  p.df <- pcs(matched_sets, lead, 
+              estimation.method, continuous.treatment = continuous.treatment)
+  t.df <- pts(matched_sets, lead,
+              estimation.method, continuous.treatment = continuous.treatment)
   
-  t.idvector <- paste0(c(p.df$id, t.df$id), ".", c(p.df$t, t.df$t))
-  setnums <- c(p.df$set.num, t.df$set.num)
+  #t.idvector <- paste0(c(p.df$id, t.df$id), ".", c(p.df$t, t.df$t))
+  #setnums <- c(p.df$set.num, t.df$set.num)
   
   ##to solve cran check note about unbound variables
   . <- weight <- id <- NULL
@@ -178,7 +201,7 @@ getWits <- function(matched_sets, lead, data, estimation.method)
 
 
 # returns a vector of dit values, as defined in the paper. They should be in the same order as the data frame containing the original problem data.
-getDits <- function(matched_sets, data)
+getDits <- function(matched_sets, data, continuousTreatment = FALSE)
 {
   
   t.var <- attr(matched_sets, "t.var")
@@ -189,6 +212,13 @@ getDits <- function(matched_sets, data)
   nms <- names(msets)
   refnames <- paste0(data[, id.var], ".", data[, t.var])
   dit.vect <- get_dits(refnames, nms)
+  if (continuousTreatment)
+  {
+    std.den <- unlist(lapply(matched_sets, function(x) attr(x, "treatment.change")))
+    names(std.den) <- NULL
+    dit.vect[dit.vect > 0] <- dit.vect[dit.vect > 0] / std.den #should be the same length
+  }
+  return(dit.vect)
 }
 
 #function that ultimately calculates the point estimate values
