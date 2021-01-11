@@ -200,8 +200,11 @@ handle.single.caliper.per.lag <- function(plain.ordered.data, matched.sets, cali
 }
 
 handle_perlag_caliper_calculations <- function(nested.list, msets, caliper.method, 
-                                               caliper.value, is.factor.var, use.sd.units, full.data, id.var, time.var)
+                                               caliper.value, is.factor.var, 
+                                               use.sd.units, full.data, 
+                                               id.var, time.var, treated_it_pairs)
 {
+  
   if (length(msets) == 0) return(numeric(0))
   do_calcs <- function(time.df, sd.vals__, is_factor_in)
   {
@@ -309,19 +312,22 @@ handle_perlag_caliper_calculations <- function(nested.list, msets, caliper.metho
   #get standard deviation values
   
   row.names(full.data) <- paste0(full.data[, id.var], ".", full.data[, time.var])
-  tdf <- full.data[names(msets), ]
   
-  # tdf <- do.call(rbind, lapply(unlist(nested.list, recursive = F),
-  #                              function(x) return(x[nrow(x), ])))
+  tdf <- full.data[treated_it_pairs, ]
+  # think this needs to get the full set of treated i,t pairs
   
   if(use.sd.units)
   {
-    sd.vals <- apply(tdf[, 4:ncol(tdf)], MARGIN = 2, FUN = sd, na.rm = TRUE)  
+    sd.vals <- apply(tdf[, 4:ncol(tdf)], MARGIN = 2, FUN = sd, na.rm = TRUE)
+    if ( 0 %in% sd.vals || any(is.na(sd.vals)) )
+    {
+      stop("not enough variation for using 'units = sd' in continuous.treatment.info. 
+           Try using raw units instead")
+    }
   } else {
     sd.vals <- 1
   }
   
-
   indices.msets <- handle_set(nested.list, caliper.value, caliper.method, sd.vals, is.factor.var)
   #msets <- mapply(function(x, y) return(as.numeric(x[y])), x = msets, y = indices.msets, SIMPLIFY = FALSE)
   #msets <- msets[sapply(msets, length) > 0]

@@ -427,10 +427,12 @@ handle_distance_matrices <- function(ordered_expanded_data, matched.sets, calipe
                                 matched_sets = list(matched.set), lag.in_)
     rr <- lapply(unlist(idxlist, recursive = FALSE), function(x) {ordered_expanded_data_[x, ]})
 
-
+    
     
     tset <- handle_perlag_caliper_calculations(rr, matched.set, calipermethod, calipervalue,
-                                        isfactor, use.sd, ordered_expanded_data, id.var, time.var) #sloppy style, fix later
+                                        isfactor, use.sd, 
+                                        ordered_expanded_data, 
+                                        id.var, time.var, names(matched.sets)) #sloppy style, fix later
     return(tset)
   }
 

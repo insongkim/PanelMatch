@@ -178,11 +178,11 @@ get.matchedsets <- function(t, id, data, L, t.column, id.column, treatedvar,
     #                                                   ",", continuous.treatment.info[["matching.threshold"]],
     #                                                   ",", "'",continuous.treatment.info[["type"]],"'",
     #                                                   ",", "'", continuous.treatment.info[["units"]],"'" ,"))"))
-    if ( !all(c("matching.threshold", "type", "units") %in% names(continuous.treatment.info)) ) stop("Please provide 'matching.threshold', 'type', and 'units' named 
+    if ( !all(c("matching.threshold", "units") %in% names(continuous.treatment.info)) ) stop("Please provide 'matching.threshold', and 'units' named 
                                                                                                     items in a list to continuous.treatment.info argument")
     continuous.treatment.formula <- as.formula(paste0("~ I(caliper(", treatedvar,",", "'", "max", "'",
                                                       ",", continuous.treatment.info[["matching.threshold"]],
-                                                      ",", "'",continuous.treatment.info[["type"]],"'",
+                                                      ",", "'","numeric","'",
                                                       ",", "'", continuous.treatment.info[["units"]],"'" ,"))"))
 
     attr(continuous.treatment.formula, ".Environment") <- environment()
@@ -195,8 +195,11 @@ get.matchedsets <- function(t, id, data, L, t.column, id.column, treatedvar,
     attr(matched.sets, "id.var" ) <- id.column
     attr(matched.sets, "treatment.var") <- treatedvar
     
-    continuous.matched.sets <- handle_calipers(plain.ordered.data = d, caliper.formula = continuous.treatment.formula,
-                            matched.sets = matched.sets, lag.window = 1:L, is.continuous.matching = TRUE)
+    continuous.matched.sets <- handle_calipers(plain.ordered.data = d, 
+                                               caliper.formula = continuous.treatment.formula,
+                                               matched.sets = matched.sets, 
+                                               lag.window = 1:L, 
+                                               is.continuous.matching = TRUE)
     return(continuous.matched.sets) #should maybe attach extra attributes for continuously matched msets
   }
 }

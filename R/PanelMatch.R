@@ -75,9 +75,16 @@
 #' @param network.refinement.info a named list specifying if/how network data should be used in the refinment process. If not specified or set to \code{NULL}, no network information is used in the refinement process.
 #' The provided list must specify the following named elements:
 #' \code{use.proportion.data}, \code{proportion.lags}, \code{use.count.data}, \code{count.lags}. Please see the vignette for a discussion of these parameters and how network information is utilized in the package.
-#' @param continuous.treatment.info a named list with elements \code{treatment.threshold}, \code{type}, \code{units}, \code{matching.threshold}
+#' @param continuous.treatment.info a named list with elements \code{treatment.threshold}, \code{type}, \code{units}, \code{direction}, and \code{matching.threshold}
+#' The treatment threshold corresponds to the minimum of the magnitude of the change in the treatment variable from time \code{t-1} to time \code{t}. It must be a positive number.
+#' The type is either "raw" or "sd" (specified as a character string) and corresponds to the units of the treatment and mathing threshold. If "raw", then thresholds will be applied to the raw treatment data in the original units.
+#' If "sd", then the thresholds are interpreted to be provided in standard deviations, and the treatment variable data will be standardized. 
+#' The direction parameter specifies the direction of interest for the change in the treatment variable. It is specified as a character string: "positive", "negative", or "both".
+#' So, for example, if the \code{qoi} is set to "att" and the direction is "positive", then only treated units with a positive change in the treatment variable larger than the specified \code{treatment.threshold}
+#' will factor into the calculated estimates. The \code{matching.threshold} parameter corresponds to the maximum permissible absolute value of the difference in the treatment variable 
+#' between treated units and control units. This is similar to the threshold provided for numerical data in the caliper formula. 
 #' @return \code{PanelMatch} returns an object of class "PanelMatch". This is a list that contains a few specific elements: 
-#' First, a \code{matched.set} object(s) that has the same name as the provided qoi if the qoi is "att" or "atc". 
+#' First, a \code{matched.set} object(s) that has the same name as the provided qoi if the qoi is "att" or "atc". See the vignette about continuous treatment for examples and more information.
 #' If qoi = "ate" then two \code{matched.set} objects will be attached, named "att" and "atc." Please consult the documentation for
 #' \code{matched_set} to read more about the structure and usage of \code{matched.set} objects. Also, see the wiki page for 
 #' more information about these objects: \url{https://github.com/insongkim/PanelMatch/wiki/Matched-Set-Objects}.
@@ -244,12 +251,14 @@ panel_match <- function(lag, time.id, unit.id, treatment,
   
   if (!is.null(continuous.treatment.info))
   {
-    if (!(all(c("treatment.threshold", "type", "units", "matching.threshold") 
-            %in% names(continuous.treatment.info))))
+    if (!(all(c("treatment.threshold", "units", "matching.threshold", "direction") %in% names(continuous.treatment.info))))
     {
-      stop("Missing parameter in continuous matching specification. Please include all of the treatment.threshold,type, units, and matching.threshold parameters")
+      
+      stop("Missing parameter in continuous matching specification.
+           Please include all of the treatment.threshold, 
+           units, matching.threshold, and direction parameters")
     }
-    if(continuous.treatment.info[["treatment.threshold"]] == 0)
+    if (continuous.treatment.info[["treatment.threshold"]] == 0)
     {
       stop("treatment.threshold must be > 0")
     }
@@ -345,6 +354,20 @@ panel_match <- function(lag, time.id, unit.id, treatment,
     {
       attr(msets, "lag") <- old.lag
     }
+    ### THIS IS FOR ATC, NOT SURE IF IT REALLY MAKES SENSE
+    if (continuous.treatment.info[["direction"]] == "positive")
+    {
+      idx <- sapply(msets, function(x) attr(x, "treatment.change")) >= 0
+      msets <- msets[idx]
+    } else if (continuous.treatment.info[["direction"]] == "negative")
+    {
+      idx <- sapply(msets, function(x) attr(x, "treatment.change")) <= 0
+      msets <- msets[idx]
+    } else if (continuous.treatment.info[["direction"]] != "both")
+    {
+      stop("direction not well specified")
+    }
+    
     pm.obj <- list("atc" = msets)
     class(pm.obj) <- "PanelMatch"
     attr(pm.obj, "qoi") <- qoi
@@ -373,6 +396,20 @@ panel_match <- function(lag, time.id, unit.id, treatment,
     {
       attr(msets, "lag") <- old.lag
     }
+    
+    if (continuous.treatment.info[["direction"]] == "positive")
+    {
+      idx <- sapply(msets, function(x) attr(x, "treatment.change")) >= 0
+      msets <- msets[idx]
+    } else if (continuous.treatment.info[["direction"]] == "negative")
+    {
+      idx <- sapply(msets, function(x) attr(x, "treatment.change")) <= 0
+      msets <- msets[idx]
+    } else if (continuous.treatment.info[["direction"]] != "both")
+    {
+      stop("direction not well specified")
+    }
+    
     pm.obj <- list("att" = msets)
     class(pm.obj) <- "PanelMatch"
     attr(pm.obj, "qoi") <- qoi
@@ -429,6 +466,29 @@ panel_match <- function(lag, time.id, unit.id, treatment,
     {
       attr(msets2, "lag") <- old.lag
     }
+    
+    if (continuous.treatment.info[["direction"]] == "positive")
+    {
+      idx <- sapply(msets, function(x) attr(x, "treatment.change")) >= 0
+      msets <- msets[idx]
+      
+      idx <- sapply(msets2, function(x) attr(x, "treatment.change")) >= 0
+      msets2 <- msets2[idx]
+      
+      
+    } else if (continuous.treatment.info[["direction"]] == "negative")
+    {
+      idx <- sapply(msets, function(x) attr(x, "treatment.change")) <= 0
+      msets <- msets[idx]
+      
+      idx <- sapply(msets2, function(x) attr(x, "treatment.change")) <= 0
+      msets2 <- msets2[idx]
+      
+    } else if (continuous.treatment.info[["direction"]] != "both")
+    {
+      stop("direction not well specified")
+    }
+    
     pm.obj <- list("att" = msets, "atc" = msets2)
     class(pm.obj) <- "PanelMatch"
     attr(pm.obj, "qoi") <- qoi
