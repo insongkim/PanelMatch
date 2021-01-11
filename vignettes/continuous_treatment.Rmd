@@ -1,0 +1,124 @@
+---
+title: "Continuous Treatment in PanelMatch"
+author: "In Song Kim, Adam Rauh, Erik Wang, Kosuke Imai"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    df_print: paged
+  pdf_document:
+    number_sections: no
+  fig_width: 6
+  fig_height: 4
+vignette: |
+  %\VignetteIndexEntry{Calipers in PanelMatch}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Continuous Treatment in PanelMatch
+
+The package supports continuous treatment variables. The procedures and syntax are similar to those used for applying calipers to matched sets. First, we will examine how the definitions and procedures are formally defined, and then we will connect those ideas to some code examples.
+
+
+## ATT
+
+The ATT for continuous treatment variables is formally defined as the following:
+$$M_{it}  =  \{i^\prime : i^\prime \ne i, \lvert X_{i^\prime t} - X_{i^\prime t-1} \lvert < k_1,
+                 \lvert X_{i^\prime t^\prime} - X_{i t^\prime} \lvert \leq k_2 \textrm{ for all } t^\prime = t-1, \dots,t-L\}$$
+                 
+for the treated observations with $\lvert X_{it} - X_{i,t-1} \lvert \geq k_1$, where both $k_1$ and $k_2$ are chosen constants. 
+Intuitively, the constant $k_1$ specifies a ``threshold'' level of treatment. When the magnitude of the change of treatment levels from time $t-1$ to $t$ exceed $k_1$ for a given unit, treated status is assigned. This constant is chosen by the user. The constant $k_2$ effectively controls the amount of acceptable distance in treatment levels between treated and control units over the treatment history window. In this sense, $k_2$ operates similarly to that of a caliper. 
+
+The matching process can be intuitively understood as follows:
+For an $i,t$ pair that has treated status, the package searches for control units by iterating over every unit that could be matched (i.e. any unit that does not have treated status). For each of these candidates, a unit is used as a matched control unit if: for each period in the lag window from $t-L$ to $t-1$, the absolute value of the difference in the level of treatment between the candidate and the treated unit never exceeds $k_2$.
+
+
+### Directionality
+One can also incorporate the direction of the change in treatment into the definition of matched sets by focusing only on treated units that underwent a positive or negative change in the treatment variable. For instance, one could restrict treated units to just those that satisfy: $X_{it} - X_{i,t-1} \geq k_1$ (positive change in treatment) or $X_{it} - X_{i,t-1} \leq k_1$ (negative change).
+
+
+## ATC
+
+The continuous treatment variation of ATC is defined similarly to the ATT:
+
+$$M_{it}  =  \{i^\prime : i^\prime \ne i, \lvert X_{i^\prime t} - X_{i^\prime t-1} \lvert \geq k_1,
+                 \lvert X_{i^\prime t^\prime} - X_{i t^\prime} \lvert \leq k_2 \textrm{ for all } t^\prime = t-1, \dots,t-L\}$$
+                 
+The observations in this set are matched to the control observations with $\lvert X_{it} - X_{i,t-1} \lvert < k_1$. Both $k_1$ and $k_2$ have the same interpretation as in the ATT. The matched set construction process is also similar.
+
+
+## Code Examples
+
+The previous definitions and terms are implemented for use in the PanelMatch package. A few examples that use continuous treatment variable data in the matching process follow. 
+
+
+First, we load up the package and create some sample data. 
+```{r}
+library(PanelMatch)
+input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+
+input.data[input.data$id %in% c(2,6) & input.data$time > 5, 'treatment'] <- (1 + .43)
+input.data[input.data$id %in% c(4) & input.data$time > 5, 'treatment'] <- (1 + .43) * -1 
+input.data[input.data[, 'treatment'] == 0, 'treatment'] <- .035
+
+input.data[input.data$id %in% c(10) & input.data$time == 3, 'treatment'] <- 5
+
+input.data$cal.data <- input.data$id
+input.data$outcome <- rnorm(nrow(input.data))
+```
+
+Next, we will provide the parameters needed for doing continuous matching and call PanelMatch to execute the matching. By setting the treatment threshold to .5, we count any $(i,t)$ pair as a treated unit whenever $\lvert X_{it} - X_{i,t-1} \lvert >= k_1$ where $X$ is our treatment variable ("treatment" in this data set) and $k_1 = .5$. Setting our matching threshold to 2 means that any eligible control unit that never is more than 2 units away from a treated unit in the treatment variable over the lag window is included in the matched set of control units. In other words, this sets $k_2 = 2$ in the definitions above. We are using the raw units of the data, not standard deviations to define these thresholds. Finally, we include treated units (and their matched sets) that experienced a change in treatment in either a positive or a negative direction by setting "direction = both".
+
+Note that while units 2 and 6 experienced a positive change in treatment, unit 4 experienced a negative change in treatment. By setting "direction = both", all of these treated units and their matched sets are included in the results.
+```{r}
+continuous.treatment.info <- list(treatment.threshold = .5, matching.threshold = 2,
+                                  units = "raw", direction = "both") 
+
+PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
+                         treatment = "treatment", refinement.method = "none", 
+                         data = input.data, match.missing = TRUE, 
+                         size.match = 5, qoi = "att" , outcome.var = "outcome",
+                         lead = 0, forbid.treatment.reversal = FALSE,
+                         continuous.treatment.info = continuous.treatment.info)
+
+summary(PM.results$att)
+```
+
+We can restrict the problem to only include treated units that experienced a positive or negative change in treatment:
+```{r}
+##units 2 and 6 had a positive change in treatment
+continuous.treatment.info <- list(treatment.threshold = .5, matching.threshold = 2,
+                                  units = "raw", direction = "positive") 
+
+PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
+                         treatment = "treatment", refinement.method = "none", 
+                         data = input.data, match.missing = TRUE, 
+                         size.match = 5, qoi = "att" , outcome.var = "outcome",
+                         lead = 0, forbid.treatment.reversal = FALSE,
+                         continuous.treatment.info = continuous.treatment.info)
+
+summary(PM.results$att)
+
+##only unit 4 underwent a negative change in treatment
+continuous.treatment.info <- list(treatment.threshold = .5, matching.threshold = 2,
+                                  units = "raw", direction = "negative") 
+
+PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
+                         treatment = "treatment", refinement.method = "none", 
+                         data = input.data, match.missing = TRUE, 
+                         size.match = 5, qoi = "att" , outcome.var = "outcome",
+                         lead = 0, forbid.treatment.reversal = FALSE,
+                         continuous.treatment.info = continuous.treatment.info)
+
+summary(PM.results$att)
+```
+
+
