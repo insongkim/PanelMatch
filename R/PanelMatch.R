@@ -355,18 +355,22 @@ panel_match <- function(lag, time.id, unit.id, treatment,
       attr(msets, "lag") <- old.lag
     }
     ### THIS IS FOR ATC, NOT SURE IF IT REALLY MAKES SENSE
-    if (continuous.treatment.info[["direction"]] == "positive")
+    if (!is.null(continuous.treatment.info))
     {
-      idx <- sapply(msets, function(x) attr(x, "treatment.change")) >= 0
-      msets <- msets[idx]
-    } else if (continuous.treatment.info[["direction"]] == "negative")
-    {
-      idx <- sapply(msets, function(x) attr(x, "treatment.change")) <= 0
-      msets <- msets[idx]
-    } else if (continuous.treatment.info[["direction"]] != "both")
-    {
-      stop("direction not well specified")
+      if (continuous.treatment.info[["direction"]] == "positive")
+      {
+        idx <- sapply(msets, function(x) attr(x, "treatment.change")) >= 0
+        msets <- msets[idx]
+      } else if (continuous.treatment.info[["direction"]] == "negative")
+      {
+        idx <- sapply(msets, function(x) attr(x, "treatment.change")) <= 0
+        msets <- msets[idx]
+      } else if (continuous.treatment.info[["direction"]] != "both")
+      {
+        stop("direction not well specified")
+      }  
     }
+    
     
     pm.obj <- list("atc" = msets)
     class(pm.obj) <- "PanelMatch"
@@ -397,18 +401,22 @@ panel_match <- function(lag, time.id, unit.id, treatment,
       attr(msets, "lag") <- old.lag
     }
     
-    if (continuous.treatment.info[["direction"]] == "positive")
+    if (!is.null(continuous.treatment.info))
     {
-      idx <- sapply(msets, function(x) attr(x, "treatment.change")) >= 0
-      msets <- msets[idx]
-    } else if (continuous.treatment.info[["direction"]] == "negative")
-    {
-      idx <- sapply(msets, function(x) attr(x, "treatment.change")) <= 0
-      msets <- msets[idx]
-    } else if (continuous.treatment.info[["direction"]] != "both")
-    {
-      stop("direction not well specified")
+      if (continuous.treatment.info[["direction"]] == "positive")
+      {
+        idx <- sapply(msets, function(x) attr(x, "treatment.change")) >= 0
+        msets <- msets[idx]
+      } else if (continuous.treatment.info[["direction"]] == "negative")
+      {
+        idx <- sapply(msets, function(x) attr(x, "treatment.change")) <= 0
+        msets <- msets[idx]
+      } else if (continuous.treatment.info[["direction"]] != "both")
+      {
+        stop("direction not well specified")
+      }  
     }
+    
     
     pm.obj <- list("att" = msets)
     class(pm.obj) <- "PanelMatch"
@@ -467,26 +475,29 @@ panel_match <- function(lag, time.id, unit.id, treatment,
       attr(msets2, "lag") <- old.lag
     }
     
-    if (continuous.treatment.info[["direction"]] == "positive")
+    if (!is.null(continuous.treatment.info))
     {
-      idx <- sapply(msets, function(x) attr(x, "treatment.change")) >= 0
-      msets <- msets[idx]
-      
-      idx <- sapply(msets2, function(x) attr(x, "treatment.change")) >= 0
-      msets2 <- msets2[idx]
-      
-      
-    } else if (continuous.treatment.info[["direction"]] == "negative")
-    {
-      idx <- sapply(msets, function(x) attr(x, "treatment.change")) <= 0
-      msets <- msets[idx]
-      
-      idx <- sapply(msets2, function(x) attr(x, "treatment.change")) <= 0
-      msets2 <- msets2[idx]
-      
-    } else if (continuous.treatment.info[["direction"]] != "both")
-    {
-      stop("direction not well specified")
+      if (continuous.treatment.info[["direction"]] == "positive")
+      {
+        idx <- sapply(msets, function(x) attr(x, "treatment.change")) >= 0
+        msets <- msets[idx]
+        
+        idx <- sapply(msets2, function(x) attr(x, "treatment.change")) >= 0
+        msets2 <- msets2[idx]
+        
+        
+      } else if (continuous.treatment.info[["direction"]] == "negative")
+      {
+        idx <- sapply(msets, function(x) attr(x, "treatment.change")) <= 0
+        msets <- msets[idx]
+        
+        idx <- sapply(msets2, function(x) attr(x, "treatment.change")) <= 0
+        msets2 <- msets2[idx]
+        
+      } else if (continuous.treatment.info[["direction"]] != "both")
+      {
+        stop("direction not well specified")
+      }  
     }
     
     pm.obj <- list("att" = msets, "atc" = msets2)

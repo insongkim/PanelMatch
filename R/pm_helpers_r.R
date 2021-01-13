@@ -139,8 +139,15 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
 
 
   ordered.data <- parse_and_prep(formula = covs.formula, data = ordered.data)
-
-
+  
+  if (!is.null(continuous.treatment.info))
+  { #make the treatment variable binary in case PS based method is used!
+    
+    idx <- paste0(ordered.data[, unit.id], ".", ordered.data[, time.id]) %in% paste0(treated.ids, ".", treated.ts)
+    ordered.data[, treatment] <- ifelse(idx, 1, 0)
+  }
+  
+  
   if(any(apply(ordered.data, 2, FUN = function(x) any(is.infinite(x)))))
   {
     stop("Data needed for refinement contains infinite values. Code cannot proceed!")
@@ -160,7 +167,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
     ordered.data <- as.matrix(handle.missing.data(ordered.data, 4:ncol(ordered.data)))
   }
 
-
+  
   if(refinement.method == "mahalanobis")
   {
 
@@ -331,30 +338,6 @@ parse_and_prep <- function(formula, data)
     sapply(lwindow, internal.lag, x = y)
   }
 
-  # internal.caliper <- function (x, n = 1L, default = NA)
-  # {
-  #   if(class(x) == "factor")
-  #   {
-  #     x <- as.numeric(as.character(x))
-  #   }
-  #   if (n == 0) return(x)
-  #   xlen <- length(x)
-  #   n <- pmin(n, xlen)
-  #   out <- c(rep(default, n), x[seq_len(xlen - n)])
-  #   attributes(out) <- attributes(x)
-  #   out
-  # }
-  #
-  # caliper <- function(y, method, caliper.distance, data_type, lwindow = lag.window)
-  # {
-  #
-  #   if(is.null(method) || is.null(caliper.distance))
-  #   {
-  #     stop("arguments missing from caliper function")
-  #   }
-  #
-  #   sapply(lwindow, internal.caliper, x = y, simplify = FALSE)
-  # }
 
   apply_formula <- function(x, form)
   {
