@@ -10,7 +10,7 @@ output:
   fig_width: 6
   fig_height: 4
 vignette: |
-  %\VignetteIndexEntry{Calipers in PanelMatch}
+  %\VignetteIndexEntry{Continuous Treatment in PanelMatch}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
 ---
