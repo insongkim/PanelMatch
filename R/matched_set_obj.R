@@ -296,6 +296,7 @@ get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.wei
                                   calculate.network.count.balance = FALSE,
                                   adjacency.matrix = NULL,
                                   neighborhood.degree = NULL,
+                                  continuous.treatment = FALSE,
                                   ...)
 {
   if(is.null(covariates))
@@ -455,15 +456,66 @@ get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.wei
 
 
 
-  if(!plot) return(pointmatrix)
+  if (!plot) return(pointmatrix)
 
-  if(plot)
+  if (plot)
   {
     
-    graphics::matplot(pointmatrix, type = "l", col = 1:ncol(pointmatrix), lty =1, ylab = ylab, xaxt = "n", ...)
-    graphics::axis(side = 1, labels = paste0("t-", (nrow(pointmatrix) - 1):0), at = 1:nrow(pointmatrix))
-    if(legend) legend("topleft", legend = colnames(pointmatrix), col=1:ncol(pointmatrix), lty = 1)
-    if(reference.line) graphics::abline(h = 0, lty = "dashed")
+    treated.included <- treatment %in% colnames(pointmatrix)
+    if (!continuous.treatment)
+    {
+      #browser()
+      
+      if(treated.included)
+      {
+        treated.data <- pointmatrix[,which(colnames(pointmatrix) == treatment)] # treated data
+        pointmatrix <- pointmatrix[,-which(colnames(pointmatrix) == treatment)] #all non-treatment variable data
+        graphics::matplot(pointmatrix, type = "l", col = 1:ncol(pointmatrix), 
+                          lty = 1, ylab = ylab, xaxt = "n", ...)
+        graphics::lines(x = 1:nrow(pointmatrix), 
+                        y = as.numeric(treated.data), 
+                        type = "l",
+                        lty = 2, lwd = 3)
+        graphics::axis(side = 1, labels = paste0("t-", (nrow(pointmatrix) - 1):0), at = 1:nrow(pointmatrix))  
+      } else
+      {
+        graphics::matplot(pointmatrix, type = "l", col = 1:ncol(pointmatrix), 
+                          lty = 1, ylab = ylab, xaxt = "n", ...)
+        graphics::axis(side = 1, labels = paste0("t-", (nrow(pointmatrix) - 1):0), at = 1:nrow(pointmatrix))  
+      }
+      
+    } else
+    {
+      if (treated.included)
+      {
+        treated.data <- pointmatrix[,which(colnames(pointmatrix) == treatment)] # treated data
+        pointmatrix <- pointmatrix[,-which(colnames(pointmatrix) == treatment)] #all non-treatment variable data
+        graphics::matplot(pointmatrix, type = "l", col = 1:ncol(pointmatrix), 
+                          lty = 1, ylab = ylab, xaxt = "n", ...)
+        graphics::lines(x = 1:(nrow(pointmatrix) - 1), 
+                        y = as.numeric(treated.data)[1:(nrow(pointmatrix) - 1)], type = "l",
+                        lty = 2, lwd = 3)
+        graphics::axis(side = 1, labels = paste0("t-", (nrow(pointmatrix) - 1):0), at = 1:nrow(pointmatrix))    
+      } else {
+        graphics::matplot(pointmatrix, type = "l", col = 1:ncol(pointmatrix), 
+                          lty = 1, ylab = ylab, xaxt = "n", ...)
+        graphics::axis(side = 1, labels = paste0("t-", (nrow(pointmatrix) - 1):0), at = 1:nrow(pointmatrix)) 
+      }
+      
+    }
+    
+    if(legend) {
+      if (treated.included)
+      {
+        legend("topleft", legend = c(colnames(pointmatrix), treatment), 
+               col = c(1:ncol(pointmatrix), "black"), lty = c(rep(1, ncol(pointmatrix)), 2))  
+      } else {
+        legend("topleft", legend = colnames(pointmatrix), 
+               col = 1:ncol(pointmatrix), lty = 1)
+      }
+      
+    }
+      if(reference.line) graphics::abline(h = 0, lty = "dashed")
   }
 }
 

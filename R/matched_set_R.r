@@ -199,7 +199,8 @@ get.matchedsets <- function(t, id, data, L, t.column, id.column, treatedvar,
                                                caliper.formula = continuous.treatment.formula,
                                                matched.sets = matched.sets, 
                                                lag.window = 1:L, 
-                                               is.continuous.matching = TRUE)
+                                               is.continuous.matching = TRUE,
+                                               control.threshold = continuous.treatment.info[["control.threshold"]])
     return(continuous.matched.sets) #should maybe attach extra attributes for continuously matched msets
   }
 }
@@ -275,12 +276,12 @@ extract.differences <- function(indexed.data, matched.set, treatment.variable)
     attr(matched.set[[1]], "treatment.change") <- differences[1]
      
     attr(matched.set[[1]], "control.change") <- differences[2:length(differences)]
-    names(attr(matched.set[[1]], "control.change")) <- control.keys.t  
+    #names(attr(matched.set[[1]], "control.change")) <- control.keys.t  
   } else {
     differences <- as.numeric(indexed.data[treated.key.t, treatment.variable] - indexed.data[treated.key.tm1, treatment.variable])
     attr(matched.set[[1]], "treatment.change") <- differences[1]
   }
-  names(attr(matched.set[[1]], "treatment.change")) <- treated.key.t
+  #names(attr(matched.set[[1]], "treatment.change")) <- treated.key.t
   return(matched.set[[1]])
   
 }
@@ -301,7 +302,30 @@ identifyDirectionalChanges <- function(msets, ordered.data, id.var, time.var,
 
 
 
-
+prepContinuousControlUnits <- function(ordered.data,
+                                       idvar, time.var,
+                                       all.treated.ids,
+                                       all.treated.ts,
+                                       treated.ids,
+                                       treated.ts,
+                                       control.threshold
+)
+{
+  full.controls <- unique(ordered.data[, idvar])
+  ####THIS IS WHERE WE WANT TO UPDATE TO APPLY A FILTER TO CONTROL UNITS
+  
+  not.valid.ids <- all.treated.ids[all.treated.ts %in% treated.ts] #cant include other treated units from the same time
+  matched.set <- full.controls[!full.controls %in% not.valid.ids] # start with everything, then remove any units that are treated
+  # during the same period as the current t/id pair under consideration
+  rownames(ordered.data) <- paste0(ordered.data[, idvar], ".", ordered.data[, time.var])
+  controls.to.check.t <- paste0(matched.set, ".", treated.ts)
+  controls.to.check.t1 <- paste0(matched.set, ".", treated.ts - 1)
+  # can we safely bank on 3 being the treated column? i think so
+  diffs <- as.numeric(ordered.data[controls.to.check.t, 3]) - as.numeric(ordered.data[controls.to.check.t1, 3])
+  matched.set <- matched.set[abs(diffs) <= control.threshold]
+  matched.set <- matched.set[!is.na(matched.set)] #final cleanup, remove the NAs 
+  return(matched.set)
+}
 
 
 

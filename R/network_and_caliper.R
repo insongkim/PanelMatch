@@ -78,7 +78,9 @@ calculate_neighbor_treatment <- function(data, edge.matrix, n.degree,
 }
 
 handle_calipers <- function(plain.ordered.data, caliper.formula, 
-                            matched.sets, lag.window, is.continuous.matching = FALSE)
+                            matched.sets, lag.window, 
+                            is.continuous.matching = FALSE,
+                            control.threshold = NULL)
 {
   
   caliper <- function(y, method, caliper.distance, data_type, 
@@ -157,7 +159,8 @@ handle_calipers <- function(plain.ordered.data, caliper.formula,
                                                   as.numeric(caliper.metadata[3, i]), 
                                                   c(1:3, data.index),
                                                   #c(1:3,  (col.idx - max(lag.window)):col.idx),
-                                                  .IS_FACTOR_VAR, .USE_SD_UNITS, is.continuous.matching)
+                                                  .IS_FACTOR_VAR, .USE_SD_UNITS, 
+                                                  is.continuous.matching, control.threshold)
   }
   
   return(matched.sets)
@@ -165,7 +168,8 @@ handle_calipers <- function(plain.ordered.data, caliper.formula,
 }
 
 handle.single.caliper.per.lag <- function(plain.ordered.data, matched.sets, caliper.method, caliper.distance, 
-                                          data.index, is.factor.var, use.sd.units, do.continuous.matching = FALSE)
+                                          data.index, is.factor.var, use.sd.units, do.continuous.matching = FALSE,
+                                          control.threshold = NULL)
 {
   
   time.var <- attr(matched.sets, "t.var")
@@ -184,7 +188,7 @@ handle.single.caliper.per.lag <- function(plain.ordered.data, matched.sets, cali
 
   msets <- handle_distance_matrices(as.matrix(ordered.data), matched.sets, caliper.distance,
                            caliper.method, is.factor.var, use.sd.units, id.var, 
-                           time.var, lag.in, do.continuous.matching)
+                           time.var, lag.in, do.continuous.matching, control.threshold)
 
   
   lag.in <- old.lag

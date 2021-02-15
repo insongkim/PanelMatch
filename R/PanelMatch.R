@@ -251,7 +251,7 @@ panel_match <- function(lag, time.id, unit.id, treatment,
   
   if (!is.null(continuous.treatment.info))
   {
-    if (!(all(c("treatment.threshold", "units", "matching.threshold", "direction") %in% names(continuous.treatment.info))))
+    if (!(all(c("treatment.threshold", "units", "matching.threshold", "direction", "control.threshold") %in% names(continuous.treatment.info))))
     {
       
       stop("Missing parameter in continuous matching specification.

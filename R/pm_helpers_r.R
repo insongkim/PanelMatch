@@ -385,12 +385,13 @@ build_maha_mats <- function(idx, ordered_expanded_data)
 #modified version of build mahah mats but with refinement handled immediately
 handle_distance_matrices <- function(ordered_expanded_data, matched.sets, calipervalue,
                                      calipermethod, isfactor, use.sd, id.var,
-                                     time.var, lag.in, continuous.matching = FALSE)
+                                     time.var, lag.in, continuous.matching = FALSE,
+                                     control.threshold = NULL)
 {
 
   unnest <- function(matched.set, treated.unit.info,
                      lag.in_, ordered_expanded_data_, is.continuous.matching = FALSE,
-                     idvar, timevar, all.treated.info)
+                     idvar, timevar, all.treated.info, control.threshold = NULL)
   {
     treated.ts <- as.integer(sub(".*\\.", "", treated.unit.info))
     treated.ids <- as.integer(sub("\\..*", "", treated.unit.info))
@@ -399,9 +400,16 @@ handle_distance_matrices <- function(ordered_expanded_data, matched.sets, calipe
     all.treated.ids <- as.integer(sub("\\..*", "", all.treated.info))
     if (is.continuous.matching)
     {
-      full.controls <- unique(ordered_expanded_data_[, idvar])
-      not.valid.ids <- all.treated.ids[all.treated.ts %in% treated.ts] #cant include other treated units from the same time
-      matched.set <- full.controls[!full.controls %in% not.valid.ids] # start with everything, then remove any units that are treated
+      
+      matched.set <- prepContinuousControlUnits(ordered_expanded_data_, idvar, 
+                                                time.var, all.treated.ids,
+                                                all.treated.ts, treated.ids, 
+                                                treated.ts, control.threshold)
+      #full.controls <- unique(ordered_expanded_data_[, idvar])
+      ####THIS IS WHERE WE WANT TO UPDATE TO APPLY A FILTER TO CONTROL UNITS
+      #browser()
+      #not.valid.ids <- all.treated.ids[all.treated.ts %in% treated.ts] #cant include other treated units from the same time
+      #matched.set <- full.controls[!full.controls %in% not.valid.ids] # start with everything, then remove any units that are treated
       # during the same period as the current t/id pair under consideration
     }
     tlist <- expand.treated.ts(lag.in_, treated.ts = treated.ts)
@@ -426,7 +434,8 @@ handle_distance_matrices <- function(ordered_expanded_data, matched.sets, calipe
                                    is.continuous.matching = continuous.matching,
                                    idvar = id.var,
                                    timevar = time.var,
-                                   all.treated.info = names(matched.sets)),
+                                   all.treated.info = names(matched.sets),
+                                   control.threshold = control.threshold),
                    SIMPLIFY = FALSE)
   #result <- mapply(FUN = unnest, mset.idx = idx, matched.set = matched.sets, SIMPLIFY = FALSE)
   names(result) <- names(matched.sets)
