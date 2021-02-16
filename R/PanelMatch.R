@@ -381,6 +381,7 @@ panel_match <- function(lag, time.id, unit.id, treatment,
     if(!is.null(continuous.treatment.info))
     {
       attr(pm.obj, "continuous.treatment") <- TRUE
+      attr(pm.obj, "continous.treatment.direction") <- continuous.treatment.info[["direction"]]
     } else {
       attr(pm.obj, "continuous.treatment") <- FALSE
     }
@@ -428,6 +429,7 @@ panel_match <- function(lag, time.id, unit.id, treatment,
     if(!is.null(continuous.treatment.info))
     {
       attr(pm.obj, "continuous.treatment") <- TRUE
+      attr(pm.obj, "continous.treatment.direction") <- continuous.treatment.info[["direction"]]
     } else {
       attr(pm.obj, "continuous.treatment") <- FALSE
     }
@@ -506,9 +508,11 @@ panel_match <- function(lag, time.id, unit.id, treatment,
     attr(pm.obj, "outcome.var") <- outcome.var
     attr(pm.obj, "lead") <- lead
     attr(pm.obj, "forbid.treatment.reversal") <- forbid.treatment.reversal
+    
     if(!is.null(continuous.treatment.info))
     {
       attr(pm.obj, "continuous.treatment") <- TRUE
+      attr(pm.obj, "continous.treatment.direction") <- continuous.treatment.info[["direction"]]
     } else {
       attr(pm.obj, "continuous.treatment") <- FALSE
     }

@@ -183,7 +183,7 @@ panel_estimate <- function(inference = "bootstrap",
   lead <- attr(sets, "lead")
   outcome.variable <- attr(sets, "outcome.var")
   continuous.treatment <- attr(sets,'continuous.treatment')
-  
+  direction.treatment <- attr(sets, "continuous.treatment.direction")
   if(class(sets) != "PanelMatch") stop("sets is not a PanelMatch object")
   qoi <- attr(sets, "qoi")
   if(qoi == "ate")
@@ -359,6 +359,10 @@ panel_estimate <- function(inference = "bootstrap",
       }
       sets <- decode_index(sets, unit.index.map, og.unit.id)
       # changed return to class
+      if(!is.null(direction.treatment) && direction.treatment == "negative")
+      {
+        coefs <- -1 * coefs
+      }
       z <- list("estimates" = o.coefs,
                 "bootstrapped.estimates" = coefs, "bootstrap.iterations" = number.iterations, "standard.error" = apply(coefs, 2, sd, na.rm = T),
                 "method" = method, "lag" = lag,
@@ -409,6 +413,10 @@ panel_estimate <- function(inference = "bootstrap",
         coefs[k,] <- atc_new
       }
       sets2 <- decode_index(sets2, unit.index.map, og.unit.id)
+      if(!is.null(direction.treatment) && direction.treatment == "negative")
+      {
+        coefs <- -1 * coefs
+      }
       z <- list("estimates" = o.coefs,
                 "bootstrapped.estimates" = coefs, "bootstrap.iterations" = number.iterations, "standard.error" = apply(coefs, 2, sd, na.rm = T),
                 "lead" = lead, "confidence.level" = confidence.level, "qoi" = qoi, "matched.sets" = sets2)
@@ -480,6 +488,10 @@ panel_estimate <- function(inference = "bootstrap",
       # return(list("o.coef" = DID_ATE, "boots" = coefs))
       sets <- decode_index(sets, unit.index.map, og.unit.id)
       sets2 <- decode_index(sets2, unit.index.map, og.unit.id)
+      if(!is.null(direction.treatment) && direction.treatment == "negative")
+      {
+        coefs <- -1 * coefs
+      }
       z <- list("estimates" = o.coefs_ate,
                 "bootstrapped.estimates" = coefs, "bootstrap.iterations" = number.iterations, "standard.error" = apply(coefs, 2, sd, na.rm = T),
                 "lead" = lead, "confidence.level" = confidence.level, "qoi" = qoi, "matched.sets" = list(sets, sets2))
