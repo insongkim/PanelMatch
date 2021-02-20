@@ -8,7 +8,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
 {
 
 
-  
+
   if (continuous.treatment)
   {
     temp.treateds <- findContinuousTreated(dmat = ordered.data, treatedvar = treatment, time.var = time.id,
@@ -28,7 +28,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
     warn.str <- paste0("no viable treated units for ", qoi, " specification")
     stop(warn.str)
   }
-  
+
   msets <- get.matchedsets(temp.treateds[, time.id], temp.treateds[, unit.id], data = ordered.data,
                              L = lag, t.column = time.id, id.column = unit.id,
                              treatedvar = treatment, hasbeensorted = TRUE,
@@ -101,14 +101,14 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
   # print("preview of data:")
   # print(head(ordered.data))
   # print(class(ordered.data))
-  
-  ordered.data <- parse_and_prep(formula = covs.formula, 
-                                 data = ordered.data, 
+
+  ordered.data <- parse_and_prep(formula = covs.formula,
+                                 data = ordered.data,
                                  unit.id = unit.id,
                                  time.id = time.id,
                                  treatment.variable = treatment)
   print("data reformatting complete")
-  
+
   if (any(apply(ordered.data, 2, FUN = function(x) any(is.infinite(x)))))
   {
     stop("Data needed for refinement contains infinite values. Code cannot proceed!")
@@ -136,15 +136,15 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
     lag <- 0
     ## new version
     print("mahalanobis refinement starting")
-    
+
     rownames(ordered.data) <- paste0(ordered.data[, unit.id], ".", ordered.data[, time.id])
     ##now we assume that rownames have been given
     # msets <- handle_distance_matrices_maha(ordered_expanded_data = ordered.data,
     #                                        matched.sets = msets, id.var = unit.id,
     #                                        time.var = time.id, lag.in = lag, maxSize = size.match,
-    #                                        useDiagonalCovmat = use.diag.covmat, 
+    #                                        useDiagonalCovmat = use.diag.covmat,
     #                                        verbose.in = verbose, treat.var = treatment)
-    
+
     ###old code
     tlist <- expand.treated.ts(lag, treated.ts = treated.ts)
 
@@ -222,6 +222,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
   }  #not msm
   if(all(refinement.method %in% c("CBPS.weight", "CBPS.match", "ps.weight", "ps.match")))
   {
+
     if(!all(refinement.method %in% c("CBPS.weight", "CBPS.match", "ps.weight", "ps.match"))) stop("please choose valid refinement method")
     tlist <- expand.treated.ts(lag, treated.ts = treated.ts)
     idxlist <- get_yearly_dmats(ordered.data, treated.ids, tlist, matched_sets = msets, lag)
@@ -295,7 +296,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
 }
 
 #data has unit, time, treatment, everything else column order at this point
-parse_and_prep <- function(formula, data, unit.id, 
+parse_and_prep <- function(formula, data, unit.id,
                            time.id, treatment.variable)
 {
   internal.lag <- function (x, n = 1L, default = NA)
@@ -310,7 +311,7 @@ parse_and_prep <- function(formula, data, unit.id,
 
   lag <- function(y, lwindow)
   {
-    
+
     sapply(lwindow, internal.lag, x = y)
   }
 
@@ -326,7 +327,7 @@ parse_and_prep <- function(formula, data, unit.id,
     #browser()
     tdf <- model.frame(form, x, na.action = NULL)
     #tdf2 <- model.frame(form, x, na.action = NULL)
-    
+
     #return(cbind(x[, c(1, 2, 3)], model.matrix(form, tdf)[, -1]))
     #tdf <- as.matrix(tdf)
     #browser()
@@ -338,37 +339,37 @@ parse_and_prep <- function(formula, data, unit.id,
   #original.id <- sub("\\..*", "", unit.id)
   #DT <- data.table(data)
   # DT[,(original.id):=NULL]
-  
+
   n.units <- length(unique(data[, 1]))
   n.time <- length(unique(data[, 2]))
   attr(formula, ".Environment") <- environment()
   t.data <- vector("list", length = n.units)
   for(i in 1:n.units)
   {
-    
+
     t.idx <- (i * n.time) - (n.time - 1)
     t.data[[i]] <- as.matrix(model.frame(formula, data[t.idx:(t.idx + n.time - 1), ], na.action = NULL)) # fix this after i fix the formula stuff
     #data <- data[-(1:n.time), ] ##Does this free the memory?
   }
-  
+
   #tdata <- by(data, as.factor(data[, 1]), FUN = apply_formula, form = formula)
   #class(tdata) <- "list"
   #t.data <- data.table::rbindlist(tdata)
-  
+
   #t.data <- data.table::rbindlist(ll)
-  
+
   t.data <- do.call(rbind, t.data)
   #idk.dt <- DT[, := apply_formula(x = .SD, form = formula), by = unit.id]
   #may not be necessary?
   #idk.dt[, !original.id]
   #t.data <- as.data.frame(idk.dt)
-  
+
   t.data <- cbind(data[, c(unit.id, time.id, treatment.variable)], t.data)
   #othercols <- colnames(t.data)[!colnames(t.data) %in% c(time.id, unit.id, treatment.variable)]
   #t.data <- t.data[, c(unit.id, time.id, treatment.variable, othercols)]
   #t.data <- t.data[order(t.data[,1], t.data[,2]), ]
   rownames(t.data) <- NULL
-  
+
   return(t.data)
 }
 
@@ -425,14 +426,42 @@ clean_leads <- function(matched_sets, ordered.data, max.lead, t.var, id.var, out
                                        sets = matched_sets, treated_tid_pairs = names(matched_sets),
                                        treated_ids = tids, lead =  as.integer(max.lead), times = ts)
   print('cleaning complete')
- 
+
   print('all units checked')
   if(all(sapply(sub_sets, length) == 0)) stop('estimation not possible: none of the matched sets have viable control units due to a lack of necessary data')
   matched_sets <- sub_sets[sapply(sub_sets, length) > 0]
   print("subsetting process complete")
   for(idx in names(old.attributes))
   {
-    attr(matched_sets, idx) <- old.attributes[[idx]]
+    create_control_maps <- function(matched_set, time)
+    {
+      return(paste0(matched_set, ".", time))
+    }
+
+    prepped_sets <- mapply(create_control_maps, matched_set = matched_sets, time = ts, SIMPLIFY = FALSE)
+
+    tpx <- check_missing_data_control_units(subset_data = as.matrix(ordered.data[, c(id.var,t.var,outcome.var)]),
+                                            sets = matched_sets,
+                                            prepared_sets = prepped_sets,
+                                            tid_pairs = paste0(ordered.data[, id.var], ".", ordered.data[, t.var]),
+                                            lead =  max.lead)
+
+    create_new_sets <- function(set, index)
+    {
+      return(set[index])
+    }
+    sub_sets <- mapply(FUN = create_new_sets, matched_sets, tpx, SIMPLIFY = FALSE)
+
+    if(all(sapply(sub_sets, length) == 0)) stop('estimation not possible: none of the matched sets have viable control units due to a lack of necessary data')
+
+    matched_sets <- sub_sets[sapply(sub_sets, length) > 0]
+
+    for(idx in names(old.attributes))
+    {
+
+      attr(matched_sets, idx) <- old.attributes[[idx]]
+    }
+
   }
   class(matched_sets) <- c("matched.set")
   print("bookkeeping completed")

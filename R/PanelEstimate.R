@@ -21,7 +21,7 @@
 #' calculation. The default is \code{FALSE}.
 #' @param confidence.level A numerical value specifying the confidence level and range of interval
 #' estimates for statistical inference. The default is .95.
-#' @param moderating.variable The name of a moderating variable, provided as a character string. If a moderating variable is provided
+#' @param moderator The name of a moderating variable, provided as a character string. If a moderating variable is provided
 #' the returned object will be a list of \code{PanelEstimate} objects. The names of the list will reflect the different values of the 
 #' moderating variable. More specifically, the moderating variable values will be converted to syntactically proper names using 
 #' \code{make.names}.
@@ -60,7 +60,7 @@ PanelEstimate <- function(sets,
                           number.iterations = 1000,
                           df.adjustment = FALSE,
                           confidence.level = .95,
-                          moderating.variable = NULL,
+                          moderator = NULL,
                           data) 
 {
   inference <- "bootstrap"
@@ -72,7 +72,7 @@ PanelEstimate <- function(sets,
     if(length(unique(length(inference), length(number.iterations), length(df.adjustment), 
                      length(confidence.level), length(sets))) == 1)
     {
-      if(!is.null(moderating.variable))
+      if(!is.null(moderator))
       {
         
       
@@ -112,7 +112,7 @@ PanelEstimate <- function(sets,
         }
         res <- mapply(FUN = handle.nesting, number.iterations.in = number.iterations, 
                      df.adjustment.in = df.adjustment, confidence.level.in= confidence.level, sets.in = sets, 
-                     MoreArgs = list(data = data, inference = inference, moderating.variable.in = moderating.variable), 
+                     MoreArgs = list(data = data, inference = inference, moderating.variable.in = moderator), 
                      SIMPLIFY = FALSE)
       }
       else
@@ -130,7 +130,7 @@ PanelEstimate <- function(sets,
   }
   else 
   {
-    if(!is.null(moderating.variable))
+    if(!is.null(moderator))
     {
       if(attr(sets, "qoi") == "att")
       {
@@ -154,9 +154,10 @@ PanelEstimate <- function(sets,
       
       ordered.data <- data[order(data[,unit.id], data[,time.id]), ]
       set.list <- handle_moderating_variable(ordered.data = ordered.data, att.sets = sets[["att"]], atc.sets = sets[["atc"]],
-                                             moderator = moderating.variable, unit.id = unit.id, time.id = time.id,
+                                             moderator = moderator, unit.id = unit.id, time.id = time.id,
                                              PM.object = sets)
-      
+  
+
       res <- lapply(set.list, FUN = panel_estimate, inference = inference, number.iterations = number.iterations, 
                     df.adjustment = df.adjustment, confidence.level = confidence.level, data = data)
       
@@ -182,7 +183,6 @@ panel_estimate <- function(inference = "bootstrap",
   
   lead <- attr(sets, "lead")
   outcome.variable <- attr(sets, "outcome.var")
-  
   if(class(sets) != "PanelMatch") stop("sets is not a PanelMatch object")
   qoi <- attr(sets, "qoi")
   if(qoi == "ate")
@@ -195,7 +195,10 @@ panel_estimate <- function(inference = "bootstrap",
     sets <- sets[[qoi]]  
   }
   sets <- sets[sapply(sets, length) > 0]
-  
+  if (length(sets) == 0)
+  {
+    return(NA)
+  }
   
   lag <- attr(sets, "lag")
   dependent = outcome.variable
@@ -257,6 +260,7 @@ panel_estimate <- function(inference = "bootstrap",
   
   if(qoi == "att")
   {
+    
     sets <- encode_index(sets, unit.index.map, unit.id)
   }
   if(qoi == "atc")

@@ -619,6 +619,8 @@ decode_index <- function(mset, unit.index, original.unit.id)#, original.time.id)
 
 encode_index <- function(mset, unit.index, new.unit.id)
 {
+  
+  
   encode.control.units <- function(in_, unit.index)
   {
     news <- unit.index$new.id[match(in_, unit.index$original.id)]

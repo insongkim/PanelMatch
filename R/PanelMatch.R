@@ -251,12 +251,21 @@ panel_match <- function(lag, time.id, unit.id, treatment,
   if(any(duplicated(data[, c(unit.id, time.id)]))) stop("Time, unit combinations should uniquely identify rows. Please remove duplicates")
   if(!class(data[, unit.id]) %in% c("integer", "numeric")) stop("please convert unit id column to integer or numeric")
   if(class(data[, time.id]) != "integer") stop("please convert time id to consecutive integers")
+<<<<<<< HEAD
   if(!is.null(restrict.control.period))
   {
     if(restrict.control.period < 1) stop("restricted control period specification must be >=1")
     if(restrict.control.period > lag) stop("restricted control period specification cannot be greater than lag")
   }
 
+=======
+  
+  if (any(c("character", "factor") %in% sapply(data, class)))
+  {
+    warning("non-numeric data exists. Only numeric (including binary) data can be used for refinement and calculations")
+  }
+  
+>>>>>>> master
   #######take this out when negative lead is implemented:
   if(any(lead < 0)) stop("Please provide positive lead values. Negative lead values will be supported in future versions")
 
