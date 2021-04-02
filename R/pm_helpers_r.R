@@ -30,6 +30,18 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
       temp.treateds <- findContinuousTreated(dmat = ordered.data, treatedvar = treatment, time.var = time.id,
                             unit.var = unit.id, qoi = qoi,
                             continuous.treatment.info = continuous.treatment.info)
+      
+      if(!is.null(continuous.treatment.info[["minimum.treatment.value"]]))
+      {
+        indx <- temp.treateds[, treatment] >= continuous.treatment.info[["minimum.treatment.value"]]
+        temp.treateds <- temp.treateds[indx,]
+      }
+      if(!is.null(continuous.treatment.info[["maximum.treatment.value"]]))
+      {
+        indx <- temp.treateds[, treatment] <= continuous.treatment.info[["minimum.treatment.value"]]
+        temp.treateds <- temp.treateds[indx,]
+      }
+      ## add filter in here
     } else
     {
 
@@ -37,7 +49,9 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
                                          unit.var = unit.id, hasbeensorted = TRUE)
 
     }
-
+    
+    
+    
     idx <- !((temp.treateds[, time.id] - lag) < min(ordered.data[, time.id]))
     temp.treateds <- temp.treateds[idx, ]
     if (nrow(temp.treateds) == 0)

@@ -238,9 +238,8 @@ findContinuousTreated <- function(dmat, treatedvar, time.var, unit.var,
 
     return(x[unitIndex, ])
   }
-  # TODO: fix this
-
-  ##evaluate the function here to extract threshold
+  
+  
   
   treatment.threshold <- continuous.treatment.info[["treatment.threshold"]] #(continuous.treatment.formula)
   treatedUnits <- by(dmat, INDICES = dmat[, unit.var], FUN = identifyContinuousIndex,
