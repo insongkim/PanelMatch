@@ -1,8 +1,10 @@
 #network calculations can examine the count and proportion of treated neighbors up to a certain degree
 #needs to be modified for handling of continuous treatment
 calculate_neighbor_treatment <- function(data, edge.matrix, n.degree, 
-                                         unit.id, time.id, treatment.variable)
+                                         unit.id, time.id, treatment.variable,
+                                         treated.unit.names)
 {
+  
   edge.matrix <- edge.matrix[ edge.matrix[,3] == 1, ] #probably want to change how this is done
   g1 <- igraph::graph_from_data_frame(edge.matrix, directed = FALSE)
   ref.names <- paste0(data[, unit.id], ".", data[, time.id])
@@ -29,23 +31,27 @@ calculate_neighbor_treatment <- function(data, edge.matrix, n.degree,
 
   neighborhood.lookup <- lapply(1:n.degree, adjusted.neighborhood, graph.in = g1)
   
-  get.neighborhood.treatment.per.time <- function(treatment.lookup, neighborhood.vector, time, return.average = TRUE)
+  get.neighborhood.treatment.per.time <- function(treatment.lookup, neighborhood.vector, 
+                                                  time, return.average = TRUE, treated.unit.names)
   {
     ## designed for binary treatment, will need to update the following chunks to accomodate continuous treatment
     lookups <- paste0(neighborhood.vector, '.', time)
-    if(return.average) ## feel like these might need to be updated to replace na's with zeroes or something
+    r.vector <- lookups %in% treated.unit.names
+    if (return.average) ## feel like these might need to be updated to replace na's with zeroes or something
     {
-      prop.treatment <- mean(treatment.lookup[lookups], na.rm = TRUE)  
+      
+      prop.treatment <- mean(r.vector, na.rm = TRUE)  
       return(prop.treatment)
     }
     else {
-      prop.treatment <- sum(treatment.lookup[lookups], na.rm = TRUE)
+      prop.treatment <- sum(r.vector, na.rm = TRUE)
       return(prop.treatment)
     }
     
   }
   
-  get.treatment.prop.per.row <- function(t.id.pair, degree, neighborhood.lookup, treatment.vector, return.average = TRUE)
+  get.treatment.prop.per.row <- function(t.id.pair, degree, neighborhood.lookup,
+                                         treatment.vector, return.average = TRUE, treated.unit.names)
   {
     
     id <- as.numeric(unlist(strsplit(t.id.pair, split = "[.]"))[c(T,F)])
@@ -57,7 +63,9 @@ calculate_neighbor_treatment <- function(data, edge.matrix, n.degree,
     }
     else
     {
-      return.proportion <- get.neighborhood.treatment.per.time(treatment.vector, neighbor.res, t, return.average)  
+      return.proportion <- get.neighborhood.treatment.per.time(treatment.vector, 
+                                                               neighbor.res, t, return.average,
+                                                               treated.unit.names)  
     }
     
     return(return.proportion)
@@ -65,14 +73,18 @@ calculate_neighbor_treatment <- function(data, edge.matrix, n.degree,
   
   ll <- lapply(1:n.degree, FUN = function(x) {sapply(ref.names, get.treatment.prop.per.row, 
                                                      neighborhood.lookup = neighborhood.lookup, 
-                                                     treatment.vector = treatment.vector, degree = x)})
+                                                     treatment.vector = treatment.vector, degree = x,
+                                                     return.average = TRUE, 
+                                                     treated.unit.names = treated.unit.names)})
+  
   data[, make.names(paste0('neighborhood_t_prop', '.', 1:n.degree))] = ll
   
   
   ll <- lapply(1:n.degree, FUN = function(x) {sapply(ref.names, get.treatment.prop.per.row, 
                                                      neighborhood.lookup = neighborhood.lookup, 
                                                      treatment.vector = treatment.vector, degree = x,
-                                                     return.average = FALSE)})
+                                                     return.average = FALSE,
+                                                     treated.unit.names = treated.unit.names)})
   
   data[, make.names(paste0('neighborhood_t_count', '.', 1:n.degree))] = ll
   

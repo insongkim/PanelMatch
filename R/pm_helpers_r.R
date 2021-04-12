@@ -1,98 +1,87 @@
 # File contains helper functions written in R for PanelMatch functionality
 perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.method, size.match,
                                ordered.data, match.missing, covs.formula, verbose,
-                               mset.object = NULL, lead, outcome.var = NULL, forbid.treatment.reversal = FALSE, qoi = "",
-                               matching = TRUE, exact.matching.variables = NULL, listwise.deletion,
+                               mset.object = NULL, lead, outcome.var = NULL, 
+                               forbid.treatment.reversal = FALSE, qoi = "",
+                               matching = TRUE, exact.matching.variables = NULL, 
+                               listwise.deletion,
                                use.diag.covmat = FALSE, caliper.formula = NULL,
-                               continuous.treatment.info = NULL)
+                               continuous.treatment.info = NULL,
+                               network.caliper.info = NULL,
+                               network.refinement.info = NULL,
+                               adjacency.matrix,
+                               neighborhood.degree)
 {
 
-  if(!is.null(mset.object))
+  if ( !is.null(mset.object) ) stop('This should never run!')
+
+  continuous.treatment <- !is.null(continuous.treatment.info) #to make this easier
+  if (continuous.treatment)
   {
-    lag = attr(mset.object, "lag")
-    time.id = attr(mset.object, "t.var")
-    unit.id = attr(mset.object, "id.var")
-    treatment = attr(mset.object, "treatment.var")
-    refinement.method = attr(mset.object, "refinement.method")
-    size.match = attr(mset.object, "max.match.size")
-    covs.formula = attr(mset.object, "covs.formula")
-    match.missing <- attr(mset.object, "match.missing")
-    verbose = FALSE
-    msets <- mset.object
+    
+    temp.treateds <- findContinuousTreated(dmat = ordered.data, treatedvar = treatment, time.var = time.id,
+                          unit.var = unit.id, qoi = qoi,
+                          continuous.treatment.info = continuous.treatment.info)
+    
+    if(!is.null(continuous.treatment.info[["minimum.treatment.value"]]))
+    {
+      indx <- temp.treateds[, treatment] >= continuous.treatment.info[["minimum.treatment.value"]]
+      temp.treateds <- temp.treateds[indx,]
+    }
+    if(!is.null(continuous.treatment.info[["maximum.treatment.value"]]))
+    {
+      indx <- temp.treateds[, treatment] <= continuous.treatment.info[["maximum.treatment.value"]]
+      temp.treateds <- temp.treateds[indx,]
+    }
+    ## add filter in here
+  } else
+  {
+    temp.treateds <- findBinaryTreated(ordered.data, treatedvar = treatment, time.var = time.id,
+                                       unit.var = unit.id, hasbeensorted = TRUE)
   }
-  else
-  {
-
-    continuous.treatment <- !is.null(continuous.treatment.info) #to make this easier
-    if (continuous.treatment)
-    {
-      
-      temp.treateds <- findContinuousTreated(dmat = ordered.data, treatedvar = treatment, time.var = time.id,
-                            unit.var = unit.id, qoi = qoi,
-                            continuous.treatment.info = continuous.treatment.info)
-      
-      if(!is.null(continuous.treatment.info[["minimum.treatment.value"]]))
-      {
-        indx <- temp.treateds[, treatment] >= continuous.treatment.info[["minimum.treatment.value"]]
-        temp.treateds <- temp.treateds[indx,]
-      }
-      if(!is.null(continuous.treatment.info[["maximum.treatment.value"]]))
-      {
-        indx <- temp.treateds[, treatment] <= continuous.treatment.info[["maximum.treatment.value"]]
-        temp.treateds <- temp.treateds[indx,]
-      }
-      ## add filter in here
-    } else
-    {
-
-      temp.treateds <- findBinaryTreated(ordered.data, treatedvar = treatment, time.var = time.id,
-                                         unit.var = unit.id, hasbeensorted = TRUE)
-
-    }
-    
-    
-    
-    idx <- !((temp.treateds[, time.id] - lag) < min(ordered.data[, time.id]))
-    temp.treateds <- temp.treateds[idx, ]
-    if (nrow(temp.treateds) == 0)
-    {
-      warn.str <- paste0("no viable treated units for ", qoi, " specification")
-      stop(warn.str)
-    }
-    msets <- get.matchedsets(temp.treateds[, time.id], temp.treateds[, unit.id], data = ordered.data,
-                             L = lag, t.column = time.id, id.column = unit.id,
-                             treatedvar = treatment, hasbeensorted = TRUE,
-                             match.on.missingness = match.missing, matching = TRUE,
-                             continuous = continuous.treatment,
-                             continuous.treatment.info = continuous.treatment.info)
-    e.sets <- msets[sapply(msets, length) == 0]
-    msets <- msets[sapply(msets, length) > 0 ]
-    if(length(msets) == 0)
-    {
-      t.attributes <- attributes(e.sets)[names(attributes(e.sets)) != "names"]
-      msets <- e.sets
-      for(idx in names(t.attributes))
-      {
-        attr(msets, idx) <- t.attributes[[idx]]
-      }
-      attr(msets, "covs.formula") <- covs.formula
-      attr(msets, "match.missing") <- match.missing
-      return(msets)
-      return(msets)
-    }
   
-    msets <- clean_leads(msets, ordered.data, max(lead), time.id, unit.id, outcome.var)
-
-    if(forbid.treatment.reversal)
-    {
-      msets <- enforce_lead_restrictions(msets, ordered.data, max(lead), time.id, unit.id, treatment.var = treatment)
-    }
-    if(length(msets) == 0)
-    {
-      warn.str <- paste0("no matched sets for ", qoi, " specification")
-      stop(warn.str)
-    }
+  
+  
+  idx <- !((temp.treateds[, time.id] - lag) < min(ordered.data[, time.id]))
+  temp.treateds <- temp.treateds[idx, ]
+  if (nrow(temp.treateds) == 0)
+  {
+    warn.str <- paste0("no viable treated units for ", qoi, " specification")
+    stop(warn.str)
   }
+  msets <- get.matchedsets(temp.treateds[, time.id], temp.treateds[, unit.id], data = ordered.data,
+                           L = lag, t.column = time.id, id.column = unit.id,
+                           treatedvar = treatment, hasbeensorted = TRUE,
+                           match.on.missingness = match.missing, matching = TRUE,
+                           continuous = continuous.treatment,
+                           continuous.treatment.info = continuous.treatment.info)
+  e.sets <- msets[sapply(msets, length) == 0]
+  msets <- msets[sapply(msets, length) > 0 ]
+  if(length(msets) == 0)
+  {
+    t.attributes <- attributes(e.sets)[names(attributes(e.sets)) != "names"]
+    msets <- e.sets
+    for(idx in names(t.attributes))
+    {
+      attr(msets, idx) <- t.attributes[[idx]]
+    }
+    attr(msets, "covs.formula") <- covs.formula
+    attr(msets, "match.missing") <- match.missing
+    return(msets)
+    return(msets)
+  }
+
+  msets <- clean_leads(msets, ordered.data, max(lead), time.id, unit.id, outcome.var)
+  if(forbid.treatment.reversal)
+  {
+    msets <- enforce_lead_restrictions(msets, ordered.data, max(lead), time.id, unit.id, treatment.var = treatment)
+  }
+  if(length(msets) == 0)
+  {
+    warn.str <- paste0("no matched sets for ", qoi, " specification")
+    stop(warn.str)
+  }
+  
   if(!is.null(exact.matching.variables))
   {
     msets <- do_exact_matching(msets, ordered.data, exact.matching.variables)
@@ -176,8 +165,21 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
   treated.ids <- as.integer(sub("\\..*", "", names(msets)))
 
 
-  ###########################################################################
-  ## put network stuff here? 
+  ###################################network code########################################
+  if (!is.null(network.caliper.info) || !is.null(network.refinement.info))
+  { 
+    # browser()
+    treated.names <- c(names(msets), names(e.sets))
+    ordered.data <- calculate_neighbor_treatment(ordered.data, adjacency.matrix, 
+                                                 neighborhood.degree, unit.id, 
+                                                 time.id, treatment)
+    ll <- handle_network_caliper_and_refinement(network.caliper.info, network.refinement.info, ordered.data,
+                                                adjacency.matrix, neighborhood.degree, 
+                                                unit.id, time.id, treatment,
+                                                covs.formula, caliper.formula)
+    covs.formula <- ll[[1]]
+    caliper.formula <- ll[[2]]
+  }
   ###########################################################################
 
   ordered.data <- parse_and_prep(formula = covs.formula, data = ordered.data)
