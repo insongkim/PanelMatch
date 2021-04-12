@@ -292,6 +292,8 @@ panel_match <- function(lag, time.id, unit.id, treatment,
   ordered.data <- data[order(data[,unit.id], data[,time.id]), ]
   
   #if(!is.null(edge.matrix) & !is.null(neighborhood.degree)) #do early to avoid the encoding/index change, should be safe? 
+  ########################################################################### NETWORK CODE ###########################################################################
+  ######################################################################################################################################################
   if(!is.null(network.caliper.info) || !is.null(network.refinement.info))
   { 
     # browser()
@@ -303,8 +305,8 @@ panel_match <- function(lag, time.id, unit.id, treatment,
     covs.formula <- ll[[1]]
     caliper.formula <- ll[[2]]
   }
-  
-  
+  ###################################################### NETWORK CODE######################################################################################################################################################
+  ###########################################################################
   ordered.data[, paste0(unit.id, ".int")] <- as.integer(as.factor(ordered.data[, unit.id]))
   if(class(data[, unit.id]) == "character") {
     unit.index.map <- data.frame(original.id = make.names(as.character(unique(ordered.data[, unit.id]))), 
@@ -355,22 +357,22 @@ panel_match <- function(lag, time.id, unit.id, treatment,
     {
       attr(msets, "lag") <- old.lag
     }
-    ### THIS IS FOR ATC, NOT SURE IF IT REALLY MAKES SENSE
-    if (!is.null(continuous.treatment.info))
-    {
-      if (continuous.treatment.info[["direction"]] == "positive")
-      {
-        idx <- sapply(msets, function(x) attr(x, "treatment.change")) >= 0
-        msets <- msets[idx]
-      } else if (continuous.treatment.info[["direction"]] == "negative")
-      {
-        idx <- sapply(msets, function(x) attr(x, "treatment.change")) <= 0
-        msets <- msets[idx]
-      } else if (continuous.treatment.info[["direction"]] != "both")
-      {
-        stop("direction not well specified")
-      }  
-    }
+    # ### THIS IS FOR ATC, NOT SURE IF IT REALLY MAKES SENSE
+    # if (!is.null(continuous.treatment.info))
+    # {
+    #   if (continuous.treatment.info[["direction"]] == "positive")
+    #   {
+    #     idx <- sapply(msets, function(x) attr(x, "treatment.change")) >= 0
+    #     msets <- msets[idx]
+    #   } else if (continuous.treatment.info[["direction"]] == "negative")
+    #   {
+    #     idx <- sapply(msets, function(x) attr(x, "treatment.change")) <= 0
+    #     msets <- msets[idx]
+    #   } else if (continuous.treatment.info[["direction"]] != "both")
+    #   {
+    #     stop("direction not well specified")
+    #   }  
+    # }
     
     
     pm.obj <- list("atc" = msets)
@@ -403,22 +405,22 @@ panel_match <- function(lag, time.id, unit.id, treatment,
       attr(msets, "lag") <- old.lag
     }
     
-    if (!is.null(continuous.treatment.info))
-    {
-      if (continuous.treatment.info[["direction"]] == "positive")
-      {
-        idx <- sapply(msets, function(x) attr(x, "treatment.change")) >= 0
-        msets <- msets[idx]
-      } else if (continuous.treatment.info[["direction"]] == "negative")
-      {
-        idx <- sapply(msets, function(x) attr(x, "treatment.change")) <= 0
-        msets <- msets[idx]
-      } else if (continuous.treatment.info[["direction"]] != "both")
-      {
-        stop("direction not well specified")
-      }  
-    }
-    
+    # if (!is.null(continuous.treatment.info))
+    # {
+    #   if (continuous.treatment.info[["direction"]] == "positive")
+    #   {
+    #     idx <- sapply(msets, function(x) attr(x, "treatment.change")) >= 0
+    #     msets <- msets[idx]
+    #   } else if (continuous.treatment.info[["direction"]] == "negative")
+    #   {
+    #     idx <- sapply(msets, function(x) attr(x, "treatment.change")) <= 0
+    #     msets <- msets[idx]
+    #   } else if (continuous.treatment.info[["direction"]] != "both")
+    #   {
+    #     stop("direction not well specified")
+    #   }  
+    # }
+    # 
     
     pm.obj <- list("att" = msets)
     class(pm.obj) <- "PanelMatch"
@@ -478,30 +480,30 @@ panel_match <- function(lag, time.id, unit.id, treatment,
       attr(msets2, "lag") <- old.lag
     }
     
-    if (!is.null(continuous.treatment.info))
-    {
-      if (continuous.treatment.info[["direction"]] == "positive")
-      {
-        idx <- sapply(msets, function(x) attr(x, "treatment.change")) >= 0
-        msets <- msets[idx]
-        
-        idx <- sapply(msets2, function(x) attr(x, "treatment.change")) >= 0
-        msets2 <- msets2[idx]
-        
-        
-      } else if (continuous.treatment.info[["direction"]] == "negative")
-      {
-        idx <- sapply(msets, function(x) attr(x, "treatment.change")) <= 0
-        msets <- msets[idx]
-        
-        idx <- sapply(msets2, function(x) attr(x, "treatment.change")) <= 0
-        msets2 <- msets2[idx]
-        
-      } else if (continuous.treatment.info[["direction"]] != "both")
-      {
-        stop("direction not well specified")
-      }  
-    }
+    # if (!is.null(continuous.treatment.info))
+    # {
+    #   if (continuous.treatment.info[["direction"]] == "positive")
+    #   {
+    #     idx <- sapply(msets, function(x) attr(x, "treatment.change")) >= 0
+    #     msets <- msets[idx]
+    #     
+    #     idx <- sapply(msets2, function(x) attr(x, "treatment.change")) >= 0
+    #     msets2 <- msets2[idx]
+    #     
+    #     
+    #   } else if (continuous.treatment.info[["direction"]] == "negative")
+    #   {
+    #     idx <- sapply(msets, function(x) attr(x, "treatment.change")) <= 0
+    #     msets <- msets[idx]
+    #     
+    #     idx <- sapply(msets2, function(x) attr(x, "treatment.change")) <= 0
+    #     msets2 <- msets2[idx]
+    #     
+    #   } else if (continuous.treatment.info[["direction"]] != "both")
+    #   {
+    #     stop("direction not well specified")
+    #   }  
+    # }
     
     pm.obj <- list("att" = msets, "atc" = msets2)
     class(pm.obj) <- "PanelMatch"

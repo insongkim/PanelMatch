@@ -38,7 +38,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
       }
       if(!is.null(continuous.treatment.info[["maximum.treatment.value"]]))
       {
-        indx <- temp.treateds[, treatment] <= continuous.treatment.info[["minimum.treatment.value"]]
+        indx <- temp.treateds[, treatment] <= continuous.treatment.info[["maximum.treatment.value"]]
         temp.treateds <- temp.treateds[indx,]
       }
       ## add filter in here
@@ -123,7 +123,33 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
       e.sets <- identifyDirectionalChanges(e.sets, ordered.data, 
                                            unit.id, time.id, treatment)  
     }
-    
+  }
+  
+  if (!is.null(continuous.treatment.info))
+  {
+    if (continuous.treatment.info[["direction"]] == "positive")
+    {
+      idx <- sapply(msets, function(x) attr(x, "treatment.change")) >= 0
+      msets <- msets[idx]
+      if (length(e.sets) > 0) 
+      {
+        idx <- sapply(e.sets, function(x) attr(x, "treatment.change")) >= 0
+        e.sets <- e.sets[idx]  
+      }
+      
+    } else if (continuous.treatment.info[["direction"]] == "negative")
+    {
+      idx <- sapply(msets, function(x) attr(x, "treatment.change")) <= 0
+      msets <- msets[idx]
+      if (length(e.sets) > 0) 
+      {
+        idx <- sapply(e.sets, function(x) attr(x, "treatment.change")) >= 0
+        e.sets <- e.sets[idx]  
+      }
+    } else if (continuous.treatment.info[["direction"]] != "both")
+    {
+      stop("direction not well specified")
+    }  
   }
   
   if(refinement.method == "none")
@@ -150,7 +176,9 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
   treated.ids <- as.integer(sub("\\..*", "", names(msets)))
 
 
-
+  ###########################################################################
+  ## put network stuff here? 
+  ###########################################################################
 
   ordered.data <- parse_and_prep(formula = covs.formula, data = ordered.data)
   

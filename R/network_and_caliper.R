@@ -1,3 +1,5 @@
+#network calculations can examine the count and proportion of treated neighbors up to a certain degree
+#needs to be modified for handling of continuous treatment
 calculate_neighbor_treatment <- function(data, edge.matrix, n.degree, 
                                          unit.id, time.id, treatment.variable)
 {
@@ -29,7 +31,7 @@ calculate_neighbor_treatment <- function(data, edge.matrix, n.degree,
   
   get.neighborhood.treatment.per.time <- function(treatment.lookup, neighborhood.vector, time, return.average = TRUE)
   {
-    
+    ## designed for binary treatment, will need to update the following chunks to accomodate continuous treatment
     lookups <- paste0(neighborhood.vector, '.', time)
     if(return.average) ## feel like these might need to be updated to replace na's with zeroes or something
     {
