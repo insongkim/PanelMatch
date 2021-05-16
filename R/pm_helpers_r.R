@@ -90,6 +90,8 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
     msets <- msets[sapply(msets, length) > 0 ]
   }
 
+  
+  
   ####apply calipers here
   if(!is.null(caliper.formula))
   {
@@ -165,22 +167,22 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
   treated.ids <- as.integer(sub("\\..*", "", names(msets)))
 
 
-  ###################################network code########################################
-  if (!is.null(network.caliper.info) || !is.null(network.refinement.info))
-  { 
-    # browser()
-    treated.names <- c(names(msets), names(e.sets))
-    ordered.data <- calculate_neighbor_treatment(ordered.data, adjacency.matrix, 
-                                                 neighborhood.degree, unit.id, 
-                                                 time.id, treatment)
-    ll <- handle_network_caliper_and_refinement(network.caliper.info, network.refinement.info, ordered.data,
-                                                adjacency.matrix, neighborhood.degree, 
-                                                unit.id, time.id, treatment,
-                                                covs.formula, caliper.formula)
-    covs.formula <- ll[[1]]
-    caliper.formula <- ll[[2]]
-  }
-  ###########################################################################
+  # ###################################network code (old?)########################################
+  # if (!is.null(network.caliper.info) || !is.null(network.refinement.info))
+  # {
+  #   # browser()
+  #   treated.names <- c(names(msets), names(e.sets))
+  #   ordered.data <- calculate_neighbor_treatment(ordered.data, adjacency.matrix,
+  #                                                neighborhood.degree, unit.id,
+  #                                                time.id, treatment)
+  #   ll <- handle_network_caliper_and_refinement(network.caliper.info, network.refinement.info, ordered.data,
+  #                                               adjacency.matrix, neighborhood.degree,
+  #                                               unit.id, time.id, treatment,
+  #                                               covs.formula, caliper.formula)
+  #   covs.formula <- ll[[1]]
+  #   caliper.formula <- ll[[2]]
+  # }
+  # ###########################################################################
 
   ordered.data <- parse_and_prep(formula = covs.formula, data = ordered.data)
   

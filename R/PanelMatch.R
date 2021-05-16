@@ -257,7 +257,7 @@ panel_match <- function(lag, time.id, unit.id, treatment,
       
       stop("Missing parameter in continuous matching specification.
            Please include all of the treatment.threshold, 
-           units, matching.threshold, and direction parameters")
+           units, matching.threshold, control.threshold, and direction parameters")
     }
     if (continuous.treatment.info[["treatment.threshold"]] == 0)
     {
@@ -294,17 +294,17 @@ panel_match <- function(lag, time.id, unit.id, treatment,
   #if(!is.null(edge.matrix) & !is.null(neighborhood.degree)) #do early to avoid the encoding/index change, should be safe? 
   ########################################################################### NETWORK CODE ###########################################################################
   ######################################################################################################################################################
-  # if(!is.null(network.caliper.info) || !is.null(network.refinement.info))
-  # { 
-  #   # browser()
-  #   ordered.data <- calculate_neighbor_treatment(ordered.data, adjacency.matrix, 
-  #                                                neighborhood.degree, unit.id, time.id, treatment)
-  #   ll <- handle_network_caliper_and_refinement(network.caliper.info, network.refinement.info, ordered.data,
-  #                                               adjacency.matrix, neighborhood.degree, unit.id, time.id, treatment,
-  #                                               covs.formula, caliper.formula)
-  #   covs.formula <- ll[[1]]
-  #   caliper.formula <- ll[[2]]
-  # }
+  if(!is.null(network.caliper.info) || !is.null(network.refinement.info))
+  {
+    #browser()
+    ordered.data <- calculate_neighbor_treatment(ordered.data, adjacency.matrix,
+                                                 neighborhood.degree, unit.id, time.id, treatment)
+    ll <- handle_network_caliper_and_refinement(network.caliper.info, network.refinement.info, ordered.data,
+                                                adjacency.matrix, neighborhood.degree, unit.id, time.id, treatment,
+                                                covs.formula, caliper.formula)
+    covs.formula <- ll[[1]]
+    caliper.formula <- ll[[2]]
+  }
   ###################################################### NETWORK CODE######################################################################################################################################################
   ###########################################################################
   ordered.data[, paste0(unit.id, ".int")] <- as.integer(as.factor(ordered.data[, unit.id]))

@@ -1,8 +1,7 @@
 #network calculations can examine the count and proportion of treated neighbors up to a certain degree
 #needs to be modified for handling of continuous treatment
 calculate_neighbor_treatment <- function(data, edge.matrix, n.degree, 
-                                         unit.id, time.id, treatment.variable,
-                                         treated.unit.names)
+                                         unit.id, time.id, treatment.variable)
 {
   
   edge.matrix <- edge.matrix[ edge.matrix[,3] == 1, ] #probably want to change how this is done
@@ -10,6 +9,15 @@ calculate_neighbor_treatment <- function(data, edge.matrix, n.degree,
   ref.names <- paste0(data[, unit.id], ".", data[, time.id])
   treatment.vector <- data[, treatment.variable]
   names(treatment.vector) <- ref.names
+  
+  #df$Lagged_Variable <- c(NA, df$Rate[-nrow(df)])
+  #df$Lagged_Variable[which(!duplicated(df$Factor))] <- NA
+  
+  t1 <- data[, treatment.variable]
+  t1 <- c(NA, t1[-nrow(data)])
+  t1[which(!duplicated(data[, unit.id]))] <- NA
+  names(t1) <- ref.names
+  t1 <- treatment.vector - t1
   # update this so that it uses <= degree only, rather than separate adjusted ones
   adjusted.neighborhood <- function(graph.in, degree)
   {
@@ -30,28 +38,34 @@ calculate_neighbor_treatment <- function(data, edge.matrix, n.degree,
   }
 
   neighborhood.lookup <- lapply(1:n.degree, adjusted.neighborhood, graph.in = g1)
-  
+  # could use previous line to get a count of number of neighbors for each unit -- normalizing the amount of change to be per unit
   get.neighborhood.treatment.per.time <- function(treatment.lookup, neighborhood.vector, 
-                                                  time, return.average = TRUE, treated.unit.names)
+                                                  time, return.average = TRUE,
+                                                  diff.vector)
   {
     ## designed for binary treatment, will need to update the following chunks to accomodate continuous treatment
     lookups <- paste0(neighborhood.vector, '.', time)
-    r.vector <- lookups %in% treated.unit.names
+    
+    #r.vector <- lookups %in% treated.unit.names
     if (return.average) ## feel like these might need to be updated to replace na's with zeroes or something
     {
-      
-      prop.treatment <- mean(r.vector, na.rm = TRUE)  
+      r.vector <- treatment.lookup[lookups]
+      prop.treatment <- mean(r.vector)  
       return(prop.treatment)
     }
     else {
-      prop.treatment <- sum(r.vector, na.rm = TRUE)
-      return(prop.treatment)
+      
+      sum.changes <- sum(diff.vector[lookups])
+      #if we are normalizing over neighborhood size, can do that here
+      #prop.treatment <- sum(r.vector, na.rm = TRUE)
+      return(sum.changes)
     }
     
   }
   
   get.treatment.prop.per.row <- function(t.id.pair, degree, neighborhood.lookup,
-                                         treatment.vector, return.average = TRUE, treated.unit.names)
+                                         treatment.vector, return.average = TRUE, 
+                                         diff.vector)
   {
     
     id <- as.numeric(unlist(strsplit(t.id.pair, split = "[.]"))[c(T,F)])
@@ -65,7 +79,7 @@ calculate_neighbor_treatment <- function(data, edge.matrix, n.degree,
     {
       return.proportion <- get.neighborhood.treatment.per.time(treatment.vector, 
                                                                neighbor.res, t, return.average,
-                                                               treated.unit.names)  
+                                                               diff.vector)  
     }
     
     return(return.proportion)
@@ -74,8 +88,8 @@ calculate_neighbor_treatment <- function(data, edge.matrix, n.degree,
   ll <- lapply(1:n.degree, FUN = function(x) {sapply(ref.names, get.treatment.prop.per.row, 
                                                      neighborhood.lookup = neighborhood.lookup, 
                                                      treatment.vector = treatment.vector, degree = x,
-                                                     return.average = TRUE, 
-                                                     treated.unit.names = treated.unit.names)})
+                                                     return.average = TRUE,
+                                                     diff.vector = t1)})
   
   data[, make.names(paste0('neighborhood_t_prop', '.', 1:n.degree))] = ll
   
@@ -84,10 +98,10 @@ calculate_neighbor_treatment <- function(data, edge.matrix, n.degree,
                                                      neighborhood.lookup = neighborhood.lookup, 
                                                      treatment.vector = treatment.vector, degree = x,
                                                      return.average = FALSE,
-                                                     treated.unit.names = treated.unit.names)})
+                                                     diff.vector = t1)})
   
   data[, make.names(paste0('neighborhood_t_count', '.', 1:n.degree))] = ll
-  
+  rownames(data) <- NULL
   return(data)
 }
 
@@ -109,7 +123,7 @@ handle_calipers <- function(plain.ordered.data, caliper.formula,
   caliper.metadata <- model.frame(caliper.formula)
   rownames(caliper.metadata) <- NULL
   
-  internal.caliper <- function (x, n = 1L, default = NA)
+  internal.caliper <- function(x, n = 1L, default = NA)
   {
     if (class(x) == "factor")
     {
