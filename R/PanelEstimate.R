@@ -347,7 +347,9 @@ panel_estimate <- function(inference = "bootstrap",
           units <- sample(clusters, size = length(clusters), replace=T)
         }
         # create bootstap sample with sapply
-        d.sub1 <- data[ data[,unit.id] %in% units, ]
+        #d.sub1 <- data[ data[,unit.id] %in% units, ]
+        df.bs <- lapply(units, function(x) which(data[,unit.id]==x))
+        d.sub1 <- data[unlist(df.bs),]
         att_new <-  sapply(d.sub1[, sapply(lead, function(x) paste0("Wit_att", x)), 
                                   drop = FALSE],
                            equality_four,
@@ -397,7 +399,9 @@ panel_estimate <- function(inference = "bootstrap",
         {
           units <- sample(clusters, size = length(clusters), replace=T)
         }
-        d.sub1 <- data[ data[,unit.id] %in% units, ]
+        #d.sub1 <- data[ data[,unit.id] %in% units, ]
+        df.bs <- lapply(units, function(x) which(data[,unit.id]==x))
+        d.sub1 <- data[unlist(df.bs),]
         atc_new <- -sapply(d.sub1[, sapply(lead, function(x) paste0("Wit_atc", x)), 
                                   drop = FALSE],
                            equality_four,
@@ -457,7 +461,9 @@ panel_estimate <- function(inference = "bootstrap",
           units <- sample(clusters, size = length(clusters), replace=T)
         }
         # create bootstap sample with sapply
-        d.sub1 <- data[ data[,unit.id] %in% units, ]
+        #d.sub1 <- data[ data[,unit.id] %in% units, ]
+        df.bs <- lapply(units, function(x) which(data[,unit.id]==x))
+        d.sub1 <- data[unlist(df.bs),]
         
         att_new <-sapply(d.sub1[, sapply(lead, function(x) paste0("Wit_att", x)), 
                                 drop = FALSE],
