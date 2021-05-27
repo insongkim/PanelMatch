@@ -181,8 +181,8 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
   }
   else
   {
-    panel_match(lag = lag, time.id = time.id, 
-                unit.id = unit.id, 
+    panel_match(lag = lag, time.id = time.id,
+                unit.id = unit.id,
                 treatment = treatment,
                 refinement.method = refinement.method,
                 size.match = size.match,
@@ -251,21 +251,21 @@ panel_match <- function(lag, time.id, unit.id, treatment,
   if(any(duplicated(data[, c(unit.id, time.id)]))) stop("Time, unit combinations should uniquely identify rows. Please remove duplicates")
   if(!class(data[, unit.id]) %in% c("integer", "numeric")) stop("please convert unit id column to integer or numeric")
   if(class(data[, time.id]) != "integer") stop("please convert time id to consecutive integers")
-<<<<<<< HEAD
+
   if(!is.null(restrict.control.period))
   {
     if(restrict.control.period < 1) stop("restricted control period specification must be >=1")
     if(restrict.control.period > lag) stop("restricted control period specification cannot be greater than lag")
   }
 
-=======
-  
+
+
   if (any(c("character", "factor") %in% sapply(data, class)))
   {
     warning("non-numeric data exists. Only numeric (including binary) data can be used for refinement and calculations")
   }
-  
->>>>>>> master
+
+
   #######take this out when negative lead is implemented:
   if(any(lead < 0)) stop("Please provide positive lead values. Negative lead values will be supported in future versions")
 
@@ -292,8 +292,8 @@ panel_match <- function(lag, time.id, unit.id, treatment,
   if(any(is.na(data[, unit.id]))) stop("Cannot have NA unit ids")
   ordered.data <- data[order(data[,unit.id], data[,time.id]), ]
 
-  
-  
+
+
   #if(!is.null(edge.matrix) & !is.null(neighborhood.degree)) #do early to avoid the encoding/index change, should be safe?
   if(!is.null(network.caliper.info) || !is.null(network.refinement.info))
   {
@@ -346,10 +346,10 @@ panel_match <- function(lag, time.id, unit.id, treatment,
   if(qoi == "atc")
   {
     ordered.data[, treatment] <- ifelse(ordered.data[, treatment] == 1,0,1) #flip the treatment variables
-    msets <- perform_refinement(lag = lag, time.id = time.id, unit.id = unit.id, 
-                                treatment = treatment, refinement.method = refinement.method, 
+    msets <- perform_refinement(lag = lag, time.id = time.id, unit.id = unit.id,
+                                treatment = treatment, refinement.method = refinement.method,
                                 size.match = size.match, ordered.data = ordered.data,
-                                match.missing = match.missing, covs.formula = covs.formula, 
+                                match.missing = match.missing, covs.formula = covs.formula,
                                 verbose = verbose, lead = lead, outcome.var = outcome.var,
                                 forbid.treatment.reversal = forbid.treatment.reversal, qoi = qoi, matching = matching,
                                 exact.matching.variables = exact.match.variables, listwise.deletion = listwise.delete,
@@ -370,10 +370,10 @@ panel_match <- function(lag, time.id, unit.id, treatment,
     return(pm.obj)
   } else if(qoi == "att")
   { #note that ordered.data at this point is in column order: unit, time, treatment, everything else
-    msets <- perform_refinement(lag = lag, time.id = time.id, unit.id = unit.id, 
-                                treatment = treatment, refinement.method = refinement.method, 
+    msets <- perform_refinement(lag = lag, time.id = time.id, unit.id = unit.id,
+                                treatment = treatment, refinement.method = refinement.method,
                                 size.match = size.match, ordered.data = ordered.data,
-                                match.missing = match.missing, covs.formula = covs.formula, 
+                                match.missing = match.missing, covs.formula = covs.formula,
                                 verbose = verbose,
                                 lead = lead, outcome.var = outcome.var,
                                 forbid.treatment.reversal = forbid.treatment.reversal, qoi = qoi, matching = matching,
@@ -397,10 +397,10 @@ panel_match <- function(lag, time.id, unit.id, treatment,
     return(pm.obj)
   } else if(qoi == "ate")
   {
-    msets <- perform_refinement(lag = lag, time.id = time.id, unit.id = unit.id, 
-                                treatment = treatment, refinement.method = refinement.method, 
+    msets <- perform_refinement(lag = lag, time.id = time.id, unit.id = unit.id,
+                                treatment = treatment, refinement.method = refinement.method,
                                 size.match = size.match, ordered.data = ordered.data,
-                                match.missing = match.missing, covs.formula = covs.formula, 
+                                match.missing = match.missing, covs.formula = covs.formula,
                                 verbose = verbose, lead = lead, outcome.var = outcome.var,
                                 forbid.treatment.reversal = forbid.treatment.reversal, qoi = qoi, matching = matching,
                                 exact.matching.variables = exact.match.variables, listwise.deletion = listwise.delete,
@@ -408,10 +408,10 @@ panel_match <- function(lag, time.id, unit.id, treatment,
                                 use.diag.covmat = use.diagonal.variance.matrix, caliper.formula = caliper.formula,
                                 calipers.in.refinement = calipers.in.refinement, continuous.treatment = continuous.treatment)
     ordered.data[, treatment] <- ifelse(ordered.data[, treatment] == 1,0,1) #flip the treatment variables
-    msets2 <- perform_refinement(lag = lag, time.id = time.id, unit.id = unit.id, 
-                                 treatment = treatment, refinement.method = refinement.method, 
+    msets2 <- perform_refinement(lag = lag, time.id = time.id, unit.id = unit.id,
+                                 treatment = treatment, refinement.method = refinement.method,
                                  size.match = size.match, ordered.data = ordered.data,
-                                 match.missing = match.missing, covs.formula = covs.formula, 
+                                 match.missing = match.missing, covs.formula = covs.formula,
                                  verbose = verbose, lead = lead, outcome.var = outcome.var,
                                  forbid.treatment.reversal = forbid.treatment.reversal, qoi = qoi, matching = matching,
                                  exact.matching.variables = exact.match.variables, listwise.deletion = listwise.delete,
