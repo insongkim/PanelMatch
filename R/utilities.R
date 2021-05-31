@@ -1,0 +1,599 @@
+#' Calculate covariate balance
+#'
+#'
+#' Calculate covariate balance for user specified covariates across matched sets. Balance is assessed by taking the average
+#' of the difference between the values of the specified covariates for the treated unit(s) and the weighted average of
+#' the control units across all matched sets. Results are standardized and are expressed in standard deviations.
+#' Balance is calculated for each period in the specified lag window.
+#' @param matched.sets A \code{matched.set} object
+#' @param data The time series cross sectional data set (as a \code{data.frame} object) used to produce the \code{matched.set} object. This data set should be identical to the one passed to \code{PanelMatch} and \code{PanelEstimate} to ensure consistent results.
+#' @param verbose logical. When TRUE, the function will return more information about the calculations/results. When FALSE, a more compact version of the results/calculations are returned.
+#' @param plot logical. When TRUE, a plot showing the covariate balance calculation results will be shown. When FALSE, no plot is made, but the results of the calculations are returned. default is FALSE
+#' @param covariates a character vector, specifying the names of the covariates for which the user is interested in calculating balance.
+#' @param reference.line logical indicating whether or not a horizontal line should be present on the plot at y = 0. Default is TRUE.
+#' @param legend logical indicating whether or not a legend identifying the variables should be included on the plot. Default is TRUE.
+#' @param ylab Label for y axis. Default is "SD". This is the same as the ylab argument to \code{plot}.
+#' @param use.equal.weights logical. If set to TRUE, then equal weights will be assigned to control units, rather than using whatever calculated weights have been assigned. This is helpful for assessing the improvement in covariate balance as a result of refining the matched sets.
+#' @param calculate.network.proportion.balance logical TRUE/FALSE. If TRUE, the proportion of treated neighbors will be included as a covariate in the balance calculations
+#' @param calculate.network.count.balance logical TRUE/FALSE. If TRUE, the number of treated neighbors will be included as a covariate in the balance calculations
+#' @param adjacency.matrix data.frame object. This first two columns of this data frame should contain the IDs of nodes in the network. The third column should be a binary indicator of adjacency between nodes.
+#' @param neighborhood.degree Integer that specifies the upper limit of the degree of neighbors that should be included in the network calculations
+#' @param ... Additional graphical parameters to be passed to the \code{plot} function in base R.
+#' @examples
+#' #add some additional data to data set for demonstration purposes
+#' dem$rdata <- runif(runif(nrow(dem)))
+#' pm.obj <- PanelMatch(lead = 0:3, lag = 4, time.id = "year", unit.id = "wbcode2", treatment = "dem",
+#'                     outcome.var ="y", refinement.method = "mahalanobis",
+#'                     data = dem, match.missing = TRUE,
+#'                     covs.formula = ~ tradewb + rdata + I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
+#'                     size.match = 5, qoi = "att")
+#' get_covariate_balance(pm.obj$att, dem, covariates = c("tradewb", "rdata"),
+#'                          ylim = c(-2,2))
+#' get_covariate_balance(pm.obj$att, dem, covariates = c("tradewb", "rdata"),
+#'                          plot = TRUE, ylim = c(-2,2))
+#'
+#' @export
+get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.weights = FALSE,
+                                  verbose = TRUE, plot = FALSE,
+                                  reference.line = TRUE, legend = TRUE, ylab = "SD",
+                                  calculate.network.proportion.balance = FALSE,
+                                  calculate.network.count.balance = FALSE,
+                                  adjacency.matrix = NULL,
+                                  neighborhood.degree = NULL,
+                                  continuous.treatment = FALSE,
+                                  ...)
+{
+  if(is.null(covariates))
+  {
+    stop("please specify the covariates for which you would like to check the balance")
+  }
+  if(!all(covariates %in% colnames(data)))
+  {
+    stop("Some of the specified covariates are not columns in the data set.")
+  }
+  if(!any(class(matched.sets) %in% "matched.set")) stop("Please pass a matched.set object")
+  unit.id <- attr(matched.sets, "id.var")
+  time.id <- attr(matched.sets, "t.var")
+  lag <- attr(matched.sets, "lag")
+  treatment <- attr(matched.sets, "treatment.var")
+  if(class(data[, unit.id]) == "factor") stop("please convert unit id column to character, integer, or numeric")
+  if(class(data[, time.id]) != "integer") stop("please convert time id to consecutive integers")
+  
+  if(any(table(data[, unit.id]) != max(table(data[, unit.id]))))
+  {
+    testmat <- data.table::dcast(data.table::as.data.table(data), formula = paste0(unit.id, "~", time.id),
+                                 value.var = treatment)
+    d <- data.table::melt(data.table(testmat), id = unit.id, variable = time.id, value = treatment,
+                          variable.factor = FALSE, value.name = treatment)
+    d <- data.frame(d)[,c(1,2)]
+    class(d[, 2]) <- "integer"
+    data <- merge(data.table(d), data.table(data), all.x = TRUE, by = c(unit.id, time.id))
+    data <- as.data.frame(data)
+    #data <- make.pbalanced(data, balance.type = "fill", index = c(unit.id, time.id))
+  }
+  
+  ordered.data <- data[order(data[,unit.id], data[,time.id]), ]
+  if(calculate.network.proportion.balance || calculate.network.count.balance)
+  {
+    if(is.null(adjacency.matrix))
+    {
+      stop("Please provide adjacency matrix")
+    }
+    ordered.data <- calculate_neighbor_treatment(data = ordered.data, 
+                                                 edge.matrix = adjacency.matrix, 
+                                                 n.degree = neighborhood.degree, 
+                                                 unit.id = unit.id, time.id = time.id, 
+                                                 treatment.variable = treatment)
+    
+    if(!is.null(calculate.network.proportion.balance))
+    {
+      covariates <- c(covariates,
+                      make.names(paste0('neighborhood_t_prop', '.', 1:neighborhood.degree)))
+    } 
+    if(!is.null(calculate.network.count.balance))
+    {
+      covariates <- c(covariates,
+                      make.names(paste0('neighborhood_t_count', '.', 1:neighborhood.degree)))
+    }
+  }
+  
+  ordered.data[, paste0(unit.id, ".int")] <- as.integer(as.factor(ordered.data[, unit.id]))
+  
+  if(class(ordered.data[, unit.id]) == "character") {
+    unit.index.map <- data.frame(original.id = make.names(as.character(unique(ordered.data[, unit.id]))),
+                                 new.id = unique(ordered.data[, paste0(unit.id, ".int")]), stringsAsFactors = F)
+  }
+  else if(class(ordered.data[, unit.id]) == "integer") {
+    unit.index.map <- data.frame(original.id = (as.character(unique(ordered.data[, unit.id]))),
+                                 new.id = unique(ordered.data[, paste0(unit.id, ".int")]), stringsAsFactors = F)
+  }
+  else if(class(ordered.data[, unit.id]) == "numeric") {
+    if(all(unique(ordered.data[, unit.id]) == as.integer(unique(ordered.data[, unit.id])))) #actually integers
+    {
+      unit.index.map <- data.frame(original.id = (as.character(unique(ordered.data[, unit.id]))),
+                                   new.id = unique(ordered.data[, paste0(unit.id, ".int")]), stringsAsFactors = F)
+    }
+    else
+    {
+      stop("Unit ID data appears to be a non-integer numeric. Please convert.")
+    }
+  }
+  else {
+    stop("Unit ID Data is not integer, numeric, or character.")
+  }
+  
+  og.unit.id <- unit.id
+  #og.time.id <- time.id
+  unit.id <- paste0(unit.id, ".int")
+  matched.sets <- matched.sets[sapply(matched.sets, length) > 0]
+  matched.sets <- encode_index(matched.sets, unit.index.map, unit.id)
+  
+  othercols <- colnames(ordered.data)[!colnames(ordered.data) %in% c(time.id, unit.id, treatment)]
+  #subset to keep only needed covariates
+  othercols <- othercols[othercols %in% covariates]
+  
+  ordered.data <- ordered.data[, c(unit.id, time.id, treatment, othercols)] #reorder columns 
+  #they will either all have or not have weights, so we can check the first matched set to see if we need to add equal weighting
+  #i dont think that its possible for sets to not have any weights now, but don't think it hurts to keep this in
+  if(is.null(attr(matched.sets[[1]], "weights")) | use.equal.weights)
+  {
+    for(i in 1:length(matched.sets))
+    {
+      attr(matched.sets[[i]], "weights") <- rep(1/length(matched.sets[[i]]), length(matched.sets[[i]]))
+      names(attr(matched.sets[[i]], "weights")) <- matched.sets[[i]]
+    }
+  }
+  treated.ts <- as.integer(sub(".*\\.", "", names(matched.sets)))
+  treated.ids <- as.integer(sub("\\..*", "", names(matched.sets)))
+  tlist <- expand.treated.ts(lag, treated.ts = treated.ts)
+  
+  
+  idxlist <- get_yearly_dmats(as.matrix(ordered.data), treated.ids, tlist, 
+                              matched_sets = matched.sets, lag)
+  
+  
+  balance_mats <- build_balance_mats(ordered_expanded_data = ordered.data, 
+                                     idx =  idxlist, msets = matched.sets)
+  unlistedmats <- unlist(balance_mats, recursive = F)
+  plotpoints <- list()
+  for(k in 1:(lag+1))
+  {
+    var.points <- list()
+    for(i in 1:length(covariates))
+    {
+      variable <- covariates[i]
+      
+      sd.val <- sd(sapply(unlistedmats[seq(from = k, to = (length(matched.sets) * (lag + 1)), by = lag + 1)],
+                          function(x){x[nrow(x), variable]}), na.rm = T)
+      if(isTRUE(all.equal(sd.val, 0)))
+      {
+        sd.val <- NA #make everything fail in a standardized way
+      }
+      
+      tprd <- unlistedmats[seq(from = k, to = (length(matched.sets) * (lag + 1)), by = lag + 1)] #should represent the same relative period across all matched sets. each df is a matched set
+      
+      get_mean_difs <- function(x, variable) #x is an individual data frame
+      {
+        return( x[nrow(x), variable] - sum(x[1:(nrow(x) -1),"weights"] * x[1:(nrow(x) -1), variable], na.rm = T ))
+      }
+      diffs <- sapply(tprd, get_mean_difs, variable = variable)
+      
+      var.points[[i]] <- mean(diffs / sd.val, na.rm = T)
+    }
+    names(var.points) <- covariates
+    plotpoints[[k]] <- var.points
+    
+  }
+  names(plotpoints) <- paste0("t_", lag:0)
+  pointmatrix <- apply((as.matrix(do.call(rbind, plotpoints))), 2, function(x){(as.numeric(x))})
+  rownames(pointmatrix) <- names(plotpoints)
+  
+  remove.vars.idx <- apply(apply(pointmatrix, 2, is.nan), 2, any)
+  if(sum(remove.vars.idx) > 0)
+  {
+    removed.vars <- names(which(apply(apply(pointmatrix, 2, is.nan), 2, any)))
+    pointmatrix <- pointmatrix[, !remove.vars.idx]
+    warning(paste0("Some variables were removed due to low variation: ", removed.vars))
+  }
+  
+  
+  
+  
+  
+  if (!plot) return(pointmatrix)
+  
+  if (plot)
+  {
+    
+    treated.included <- treatment %in% colnames(pointmatrix)
+    if (!continuous.treatment)
+    {
+      #browser()
+      
+      if(treated.included)
+      {
+        treated.data <- pointmatrix[,which(colnames(pointmatrix) == treatment)] # treated data
+        pointmatrix <- pointmatrix[,-which(colnames(pointmatrix) == treatment)] #all non-treatment variable data
+        graphics::matplot(pointmatrix, type = "l", col = 1:ncol(pointmatrix), 
+                          lty = 1, ylab = ylab, xaxt = "n", ...)
+        graphics::lines(x = 1:nrow(pointmatrix), 
+                        y = as.numeric(treated.data), 
+                        type = "l",
+                        lty = 2, lwd = 3)
+        graphics::axis(side = 1, labels = paste0("t-", (nrow(pointmatrix) - 1):0), at = 1:nrow(pointmatrix))  
+      } else
+      {
+        graphics::matplot(pointmatrix, type = "l", col = 1:ncol(pointmatrix), 
+                          lty = 1, ylab = ylab, xaxt = "n", ...)
+        graphics::axis(side = 1, labels = paste0("t-", (nrow(pointmatrix) - 1):0), at = 1:nrow(pointmatrix))  
+      }
+      
+    } else
+    {
+      if (treated.included)
+      {
+        treated.data <- pointmatrix[,which(colnames(pointmatrix) == treatment)] # treated data
+        pointmatrix <- pointmatrix[,-which(colnames(pointmatrix) == treatment)] #all non-treatment variable data
+        graphics::matplot(pointmatrix, type = "l", col = 1:ncol(pointmatrix), 
+                          lty = 1, ylab = ylab, xaxt = "n", ...)
+        graphics::lines(x = 1:(nrow(pointmatrix) - 1), 
+                        y = as.numeric(treated.data)[1:(nrow(pointmatrix) - 1)], type = "l",
+                        lty = 2, lwd = 3)
+        graphics::axis(side = 1, labels = paste0("t-", (nrow(pointmatrix) - 1):0), at = 1:nrow(pointmatrix))    
+      } else {
+        graphics::matplot(pointmatrix, type = "l", col = 1:ncol(pointmatrix), 
+                          lty = 1, ylab = ylab, xaxt = "n", ...)
+        graphics::axis(side = 1, labels = paste0("t-", (nrow(pointmatrix) - 1):0), at = 1:nrow(pointmatrix)) 
+      }
+      
+    }
+    
+    if(legend) {
+      if (treated.included)
+      {
+        legend("topleft", legend = c(colnames(pointmatrix), treatment), 
+               col = c(1:ncol(pointmatrix), "black"), lty = c(rep(1, ncol(pointmatrix)), 2))  
+      } else {
+        legend("topleft", legend = colnames(pointmatrix), 
+               col = 1:ncol(pointmatrix), lty = 1)
+      }
+      
+    }
+    if(reference.line) graphics::abline(h = 0, lty = "dashed")
+  }
+}
+
+#' balance_scatter
+#'
+#' Visualizing the standardized mean differences for covariates via a scatter plot.
+#'
+#' \code{balance_scatter} visualizes the standardized mean differences for each covariate.
+#' Although users can use the scatter plot in a variety of ways, it is recommended that
+#' the x-axis refers to balance for covariates before refinement, and y-axis
+#' refers to balance after refinement. Users can utilize parameters powered by \code{plot}
+#' in base R to further customize the figure.
+#' @param non_refined_set a \code{matched.set} object produced by setting `refinement.method` to "none" in `PanelMatch`
+#' @param refined_list a list of one or two \code{matched.set} objects
+#' @param xlim xlim of the scatter plot. This is the same as the \code{xlim} argument in \code{plot}
+#' @param ylim ylim of the scatter plot. This is the same as the \code{ylim} argument in \code{plot}
+#' @param main title of the scatter plot. This is the same as the \code{main} argument in \code{plot}
+#' @param x.axis.label x axis label
+#' @param y.axis.label y axis label
+#' @param pchs one or two pch indicators for the symbols on the scatter plot. See \code{plot} for more information
+#' @param covariates variables for which balance is displayed
+#' @param data the same time series cross sectional data set used to create the matched sets.
+#' @param ... optional arguments to be passed to \code{plot}
+#' @author In Song Kim <insong@mit.edu>, Erik Wang
+#' <haixiao@Princeton.edu>, Adam Rauh <amrauh@umich.edu>, and Kosuke Imai <imai@harvard.edu>
+#'
+#' @examples
+#' # get a matched set without refinement
+#' sets0 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
+#'                     treatment = "dem", refinement.method = "none",
+#'                     data = dem, match.missing = FALSE,
+#'                     covs.formula = ~ I(lag(y, 1:4)) + I(lag(tradewb, 1:4)),
+#'                     size.match = 5, qoi = "att",
+#'                     outcome.var = "y",
+#'                     lead = 0:4, forbid.treatment.reversal = FALSE)
+#'
+#' # get a matched set with refinement using CBPS.match, setting the
+#' # size of matched set to 5
+#' sets1 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
+#'                     treatment = "dem", refinement.method = "mahalanobis",
+#'                     data = dem, match.missing = FALSE,
+#'                     covs.formula = ~ I(lag(y, 1:4)) + I(lag(tradewb, 1:4)),
+#'                     size.match = 5, qoi = "att",
+#'                     outcome.var = "y",
+#'                     lead = 0:4, forbid.treatment.reversal = FALSE)
+#'
+#' # get another matched set with refinement using CBPS.weight
+#' sets2 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
+#'                     treatment = "dem", refinement.method = "ps.weight",
+#'                     data = dem, match.missing = FALSE,
+#'                     covs.formula = ~ I(lag(y, 1:4)) + I(lag(tradewb, 1:4)),
+#'                     size.match = 10, qoi = "att",
+#'                     outcome.var = "y",
+#'                     lead = 0:4, forbid.treatment.reversal = FALSE)
+#'
+#'
+#' # use the function to produce the scatter plot
+#' balance_scatter(non_refined_set = sets0$att,
+#'               refined_list = list(sets1$att, sets2$att),
+#'               data = dem,
+#'               covariates = c("y", "tradewb"))
+#' # add legend
+#' legend(x = 0, y = 0.8,
+#' legend = c("mahalanobis",
+#'            "PS weighting"),
+#' y.intersp = 0.65,
+#' x.intersp = 0.3,
+#' xjust = 0,
+#' pch = c(1, 3), pt.cex = 1,
+#' bty = "n", ncol = 1, cex = 1, bg = "white")
+#'
+#'
+#'
+#' @export
+balance_scatter <- function(non_refined_set, refined_list,
+                            xlim = c(0, .8),
+                            ylim = c(0, .8),
+                            main = "Standardized Mean Difference of Covariates",
+                            pchs = c(2,3),
+                            covariates, data,
+                            x.axis.label = "Before refinement",
+                            y.axis.label = "After refinement",
+                            ...) {
+  # first, get balance for non-refined set
+  non_refined_balance <- get_covariate_balance(matched.sets = non_refined_set,
+                                               data = data,
+                                               covariates = covariates)
+  
+  # second, get balance for refined sets
+  refined_balance <- list()
+  for (i in 1:length(refined_list)) {
+    refined_balance[[i]] <-
+      get_covariate_balance(matched.sets = refined_list[[i]],
+                            data = data,
+                            covariates = covariates)
+  }
+  
+  # extract values for x-axis from the non-refined sets
+  benchmark <- non_refined_balance
+  benchmark <- as.vector(benchmark[1:(nrow(benchmark)-1),]) # delete balance results after t-1
+  
+  # extract values for y-axis from refined sets and delete balance results after t-1
+  compared <- sapply(refined_balance, function(x) x <- x[1:(nrow(x)-1),])
+  
+  graphics::plot(abs(as.numeric(benchmark)),
+                 abs(as.numeric(compared[,1])), pch = 1,
+                 xlab = x.axis.label,
+                 ylab = y.axis.label,
+                 xlim = xlim,
+                 ylim = ylim,
+                 main = main,
+                 font.main = 1, ...)
+  # logical statement for the length of the refined_balance
+  if (length(refined_balance) > 1) {
+    for (j in 2:length(refined_balance)) {
+      graphics::points(abs(as.numeric(benchmark)),
+                       abs(as.numeric(compared[,j])),
+                       pch = pchs[j])
+    }
+  }
+  
+  graphics::abline(h = 0, lty = "dashed")
+  graphics::abline(0, 1, lty = 2, col = "red")
+  
+  
+}
+
+
+
+decode_index <- function(mset, unit.index, original.unit.id)#, original.time.id)
+{
+  decode.control.units <- function(in_, unit.index)
+  {
+    news <- as.numeric(unit.index$original.id[match(in_, unit.index$new.id)])
+    if(!is.null(attr(in_, "distances")))
+    {
+      attr(news, "distances") <- attr(in_, "distances")
+      names(attr(news, "distances")) <- news
+    }
+    if(!is.null(attr(in_, "weights")))
+    {
+      attr(news, "weights") <- attr(in_, "weights")
+      names(attr(news, "weights")) <- news
+    }
+    if(!is.null(attr(in_, "control.change")))
+    {
+      attr(news, "control.change") <- attr(in_, "control.change")
+      names(attr(news, "control.change")) <- news
+    }
+    if(!is.null(attr(in_, "treatment.change")))
+    {
+      attr(news, "treatment.change") <- attr(in_, "treatment.change")
+    }
+    return(news)
+  }
+  new.mset <- sapply(mset, decode.control.units, unit.index = unit.index, simplify = F)
+  decode.treated.units <- function(ts, ids, unit.index)#, time.index)
+  {
+    n.ids <- unit.index$original.id[match(ids, unit.index$new.id)]
+    
+    return(paste0(n.ids, ".", ts))
+  }
+  treated.ts <- as.numeric(sub(".*\\.", "", names(mset)))
+  treated.ids <- as.numeric(sub("\\..*", "", names(mset)))
+  attributes(new.mset) <- attributes(mset)
+  names(new.mset) <- decode.treated.units(treated.ts, treated.ids, unit.index)
+  attr(new.mset, "id.var") <- original.unit.id
+  
+  # treated.ids <- as.numeric(sub("\\..*", "", names(new.mset)))
+  # for (i in 1:length(new.mset))
+  # {
+  #   attr(new.mset[[i]], "treatment.change") <- treated.ids[i]
+  # }
+  return(new.mset)
+}
+
+
+encode_index <- function(mset, unit.index, new.unit.id)
+{
+  encode.control.units <- function(in_, unit.index)
+  {
+    news <- unit.index$new.id[match(in_, unit.index$original.id)]
+    if(!is.null(attr(in_, "distances")))
+    {
+      attr(news, "distances") <- attr(in_, "distances")
+      names(attr(news, "distances")) <- news
+    }
+    if(!is.null(attr(in_, "weights")))
+    {
+      attr(news, "weights") <- attr(in_, "weights")
+      names(attr(news, "weights")) <- news
+    }
+    if(!is.null(attr(in_, "control.change")))
+    {
+      attr(news, "control.change") <- attr(in_, "control.change")
+      names(attr(news, "control.change")) <- news
+    }
+    
+    if(!is.null(attr(in_, "treatment.change")))
+    {
+      attr(news, "treatment.change") <- attr(in_, "treatment.change")
+    }
+    return(news)
+  }
+  new.mset <- sapply(mset, encode.control.units, unit.index = unit.index, simplify = F)
+  encode.treated.units <- function(ts, ids, unit.index)#, time.index)
+  {
+    n.ids <- unit.index$new.id[match(ids, unit.index$original.id)]
+    
+    return(paste0(n.ids, ".", ts))
+  }
+  treated.ts <- sub(".*\\.", "", names(mset))
+  treated.ids <- sub("\\..*", "", names(mset))
+  attributes(new.mset) <- attributes(mset)
+  names(new.mset) <- encode.treated.units(treated.ts, treated.ids, unit.index)
+  attr(new.mset, "id.var") <- new.unit.id
+  
+  # treated.ids <- sub("\\..*", "", names(new.mset))
+  # for (i in 1:length(new.mset))
+  # {
+  #   attr(new.mset[[i]], "treatment.change") <- treated.ids[i]
+  # }
+  # return(new.mset)
+  
+  return(new.mset)
+}
+
+
+#' get_set_treatment_effects
+#'
+#' Calculates the treatment effect size at the matched set level
+#'
+#'
+#' Calculate the size of treatment effects for each matched set.
+#' @param pm.obj an object of class \code{PanelMatch}
+#' @param data.in data.frame with the original data
+#' @param lead integer indicating the time period in the future for which the treatment effect size will be calculated. Calculations will be made for the period t + lead, where t is the time of treatment.
+#' 
+#' @export
+get_set_treatment_effects <- function(pm.obj, data.in, lead)
+{
+  if (identical(attr(pm.obj, "qoi"), "att"))
+  {
+    msets <- pm.obj[["att"]]
+    id.var <- attributes(msets)$id.var
+    t.var <- attributes(msets)$t.var
+    
+  } else if (identical(attr(pm.obj, "qoi"), "atc"))
+  {
+    msets <- pm.obj[["atc"]]
+    id.var <- attributes(msets)$id.var
+    t.var <- attributes(msets)$t.var
+  } else
+  {
+    msets <- pm.obj[["att"]]
+    msets.atc <- pm.obj[["atc"]]
+    id.var <- attributes(msets)$id.var
+    t.var <- attributes(msets)$t.var
+    
+  }
+  
+  rownames(data.in) <- paste0(data.in[, id.var], ".", data.in[, t.var])
+  
+  get_ind_effects <- function(mset, data_in, 
+                              lead.val,
+                              mset.name,
+                              outcome)
+  {
+    
+    if ( identical(length(mset), 0L)) return(NA)
+    t.val <- as.numeric(sub(".*\\.", "", mset.name))
+    id.val <- as.numeric(sub("\\..*", "", mset.name))
+    
+    
+    past.lookups <- paste0(mset, ".", (t.val - 1))
+    future.lookups <- paste0(mset, ".", (t.val + lead.val))
+    
+    t.past.lookup <- paste0(id.val, ".", (t.val - 1))
+    t.future.lookup <- paste0(id.val, ".", (t.val + lead.val))
+    
+    control.diffs <- data_in[future.lookups, outcome] - data_in[past.lookups, outcome]
+    
+    treat.diff <- data_in[t.future.lookup, outcome] - data_in[t.past.lookup, outcome]
+    
+    ind.effects <- treat.diff - sum(attr(mset, "weights") * control.diffs)
+    ind.effects <- ind.effects / attr(mset, "treatment.change")
+    return(ind.effects)
+    
+  }
+  
+  
+  if ( identical(attributes(pm.obj)[["qoi"]], "att") || 
+       identical(attributes(pm.obj)[["qoi"]], "atc") )
+  {
+    effects <- mapply(FUN = get_ind_effects,
+                      mset = msets,
+                      mset.name = names(msets),
+                      MoreArgs = list(lead.val = lead,
+                                      data_in = data.in,
+                                      outcome = attributes(pm.obj)[["outcome.var"]]),
+                      SIMPLIFY = FALSE)
+    
+    return(effects)
+  } else if (identical(attr(pm.obj, "qoi"), "ate"))
+  {
+    effects <- mapply(FUN = get_ind_effects,
+                      mset = msets,
+                      mset.name = names(msets),
+                      MoreArgs = list(lead.val = lead,
+                                      data_in = data.in,
+                                      outcome = attributes(pm.obj)[["outcome.var"]]),
+                      SIMPLIFY = FALSE)
+    
+    
+    effects.atc <- mapply(FUN = get_ind_effects,
+                      mset = msets.atc,
+                      mset.name = names(msets.atc),
+                      MoreArgs = list(lead.val = lead,
+                                      data_in = data.in,
+                                      outcome = attributes(pm.obj)[["outcome.var"]]),
+                      SIMPLIFY = FALSE)
+    
+    
+    return(list(att = effects,
+                atc = effects.atc))
+    
+  } else
+  {
+    stop("invalid qoi")
+  }
+  
+  
+  
+}
+
+
+

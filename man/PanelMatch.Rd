@@ -118,14 +118,15 @@ The provided list must specify the following named elements:
 The provided list must specify the following named elements:
 \code{use.proportion.data}, \code{proportion.lags}, \code{use.count.data}, \code{count.lags}. Please see the vignette for a discussion of these parameters and how network information is utilized in the package.}
 
-\item{continuous.treatment.info}{a named list with elements \code{treatment.threshold}, \code{type}, \code{units}, \code{direction}, and \code{matching.threshold}
+\item{continuous.treatment.info}{a named list with elements \code{treatment.threshold}, \code{type}, \code{units}, \code{direction}, \code{matching.threshold}, \code{control.treshold}, and optionally \code{minimum.treatment.threshold} and/or \code{maximum.treatment.threshold}.
 The treatment threshold corresponds to the minimum of the magnitude of the change in the treatment variable from time \code{t-1} to time \code{t}. It must be a positive number.
 The type is either "raw" or "sd" (specified as a character string) and corresponds to the units of the treatment and mathing threshold. If "raw", then thresholds will be applied to the raw treatment data in the original units.
 If "sd", then the thresholds are interpreted to be provided in standard deviations, and the treatment variable data will be standardized. 
 The direction parameter specifies the direction of interest for the change in the treatment variable. It is specified as a character string: "positive", "negative", or "both".
 So, for example, if the \code{qoi} is set to "att" and the direction is "positive", then only treated units with a positive change in the treatment variable larger than the specified \code{treatment.threshold}
 will factor into the calculated estimates. The \code{matching.threshold} parameter corresponds to the maximum permissible absolute value of the difference in the treatment variable 
-between treated units and control units. This is similar to the threshold provided for numerical data in the caliper formula.}
+between treated units and control units. This is similar to the threshold provided for numerical data in the caliper formula. \code{control.threshold} is a number that specifies the maximum permissable deviation from t-1 to t to still be considered a treated unit.
+When specified, the minimum (maximum) treatment threshold specifies the minimum (maximum) acceptable value for a treated unit at time t to be considered a viable treatment unit.}
 }
 \value{
 \code{PanelMatch} returns an object of class "PanelMatch". This is a list that contains a few specific elements: 
