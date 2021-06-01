@@ -1,5 +1,114 @@
-#network calculations can examine the count and proportion of treated neighbors up to a certain degree
-#needs to be modified for handling of continuous treatment
+handle_network_covariates <- function(data, edge.matrix, n.degree,
+                                      unit.id, time.id, covariates)
+{
+  
+  raw.cov.data <- lapply(covariates, handle_network_covariate, data = data,
+                         edge.matrix = edge.matrix, n.degree = n.degree, 
+                         unit.id = unit.id, time.id = time.id)
+  col.names <- lapply(lapply(covariates, function(x) paste0(x, ".", 1:n.degree)), function(x) paste0(x, ".", c("avg.", "change.")))
+  ## stitch back into the main data
+  
+  col.names <- unlist(col.names)
+  data[, col.names] <- unlist(unlist(raw.cov.data, 
+                                     recursive = FALSE), 
+                              recursive = FALSE)
+  
+  return(data)
+}
+
+
+# should be more generalized version of the calculate_neighbor_treatment function that currently exists
+handle_network_covariate <- function(data, edge.matrix, n.degree, 
+                                     unit.id, time.id, covariate)
+{
+  
+  edge.matrix <- edge.matrix[ edge.matrix[,3] == 1, ] #probably want to change how this is done
+  g1 <- igraph::graph_from_data_frame(edge.matrix, directed = FALSE)
+  ref.names <- paste0(data[, unit.id], ".", data[, time.id])
+  treatment.vector <- data[, covariate]
+  names(treatment.vector) <- ref.names
+  
+  
+  t1 <- data[, covariate]
+  t1 <- c(NA, t1[-nrow(data)])
+  t1[which(!duplicated(data[, unit.id]))] <- NA
+  names(t1) <- ref.names
+  t1 <- treatment.vector - t1
+  
+  adjusted.neighborhood <- function(graph.in, degree)
+  {
+    straight.neighborhoods <- igraph::ego(graph.in, order = degree)
+    
+    ret.list <- straight.neighborhoods
+    ret.list <- lapply(straight.neighborhoods, function(x){return(igraph::as_ids(x)[-1])})
+    names(ret.list) <- igraph::as_ids(igraph::V(graph.in))
+    return(ret.list)
+  }
+  
+  neighborhood.lookup <- lapply(1:n.degree, adjusted.neighborhood, graph.in = g1)
+  
+  get.neighborhood.treatment.per.time <- function(treatment.lookup, neighborhood.vector, 
+                                                  time, return.average = TRUE,
+                                                  diff.vector)
+  {
+    
+    lookups <- paste0(neighborhood.vector, '.', time)
+    
+    
+    if (return.average) 
+    {
+      r.vector <- treatment.lookup[lookups]
+      prop.treatment <- mean(r.vector)  
+      return(prop.treatment)
+    }
+    else {
+      
+      sum.changes <- sum(diff.vector[lookups])
+      return(sum.changes)
+    }
+    
+  }
+  
+  get.treatment.prop.per.row <- function(t.id.pair, degree, neighborhood.lookup,
+                                         treatment.vector, return.average = TRUE, 
+                                         diff.vector)
+  {
+    
+    id <- as.numeric(unlist(strsplit(t.id.pair, split = "[.]"))[c(T,F)])
+    t <- as.numeric(unlist(strsplit(t.id.pair, split = "[.]"))[c(F,T)])
+    neighbor.res <- neighborhood.lookup[[degree]][[as.character(id)]]
+    if(is.null(neighbor.res) | length(neighbor.res) == 0)
+    {
+      return.proportion <- NA  
+    }
+    else
+    {
+      return.proportion <- get.neighborhood.treatment.per.time(treatment.vector, 
+                                                               neighbor.res, t, return.average,
+                                                               diff.vector)  
+    }
+    
+    return(return.proportion)
+  }
+  
+  avg.data <- lapply(1:n.degree, FUN = function(x) {sapply(ref.names, get.treatment.prop.per.row, 
+                                                           neighborhood.lookup = neighborhood.lookup, 
+                                                           treatment.vector = treatment.vector, degree = x,
+                                                           return.average = TRUE,
+                                                           diff.vector = t1)})
+  
+  
+  change.data <- lapply(1:n.degree, FUN = function(x) {sapply(ref.names, get.treatment.prop.per.row, 
+                                                              neighborhood.lookup = neighborhood.lookup, 
+                                                              treatment.vector = treatment.vector, degree = x,
+                                                              return.average = FALSE,
+                                                              diff.vector = t1)})
+  
+  return(list(average = avg.data, change = change.data))
+  
+  
+}
+
 calculate_neighbor_treatment <- function(data, edge.matrix, n.degree, 
                                          unit.id, time.id, treatment.variable)
 {

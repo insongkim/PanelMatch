@@ -294,13 +294,21 @@ panel_match <- function(lag, time.id, unit.id, treatment,
   #if(!is.null(edge.matrix) & !is.null(neighborhood.degree)) #do early to avoid the encoding/index change, should be safe? 
   ########################################################################### NETWORK CODE ###########################################################################
   ######################################################################################################################################################
-  if(!is.null(network.caliper.info) || !is.null(network.refinement.info))
+  if(!is.null(network.caliper.info) || 
+     !is.null(network.refinement.info)) 
   {
-    #browser()
+    browser()
     ordered.data <- calculate_neighbor_treatment(ordered.data, adjacency.matrix,
-                                                 neighborhood.degree, unit.id, time.id, treatment)
-    ll <- handle_network_caliper_and_refinement(network.caliper.info, network.refinement.info, ordered.data,
-                                                adjacency.matrix, neighborhood.degree, unit.id, time.id, treatment,
+                                                 neighborhood.degree, unit.id, 
+                                                 time.id, treatment)
+    # ordered.data <- handle_network_covariates(ordered.data, adjacency.matrix,
+    #                                              neighborhood.degree, unit.id, 
+    #                                              time.id, c("logpop", "y"))
+    
+    ll <- handle_network_caliper_and_refinement(network.caliper.info, network.refinement.info, 
+                                                ordered.data,
+                                                adjacency.matrix, neighborhood.degree, 
+                                                unit.id, time.id, treatment,
                                                 covs.formula, caliper.formula)
     covs.formula <- ll[[1]]
     caliper.formula <- ll[[2]]

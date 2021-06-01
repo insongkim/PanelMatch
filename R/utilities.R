@@ -488,18 +488,7 @@ encode_index <- function(mset, unit.index, new.unit.id)
 }
 
 
-#' get_set_treatment_effects
-#'
-#' Calculates the treatment effect size at the matched set level
-#'
-#'
-#' Calculate the size of treatment effects for each matched set.
-#' @param pm.obj an object of class \code{PanelMatch}
-#' @param data.in data.frame with the original data
-#' @param lead integer indicating the time period in the future for which the treatment effect size will be calculated. Calculations will be made for the period t + lead, where t is the time of treatment.
-#' 
-#' @export
-get_set_treatment_effects <- function(pm.obj, data.in, lead)
+calculate_set_effects <- function(pm.obj, data.in, lead)
 {
   if (identical(attr(pm.obj, "qoi"), "att"))
   {
@@ -553,14 +542,14 @@ get_set_treatment_effects <- function(pm.obj, data.in, lead)
   
   if ( identical(attributes(pm.obj)[["qoi"]], "att") || 
        identical(attributes(pm.obj)[["qoi"]], "atc") )
-  {
+  { #using simplify = TRUE because we should always expect a vector, so nothing unexpected should happen
     effects <- mapply(FUN = get_ind_effects,
                       mset = msets,
                       mset.name = names(msets),
                       MoreArgs = list(lead.val = lead,
                                       data_in = data.in,
                                       outcome = attributes(pm.obj)[["outcome.var"]]),
-                      SIMPLIFY = FALSE)
+                      SIMPLIFY = TRUE)
     
     return(effects)
   } else if (identical(attr(pm.obj, "qoi"), "ate"))
@@ -571,16 +560,16 @@ get_set_treatment_effects <- function(pm.obj, data.in, lead)
                       MoreArgs = list(lead.val = lead,
                                       data_in = data.in,
                                       outcome = attributes(pm.obj)[["outcome.var"]]),
-                      SIMPLIFY = FALSE)
+                      SIMPLIFY = TRUE)
     
     
     effects.atc <- mapply(FUN = get_ind_effects,
-                      mset = msets.atc,
-                      mset.name = names(msets.atc),
-                      MoreArgs = list(lead.val = lead,
-                                      data_in = data.in,
-                                      outcome = attributes(pm.obj)[["outcome.var"]]),
-                      SIMPLIFY = FALSE)
+                          mset = msets.atc,
+                          mset.name = names(msets.atc),
+                          MoreArgs = list(lead.val = lead,
+                                          data_in = data.in,
+                                          outcome = attributes(pm.obj)[["outcome.var"]]),
+                          SIMPLIFY = TRUE)
     
     
     return(list(att = effects,
@@ -592,6 +581,25 @@ get_set_treatment_effects <- function(pm.obj, data.in, lead)
   }
   
   
+  
+}
+
+
+
+#' get_set_treatment_effects
+#'
+#' Calculates the treatment effect size at the matched set level
+#'
+#'
+#' Calculate the size of treatment effects for each matched set.
+#' @param pm.obj an object of class \code{PanelMatch}
+#' @param data.in data.frame with the original data
+#' @param lead integer (or integer vector) indicating the time period(s) in the future for which the treatment effect size will be calculated. Calculations will be made for the period t + lead, where t is the time of treatment. If more than one lead value is provided, then calculations will be performed for each value. 
+#' 
+#' @export
+get_set_treatment_effects <- function(pm.obj, data.in, lead)
+{
+  return(lapply(lead, calculate_set_effects, pm.obj = pm.obj, data.in = data.in))
   
 }
 
