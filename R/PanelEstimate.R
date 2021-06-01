@@ -294,7 +294,7 @@ panel_estimate <- function(inference = "bootstrap",
   if (qoi == "atc" | qoi == "ate") 
   {
     treated.unit.ids2 <- as.numeric(sub("\\..*", "", names(sets2)))
-    
+    browser()
     for(j in lead)
     {
       dense.wits <- getWits(lead = j, data = data, matched_sets = sets2, estimation.method = inference)
@@ -362,10 +362,10 @@ panel_estimate <- function(inference = "bootstrap",
       }
       sets <- decode_index(sets, unit.index.map, og.unit.id)
       # changed return to class
-      if(!is.null(direction.treatment) && direction.treatment == "negative")
-      {
-        coefs <- -1 * coefs
-      }
+      # if(!is.null(direction.treatment) && direction.treatment == "negative")
+      # {
+      #   coefs <- -1 * coefs
+      # }
       z <- list("estimates" = o.coefs,
                 "bootstrapped.estimates" = coefs, "bootstrap.iterations" = number.iterations, "standard.error" = apply(coefs, 2, sd, na.rm = T),
                 "method" = method, "lag" = lag,
@@ -377,6 +377,7 @@ panel_estimate <- function(inference = "bootstrap",
   {
     if (inference == "bootstrap") 
     {
+      browser()
       o.coefs <-  -sapply(data[, sapply(lead, function(x) paste0("Wit_atc", x)), drop = FALSE],
                           equality_four,
                           y = data[c(dependent)][,1],
