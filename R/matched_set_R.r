@@ -252,7 +252,9 @@ findContinuousTreated <- function(dmat, treatedvar, time.var, unit.var,
 }
 
 
-extract.differences <- function(indexed.data, matched.set, treatment.variable)
+extract.differences <- function(indexed.data, matched.set, 
+                                treatment.variable,
+                                qoi)
 {
   treated.t <- as.integer(sub(".*\\.", "", names(matched.set)))
   treated.id <- as.integer(sub("\\..*", "", names(matched.set)))
@@ -261,6 +263,12 @@ extract.differences <- function(indexed.data, matched.set, treatment.variable)
   
   treated.key.t <- names(matched.set)
   treated.key.tm1 <- paste0(treated.id, ".", treated.tm1)
+  
+  if (qoi == "atc") {
+    multi.factor <- -1
+  } else {
+    multi.factor <- 1
+  }
   
   if(length(matched.set[[1]]) > 0)
   {
@@ -272,13 +280,13 @@ extract.differences <- function(indexed.data, matched.set, treatment.variable)
     
     differences <- as.numeric(indexed.data[keys.t, treatment.variable] - indexed.data[keys.tm1, treatment.variable])
     
-    attr(matched.set[[1]], "treatment.change") <- differences[1]
+    attr(matched.set[[1]], "treatment.change") <- differences[1] * multi.factor
      
-    attr(matched.set[[1]], "control.change") <- differences[2:length(differences)]
+    attr(matched.set[[1]], "control.change") <- differences[2:length(differences)] * multi.factor
     #names(attr(matched.set[[1]], "control.change")) <- control.keys.t  
   } else {
     differences <- as.numeric(indexed.data[treated.key.t, treatment.variable] - indexed.data[treated.key.tm1, treatment.variable])
-    attr(matched.set[[1]], "treatment.change") <- differences[1]
+    attr(matched.set[[1]], "treatment.change") <- differences[1] * multi.factor
   }
   #names(attr(matched.set[[1]], "treatment.change")) <- treated.key.t
   return(matched.set[[1]])
@@ -286,13 +294,13 @@ extract.differences <- function(indexed.data, matched.set, treatment.variable)
 }
 
 identifyDirectionalChanges <- function(msets, ordered.data, id.var, time.var,
-                                       treatment.var)
+                                       treatment.var, qoi)
 {
   rownames(ordered.data) <- paste0(ordered.data[, id.var], ".", ordered.data[, time.var])
   
   for (i in 1:length(msets)) {
       
-    msets[[i]] <- extract.differences(ordered.data, msets[i], treatment.var)
+    msets[[i]] <- extract.differences(ordered.data, msets[i], treatment.var, qoi)
       
   }
   return(msets)

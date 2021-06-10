@@ -297,7 +297,7 @@ panel_match <- function(lag, time.id, unit.id, treatment,
   if(!is.null(network.caliper.info) || 
      !is.null(network.refinement.info)) 
   {
-    browser()
+    
     ordered.data <- calculate_neighbor_treatment(ordered.data, adjacency.matrix,
                                                  neighborhood.degree, unit.id, 
                                                  time.id, treatment)

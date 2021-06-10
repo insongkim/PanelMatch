@@ -103,15 +103,16 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
   ####CALCULATE INFO ABOUT DIRECTIONAL CHANGE FOR CONTINUOUS TREATMENT HERE#####
   
   # always calculate the treatment change, not just for continuous treatment cases
+  
   if (length(msets) > 0)
   {
     msets <- identifyDirectionalChanges(msets, ordered.data, 
-                                        unit.id, time.id, treatment)  
+                                        unit.id, time.id, treatment, qoi)  
   }
   if (length(e.sets) > 0)
   {
     e.sets <- identifyDirectionalChanges(e.sets, ordered.data, 
-                                         unit.id, time.id, treatment)  
+                                         unit.id, time.id, treatment, qoi)  
   }
   
   
