@@ -56,8 +56,8 @@ get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.wei
   time.id <- attr(matched.sets, "t.var")
   lag <- attr(matched.sets, "lag")
   treatment <- attr(matched.sets, "treatment.var")
-  if(class(data[, unit.id]) == "factor") stop("please convert unit id column to character, integer, or numeric")
-  if(class(data[, time.id]) != "integer") stop("please convert time id to consecutive integers")
+  if (!class(data[, unit.id]) %in% c("integer", "numeric")) stop("please convert unit id column to integer or numeric")
+  if (class(data[, time.id]) != "integer") stop("please convert time id to consecutive integers")
   
   if(any(table(data[, unit.id]) != max(table(data[, unit.id]))))
   {
@@ -97,36 +97,9 @@ get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.wei
     }
   }
   
-  ordered.data[, paste0(unit.id, ".int")] <- as.integer(as.factor(ordered.data[, unit.id]))
   
-  if(class(ordered.data[, unit.id]) == "character") {
-    unit.index.map <- data.frame(original.id = make.names(as.character(unique(ordered.data[, unit.id]))),
-                                 new.id = unique(ordered.data[, paste0(unit.id, ".int")]), stringsAsFactors = F)
-  }
-  else if(class(ordered.data[, unit.id]) == "integer") {
-    unit.index.map <- data.frame(original.id = (as.character(unique(ordered.data[, unit.id]))),
-                                 new.id = unique(ordered.data[, paste0(unit.id, ".int")]), stringsAsFactors = F)
-  }
-  else if(class(ordered.data[, unit.id]) == "numeric") {
-    if(all(unique(ordered.data[, unit.id]) == as.integer(unique(ordered.data[, unit.id])))) #actually integers
-    {
-      unit.index.map <- data.frame(original.id = (as.character(unique(ordered.data[, unit.id]))),
-                                   new.id = unique(ordered.data[, paste0(unit.id, ".int")]), stringsAsFactors = F)
-    }
-    else
-    {
-      stop("Unit ID data appears to be a non-integer numeric. Please convert.")
-    }
-  }
-  else {
-    stop("Unit ID Data is not integer, numeric, or character.")
-  }
-  
-  og.unit.id <- unit.id
-  #og.time.id <- time.id
-  unit.id <- paste0(unit.id, ".int")
   matched.sets <- matched.sets[sapply(matched.sets, length) > 0]
-  matched.sets <- encode_index(matched.sets, unit.index.map, unit.id)
+  # matched.sets <- encode_index(matched.sets, unit.index.map, unit.id)
   
   othercols <- colnames(ordered.data)[!colnames(ordered.data) %in% c(time.id, unit.id, treatment)]
   #subset to keep only needed covariates
@@ -387,105 +360,6 @@ balance_scatter <- function(non_refined_set, refined_list,
   
 }
 
-
-
-decode_index <- function(mset, unit.index, original.unit.id)#, original.time.id)
-{
-  decode.control.units <- function(in_, unit.index)
-  {
-    news <- as.numeric(unit.index$original.id[match(in_, unit.index$new.id)])
-    if(!is.null(attr(in_, "distances")))
-    {
-      attr(news, "distances") <- attr(in_, "distances")
-      names(attr(news, "distances")) <- news
-    }
-    if(!is.null(attr(in_, "weights")))
-    {
-      attr(news, "weights") <- attr(in_, "weights")
-      names(attr(news, "weights")) <- news
-    }
-    if(!is.null(attr(in_, "control.change")))
-    {
-      attr(news, "control.change") <- attr(in_, "control.change")
-      names(attr(news, "control.change")) <- news
-    }
-    if(!is.null(attr(in_, "treatment.change")))
-    {
-      attr(news, "treatment.change") <- attr(in_, "treatment.change")
-    }
-    return(news)
-  }
-  new.mset <- sapply(mset, decode.control.units, unit.index = unit.index, simplify = F)
-  decode.treated.units <- function(ts, ids, unit.index)#, time.index)
-  {
-    n.ids <- unit.index$original.id[match(ids, unit.index$new.id)]
-    
-    return(paste0(n.ids, ".", ts))
-  }
-  treated.ts <- as.numeric(sub(".*\\.", "", names(mset)))
-  treated.ids <- as.numeric(sub("\\..*", "", names(mset)))
-  attributes(new.mset) <- attributes(mset)
-  names(new.mset) <- decode.treated.units(treated.ts, treated.ids, unit.index)
-  attr(new.mset, "id.var") <- original.unit.id
-  
-  # treated.ids <- as.numeric(sub("\\..*", "", names(new.mset)))
-  # for (i in 1:length(new.mset))
-  # {
-  #   attr(new.mset[[i]], "treatment.change") <- treated.ids[i]
-  # }
-  return(new.mset)
-}
-
-
-encode_index <- function(mset, unit.index, new.unit.id)
-{
-  encode.control.units <- function(in_, unit.index)
-  {
-    news <- unit.index$new.id[match(in_, unit.index$original.id)]
-    if(!is.null(attr(in_, "distances")))
-    {
-      attr(news, "distances") <- attr(in_, "distances")
-      names(attr(news, "distances")) <- news
-    }
-    if(!is.null(attr(in_, "weights")))
-    {
-      attr(news, "weights") <- attr(in_, "weights")
-      names(attr(news, "weights")) <- news
-    }
-    if(!is.null(attr(in_, "control.change")))
-    {
-      attr(news, "control.change") <- attr(in_, "control.change")
-      names(attr(news, "control.change")) <- news
-    }
-    
-    if(!is.null(attr(in_, "treatment.change")))
-    {
-      attr(news, "treatment.change") <- attr(in_, "treatment.change")
-    }
-    return(news)
-  }
-  new.mset <- sapply(mset, encode.control.units, unit.index = unit.index, simplify = F)
-  encode.treated.units <- function(ts, ids, unit.index)#, time.index)
-  {
-    n.ids <- unit.index$new.id[match(ids, unit.index$original.id)]
-    
-    return(paste0(n.ids, ".", ts))
-  }
-  treated.ts <- sub(".*\\.", "", names(mset))
-  treated.ids <- sub("\\..*", "", names(mset))
-  attributes(new.mset) <- attributes(mset)
-  names(new.mset) <- encode.treated.units(treated.ts, treated.ids, unit.index)
-  attr(new.mset, "id.var") <- new.unit.id
-  
-  # treated.ids <- sub("\\..*", "", names(new.mset))
-  # for (i in 1:length(new.mset))
-  # {
-  #   attr(new.mset[[i]], "treatment.change") <- treated.ids[i]
-  # }
-  # return(new.mset)
-  
-  return(new.mset)
-}
 
 
 calculate_set_effects <- function(pm.obj, data.in, lead)

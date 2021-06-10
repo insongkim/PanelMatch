@@ -113,7 +113,6 @@
 #'                          covs.formula = ~ tradewb, 
 #'                          size.match = 5, qoi = "att",
 #'                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
-#' # Running multiple configurations at once REMOVED FOR NOW...
 #'
 #'
 #' @export
@@ -241,7 +240,7 @@ panel_match <- function(lag, time.id, unit.id, treatment,
   {
     warning("Note that for msm methods, PanelMatch will attempt to find the estimated average treatment effect of being treated for the entire specified 'lead' time periods.")
   }
-  if (listwise.delete & match.missing) stop("set match.missing = F when listwise.delete = TRUE")
+  if (listwise.delete & match.missing) stop("set match.missing = FALSE when listwise.delete = TRUE")
   if (lag < 1) stop("please specify a lag value >= 1")
   if (class(data) != "data.frame") stop("please convert data to data.frame class")
   if (!all(refinement.method %in% c("mahalanobis", "ps.weight", "ps.match", "CBPS.weight", "CBPS.match", "ps.msm.weight", "CBPS.msm.weight", "none"))) stop("please choose a valid refinement method")
@@ -313,29 +312,7 @@ panel_match <- function(lag, time.id, unit.id, treatment,
     covs.formula <- ll[[1]]
     caliper.formula <- ll[[2]]
   }
-  ###################################################### NETWORK CODE######################################################################################################################################################
-  ###########################################################################
-  ordered.data[, paste0(unit.id, ".int")] <- as.integer(as.factor(ordered.data[, unit.id]))
-  if(class(data[, unit.id]) == "character") {
-    unit.index.map <- data.frame(original.id = make.names(as.character(unique(ordered.data[, unit.id]))), 
-                                 new.id = unique(ordered.data[, paste0(unit.id, ".int")]), stringsAsFactors = F)
-  }
-  else if(class(data[, unit.id]) == "integer") {
-    unit.index.map <- data.frame(original.id = (as.character(unique(ordered.data[, unit.id]))),
-                                 new.id = unique(ordered.data[, paste0(unit.id, ".int")]), stringsAsFactors = F)
-  }
-  else if(class(data[, unit.id]) == "numeric") {
-    if(all(unique(ordered.data[, unit.id]) == as.integer(unique(ordered.data[, unit.id])))) #actually integers
-    {
-      unit.index.map <- data.frame(original.id = (as.character(unique(ordered.data[, unit.id]))),
-                                   new.id = unique(ordered.data[, paste0(unit.id, ".int")]), stringsAsFactors = F)
-    }
-  }
-  else {
-    stop("Unit ID Data is not integer, numeric, or character.")
-  }
-  og.unit.id <- unit.id
-  unit.id <- paste0(unit.id, ".int")
+
   
   othercols <- colnames(ordered.data)[!colnames(ordered.data) %in% c(time.id, unit.id, treatment)]
   ordered.data <- ordered.data[, c(unit.id, time.id, treatment, othercols)] #reorder columns 
@@ -360,29 +337,13 @@ panel_match <- function(lag, time.id, unit.id, treatment,
                                 exact.matching.variables = exact.match.variables, listwise.deletion = listwise.delete,
                                 use.diag.covmat = use.diagonal.variance.matrix, caliper.formula = caliper.formula, 
                                 continuous.treatment.info = continuous.treatment.info)
-    msets <- decode_index(msets, unit.index.map, og.unit.id)
+    #msets <- decode_index(msets, unit.index.map, og.unit.id)
     if(!matching & match.missing)
     {
       attr(msets, "lag") <- old.lag
     }
-    # ### THIS IS FOR ATC, NOT SURE IF IT REALLY MAKES SENSE
-    # if (!is.null(continuous.treatment.info))
-    # {
-    #   if (continuous.treatment.info[["direction"]] == "positive")
-    #   {
-    #     idx <- sapply(msets, function(x) attr(x, "treatment.change")) >= 0
-    #     msets <- msets[idx]
-    #   } else if (continuous.treatment.info[["direction"]] == "negative")
-    #   {
-    #     idx <- sapply(msets, function(x) attr(x, "treatment.change")) <= 0
-    #     msets <- msets[idx]
-    #   } else if (continuous.treatment.info[["direction"]] != "both")
-    #   {
-    #     stop("direction not well specified")
-    #   }  
-    # }
-    
-    
+
+  
     pm.obj <- list("atc" = msets)
     class(pm.obj) <- "PanelMatch"
     attr(pm.obj, "qoi") <- qoi
@@ -407,28 +368,13 @@ panel_match <- function(lag, time.id, unit.id, treatment,
                                 use.diag.covmat = use.diagonal.variance.matrix, caliper.formula = caliper.formula,
                                 continuous.treatment.info = continuous.treatment.info)
     
-    msets <- decode_index(msets, unit.index.map, og.unit.id)
+    #msets <- decode_index(msets, unit.index.map, og.unit.id)
     if(!matching & match.missing)
     {
       attr(msets, "lag") <- old.lag
     }
     
-    # if (!is.null(continuous.treatment.info))
-    # {
-    #   if (continuous.treatment.info[["direction"]] == "positive")
-    #   {
-    #     idx <- sapply(msets, function(x) attr(x, "treatment.change")) >= 0
-    #     msets <- msets[idx]
-    #   } else if (continuous.treatment.info[["direction"]] == "negative")
-    #   {
-    #     idx <- sapply(msets, function(x) attr(x, "treatment.change")) <= 0
-    #     msets <- msets[idx]
-    #   } else if (continuous.treatment.info[["direction"]] != "both")
-    #   {
-    #     stop("direction not well specified")
-    #   }  
-    # }
-    # 
+
     
     pm.obj <- list("att" = msets)
     class(pm.obj) <- "PanelMatch"
@@ -476,42 +422,17 @@ panel_match <- function(lag, time.id, unit.id, treatment,
     
     if (!is.null(continuous.treatment.info)) qoi <- "ate"
     
-    msets <- decode_index(msets, unit.index.map, og.unit.id)
     
     if (!matching & match.missing)
     {
       attr(msets, "lag") <- old.lag
     }
-    msets2 <- decode_index(msets2, unit.index.map, og.unit.id)
-    if(!matching & match.missing)
+    
+    if (!matching & match.missing)
     {
       attr(msets2, "lag") <- old.lag
     }
-    
-    # if (!is.null(continuous.treatment.info))
-    # {
-    #   if (continuous.treatment.info[["direction"]] == "positive")
-    #   {
-    #     idx <- sapply(msets, function(x) attr(x, "treatment.change")) >= 0
-    #     msets <- msets[idx]
-    #     
-    #     idx <- sapply(msets2, function(x) attr(x, "treatment.change")) >= 0
-    #     msets2 <- msets2[idx]
-    #     
-    #     
-    #   } else if (continuous.treatment.info[["direction"]] == "negative")
-    #   {
-    #     idx <- sapply(msets, function(x) attr(x, "treatment.change")) <= 0
-    #     msets <- msets[idx]
-    #     
-    #     idx <- sapply(msets2, function(x) attr(x, "treatment.change")) <= 0
-    #     msets2 <- msets2[idx]
-    #     
-    #   } else if (continuous.treatment.info[["direction"]] != "both")
-    #   {
-    #     stop("direction not well specified")
-    #   }  
-    # }
+  
     
     pm.obj <- list("att" = msets, "atc" = msets2)
     class(pm.obj) <- "PanelMatch"

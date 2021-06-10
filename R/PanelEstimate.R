@@ -231,44 +231,19 @@ panel_estimate <- function(inference = "bootstrap",
   
   data <- data[order(data[,unit.id], data[,time.id]), ]
   if(any(is.na(data[, unit.id]))) stop("Cannot have NA unit ids")
-  data[, paste0(unit.id, ".int")] <- as.integer(as.factor(data[, unit.id]))
   
-  if(class(data[, unit.id]) == "character") {
-    unit.index.map <- data.frame(original.id = make.names(as.character(unique(data[, unit.id]))), new.id = unique(data[, paste0(unit.id, ".int")]), stringsAsFactors = F)
-  }
-  else if(class(data[, unit.id]) == "integer") {
-    unit.index.map <- data.frame(original.id = (as.character(unique(data[, unit.id]))), new.id = unique(data[, paste0(unit.id, ".int")]), stringsAsFactors = F)
-  }
-  else if(class(data[, unit.id]) == "numeric") {
-    if(all(unique(data[, unit.id]) == as.integer(unique(data[, unit.id])))) #actually integers
-    {
-      unit.index.map <- data.frame(original.id = (as.character(unique(data[, unit.id]))), new.id = unique(data[, paste0(unit.id, ".int")]), stringsAsFactors = F)
-    }
-    else
-    {
-      stop("Unit ID data appears to be a non-integer numeric. Please convert.")
-    }
-  }
-  else {
-    stop("Unit ID Data is not integer, numeric, or character.")
-  }
-  og.unit.id <- unit.id
-  unit.id <- paste0(unit.id, ".int")
   othercols <- colnames(data)[!colnames(data) %in% c(time.id, unit.id, treatment)]
   data <- data[, c(unit.id, time.id, treatment, othercols)] #reorder columns 
   
-  if(qoi == "att")
-  {
-    sets <- encode_index(sets, unit.index.map, unit.id)
-  }
+  
   if(qoi == "atc")
   {
-    sets2 <- encode_index(sets, unit.index.map, unit.id)
+    sets2 <- sets
   }
   if(qoi == "ate")
   {
-    sets <- encode_index(temp.sets$att, unit.index.map, unit.id)
-    sets2 <- encode_index(temp.sets$atc, unit.index.map, unit.id)
+    sets <- temp.sets$att 
+    sets2 <- temp.sets$atc
   }
   
   if (qoi == "att" | qoi == "ate") 
@@ -360,7 +335,7 @@ panel_estimate <- function(inference = "bootstrap",
                            z = d.sub1$dits_att)
         coefs[k,] <- att_new
       }
-      sets <- decode_index(sets, unit.index.map, og.unit.id)
+      #sets <- decode_index(sets, unit.index.map, og.unit.id)
       # changed return to class
       # if(!is.null(direction.treatment) && direction.treatment == "negative")
       # {
@@ -496,8 +471,8 @@ panel_estimate <- function(inference = "bootstrap",
         
       }
       # return(list("o.coef" = DID_ATE, "boots" = coefs))
-      sets <- decode_index(sets, unit.index.map, og.unit.id)
-      sets2 <- decode_index(sets2, unit.index.map, og.unit.id)
+      #sets <- decode_index(sets, unit.index.map, og.unit.id)
+      #sets2 <- decode_index(sets2, unit.index.map, og.unit.id)
       if(!is.null(direction.treatment) && direction.treatment == "negative")
       {
         coefs <- -1 * coefs
