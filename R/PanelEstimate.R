@@ -269,7 +269,7 @@ panel_estimate <- function(inference = "bootstrap",
   if (qoi == "atc" | qoi == "ate") 
   {
     treated.unit.ids2 <- as.numeric(sub("\\..*", "", names(sets2)))
-    browser()
+    
     for(j in lead)
     {
       dense.wits <- getWits(lead = j, data = data, matched_sets = sets2, estimation.method = inference)
@@ -352,7 +352,7 @@ panel_estimate <- function(inference = "bootstrap",
   {
     if (inference == "bootstrap") 
     {
-      browser()
+    
       o.coefs <-  -sapply(data[, sapply(lead, function(x) paste0("Wit_atc", x)), drop = FALSE],
                           equality_four,
                           y = data[c(dependent)][,1],
@@ -395,7 +395,7 @@ panel_estimate <- function(inference = "bootstrap",
         
         coefs[k,] <- atc_new
       }
-      sets2 <- decode_index(sets2, unit.index.map, og.unit.id)
+      #sets2 <- decode_index(sets2, unit.index.map, og.unit.id)
       if(!is.null(direction.treatment) && direction.treatment == "negative")
       {
         coefs <- -1 * coefs
@@ -592,7 +592,9 @@ summary.PanelEstimate <- function(object, verbose = TRUE, bias.corrected = FALSE
                   apply(object$bootstrapped.estimates, 2, sd, na.rm = T), # bootstrap se
                   
                   # Efron & Tibshirani 1993 p170 - 171
-                  apply(object$bootstrapped.estimates, 2, quantile, probs = c( (1-object$confidence.level)/2, object$confidence.level+(1-object$confidence.level)/2 ), na.rm = T))
+                  apply(object$bootstrapped.estimates, 2, quantile, 
+                        probs = c( (1-object$confidence.level)/2, 
+                                   object$confidence.level+(1-object$confidence.level)/2 ), na.rm = T))
       rownames(df) <- c("estimate", "std.error", 
                         paste0((1-object$confidence.level)/2 * 100, "%"),
                         paste0( (object$confidence.level+(1-object$confidence.level)/2) * 100, "%"))
