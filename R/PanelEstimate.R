@@ -56,28 +56,26 @@
 #' 
 #'
 #' @export
-PanelEstimate <- function(sets,
+PanelEstimate <- function(sets, data,
                           number.iterations = 1000,
                           df.adjustment = FALSE,
                           confidence.level = .95,
-                          moderator = NULL,
-                          data) 
+                          moderator = NULL) 
 {
-  inference <- "bootstrap"
   
-  if(inference == "wfe") stop("wfe is no longer supported. Please specify inference = 'bootstrap'")
+  
   if(class(number.iterations) == "list" & class(df.adjustment) == "list" & 
      class(confidence.level) == "list" & class(sets) == "list")
   {
-    if(length(unique(length(inference), length(number.iterations), length(df.adjustment), 
+    if(length(unique(length(number.iterations), length(df.adjustment), 
                      length(confidence.level), length(sets))) == 1)
     {
       if(!is.null(moderator))
       {
         
-      
         handle.nesting <- function(data, sets.in, moderating.variable.in,
-                                   inference.in, number.iterations.in, df.adjustment.in, confidence.level.in) 
+                                   number.iterations.in, df.adjustment.in, 
+                                   confidence.level.in) 
         {
             if(attr(sets.in, "qoi") == "att")
             {
@@ -101,25 +99,33 @@ PanelEstimate <- function(sets,
               
               ordered.data <- data[order(data[,unit.id], data[,time.id]), ]
           
-              set.list <- handle_moderating_variable(ordered.data = ordered.data, att.sets = sets.in[["att"]], 
+              set.list <- handle_moderating_variable(ordered.data = ordered.data, 
+                                                     att.sets = sets.in[["att"]], 
                                                   atc.sets = sets.in[["atc"]],
-                                                 moderator = moderating.variable.in, unit.id = unit.id, time.id = time.id,
+                                                 moderator = moderating.variable.in, 
+                                                 unit.id = unit.id, time.id = time.id,
                                                  PM.object = sets.in)
             
-              res <- lapply(set.list, FUN = panel_estimate, inference = inference, number.iterations = number.iterations.in, 
-                          df.adjustment = df.adjustment.in, confidence.level = confidence.level.in, data = data)
+              res <- lapply(set.list, FUN = panel_estimate, 
+                            number.iterations = number.iterations.in, 
+                          df.adjustment = df.adjustment.in, 
+                          confidence.level = confidence.level.in, data = data)
               return(res)
         }
         res <- mapply(FUN = handle.nesting, number.iterations.in = number.iterations, 
-                     df.adjustment.in = df.adjustment, confidence.level.in= confidence.level, sets.in = sets, 
-                     MoreArgs = list(data = data, inference = inference, moderating.variable.in = moderator), 
+                     df.adjustment.in = df.adjustment, 
+                     confidence.level.in= confidence.level, 
+                     sets.in = sets, 
+                     MoreArgs = list(data = data, 
+                                     moderating.variable.in = moderator), 
                      SIMPLIFY = FALSE)
       }
       else
       {
         res = mapply(FUN = panel_estimate, number.iterations = number.iterations, 
-                     df.adjustment = df.adjustment, confidence.level= confidence.level, sets = sets, 
-                     MoreArgs = list(data = data, inference = inference),
+                     df.adjustment = df.adjustment, 
+                     confidence.level = confidence.level, sets = sets, 
+                     MoreArgs = list(data = data),
                      SIMPLIFY = FALSE)  
       }
       
@@ -130,21 +136,21 @@ PanelEstimate <- function(sets,
   }
   else 
   {
-    if(!is.null(moderator))
+    if (!is.null(moderator))
     {
-      if(attr(sets, "qoi") == "att")
+      if (attr(sets, "qoi") == "att")
       {
         s1 = sets[["att"]]
         unit.id <- attr(s1, "id.var")
         time.id <- attr(s1, "t.var")
       }
-      if(attr(sets, "qoi") == "atc")
+      if (attr(sets, "qoi") == "atc")
       {
         s1 = sets[["atc"]]
         unit.id <- attr(s1, "id.var")
         time.id <- attr(s1, "t.var")
       }
-      if(attr(sets, "qoi") == "ate")
+      if (attr(sets, "qoi") == "ate")
       { #can assume they are the same
         s1 <- sets[["att"]]
         # sets[["atc"]]
@@ -153,18 +159,25 @@ PanelEstimate <- function(sets,
       }
       
       ordered.data <- data[order(data[,unit.id], data[,time.id]), ]
-      set.list <- handle_moderating_variable(ordered.data = ordered.data, att.sets = sets[["att"]], atc.sets = sets[["atc"]],
-                                             moderator = moderator, unit.id = unit.id, time.id = time.id,
+      set.list <- handle_moderating_variable(ordered.data = ordered.data, 
+                                             att.sets = sets[["att"]],
+                                             atc.sets = sets[["atc"]],
+                                             moderator = moderator, 
+                                             unit.id = unit.id, time.id = time.id,
                                              PM.object = sets)
       
-      res <- lapply(set.list, FUN = panel_estimate, inference = inference, number.iterations = number.iterations, 
-                    df.adjustment = df.adjustment, confidence.level = confidence.level, data = data)
+      res <- lapply(set.list, FUN = panel_estimate, 
+                    number.iterations = number.iterations, 
+                    df.adjustment = df.adjustment, 
+                    confidence.level = confidence.level, data = data)
       
     }
     else
     {
-      res = panel_estimate(inference = inference, number.iterations = number.iterations, 
-                           df.adjustment = df.adjustment, confidence.level = confidence.level, sets = sets, data = data)  
+      res = panel_estimate(number.iterations = number.iterations, 
+                           df.adjustment = df.adjustment, 
+                           confidence.level = confidence.level, 
+                           sets = sets, data = data)  
     }
     
   }
@@ -172,21 +185,24 @@ PanelEstimate <- function(sets,
 }
 
 
-panel_estimate <- function(inference = "bootstrap",
+panel_estimate <- function(sets,
+                           data,
                            number.iterations = 1000,
                            df.adjustment = FALSE,
-                           confidence.level = .95,
-                           sets,
-                           data)
+                           confidence.level = .95
+                           )
 {
   
   lead <- attr(sets, "lead")
   outcome.variable <- attr(sets, "outcome.var")
   continuous.treatment <- attr(sets,'continuous.treatment')
   direction.treatment <- attr(sets, "continuous.treatment.direction")
-  if(class(sets) != "PanelMatch") stop("sets is not a PanelMatch object")
+  if (class(sets) != "PanelMatch") stop("sets parameter is not a PanelMatch object")
   qoi <- attr(sets, "qoi")
-  if(qoi == "ate")
+  
+  
+  #this is just for meta data extraction
+  if (qoi == "ate")
   {
     temp.sets <- sets
     sets <- sets[["att"]] #just picking one of the two because they should be the same
@@ -197,25 +213,19 @@ panel_estimate <- function(inference = "bootstrap",
   }
   sets <- sets[sapply(sets, length) > 0]
   
-  
-  lag <- attr(sets, "lag")
-  dependent = outcome.variable
+
+  dependent <- outcome.variable
   treatment <- attr(sets, "treatment.var")
   unit.id <- attr(sets, "id.var")
   time.id <- attr(sets, "t.var")
-  #method = inference
-  method <- attr(sets, "refinement.method")
   
   
-  forbid.treatment.reversal <- attr(sets, "forbid.treatment.reversal") # this doesnt exist yet, not sure what it means.
-  #add in checks about forbid.treatment.reversal and wfe, etc. 
+  if (!"data.frame" %in% class(data)) stop("please convert data to data.frame class")
   
-  if(!"data.frame" %in% class(data)) stop("please convert data to data.frame class")
+  if (!class(data[, unit.id]) %in% c("integer", "numeric")) stop("please convert unit id column to integer or numeric")
+  if (class(data[, time.id]) != "integer") stop("please convert time id to consecutive integers")
   
-  if(!class(data[, unit.id]) %in% c("integer", "numeric")) stop("please convert unit id column to integer or numeric")
-  if(class(data[, time.id]) != "integer") stop("please convert time id to consecutive integers")
-  
-  if(any(table(data[, unit.id]) != max(table(data[, unit.id]))))
+  if (any(table(data[, unit.id]) != max(table(data[, unit.id]))))
   {
     testmat <- data.table::dcast(data.table::as.data.table(data), formula = paste0(unit.id, "~", time.id),
                                  value.var = treatment)
@@ -230,442 +240,59 @@ panel_estimate <- function(inference = "bootstrap",
   check_time_data(data, time.id)
   
   data <- data[order(data[,unit.id], data[,time.id]), ]
-  if(any(is.na(data[, unit.id]))) stop("Cannot have NA unit ids")
+  if (any(is.na(data[, unit.id]))) stop("Cannot have NA unit ids")
   
   othercols <- colnames(data)[!colnames(data) %in% c(time.id, unit.id, treatment)]
   data <- data[, c(unit.id, time.id, treatment, othercols)] #reorder columns 
   
   
-  if(qoi == "atc")
+  if (identical(qoi, "atc"))
   {
-    sets2 <- sets
+    sets.atc <- sets
+    sets.att <- NULL
   }
-  if(qoi == "ate")
+  if (identical(qoi, "att"))
   {
-    sets <- temp.sets$att 
-    sets2 <- temp.sets$atc
+    sets.att <- sets
+    sets.atc <- NULL
+  }
+  if (qoi == "ate")
+  {
+    sets.att <- temp.sets$att 
+    sets.atc <- temp.sets$atc
   }
   
   if (qoi == "att" | qoi == "ate") 
   {
-    treated.unit.ids <- as.numeric(sub("\\..*", "", names(sets)))
-    #data$dit_att <- getDits(matched_sets = sets, data = data)
-    for(j in lead)
-    {
-      
-      dense.wits <- getWits(lead = j, data = data, matched_sets = sets, 
-                            estimation.method = inference,
-                            continuous.treatment = continuous.treatment)
-      data = merge(x = data, y = dense.wits, all.x = TRUE, by.x = colnames(data)[1:2], by.y = c("id", "t"))
-      colnames(data)[length(data)] <- paste0("Wit_att", j)
-      data[is.na(data[, length(data)]), length(data)] <- 0 #replace NAs with zeroes
-    }
     
-    data$dit_att <- getDits(matched_sets = sets, data = data)
-    colnames(data)[length(data)] <- "dits_att"
-    data$`Wit_att-1` <- 0
-    
+    treated.unit.ids.att <- as.numeric(sub("\\..*", "", names(sets.att)))
+    if (identical(qoi, "att")) treated.unit.ids.atc <- NULL
   } 
   if (qoi == "atc" | qoi == "ate") 
   {
-    treated.unit.ids2 <- as.numeric(sub("\\..*", "", names(sets2)))
-    
-    for(j in lead)
-    {
-      dense.wits <- getWits(lead = j, data = data, matched_sets = sets2, estimation.method = inference)
-      data = merge(x = data, y = dense.wits, all.x = TRUE, by.x = colnames(data)[1:2], by.y = c("id", "t"))
-      colnames(data)[length(data)] <- paste0("Wit_atc", j)
-      data[is.na(data[, length(data)]), length(data)] <- 0 #replace NAs with zeroes
-    }
-    
-    
-    data$dit_atc <- getDits(matched_sets = sets2, data = data)
-    colnames(data)[length(data)] <- "dits_atc"
-    data$`Wit_atc-1` <- 0
-    
+    treated.unit.ids.atc <- as.numeric(sub("\\..*", "", names(sets.atc)))
+    if (identical(qoi, "att")) treated.unit.ids.att <- NULL
   } 
-  #NOTE THE COMMENT/ASSUMPTION
-  if(inference == "bootstrap")
-  {
-    data[, dependent][is.na(data[, dependent])] <- 0 #replace the NAs with zeroes. I think this is ok because the dits should always be zero for these, so the value is irrelevant. this just makes the implementation a little bit easier   
-  }
   
   
-  if (qoi == "att") 
-  {
-    if (inference == "bootstrap")
-    {
-      
-      o.coefs <- sapply(data[, sapply(lead, function(x) paste0("Wit_att", x)), drop = FALSE],
-                        equality_four,
-                        y = data[c(dependent)][,1],
-                        z = data$dits_att)
-      
-      if (length(lead[lead<0]) > 1) 
-      {
-        names(o.coefs)[(length(o.coefs)-max(lead[lead>=0])):
-                         length(o.coefs)] <- sapply(lead[lead>=0], function(x) paste0("t+", x))
-        names(o.coefs)[(length(o.coefs)-length(lead) + 1):
-                         length(lead[lead<0])] <- sapply(lead[lead<0], function(x) paste0("t", x))
-        
-      } else 
-      {
-        names(o.coefs) <- sapply(lead, function(x) paste0("t+", x))
-      }
-      coefs <- matrix(NA, nrow = number.iterations, ncol = length(lead))
-      
-      for (k in 1:number.iterations) 
-      {  
-        # make new data
-        clusters <- unique(data[, unit.id])
-        units <- sample(clusters, size = length(clusters), replace=T)
-        while(all(!units %in% treated.unit.ids)) #while none of the units are treated units, resample
-        {
-          units <- sample(clusters, size = length(clusters), replace=T)
-        }
-        # create bootstap sample with sapply
-        #d.sub1 <- data[ data[,unit.id] %in% units, ]
-        df.bs <- lapply(units, function(x) which(data[,unit.id]==x))
-        d.sub1 <- data[unlist(df.bs),]
-        
-        att_new <-  sapply(d.sub1[, sapply(lead, function(x) paste0("Wit_att", x)), 
-                                  drop = FALSE],
-                           equality_four,
-                           y = d.sub1[,outcome.variable],
-                           z = d.sub1$dits_att)
-        coefs[k,] <- att_new
-      }
-      #sets <- decode_index(sets, unit.index.map, og.unit.id)
-      # changed return to class
-      # if(!is.null(direction.treatment) && direction.treatment == "negative")
-      # {
-      #   coefs <- -1 * coefs
-      # }
-      z <- list("estimates" = o.coefs,
-                "bootstrapped.estimates" = coefs, "bootstrap.iterations" = number.iterations, "standard.error" = apply(coefs, 2, sd, na.rm = T),
-                "method" = method, "lag" = lag,
-                "lead" = lead, "confidence.level" = confidence.level, "qoi" = qoi, "matched.sets" = sets)
-      class(z) <- "PanelEstimate"
-      return(z)
-    }
-  } else if (qoi == "atc")
-  {
-    if (inference == "bootstrap") 
-    {
-    
-      o.coefs <-  -sapply(data[, sapply(lead, function(x) paste0("Wit_atc", x)), drop = FALSE],
-                          equality_four,
-                          y = data[c(dependent)][,1],
-                          z = data$dits_atc)
-      
-      if (length(lead[lead<0]) > 1) 
-      {
-        names(o.coefs)[(length(o.coefs)-max(lead[lead>=0])):
-                         length(o.coefs)] <- sapply(lead[lead>=0], function(x) paste0("t+", x))
-        names(o.coefs)[(length(o.coefs)-length(lead) + 1):
-                         length(lead[lead<0])] <- sapply(lead[lead<0], function(x) paste0("t", x))
-        
-      } else 
-      {
-        names(o.coefs) <- sapply(lead, function(x) paste0("t+", x))
-      }
-      
-      
-      coefs <- matrix(NA, nrow = number.iterations, ncol = length(lead))
-      
-      for (k in 1:number.iterations) 
-      {  
-        # make new data
-        clusters <- unique(data[, unit.id])
-        units <- sample(clusters, size = length(clusters), replace=T)
-        while(all(!units %in% treated.unit.ids2)) #while none of the units are treated units, resample
-        {
-          units <- sample(clusters, size = length(clusters), replace=T)
-        }
-        
-        #d.sub1 <- data[ data[,unit.id] %in% units, ]
-        df.bs <- lapply(units, function(x) which(data[,unit.id]==x))
-        d.sub1 <- data[unlist(df.bs),]
-        
-        atc_new <- -sapply(d.sub1[, sapply(lead, function(x) paste0("Wit_atc", x)), 
-                                  drop = FALSE],
-                           equality_four,
-                           y = d.sub1[,outcome.variable],
-                           z = d.sub1$dits_atc)
-        
-        coefs[k,] <- atc_new
-      }
-      #sets2 <- decode_index(sets2, unit.index.map, og.unit.id)
-      if(!is.null(direction.treatment) && direction.treatment == "negative")
-      {
-        coefs <- -1 * coefs
-      }
-      z <- list("estimates" = o.coefs,
-                "bootstrapped.estimates" = coefs, "bootstrap.iterations" = number.iterations, "standard.error" = apply(coefs, 2, sd, na.rm = T),
-                "lead" = lead, "confidence.level" = confidence.level, "qoi" = qoi, "matched.sets" = sets2)
-      class(z) <- "PanelEstimate"
-      return(z)
-      
-    }
-  } else if (qoi == "ate") 
-  {
-    if (inference == "bootstrap")
-    {
-      o.coefs_att <-  sapply(data[, sapply(lead, function(x) paste0("Wit_att", x)), 
-                                  drop = FALSE],
-                             equality_four,
-                             y = data[c(dependent)][,1],
-                             z = data$dits_att)
-      
-      o.coefs_atc <-  -sapply(data[, sapply(lead, function(x) paste0("Wit_atc", x)), 
-                                   drop = FALSE],
-                              equality_four,
-                              y = data[c(dependent)][,1],
-                              z = data$dits_atc)
-      
-      o.coefs_ate <- (o.coefs_att*sum(data$dits_att) + o.coefs_atc*sum(data$dits_atc))/
-        (sum(data$dits_att) + sum(data$dits_atc))
-      
-      if (length(lead[lead<0]) > 1) 
-      {
-        names(o.coefs_ate)[(length(o.coefs_ate)-max(lead[lead>=0])):
-                             length(o.coefs_ate)] <- sapply(lead[lead>=0], function(x) paste0("t+", x))
-        names(o.coefs_ate)[(length(o.coefs_ate)-length(lead) + 1):
-                             length(lead[lead<0])] <- sapply(lead[lead<0], function(x) paste0("t", x))
-        
-      } else 
-      {
-        names(o.coefs_ate) <- sapply(lead, function(x) paste0("t+", x))
-      }
-      
-      coefs <- matrix(NA, nrow = number.iterations, ncol = length(lead))
-      
-      
-      for (k in 1:number.iterations) {
-        # make new data
-        clusters <- unique(data[, unit.id])
-        units <- sample(clusters, size = length(clusters), replace=T)
-        while(all(!units %in% treated.unit.ids) | all(!units %in% treated.unit.ids2)) #while none of the units are treated units (att and atc), resample
-        {
-          units <- sample(clusters, size = length(clusters), replace=T)
-        }
-        # create bootstap sample with sapply
-        #d.sub1 <- data[ data[,unit.id] %in% units, ]
-        df.bs <- lapply(units, function(x) which(data[,unit.id]==x))
-        d.sub1 <- data[unlist(df.bs),]
-        
-        att_new <- sapply(d.sub1[, sapply(lead, function(x) paste0("Wit_att", x)), 
-                                drop = FALSE],
-                         equality_four,
-                         y = d.sub1[,outcome.variable],
-                         z = d.sub1$dits_att)
-        
-        atc_new <- -sapply(d.sub1[, sapply(lead, function(x) paste0("Wit_atc", x)), 
-                                  drop = FALSE],
-                           equality_four,
-                           y = d.sub1[,outcome.variable],
-                           z = d.sub1$dits_atc)
-        coefs[k,] <- (att_new*sum(d.sub1$dits_att) + atc_new*sum(d.sub1$dits_atc))/
-          (sum(d.sub1$dits_att) + sum(d.sub1$dits_atc))
-        
-        
-      }
-      # return(list("o.coef" = DID_ATE, "boots" = coefs))
-      #sets <- decode_index(sets, unit.index.map, og.unit.id)
-      #sets2 <- decode_index(sets2, unit.index.map, og.unit.id)
-      if(!is.null(direction.treatment) && direction.treatment == "negative")
-      {
-        coefs <- -1 * coefs
-      }
-      z <- list("estimates" = o.coefs_ate,
-                "bootstrapped.estimates" = coefs, "bootstrap.iterations" = number.iterations, "standard.error" = apply(coefs, 2, sd, na.rm = T),
-                "lead" = lead, "confidence.level" = confidence.level, "qoi" = qoi, "matched.sets" = list(sets, sets2))
-      class(z) <- "PanelEstimate"
-      return(z)
-    }
-  }
+  data <- prepareData(data.in = data, lead = lead,
+                      sets.att = sets.att, sets.atc = sets.atc,
+                      continuous.treatment = continuous.treatment,
+                      qoi.in = qoi,
+                      dependent.variable = dependent)
+  
+  pe.results <- calculateEstimates(qoi.in = qoi,
+                                   data.in = data,
+                                   lead = lead,
+                                   number.iterations = number.iterations,
+                                   att.treated.unit.ids = treated.unit.ids.att,
+                                   atc.treated.unit.ids = treated.unit.ids.atc,
+                                   outcome.variable = dependent,
+                                   unit.id.variable = unit.id,
+                                   confidence.level = confidence.level,
+                                   att.sets = sets.att,
+                                   atc.sets = sets.atc)
+  return(pe.results)
   
   
 }
-
-
-#' Get summaries of PanelEstimate objects/calculations
-#' 
-#' 
-#' \code{summary.PanelEstimate} takes an object returned by
-#' \code{PanelEstimate}, and returns a summary table of point
-#' estimates and confidence intervals
-#'
-#' @param object A PanelEstimate object
-#' @param verbose logical indicating whether or not output should be printed in an expanded form. Default is TRUE
-#' @param bias.corrected logical indicating whether or not bias corrected estimates should be provided. Default is FALSE
-#' @param ... optional additional arguments. Currently, no additional arguments are supported. 
-#' @examples
-#' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
-#'                          treatment = "dem", refinement.method = "none", 
-#'                          data = dem, match.missing = TRUE, 
-#'                          covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
-#'                          size.match = 5, qoi = "att",
-#'                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
-#' PE.results <- PanelEstimate(sets = PM.results, data = dem, number.iterations = 500)
-#' summary(PE.results)
-#' 
-#'
-#' 
-#' @method summary PanelEstimate
-#' @export
-summary.PanelEstimate <- function(object, verbose = TRUE, bias.corrected = FALSE, ...) {
-  
-  if(verbose)
-  {
-    if(object$qoi == "ate")
-    {
-      refinement.method <- attr(object$matched.set[[1]], "refinement.method")
-      lag <- attr(object$matched.set[[1]], "lag")
-    }
-    else
-    {
-      refinement.method <- attr(object$matched.set, "refinement.method")
-      lag <- attr(object$matched.set, "lag")
-    }
-    if(refinement.method == "mahalanobis")
-        {
-          cat("Weighted Difference-in-Differences with Mahalanobis Distance\n")
-        } 
-    if (refinement.method == "ps.weight" | refinement.method == "ps.match") 
-        {
-          cat("Weighted Difference-in-Differences with Propensity Score\n")
-        } 
-    if(refinement.method == "CBPS.weight" | refinement.method == "CBPS.match") 
-        {
-          cat("Weighted Difference-in-Differences with Covariate Balancing Propensity Score\n")
-        }
-    cat("Matches created with", attr(object$matched.sets, "lag"), "lags\n")
-    if(!is.null(object$bootstrap.iterations))
-    {
-      cat("\nStandard errors computed with", object$bootstrap.iterations, "Weighted bootstrap samples\n")  
-    }
-    
-    if(object$qoi == "att")
-    {
-      qoi <- "Average Treatment Effect on the Treated (ATT)"
-    }
-    if(object$qoi == "atc")
-    {
-      qoi <- "Average Treatment Effect on the Control (ATC)"
-    }
-    if(object$qoi == "ate")
-    {
-      qoi <- "Average Treatment Effect (ATE)"
-    }
-    
-    cat("\nEstimate of", qoi, "by Period:\n")
-  }
-  if(bias.corrected)
-  {
-    if(is.null(object$bootstrap.iterations)) stop("bias corrected estimates only available for bootstrap method currently")
-    df <- rbind(t(as.data.frame(object$estimates)), # point estimate
-              
-              apply(object$bootstrapped.estimates, 2, sd, na.rm = T), # bootstrap se
-              
-              # Efron & Tibshirani 1993 p170 - 171
-              apply(object$bootstrapped.estimates, 2, quantile, probs = c( (1-object$confidence.level)/2, object$confidence.level+(1-object$confidence.level)/2 ), na.rm = T), # percentile confidence.level
-              # Efron & Tibshirani 1993 p138
-              2*object$estimates - colMeans(object$bootstrapped.estimates, na.rm = T), # bc point estimate
-              
-              apply( (2*matrix(nrow = object$bootstrap.iterations, ncol = length(object$estimates), object$estimates, byrow = TRUE) - object$bootstrapped.estimates), 2, quantile, 
-                             probs = c((1-object$confidence.level)/2, object$confidence.level+(1-object$confidence.level)/2), 
-                             na.rm = T) ) # bc percentile confidence.level)
-          rownames(df) <- c("estimate", "std.error", 
-                    paste0((1-object$confidence.level)/2 * 100, "%"),
-                    paste0( (object$confidence.level+(1-object$confidence.level)/2) * 100, "%"),
-                    "estimate(bias corrected)", 
-                    paste0((1-object$confidence.level)/2 * 100, "%", "(bias corrected)"),
-                    paste0((object$confidence.level+(1-object$confidence.level)/2) * 100, "%", "(bias corrected)"))
-  }
-  else
-  {
-    if(!is.null(object$bootstrap.iteration))
-    {
-      df <- rbind(t(as.data.frame(object$estimates)), # point estimate
-                  
-                  apply(object$bootstrapped.estimates, 2, sd, na.rm = T), # bootstrap se
-                  
-                  # Efron & Tibshirani 1993 p170 - 171
-                  apply(object$bootstrapped.estimates, 2, quantile, 
-                        probs = c( (1-object$confidence.level)/2, 
-                                   object$confidence.level+(1-object$confidence.level)/2 ), na.rm = T))
-      rownames(df) <- c("estimate", "std.error", 
-                        paste0((1-object$confidence.level)/2 * 100, "%"),
-                        paste0( (object$confidence.level+(1-object$confidence.level)/2) * 100, "%"))
-      tdf <- t(df)
-      if(!verbose) return(t(df))
-      return(list("summary" = tdf, "lag" = lag, "iterations" = object$bootstrap.iterations, "qoi" = object$qoi) )   
-    }
-    else #wfe method
-    {
-      critical.vals <- rep(qt((1 - object$confidence.level) / 2, object$df), 2) * c(1, -1)
-      quants <- object$estimates + critical.vals * object$standard.error
-      df <- as.data.frame(c(object$estimates, # point estimate
-                  object$standard.error,
-                  quants))
-      rownames(df) <- c("estimate", "std.error", 
-                        paste0((1-object$confidence.level)/2 * 100, "%"),
-                        paste0( (object$confidence.level+(1-object$confidence.level)/2) * 100, "%"))
-      tdf <- t(df)
-      rownames(tdf) <- names(object$estimates)
-      if(!verbose) return(t(df))
-      return(list("summary" = tdf, "lag" = lag, "qoi" = object$qoi) )
-    }
-    
-  }
-  
-   
-  
-}
-
-
-#' Plot point estimates and standard errors from a PanelEstimate calculation.
-#' 
-#' 
-#' The \code{plot.PanelEstimate} method takes an object returned by the \code{PanelEstimate} function and plots the calculated 
-#' point estimates and standard errors over the specified \code{lead} time period. 
-#' The only mandatory argument is an object of the \code{PanelEstimate} class.
-#'
-#' @param x a \code{PanelEstimate} object
-#' @param ylab default is "Estimated Effect of Treatment. This is the same argument as the standard argument for \code{plot}
-#' @param xlab default is "Time". This is the same argument as the standard argument for \code{plot}
-#' @param main default is "Estimated Effects of Treatment Over Time". This is the same argument as the standard argument for \code{plot}
-#' @param ylim default is NULL. This is the same argument as the standard argument for \code{plot}
-#' @param ... Additional optional arguments to be passed to \code{plot}.
-#' @examples
-#' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
-#'                          treatment = "dem", refinement.method = "mahalanobis", 
-#'                          data = dem, match.missing = TRUE, 
-#'                          covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
-#'                          size.match = 5, qoi = "att",
-#'                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
-#' PE.results <- PanelEstimate(sets = PM.results, data = dem)
-#' plot(PE.results)
-#'
-#'
-#' @method plot PanelEstimate
-#' @export
-plot.PanelEstimate <- function(x, ylab = "Estimated Effect of Treatment", 
-                               xlab = "Time", main = "Estimated Effects of Treatment Over Time", ylim = NULL, ...)
-{
-  
-  pe.object <- x
-  plot.data <- summary(pe.object, verbose = F, bias.corrected = F)
-  if(is.null(ylim))
-  {
-    ylim <- c(min(plot.data[, 3]) - abs(mean(plot.data[, 3])), max(plot.data[, 4]) + abs(mean(max(plot.data[, 4]))))
-  }
-  graphics::plot(x = 1:(nrow(plot.data)),y = plot.data[, 1], pch = 16, cex = 1.5,
-       xaxt = "n", ylab = ylab, xlab = xlab, main = main, ylim = ylim, ...)
-  graphics::axis(side = 1, at = 1:nrow(plot.data), labels = rownames(plot.data))
-  graphics::segments(1:(nrow(plot.data)), plot.data[,3], 1:(nrow(plot.data)), plot.data[,4])
-  graphics::abline(h = 0, lty = "dashed")
-}
-
-

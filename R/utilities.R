@@ -1,3 +1,18 @@
+check_time_data <- function(data, time.id)
+{
+  if(class(data[, time.id]) != "integer") stop("time data is not integer")
+  u.times <- unique(data[, time.id])
+  increase.by.one <- all(seq(min(u.times), max(u.times), by = 1) %in% u.times)
+  if(increase.by.one)
+  {
+    return(TRUE)
+  }
+  else
+  {
+    stop("integer representation of time data has problematic gaps, as it does not increase by one. Perhaps time data for observations is irregular/not uniform across units?")
+  }
+}
+
 #' Calculate covariate balance
 #'
 #'
@@ -136,18 +151,22 @@ get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.wei
     {
       variable <- covariates[i]
       
-      sd.val <- sd(sapply(unlistedmats[seq(from = k, to = (length(matched.sets) * (lag + 1)), by = lag + 1)],
+      sd.val <- sd(sapply(unlistedmats[seq(from = k, 
+                                           to = (length(matched.sets) * (lag + 1)), 
+                                           by = lag + 1)],
                           function(x){x[nrow(x), variable]}), na.rm = T)
       if(isTRUE(all.equal(sd.val, 0)))
       {
         sd.val <- NA #make everything fail in a standardized way
       }
       
-      tprd <- unlistedmats[seq(from = k, to = (length(matched.sets) * (lag + 1)), by = lag + 1)] #should represent the same relative period across all matched sets. each df is a matched set
+      tprd <- unlistedmats[seq(from = k, to = (length(matched.sets) * (lag + 1)), 
+                               by = lag + 1)] #should represent the same relative period across all matched sets. each df is a matched set
       
       get_mean_difs <- function(x, variable) #x is an individual data frame
       {
-        return( x[nrow(x), variable] - sum(x[1:(nrow(x) -1),"weights"] * x[1:(nrow(x) -1), variable], na.rm = T ))
+        return( x[nrow(x), variable] - sum(x[1:(nrow(x) -1),"weights"] * x[1:(nrow(x) - 1), 
+                                                                           variable], na.rm = T ))
       }
       diffs <- sapply(tprd, get_mean_difs, variable = variable)
       
@@ -193,12 +212,14 @@ get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.wei
                         y = as.numeric(treated.data), 
                         type = "l",
                         lty = 2, lwd = 3)
-        graphics::axis(side = 1, labels = paste0("t-", (nrow(pointmatrix) - 1):0), at = 1:nrow(pointmatrix))  
+        graphics::axis(side = 1, labels = paste0("t-", (nrow(pointmatrix) - 1):0), 
+                       at = 1:nrow(pointmatrix))  
       } else
       {
         graphics::matplot(pointmatrix, type = "l", col = 1:ncol(pointmatrix), 
                           lty = 1, ylab = ylab, xaxt = "n", ...)
-        graphics::axis(side = 1, labels = paste0("t-", (nrow(pointmatrix) - 1):0), at = 1:nrow(pointmatrix))  
+        graphics::axis(side = 1, labels = paste0("t-", (nrow(pointmatrix) - 1):0), 
+                       at = 1:nrow(pointmatrix))  
       }
       
     } else
