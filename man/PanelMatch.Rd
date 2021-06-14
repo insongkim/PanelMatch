@@ -169,7 +169,6 @@ PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                          covs.formula = ~ tradewb, 
                          size.match = 5, qoi = "att",
                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
-# Running multiple configurations at once REMOVED FOR NOW...
 
 
 }

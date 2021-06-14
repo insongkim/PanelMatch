@@ -11,7 +11,7 @@ get_set_treatment_effects(pm.obj, data.in, lead)
 
 \item{data.in}{data.frame with the original data}
 
-\item{lead}{integer indicating the time period in the future for which the treatment effect size will be calculated. Calculations will be made for the period t + lead, where t is the time of treatment.}
+\item{lead}{integer (or integer vector) indicating the time period(s) in the future for which the treatment effect size will be calculated. Calculations will be made for the period t + lead, where t is the time of treatment. If more than one lead value is provided, then calculations will be performed for each value.}
 }
 \description{
 Calculates the treatment effect size at the matched set level
