@@ -396,13 +396,20 @@ calculate_set_effects <- function(pm.obj, data.in, lead)
     msets <- pm.obj[["atc"]]
     id.var <- attributes(msets)$id.var
     t.var <- attributes(msets)$t.var
-  } else
+  } else if (identical(attr(pm.obj, "qoi"), "ate"))
   {
     msets <- pm.obj[["att"]]
     msets.atc <- pm.obj[["atc"]]
     id.var <- attributes(msets)$id.var
     t.var <- attributes(msets)$t.var
     
+  } else if (identical(attr(pm.obj, "qoi"), "art"))
+  {
+    msets <- pm.obj[["art"]]
+    id.var <- attributes(msets)$id.var
+    t.var <- attributes(msets)$t.var
+  } else {
+    stop("invalid qoi")
   }
   
   rownames(data.in) <- paste0(data.in[, id.var], ".", data.in[, t.var])
@@ -410,7 +417,8 @@ calculate_set_effects <- function(pm.obj, data.in, lead)
   get_ind_effects <- function(mset, data_in, 
                               lead.val,
                               mset.name,
-                              outcome)
+                              outcome, 
+                              use.abs.value = FALSE)
   {
     
     if ( identical(length(mset), 0L)) return(NA)
@@ -429,7 +437,9 @@ calculate_set_effects <- function(pm.obj, data.in, lead)
     treat.diff <- data_in[t.future.lookup, outcome] - data_in[t.past.lookup, outcome]
     
     ind.effects <- treat.diff - sum(attr(mset, "weights") * control.diffs)
-    ind.effects <- ind.effects / attr(mset, "treatment.change")
+    denom <- attr(mset, "treatment.change")
+    if (use.abs.value) denom <- abs(denom)
+    ind.effects <- ind.effects / denom
     return(ind.effects)
     
   }
@@ -470,6 +480,17 @@ calculate_set_effects <- function(pm.obj, data.in, lead)
     return(list(att = effects,
                 atc = effects.atc))
     
+  } else if (identical(attr(pm.obj, "qoi"), "art"))
+  {
+    effects <- mapply(FUN = get_ind_effects,
+                      mset = msets,
+                      mset.name = names(msets),
+                      MoreArgs = list(lead.val = lead,
+                                      data_in = data.in,
+                                      outcome = attributes(pm.obj)[["outcome.var"]],
+                                      use.abs.value = TRUE),
+                      SIMPLIFY = TRUE)
+    return(effects)
   } else
   {
     stop("invalid qoi")
