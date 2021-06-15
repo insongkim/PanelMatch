@@ -234,9 +234,9 @@ prepareData <- function(data.in, lead, sets.att = NULL,
                         sets.atc = NULL, continuous.treatment,
                         qoi.in, dependent.variable)
 {
-  if (qoi.in  == "att" | qoi.in == "ate") 
+  if ( identical(qoi.in, "att") || identical(qoi.in, "art") || identical(qoi.in, "ate")) 
   {
-    
+    if (!identical(qoi.in, "ate")) qoi.t <- qoi.in
     for (j in lead)
     {
       
@@ -244,13 +244,14 @@ prepareData <- function(data.in, lead, sets.att = NULL,
                             continuous.treatment = continuous.treatment)
       data.in = merge(x = data.in, y = dense.wits, all.x = TRUE, 
                    by.x = colnames(data.in)[1:2], by.y = c("id", "t"))
-      colnames(data.in)[length(data.in)] <- paste0("Wit_att", j)
+      colnames(data.in)[length(data.in)] <- paste0("Wit_", qoi.t, j)
       data.in[is.na(data.in[, length(data.in)]), length(data.in)] <- 0 #replace NAs with zeroes
     }
     
-    data.in$dit_att <- getDits(matched_sets = sets.att, data = data.in)
-    colnames(data.in)[length(data.in)] <- "dits_att"
-    data.in$`Wit_att-1` <- 0
+    data.in[, paste0("dit_", qoi.t)] <- getDits(matched_sets = sets.att, 
+                                                data = data.in)
+    colnames(data.in)[length(data.in)] <- paste0("dits_", qoi.t)
+    data.in[, paste0("Wit_", qoi.t, "-1")] <- 0
     
   } 
   if (qoi.in == "atc" | qoi.in == "ate") 
@@ -289,8 +290,11 @@ calculateEstimates <- function(qoi.in, data.in, lead,
                                att.sets,
                                atc.sets)
 { 
-  if ( identical(qoi.in, "att") || identical(qoi.in, "atc") ) 
+  if ( identical(qoi.in, "att") || 
+       identical(qoi.in, "atc") ||
+       identical(qoi.in, "art")) 
   {
+
     col.idx <- sapply(lead, function(x) paste0("Wit_", qoi.in, x))
     x.in <- data.in[, col.idx, drop = FALSE]
     y.in <- data.in[c(outcome.variable)][,1]
@@ -321,7 +325,7 @@ calculateEstimates <- function(qoi.in, data.in, lead,
       # make new data
       clusters <- unique(data.in[, unit.id.variable])
       units <- sample(clusters, size = length(clusters), replace = TRUE)
-      if (identical(qoi.in, "att"))
+      if (identical(qoi.in, "att") || identical(qoi.in, "art"))
       {
         treated.unit.ids <- att.treated.unit.ids
       } else {
@@ -347,7 +351,7 @@ calculateEstimates <- function(qoi.in, data.in, lead,
       coefs[k,] <- at__new
     }
     
-    if (identical(qoi.in, "att"))
+    if (identical(qoi.in, "att") || identical(qoi.in, "art"))
     {
       sets <- att.sets
     } else {

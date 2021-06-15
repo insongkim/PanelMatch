@@ -227,9 +227,11 @@ panel_estimate <- function(sets,
   
   if (any(table(data[, unit.id]) != max(table(data[, unit.id]))))
   {
-    testmat <- data.table::dcast(data.table::as.data.table(data), formula = paste0(unit.id, "~", time.id),
+    testmat <- data.table::dcast(data.table::as.data.table(data), 
+                                 formula = paste0(unit.id, "~", time.id),
                                  value.var = treatment)
-    d <- data.table::melt(data.table(testmat), id = unit.id, variable = time.id, value = treatment,
+    d <- data.table::melt(data.table(testmat), id = unit.id, 
+                          variable = time.id, value = treatment,
                           variable.factor = FALSE, value.name = treatment)
     d <- data.frame(d)[,c(1,2)]
     class(d[, 2]) <- "integer"
@@ -251,9 +253,9 @@ panel_estimate <- function(sets,
     sets.atc <- sets
     sets.att <- NULL
   }
-  if (identical(qoi, "att"))
+  if (identical(qoi, "att") || identical(qoi, "art"))
   {
-    sets.att <- sets
+    sets.att <- sets #art = att from here on out
     sets.atc <- NULL
   }
   if (qoi == "ate")
@@ -262,11 +264,11 @@ panel_estimate <- function(sets,
     sets.atc <- temp.sets$atc
   }
   
-  if (qoi == "att" | qoi == "ate") 
+  if (qoi == "att" | qoi == "ate" | qoi == "art") 
   {
     
     treated.unit.ids.att <- as.numeric(sub("\\..*", "", names(sets.att)))
-    if (identical(qoi, "att")) treated.unit.ids.atc <- NULL
+    if (identical(qoi, "att") || identical(qoi, "art")) treated.unit.ids.atc <- NULL
   } 
   if (qoi == "atc" | qoi == "ate") 
   {

@@ -230,6 +230,21 @@ test_that("(ATC) PanelEstimate Runs", {
   
 })
 
+test_that("(ART) PanelEstimate Runs", {
+  qoi_ <- "art"
+  pm1 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
+                    treatment = "dem", refinement.method = "mahalanobis",
+                    data = dem, match.missing = FALSE, covs.formula = ~ I(lag(y, 1:4)) + I(lag(tradewb, 1:4)),
+                    size.match = 5, qoi = qoi_,
+                    outcome.var = "y",
+                    lead = 0:3, forbid.treatment.reversal = FALSE)
+  
+  pe.results <- PanelEstimate(pm1, data = dem)
+  comp.results <-  c(5.2177188648897,8.02138564165901,8.75646876914828,8.12399471507353)
+  expect_equivalent(pe.results$estimates, comp.results)
+  
+})
+
 
 test_that("(ATE) PanelEstimate Runs", {
   qoi_ <- "ate"

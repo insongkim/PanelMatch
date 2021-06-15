@@ -280,9 +280,10 @@ panel_match <- function(lag, time.id, unit.id, treatment,
     # data <- make.pbalanced(data, balance.type = "fill", index = c(unit.id, time.id))
   }
   check_time_data(data, time.id)
-  if(!all(qoi %in% c("att", "atc", "ate"))) stop("please choose a valid qoi")
+  if (!all(qoi %in% c("att", "atc", "ate", "art"))) stop("please choose a valid qoi")
+  if (!is.null(continuous.treatment.info) && !identical(qoi, "att")) stop('only att is supported for continuous treatment')
   
-  if(!forbid.treatment.reversal & all(refinement.method %in% c("CBPS.msm.weight", "ps.msm.weight")))
+  if (!forbid.treatment.reversal & all(refinement.method %in% c("CBPS.msm.weight", "ps.msm.weight")))
   {
     stop("please set forbid.treatment.reversal to TRUE for msm methods")
   }
@@ -324,18 +325,25 @@ panel_match <- function(lag, time.id, unit.id, treatment,
     }  
   }
   
-  if(qoi == "atc")
+  if(qoi == "atc" || qoi == "art")
   {
     if(is.null(continuous.treatment.info))
     {
       ordered.data[, treatment] <- ifelse(ordered.data[, treatment] == 1,0,1) #flip the treatment variables   
     }
     
-    msets <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data, 
-                                match.missing, covs.formula, verbose, lead = lead, outcome.var = outcome.var, 
-                                forbid.treatment.reversal = forbid.treatment.reversal, qoi = qoi, matching = matching,
-                                exact.matching.variables = exact.match.variables, listwise.deletion = listwise.delete,
-                                use.diag.covmat = use.diagonal.variance.matrix, caliper.formula = caliper.formula, 
+    msets <- perform_refinement(lag = lag, time.id = time.id, unit.id = unit.id, 
+                                treatment = treatment, 
+                                refinement.method = refinement.method,
+                                size.match = size.match, ordered.data = ordered.data, 
+                                match.missing = match.missing, covs.formula = covs.formula,
+                                verbose = verbose, lead = lead, outcome.var = outcome.var, 
+                                forbid.treatment.reversal = forbid.treatment.reversal, 
+                                qoi = qoi, matching = matching,
+                                exact.matching.variables = exact.match.variables, 
+                                listwise.deletion = listwise.delete,
+                                use.diag.covmat = use.diagonal.variance.matrix, 
+                                caliper.formula = caliper.formula, 
                                 continuous.treatment.info = continuous.treatment.info)
     #msets <- decode_index(msets, unit.index.map, og.unit.id)
     if(!matching & match.missing)
@@ -343,14 +351,14 @@ panel_match <- function(lag, time.id, unit.id, treatment,
       attr(msets, "lag") <- old.lag
     }
 
-  
-    pm.obj <- list("atc" = msets)
+    pm.obj <- list()
+    pm.obj[[qoi]] <- msets
     class(pm.obj) <- "PanelMatch"
     attr(pm.obj, "qoi") <- qoi
     attr(pm.obj, "outcome.var") <- outcome.var
     attr(pm.obj, "lead") <- lead
     attr(pm.obj, "forbid.treatment.reversal") <- forbid.treatment.reversal
-    if(!is.null(continuous.treatment.info))
+    if (!is.null(continuous.treatment.info))
     {
       attr(pm.obj, "continuous.treatment") <- TRUE
       attr(pm.obj, "continous.treatment.direction") <- continuous.treatment.info[["direction"]]
@@ -358,14 +366,21 @@ panel_match <- function(lag, time.id, unit.id, treatment,
       attr(pm.obj, "continuous.treatment") <- FALSE
     }
     return(pm.obj)
-  } else if(qoi == "att")
+  } else if (qoi == "att")
   { #note that ordered.data at this point is in column order: unit, time, treatment, everything else
     
-    msets <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data,
-                                match.missing, covs.formula, verbose, lead = lead, outcome.var = outcome.var, 
-                                forbid.treatment.reversal = forbid.treatment.reversal, qoi = qoi, matching = matching,
-                                exact.matching.variables = exact.match.variables, listwise.deletion = listwise.delete,
-                                use.diag.covmat = use.diagonal.variance.matrix, caliper.formula = caliper.formula,
+    msets <- perform_refinement(lag = lag, time.id = time.id, unit.id = unit.id, 
+                                treatment = treatment, 
+                                refinement.method = refinement.method,
+                                size.match = size.match, ordered.data = ordered.data, 
+                                match.missing = match.missing, covs.formula = covs.formula,
+                                verbose = verbose, lead = lead, outcome.var = outcome.var, 
+                                forbid.treatment.reversal = forbid.treatment.reversal, 
+                                qoi = qoi, matching = matching,
+                                exact.matching.variables = exact.match.variables, 
+                                listwise.deletion = listwise.delete,
+                                use.diag.covmat = use.diagonal.variance.matrix, 
+                                caliper.formula = caliper.formula, 
                                 continuous.treatment.info = continuous.treatment.info)
     
     #msets <- decode_index(msets, unit.index.map, og.unit.id)
@@ -373,8 +388,6 @@ panel_match <- function(lag, time.id, unit.id, treatment,
     {
       attr(msets, "lag") <- old.lag
     }
-    
-
     
     pm.obj <- list("att" = msets)
     class(pm.obj) <- "PanelMatch"
@@ -398,11 +411,18 @@ panel_match <- function(lag, time.id, unit.id, treatment,
       qoi <- "att"
     }
     
-    msets <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data, 
-                                match.missing, covs.formula, verbose, lead = lead, outcome.var = outcome.var, 
-                                forbid.treatment.reversal = forbid.treatment.reversal, qoi = qoi, matching = matching,
-                                exact.matching.variables = exact.match.variables, listwise.deletion = listwise.delete,
-                                use.diag.covmat = use.diagonal.variance.matrix, caliper.formula = caliper.formula,
+    msets <- perform_refinement(lag = lag, time.id = time.id, unit.id = unit.id, 
+                                treatment = treatment, 
+                                refinement.method = refinement.method,
+                                size.match = size.match, ordered.data = ordered.data, 
+                                match.missing = match.missing, covs.formula = covs.formula,
+                                verbose = verbose, lead = lead, outcome.var = outcome.var, 
+                                forbid.treatment.reversal = forbid.treatment.reversal, 
+                                qoi = qoi, matching = matching,
+                                exact.matching.variables = exact.match.variables, 
+                                listwise.deletion = listwise.delete,
+                                use.diag.covmat = use.diagonal.variance.matrix, 
+                                caliper.formula = caliper.formula, 
                                 continuous.treatment.info = continuous.treatment.info)
     
     if (is.null(continuous.treatment.info))
@@ -413,12 +433,19 @@ panel_match <- function(lag, time.id, unit.id, treatment,
     {
       qoi <- "atc"
     }
-    msets2 <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data,
-                                 match.missing, covs.formula, verbose, lead = lead, outcome.var = outcome.var, 
-                                 forbid.treatment.reversal = forbid.treatment.reversal, qoi = qoi, matching = matching,
-                                 exact.matching.variables = exact.match.variables, listwise.deletion = listwise.delete,
-                                 use.diag.covmat = use.diagonal.variance.matrix, caliper.formula = caliper.formula,
-                                 continuous.treatment.info = continuous.treatment.info)
+    msets2 <- perform_refinement(lag = lag, time.id = time.id, unit.id = unit.id, 
+                                treatment = treatment, 
+                                refinement.method = refinement.method,
+                                size.match = size.match, ordered.data = ordered.data, 
+                                match.missing = match.missing, covs.formula = covs.formula,
+                                verbose = verbose, lead = lead, outcome.var = outcome.var, 
+                                forbid.treatment.reversal = forbid.treatment.reversal, 
+                                qoi = qoi, matching = matching,
+                                exact.matching.variables = exact.match.variables, 
+                                listwise.deletion = listwise.delete,
+                                use.diag.covmat = use.diagonal.variance.matrix, 
+                                caliper.formula = caliper.formula, 
+                                continuous.treatment.info = continuous.treatment.info)
     
     if (!is.null(continuous.treatment.info)) qoi <- "ate"
     
@@ -441,7 +468,7 @@ panel_match <- function(lag, time.id, unit.id, treatment,
     attr(pm.obj, "lead") <- lead
     attr(pm.obj, "forbid.treatment.reversal") <- forbid.treatment.reversal
     
-    if(!is.null(continuous.treatment.info))
+    if (!is.null(continuous.treatment.info))
     {
       attr(pm.obj, "continuous.treatment") <- TRUE
       attr(pm.obj, "continous.treatment.direction") <- continuous.treatment.info[["direction"]]
