@@ -524,6 +524,7 @@ List clean_leads_cpp(Rcpp::NumericMatrix subset_data,
   }
   else
   {
+    Rcpp::stop("No viable treated units due to missing data");
     //note that no treatments are viable
   }
   if(sets.length() > 0)
