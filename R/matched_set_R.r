@@ -119,16 +119,8 @@ get.matchedsets <- function(t, id, data, L, t.column, id.column, treatedvar,
     #dont think these are necessary anymore? since we balance up front...
     compmat <- data.table::dcast(data.table::as.data.table(d), formula = paste0(id.column, "~", t.column),
                                  value.var = treatedvar) #reshape the data so each row corresponds to a unit, columns specify treatment over time
-    # d <- data.table::melt(compmat, id = id.column, variable = t.column, value = treatedvar,
-    #                       variable.factor = FALSE, value.name = treatedvar)
-    # #ensuring that we have integers
-    # #newdata <- as.integer(as.character(unlist(d[, ..t.column])))
-    # newdata <- as.integer(d[, get(t.column)])
-    # d[, (t.column) := newdata]
-    # #d <-  d[order(d[,..id.column], d[,..t.column]), ] #cast -> melt fills in missing data with NA's but order is not preserved, so second sort necessary
-    # d <- d[order(d[, get(id.column)], d[,get(t.column)]), ]
-    # d <- data.matrix(d)
-    # ## try deleting all of the above up to note above
+    
+    
     if (match.on.missingness)
     {
       d[is.na(d[,treatedvar]), treatedvar] <- -1
@@ -172,12 +164,7 @@ get.matchedsets <- function(t, id, data, L, t.column, id.column, treatedvar,
     return(named.sets)
   } else # continuous
   {
-    ##convert to caliper formula here...
-    ## NOT ALLOWING THE AVERAGE STYLE CALCULATION
-    # continuous.treatment.formula <- as.formula(paste0("~ I(caliper(", treatedvar,",", "'", continuous.treatment.info[["method"]], "'",
-    #                                                   ",", continuous.treatment.info[["matching.threshold"]],
-    #                                                   ",", "'",continuous.treatment.info[["type"]],"'",
-    #                                                   ",", "'", continuous.treatment.info[["units"]],"'" ,"))"))
+    
     if ( !all(c("matching.threshold", "units") %in% names(continuous.treatment.info)) ) stop("Please provide 'matching.threshold', and 'units' named 
                                                                                                     items in a list to continuous.treatment.info argument")
     continuous.treatment.formula <- as.formula(paste0("~ I(caliper(", treatedvar,",", "'", "max", "'",

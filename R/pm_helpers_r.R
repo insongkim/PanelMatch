@@ -10,7 +10,8 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
                                network.caliper.info = NULL,
                                network.refinement.info = NULL,
                                adjacency.matrix,
-                               neighborhood.degree)
+                               neighborhood.degree,
+                               placebo.test = FALSE)
 {
 
   if ( !is.null(mset.object) ) stop('This should never run!')
@@ -72,7 +73,46 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
   }
 
   msets <- clean_leads(msets, ordered.data, max(lead), time.id, unit.id, outcome.var)
-  if(forbid.treatment.reversal)
+  
+  
+  #browser()
+  if (placebo.test)
+  {
+    treated.ts <- as.integer(sub(".*\\.", "", names(msets)))
+    treated.ids <- as.integer(sub("\\..*", "", names(msets)))
+    
+    rownames(ordered.data) <- paste0(ordered.data[, unit.id],".", ordered.data[, time.id])
+    
+    for (i in 1:length(msets)) {
+      cur.id <- treated.ids[i]
+      cur.t <- treated.ts[i]
+      to.check <- paste0(cur.id, ".", (cur.t - lag):(cur.t - 1))
+      
+      if ( any(is.na(ordered.data[to.check, outcome.var])) )
+      {
+        
+        names(msets)[i] <- "remove"
+      } else
+      {
+        for (j in 1:length(msets[[i]])) {
+          to.check <- paste0(msets[[i]][j], ".", (cur.t - lag):(cur.t - 1))
+          if ( any(is.na(ordered.data[to.check, outcome.var])) )
+          {
+            msets[[i]][j] <- NA
+          }
+        }
+      }
+    }
+    #browser()
+    msets <- msets[names(msets) != "remove"]
+    
+    for (i in 1:length(msets)) {
+      msets[[i]] <- msets[[i]][!is.na(msets[[i]])]
+    }
+    msets <- msets[sapply(msets, length) > 0 ]
+  }
+  
+  if (forbid.treatment.reversal)
   {
     msets <- enforce_lead_restrictions(msets, ordered.data, max(lead), time.id, unit.id, treatment.var = treatment)
   }
@@ -137,7 +177,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
         idx <- sapply(e.sets, function(x) attr(x, "treatment.change")) >= 0
         e.sets <- e.sets[idx]  
       }
-    } else if (continuous.treatment.info[["direction"]] != "both")
+    } else 
     {
       stop("direction not well specified")
     }  
@@ -316,19 +356,9 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
     if(qr(pooled)$rank != ncol(pooled))
     {
 
-      # print("Data used to generate propensity scores is not linearly independent. Calculations cannot be completed.
-      #       Would you like to save the problematic matrix to file for manual inspection? File and variable will be saved as 'problematic_matrix.rda'. ")
-      # inkey <- readline("Press 'y' to save and any other key to do nothing: ")
-      # if(inkey == "y")
-      # {
-      #   problematic_matrix <- pooled
-      #   save(problematic_matrix, file = "problematic_matrix.rda")
-      #   stop("PanelMatch terminated")
-      # }
-      # else
-      # {
+
       stop("Error: Provided data is not linearly independent so calculations cannot be completed. Please check the data set for any redundant, unnecessary, or problematic information.")
-      #}
+      
 
     }
     if(refinement.method == "CBPS.weight" | refinement.method == "CBPS.match")

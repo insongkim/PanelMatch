@@ -189,14 +189,16 @@ panel_estimate <- function(sets,
                            data,
                            number.iterations = 1000,
                            df.adjustment = FALSE,
-                           confidence.level = .95
+                           confidence.level = .95,
+                           placebo.test = FALSE,
+                           placebo.lead = NULL
                            )
 {
-  
+  #browser()
   lead <- attr(sets, "lead")
   outcome.variable <- attr(sets, "outcome.var")
   continuous.treatment <- attr(sets,'continuous.treatment')
-  direction.treatment <- attr(sets, "continuous.treatment.direction")
+  
   if (class(sets) != "PanelMatch") stop("sets parameter is not a PanelMatch object")
   qoi <- attr(sets, "qoi")
   
@@ -204,8 +206,7 @@ panel_estimate <- function(sets,
   #this is just for meta data extraction
   if (qoi == "ate")
   {
-    temp.sets <- sets
-    sets <- sets[["att"]] #just picking one of the two because they should be the same
+    stop("qoi = ate no longer supported")
   }
   else
   {
@@ -218,7 +219,7 @@ panel_estimate <- function(sets,
   treatment <- attr(sets, "treatment.var")
   unit.id <- attr(sets, "id.var")
   time.id <- attr(sets, "t.var")
-  
+  lag.in <- attr(sets, "lag")
   
   if (!"data.frame" %in% class(data)) stop("please convert data to data.frame class")
   
@@ -258,24 +259,20 @@ panel_estimate <- function(sets,
     sets.att <- sets #art = att from here on out
     sets.atc <- NULL
   }
-  if (qoi == "ate")
-  {
-    sets.att <- temp.sets$att 
-    sets.atc <- temp.sets$atc
-  }
   
-  if (qoi == "att" | qoi == "ate" | qoi == "art") 
+  if (qoi == "att" | qoi == "art") 
   {
     
     treated.unit.ids.att <- as.numeric(sub("\\..*", "", names(sets.att)))
     if (identical(qoi, "att") || identical(qoi, "art")) treated.unit.ids.atc <- NULL
   } 
-  if (qoi == "atc" | qoi == "ate") 
+  if (qoi == "atc")
   {
     treated.unit.ids.atc <- as.numeric(sub("\\..*", "", names(sets.atc)))
     if (identical(qoi, "att")) treated.unit.ids.att <- NULL
   } 
   
+  browser()
   
   data <- prepareData(data.in = data, lead = lead,
                       sets.att = sets.att, sets.atc = sets.atc,
@@ -283,7 +280,27 @@ panel_estimate <- function(sets,
                       qoi.in = qoi,
                       dependent.variable = dependent)
   
-  pe.results <- calculateEstimates(qoi.in = qoi,
+  if (placebo.test)
+  {
+    
+    pe.results <- calculatePlaceboEstimates(qoi.in = qoi,
+                                            data.in = data,
+                                            lead = lead,
+                                            number.iterations = number.iterations,
+                                            att.treated.unit.ids = treated.unit.ids.att,
+                                            atc.treated.unit.ids = treated.unit.ids.atc,
+                                            outcome.variable = dependent,
+                                            unit.id.variable = unit.id,
+                                            confidence.level = confidence.level,
+                                            att.sets = sets.att,
+                                            atc.sets = sets.atc,
+                                            lag = lag.in,
+                                            placebo.lead = placebo.lead)
+  } else {
+   
+  
+  
+    pe.results <- calculateEstimates(qoi.in = qoi,
                                    data.in = data,
                                    lead = lead,
                                    number.iterations = number.iterations,
@@ -293,7 +310,9 @@ panel_estimate <- function(sets,
                                    unit.id.variable = unit.id,
                                    confidence.level = confidence.level,
                                    att.sets = sets.att,
-                                   atc.sets = sets.atc)
+                                   atc.sets = sets.atc,
+                                   lag = lag.in)
+  }
   return(pe.results)
   
   

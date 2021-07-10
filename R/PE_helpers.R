@@ -132,7 +132,12 @@ pcs <- function(sets, lead.in,
 
   num.empty <- sum(!sapply(sets, length) > 0)
   set.nums <- rep(0:(length(sets) - num.empty - 1), (lsets[lsets != 0] * (2)))
-  data.frame(t = ts, id = ids, weight = wts, set.number = set.nums)
+  # if (lead.in < 0)
+  # {
+  #   wts <- wts * -1
+  # }
+  dtf <- data.frame(t = ts, id = ids, weight = wts, set.number = set.nums)
+  return(dtf)
 }
 # refer to the description above -- pts works on treated units ("Prepare Treated unitS)
 pts <- function(sets, lead.in, 
@@ -156,7 +161,11 @@ pts <- function(sets, lead.in,
   
   wts <- rep(c(-1, 1), length(sets) - num.empty)
   
-  set.nums <- rep(0:(length(sets) - num.empty -1 ), rep(2, length(sets) - num.empty ))
+  set.nums <- rep(0:(length(sets) - num.empty - 1 ), rep(2, length(sets) - num.empty ))
+  # if (lead.in < 0)
+  # {
+  #   wts <- wts * -1
+  # }
   ldf = data.frame(t = ts, id = tids, weight = wts, set.number = set.nums)
   if (continuous.treatment)
   {
@@ -203,7 +212,7 @@ getWits <- function(matched_sets, lead,
 
 
 # returns a vector of dit values, as defined in the paper. They should be in the same order as the data frame containing the original problem data.
-getDits <- function(matched_sets, data, continuousTreatment = FALSE)
+getDits <- function(matched_sets, data)
 {
   
   t.var <- attr(matched_sets, "t.var")
@@ -214,13 +223,7 @@ getDits <- function(matched_sets, data, continuousTreatment = FALSE)
   nms <- names(msets)
   refnames <- paste0(data[, id.var], ".", data[, t.var])
   dit.vect <- get_dits(refnames, nms)
-  if (continuousTreatment)
-  {
-    std.den <- unlist(lapply(matched_sets, 
-                             function(x) attr(x, "treatment.change")))
-    names(std.den) <- NULL
-    dit.vect[dit.vect > 0] <- dit.vect[dit.vect > 0] / std.den #should be the same length
-  }
+  
   return(dit.vect)
 }
 
@@ -229,12 +232,19 @@ equality_four <- function(x, y, z){
     return(sum(x*y)/sum(z))
 } 
 
+equality_four_placebo <- function(x, y, z){
+  
+  y[is.na(y)] <- 0
+  res <- colSums(x * y) / sum(z)
+  return(res)
+} 
+
 
 prepareData <- function(data.in, lead, sets.att = NULL,
                         sets.atc = NULL, continuous.treatment,
                         qoi.in, dependent.variable)
 {
-  if ( identical(qoi.in, "att") || identical(qoi.in, "art") || identical(qoi.in, "ate")) 
+  if ( identical(qoi.in, "att") || identical(qoi.in, "art")) 
   {
     if (!identical(qoi.in, "ate")) qoi.t <- qoi.in
     for (j in lead)
@@ -254,7 +264,7 @@ prepareData <- function(data.in, lead, sets.att = NULL,
     data.in[, paste0("Wit_", qoi.t, "-1")] <- 0
     
   } 
-  if (qoi.in == "atc" | qoi.in == "ate") 
+  if (identical(qoi.in, "atc")) 
   {
     
     for (j in lead)
@@ -280,6 +290,65 @@ prepareData <- function(data.in, lead, sets.att = NULL,
   
 }
 
+
+preparePlaceboTestData <- function(data.in, lead, sets.att = NULL,
+                                   sets.atc = NULL, continuous.treatment,
+                                   qoi.in, dependent.variable,
+                                   time.var,
+                                   id.var,
+                                   placebo.test = TRUE,
+                                   placebo.lag = NULL)
+{
+  
+  # lag DV by one
+  browser()
+  data.in$lag.dv <- c(NA, data.in[, dependent.variable][-nrow(data.in)])
+  data.in$lag.dv[which(!duplicated(data.in[,id.var]))] <- NA
+  
+  data.in[, dependent.variable] <- data.in$lag.dv
+  data.in <- data.in[, -ncol(data.in)] #remove lag.dv column
+  
+  if ( identical(qoi.in, "att") || identical(qoi.in, "art")) 
+  {
+    if (!identical(qoi.in, "ate")) qoi.t <- qoi.in
+    
+    for (lag.val in 2:placebo.lag) 
+    {
+      j <- lag.val - 2 #set lead
+      dense.wits <- getWits(lead = j, data = data.in, matched_sets = sets.att, 
+                            continuous.treatment = continuous.treatment)
+      data.in = merge(x = data.in, y = dense.wits, all.x = TRUE, 
+                      by.x = colnames(data.in)[1:2], by.y = c("id", "t"))
+      colnames(data.in)[length(data.in)] <- paste0("Wit_", qoi.t, j)
+      data.in[is.na(data.in[, length(data.in)]), length(data.in)] <- 0 #replace NAs with zeroes
+      
+      
+      data.in$lag.dv <- c(NA, data.in[, dependent.variable][-nrow(data.in)])
+      data.in$lag.dv[which(!duplicated(data.in[,id.var]))] <- NA
+      
+      data.in[, dependent.variable] <- data.in$lag.dv
+      data.in <- data.in[, -ncol(data.in)] #remove lag.dv column
+      
+    }
+    
+    data.in[, paste0("dit_", qoi.t)] <- getDits(matched_sets = sets.att, 
+                                                data = data.in)
+    colnames(data.in)[length(data.in)] <- paste0("dits_", qoi.t)
+    data.in[, paste0("Wit_", qoi.t, "-1")] <- 0
+    
+  } 
+  if (identical(qoi.in, "atc")) 
+  {
+    stop("atc not supported for placebo tests")
+  } 
+  #NOTE THE COMMENT/ASSUMPTION
+  
+  data.in[, dependent.variable][is.na(data.in[, dependent.variable])] <- 0 #replace the NAs with zeroes. 
+  #I think this is ok because the dits should always be zero for these, so the value is irrelevant.
+  return(data.in)
+  
+}
+
 calculateEstimates <- function(qoi.in, data.in, lead,
                                number.iterations,
                                att.treated.unit.ids,
@@ -288,7 +357,9 @@ calculateEstimates <- function(qoi.in, data.in, lead,
                                unit.id.variable,
                                confidence.level,
                                att.sets,
-                               atc.sets)
+                               atc.sets,
+                               placebo.test = FALSE,
+                               lag)
 { 
   if ( identical(qoi.in, "att") || 
        identical(qoi.in, "atc") ||
@@ -307,17 +378,21 @@ calculateEstimates <- function(qoi.in, data.in, lead,
     #do coefficient flip for atc
     if (identical(qoi.in, "atc")) o.coefs <- -o.coefs
     
-    if (length(lead[lead < 0]) > 1) 
+    if (all(lead >= 0)) #not placebo/regular case
     {
-      names(o.coefs)[(length(o.coefs) - max(lead[lead >= 0])):length(o.coefs)] <- 
-        sapply(lead[lead >= 0], function(x) paste0("t+", x))
-      names(o.coefs)[(length(o.coefs) - length(lead) + 1):length(lead[lead < 0])] <- 
-        sapply(lead[lead < 0], function(x) paste0("t", x))
-      
-    } else 
-    {
-      names(o.coefs) <- sapply(lead, function(x) paste0("t+", x))
+      if (length(lead[lead < 0]) > 1) 
+      {
+        names(o.coefs)[(length(o.coefs) - max(lead[lead >= 0])):length(o.coefs)] <- 
+          sapply(lead[lead >= 0], function(x) paste0("t+", x))
+        names(o.coefs)[(length(o.coefs) - length(lead) + 1):length(lead[lead < 0])] <- 
+          sapply(lead[lead < 0], function(x) paste0("t", x))
+        
+      } else 
+      {
+        names(o.coefs) <- sapply(lead, function(x) paste0("t+", x))
+      }
     }
+    
     coefs <- matrix(NA, nrow = number.iterations, ncol = length(lead))
     
     for (k in 1:number.iterations) 
@@ -370,95 +445,115 @@ calculateEstimates <- function(qoi.in, data.in, lead,
     class(z) <- "PanelEstimate"
     return(z)
     
-  } else if (qoi.in == "ate") 
+  } else {
+    stop("invalid qoi")
+   
+  }
+}
+
+calculatePlaceboEstimates <- function(qoi.in, data.in, lead,
+                                      number.iterations,
+                                      att.treated.unit.ids,
+                                      atc.treated.unit.ids,
+                                      outcome.variable,
+                                      unit.id.variable,
+                                      confidence.level,
+                                      att.sets,
+                                      atc.sets,
+                                      placebo.test = FALSE,
+                                      lag,
+                                      placebo.lead)
+{ 
+  if ( identical(qoi.in, "att") || 
+       identical(qoi.in, "atc") ||
+       identical(qoi.in, "art")) 
   {
-    col.idx <- sapply(lead, function(x) paste0("Wit_", "att", x))
+    
+    col.idx <- sapply(placebo.lead - 2, function(x) paste0("Wit_", qoi.in, x))
     x.in <- data.in[, col.idx, drop = FALSE]
-    y.in <- data.in[c(outcome.variable)][,1]
-    z.in <- data.in[, paste0("dits_", "att")]
     
-    o.coefs_att <-  sapply(data.in[, col.idx, drop = FALSE],
-                           equality_four,
-                           y = y.in,
-                           z = z.in)
+    #y.in <- data.in[c(outcome.variable)][,1]
     
-    
-    col.idx <- sapply(lead, function(x) paste0("Wit_", "atc", x))
-    x.in <- data.in[, col.idx, drop = FALSE]
-    y.in <- data.in[c(outcome.variable)][,1]
-    z.in <- data.in[, paste0("dits_", "atc")]
-    
-    o.coefs_atc <-  -sapply(data.in[, col.idx, drop = FALSE],
-                            equality_four,
-                            y = y.in,
-                            z = z.in)
-    
-    sum.att <- sum(data.in$dits_att)
-    sum.atc <- sum(data.in$dits_atc)
-    o.coefs_ate <- ((o.coefs_att * sum.att) + (o.coefs_atc * sum.atc)) / (sum.att + sum.atc)
-    
-    if (length(lead[lead < 0]) > 1) 
+    create.lagged.dfs <- function(d, dv, idx, k)
     {
-      names(o.coefs_ate)[(length(o.coefs_ate) - max(lead[lead >= 0])):length(o.coefs_ate)] <- 
-        sapply(lead[lead >= 0], function(x) paste0("t+", x))
-      names(o.coefs_ate)[(length(o.coefs_ate) - length(lead) + 1):length(lead[lead < 0])] <- 
-        sapply(lead[lead < 0], function(x) paste0("t", x))
-      
-    } else 
-    {
-      names(o.coefs_ate) <- sapply(lead, function(x) paste0("t+", x))
+      d[, paste0(dv, "l", idx)] <- lapply(k, function(x) data.table::shift(d[, dv], n = k, type = "lag"))
+      return(d)
     }
+    y.in <- by(data.in, as.factor(data.in[, unit.id.variable]), 
+               FUN = create.lagged.dfs, 
+               dv = outcome.variable,
+               idx = placebo.lead - 1,
+               k = placebo.lead - 1, 
+               simplify = FALSE)
+    browser()
+    data.in <- do.call(rbind, y.in)
+    y.in <- data.in[, paste0(outcome.variable, "l", (placebo.lead - 1)), drop = FALSE]
+    z.in <- data.in[, paste0("dits_", qoi.in)]
+    
+    o.coefs <- equality_four_placebo(x.in, y.in, z.in)
+    
+    #do coefficient flip for atc
+    if (identical(qoi.in, "atc")) o.coefs <- -o.coefs
+    
     
     coefs <- matrix(NA, nrow = number.iterations, ncol = length(lead))
     
-    for (k in 1:number.iterations) {
+    for (k in 1:number.iterations) 
+    {  
       # make new data
       clusters <- unique(data.in[, unit.id.variable])
-      units <- sample(clusters, 
-                      size = length(clusters), replace = TRUE)
-      while (all(!units %in% att.treated.unit.ids) | all(!units %in% atc.treated.unit.ids)) 
-        #while none of the units are treated units (att and atc), resample
+      units <- sample(clusters, size = length(clusters), replace = TRUE)
+      if (identical(qoi.in, "att") || identical(qoi.in, "art"))
       {
-        units <- sample(clusters, 
-                        size = length(clusters), replace = TRUE)
+        treated.unit.ids <- att.treated.unit.ids
+      } else {
+        treated.unit.ids <- atc.treated.unit.ids
+      }
+      while (all(!units %in% treated.unit.ids)) #while none of the units are treated units, resample
+      {
+        units <- sample(clusters, size = length(clusters), replace = TRUE)
       }
       
       df.bs <- lapply(units, function(x) which(data.in[, unit.id.variable] == x))
       d.sub1 <- data.in[unlist(df.bs),]
       
-      y.in.boot <- d.sub1[,outcome.variable]
-      z.in.boot.att <- d.sub1[, "dits_att"]
-      z.in.boot.atc <- d.sub1[, "dits_atc"]
-      att_new <- sapply(d.sub1[, sapply(lead, function(x) paste0("Wit_att", x)), 
-                               drop = FALSE],
-                        equality_four,
-                        y = y.in.boot,
-                        z = z.in.boot.att)
+      y.in <- d.sub1[,, paste0(outcome.variable, "l", (placebo.lead - 1)), drop = FALSE]
+      z.in <- d.sub1[, paste0("dits_", qoi.in)]
       
-      atc_new <- -sapply(d.sub1[, sapply(lead, function(x) paste0("Wit_atc", x)), 
-                                drop = FALSE],
-                         equality_four,
-                         y = y.in.boot,
-                         z = z.in.boot.atc)
-      coefs[k,] <- (att_new * sum(z.in.boot.att) + atc_new * sum(z.in.boot.atc)) /
-        (sum(z.in.boot.att) + sum(z.in.boot.atc))
-      
-      
+      # at__new <- sapply(d.sub1[, col.idx, 
+      #                           drop = FALSE],
+      #                    equality_four,
+      #                    y = y.in,
+      #                    z = z.in)
+      at__new <- equality_four_placebo(d.sub1[, col.idx, drop = FALSE],
+                            y = y.in,
+                            z = z.in)
+      if (identical(qoi.in, "atc")) at__new <- -at__new
+      coefs[k,] <- at__new
     }
     
+    if (identical(qoi.in, "att") || identical(qoi.in, "art"))
+    {
+      sets <- att.sets
+    } else {
+      sets <- atc.sets
+    }
     
-    z <- list("estimates" = o.coefs_ate,
+    z <- list("estimates" = o.coefs,
               "bootstrapped.estimates" = coefs, 
               "bootstrap.iterations" = number.iterations, 
-              "standard.error" = apply(coefs, 2, sd, na.rm = TRUE),
+              "standard.error" = apply(coefs, 2, sd, na.rm = T),
+              "lag" = lag,
               "lead" = lead, 
               "confidence.level" = confidence.level, 
               "qoi" = qoi.in, 
-              "matched.sets" = list(att.sets, atc.sets))
+              "matched.sets" = sets)
     class(z) <- "PanelEstimate"
-    return(z) 
+    return(z)
+    
+  } else {
+    stop("invalid qoi")
+    
   }
 }
-
-
 

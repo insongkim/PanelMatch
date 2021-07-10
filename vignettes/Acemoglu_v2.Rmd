@@ -1,0 +1,196 @@
+---
+title: "Acemoglu, revisited"
+author: "Adam Rauh"
+date: "5/16/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# ATT
+First, we load and clean the Acemoglu data to include the variables that we will need. 
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+library(PanelMatch)
+#library(dplyr)
+load("/Users/adamrauh/Downloads/lwd-tests/Acemoglu.RData")
+
+par(mfrow = c(1,3))
+
+formula_Ace <- 
+  ~ I(lag(y, 1:4)) + I(lag(Populationages014oftotal, 1:4)) + 
+  I(lag(Populationages1564oftota, 1:4)) + I(lag(unrest, 1:4)) + 
+  I(lag(tradewb, 1:4)) + I(lag(nfagdp, 1:4)) + I(lag(logpop, 1:4))
+
+
+d2$logpop <- 100 * log(d2$PopulationtotalSPPOPTOTL)
+# sdf <- select(d2, wbcode2, wbcode, country_name, dem,
+#               polity, polity2, year, y, Populationages014oftotal, Populationages1564oftota,
+#               unrest, tradewb, nfagdp, logpop)
+
+
+sdf <- d2[, c("wbcode2", "wbcode", "country_name", "dem", 
+              "polity", "polity2", "year", "y", 
+              "Populationages014oftotal", "Populationages1564oftota",
+              "unrest", "tradewb", "nfagdp", "logpop")]
+
+sdf$year <- as.integer(sdf$year)
+```
+
+We can then create a baseline version of the Acemoglu results that calculates the ATT using the binary version of treatment. Substantively, we are estimating the effect of democratization for countries that go from autocracies to democracies. 
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+PM.results.baseline <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
+                                  treatment = "dem", refinement.method = "mahalanobis", 
+                                  data = sdf, covs.formula = formula_Ace,
+                                  size.match = 5, qoi = "att" , outcome.var = "y",
+                                  lead = 0:4, forbid.treatment.reversal = FALSE, 
+                                  use.diagonal.variance.matrix = TRUE)
+pe <- PanelEstimate(sets = PM.results.baseline, data = sdf, number.iterations = 1000)
+
+plot(PM.results.baseline$att, xlim = c(0,100), ylim = c(0, 40), breaks = 20)
+get_covariate_balance(PM.results.baseline$att, data = sdf, 
+                      covariates = c('y', "Populationages014oftotal", "Populationages1564oftota",
+                                     'unrest', 'tradewb', 'nfagdp', 'logpop'),
+                      plot = TRUE, legend = FALSE, ylim = c(-.6, .6))
+
+plot(pe, main = "")
+mtext("Binary ATT (baseline)", side = 3, line = -3, outer = TRUE)
+```
+
+We can also examine the set-level ATT estimates. Let's examine the distribution of set-level estimates at the time of treatment. We can see that our null results at time t = 0 above make sense. Most of our set-level results are also near 0.
+```{r}
+set.effects <- get_set_treatment_effects(pm.obj = PM.results.baseline,
+                          data.in = sdf,
+                          lead = 0)
+hist(unlist(set.effects), xlab = "set-level ATT estimate",
+     main = "Distribution of set-level ATT estimates, F=0")
+```
+
+We can obtain similar results by binarizing polity2 scores, creating 2 groups of countries: those that are democracies and those that are not. We conduct a similar analysis and obtain similar effect sizes as before. 
+```{r}
+sdf$dem2 <- ifelse(sdf$polity2 >= 6, 1, 0)
+
+PM.results.baseline <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
+                                  treatment = "dem2", refinement.method = "mahalanobis", 
+                                  data = sdf, covs.formula = formula_Ace,
+                                  size.match = 5, qoi = "att" , outcome.var = "y",
+                                  lead = 0:4, forbid.treatment.reversal = FALSE, 
+                                  use.diagonal.variance.matrix = TRUE)
+
+plot(PM.results.baseline$att, xlim = c(0,100), ylim = c(0, 30), breaks = 20, 
+     main = "Binary ATT")
+get_covariate_balance(PM.results.baseline$att, data = sdf, 
+                      covariates = c('y', "Populationages014oftotal", "Populationages1564oftota",
+                                     'unrest', 'tradewb', 'nfagdp', 'logpop'),
+                      plot = TRUE, legend = F, ylim = c(-.6, .6))
+
+pe <- PanelEstimate(sets = PM.results.baseline, data = sdf, number.iterations = 1000)
+plot(pe, main = "Binary ATT: polity2", ylim=c(-7,7))
+```
+
+# Leveraging Continuous Treatment
+However, these results do not tell the complete story. We will actually observe that there are two separate scenarios unfolding: Countries that democratize, but do not become democracies experience economic shrinkage. Countries that fully democratize and become democracies experience no growth, but also no shrinkage. 
+
+How can we uncover this? By utilizing the continuous nature of polity2 scores. First, we will use the package to examine the first group of countries: Countries that experience some democratization (ie. their polity2 scores increase by 4 or more), but they never become full democracies (ie. their polity2 scores still remain <= 5 after the shift). 
+```{r}
+continuous.treatment.info <- list(treatment.threshold = 4, 
+                                  method = "max", units = "raw",
+                                  matching.threshold = 4, control.threshold = 4,
+                                  maximum.treatment.value = 5) 
+
+PM.results.cont <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
+                              treatment = "polity2", 
+                              data = sdf, 
+                              refinement.method = "mahalanobis", covs.formula = formula_Ace,
+                              size.match = 5, qoi = "att" , outcome.var = "y",
+                              lead = 0:4, forbid.treatment.reversal = FALSE, use.diagonal.variance.matrix = TRUE,
+                              continuous.treatment.info = continuous.treatment.info)
+plot(PM.results.cont$att, xlim = c(0,100), ylim = c(0, 30), breaks = 20, 
+     main = "treatment change >= +4, max = 5")
+
+get_covariate_balance(PM.results.cont$att, data = sdf, 
+                      covariates = c('y', "Populationages014oftotal", "Populationages1564oftota",
+                                     'unrest', 'tradewb', 'nfagdp', 'logpop', 'polity2'),
+                      plot = TRUE, legend = F, ylim = c(-.6, .6), continuous.treatment = TRUE)
+
+pe <- PanelEstimate(sets = PM.results.cont, data = sdf, number.iterations = 1000)
+plot(pe, main = "Experiences Democratization,\n does not become democracy",
+     ylim = c(-7, 7))
+```
+
+Next, we will examine the second group: countries that democratize (using the same criteria as before), but also experience full democratization (polity2 >= 6 after the polity score shift)
+```{r}
+continuous.treatment.info <- list(treatment.threshold = 4, 
+                                  method = "max", units = "raw",
+                                  matching.threshold = 4, control.threshold = 4,
+                                  minimum.treatment.value = 6) 
+
+PM.results.cont <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
+                              treatment = "polity2", 
+                              data = sdf, 
+                              refinement.method = "mahalanobis", covs.formula = formula_Ace,
+                              size.match = 5, qoi = "att" , outcome.var = "y",
+                              lead = 0:4, forbid.treatment.reversal = FALSE, use.diagonal.variance.matrix = TRUE,
+                              continuous.treatment.info = continuous.treatment.info)
+plot(PM.results.cont$att, xlim = c(0,100), ylim = c(0, 30), breaks = 20, 
+     main = "treatment change >= 4, min = 6")
+
+get_covariate_balance(PM.results.cont$att, data = sdf, 
+                      covariates = c('y', "Populationages014oftotal", "Populationages1564oftota",
+                                     'unrest', 'tradewb', 'nfagdp', 'logpop', 'polity2'),
+                      plot = TRUE, legend = F, ylim = c(-.6, .6), continuous.treatment = TRUE)
+
+pe <- PanelEstimate(sets = PM.results.cont, data = sdf, number.iterations = 1000)
+plot(pe, 
+     main = "Experiences Democratization,\n becomes democracy",
+     ylim = c(-7,7))
+
+```
+
+# ART
+
+The package also allows us to calculate the "ART" -- the average treatment effect of treatment reversal for the reversed. In this case, we are interested in the effect of reverting from a democracy to an autocracy, as defined by Acemoglu et al. To do this, we simply use \texttt{qoi = ``art''}.
+```{r}
+PM.results.baseline <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
+                                  treatment = "dem", refinement.method = "mahalanobis", 
+                                  data = sdf, covs.formula = formula_Ace,
+                                  size.match = 5, qoi = "art" , outcome.var = "y",
+                                  lead = 0:4, forbid.treatment.reversal = FALSE, 
+                                  use.diagonal.variance.matrix = TRUE)
+pe <- PanelEstimate(sets = PM.results.baseline, 
+                    data = sdf,
+                    number.iterations = 1000)
+
+plot(PM.results.baseline$art, xlim = c(0,100), ylim = c(0, 40), breaks = 20)
+get_covariate_balance(PM.results.baseline$art, data = sdf, 
+                      covariates = c('y', "Populationages014oftotal", "Populationages1564oftota",
+                                     'unrest', 'tradewb', 'nfagdp', 'logpop'),
+                      plot = TRUE, legend = FALSE, ylim = c(-.6, .6))
+
+plot(pe, main = "ART: Estimated effect of authoritarian reversal")
+```
+
+We can also estimate the ART using polity2 scores.
+```{r}
+PM.results.baseline <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
+                                  treatment = "dem2", refinement.method = "mahalanobis", 
+                                  data = sdf, covs.formula = formula_Ace,
+                                  size.match = 5, qoi = "art" , outcome.var = "y",
+                                  lead = 0:4, forbid.treatment.reversal = FALSE, 
+                                  use.diagonal.variance.matrix = TRUE)
+
+pe <- PanelEstimate(sets = PM.results.baseline, 
+                    data = sdf,
+                    number.iterations = 1000)
+
+plot(PM.results.baseline$art, xlim = c(0,100), ylim = c(0, 40), breaks = 20)
+get_covariate_balance(PM.results.baseline$art, data = sdf, 
+                      covariates = c('y', "Populationages014oftotal", "Populationages1564oftota",
+                                     'unrest', 'tradewb', 'nfagdp', 'logpop'),
+                      plot = TRUE, legend = FALSE, ylim = c(-.6, .6))
+
+plot(pe, main = "ART: Estimated effect of authoritarian reversal")
+```
+
+

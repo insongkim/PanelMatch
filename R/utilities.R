@@ -190,7 +190,8 @@ get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.wei
   
   
   
-  
+  # we can remove time of treatment, since we expect a change
+  pointmatrix <- pointmatrix[-nrow(pointmatrix),]
   
   if (!plot) return(pointmatrix)
   
@@ -212,13 +213,13 @@ get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.wei
                         y = as.numeric(treated.data), 
                         type = "l",
                         lty = 2, lwd = 3)
-        graphics::axis(side = 1, labels = paste0("t-", (nrow(pointmatrix) - 1):0), 
+        graphics::axis(side = 1, labels = paste0("t-", (nrow(pointmatrix)):1), 
                        at = 1:nrow(pointmatrix))  
       } else
       {
         graphics::matplot(pointmatrix, type = "l", col = 1:ncol(pointmatrix), 
                           lty = 1, ylab = ylab, xaxt = "n", ...)
-        graphics::axis(side = 1, labels = paste0("t-", (nrow(pointmatrix) - 1):0), 
+        graphics::axis(side = 1, labels = paste0("t-", (nrow(pointmatrix)):1), 
                        at = 1:nrow(pointmatrix))  
       }
       
@@ -233,11 +234,11 @@ get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.wei
         graphics::lines(x = 1:(nrow(pointmatrix) - 1), 
                         y = as.numeric(treated.data)[1:(nrow(pointmatrix) - 1)], type = "l",
                         lty = 2, lwd = 3)
-        graphics::axis(side = 1, labels = paste0("t-", (nrow(pointmatrix) - 1):0), at = 1:nrow(pointmatrix))    
+        graphics::axis(side = 1, labels = paste0("t-", (nrow(pointmatrix)):1), at = 1:nrow(pointmatrix))    
       } else {
         graphics::matplot(pointmatrix, type = "l", col = 1:ncol(pointmatrix), 
                           lty = 1, ylab = ylab, xaxt = "n", ...)
-        graphics::axis(side = 1, labels = paste0("t-", (nrow(pointmatrix) - 1):0), at = 1:nrow(pointmatrix)) 
+        graphics::axis(side = 1, labels = paste0("t-", (nrow(pointmatrix)):1), at = 1:nrow(pointmatrix)) 
       }
       
     }
@@ -520,4 +521,56 @@ get_set_treatment_effects <- function(pm.obj, data.in, lead)
 }
 
 
-
+#' placeboTest
+#'
+#' Calculates results for a placebo test
+#'
+#'
+#' Calculate the results of a placebo test, looking at the change in outcome at time = t-1, compared to other pre treatment periods in the lag window.
+#' @param pm.obj an object of class \code{PanelMatch}
+#' @param data.in data.frame with the original data
+#' @param lag.in integer vector indicating the time period(s) in the future for which the placebo test change in outcome will be calculated. Calculations will be made over the period t - max(lag) to t-2, where t is the time of treatment. The results are similar to those returned by PanelEstimate, except t-1 is used as the period of comparison, rather than the lead window.
+#' @param number.iterations integer specifying the number of bootstrap iterations
+#' @param confidence.level confidence level for the calculated standard error intervals
+#' @param plot logical indicating whether or not a plot should be generated, or just return the raw data from the calculations
+#' @export
+#' 
+#' 
+placeboTest <- function(pm.obj, 
+                        data.in, 
+                        lag.in = NULL,
+                        number.iterations = 5000,
+                        df.adjustment = FALSE,
+                        confidence.level = .95,
+                        plot = FALSE,
+                        ...)
+{ 
+  qoi.in <- attr(pm.obj, "qoi")
+  # dont need to worry about ate case anymore.
+  matchedsets <- pm.obj[[qoi.in]]
+  if (is.null(lag.in))
+  {
+    lag.in <- attr(matchedsets, "lag")
+  } 
+  
+  matchedsets <- pm.obj[[qoi.in]]
+  if (lag.in == 1) stop("placebo test cannot be conducted for lag = 1")
+  if (lag.in > attr(matchedsets, "lag")) stop("provided lag.in value exceeds lag parameter from matching stage. Please specify a valid lag.in value, such that lag.in < lag")
+  
+  
+  browser()
+  
+  placebo.results.raw <- panel_estimate(sets = pm.obj,
+                                        data = data.in,
+                                        number.iterations = number.iterations,
+                                        df.adjustment = df.adjustment,
+                                        placebo.test = TRUE,
+                                        placebo.lead = lag.in)
+  
+  if (plot)
+  {
+    plot(placebo.results.raw, ...)
+  } else {
+    return(placebo.results.raw)
+  }
+}

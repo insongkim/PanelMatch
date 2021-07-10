@@ -136,9 +136,11 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
                        caliper.formula = NULL,
                        network.caliper.info = NULL,
                        network.refinement.info = NULL, 
-                       continuous.treatment.info = NULL
+                       continuous.treatment.info = NULL,
+                       placebo.test = FALSE
                        ) 
 {
+  if (placebo.test) warning("when placebo.test = TRUE, using the dependent variable in refinment is invalid")
   if(class(lag) == "list" & class(time.id) == "list" & class(unit.id) == "list" & class(treatment) == "list" & 
      class(refinement.method) == "list" & class(size.match) == "list" & class(match.missing) == "list" & 
      class(covs.formula) == "list" & class(verbose) == "list" & class(qoi) == "list" & class(lead) == "list" & 
@@ -174,8 +176,9 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
              network.caliper.info = network.caliper.info,
              network.refinement.info = network.refinement.info,
              continuous.treatment.info = continuous.treatment.info,
+             placebo.test = placebo.test,
              MoreArgs = list(data = data)
-             , SIMPLIFY = F)
+             , SIMPLIFY = FALSE)
      return(list.res)
     }
     else {
@@ -204,7 +207,8 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
                 caliper.formula,
                 network.caliper.info,
                 network.refinement.info,
-                continuous.treatment.info)
+                continuous.treatment.info,
+                placebo.test)
   }
   
 }
@@ -229,7 +233,8 @@ panel_match <- function(lag, time.id, unit.id, treatment,
                         caliper.formula,
                         network.caliper.info,
                         network.refinement.info, 
-                        continuous.treatment.info)
+                        continuous.treatment.info,
+                        placebo.test)
 {
   if (!matching & match.missing)
   {
@@ -251,12 +256,12 @@ panel_match <- function(lag, time.id, unit.id, treatment,
   
   if (!is.null(continuous.treatment.info))
   {
-    if (!(all(c("treatment.threshold", "units", "matching.threshold", "direction", "control.threshold") %in% names(continuous.treatment.info))))
+    if (!(all(c("treatment.threshold", "units", "matching.threshold", "control.threshold") %in% names(continuous.treatment.info))))
     {
       
       stop("Missing parameter in continuous matching specification.
            Please include all of the treatment.threshold, 
-           units, matching.threshold, control.threshold, and direction parameters")
+           units, matching.threshold, control.threshold parameters")
     }
     if (continuous.treatment.info[["treatment.threshold"]] == 0)
     {
@@ -265,7 +270,7 @@ panel_match <- function(lag, time.id, unit.id, treatment,
   }
   
   #######take this out when negative lead is implemented:
-  if (any(lead < 0)) stop("Please provide positive lead values. Negative lead values will be supported in future versions")
+  if (any(lead < 0)) stop("Please provide positive lead values. Please see the placeboTest function for more.")
   
   if (any(table(data[, unit.id]) != max(table(data[, unit.id]))))
   {
@@ -291,7 +296,7 @@ panel_match <- function(lag, time.id, unit.id, treatment,
   if(any(is.na(data[, unit.id]))) stop("Cannot have NA unit ids")
   ordered.data <- data[order(data[,unit.id], data[,time.id]), ]
   
-  #if(!is.null(edge.matrix) & !is.null(neighborhood.degree)) #do early to avoid the encoding/index change, should be safe? 
+  
   ########################################################################### NETWORK CODE ###########################################################################
   ######################################################################################################################################################
   if(!is.null(network.caliper.info) || 
@@ -325,13 +330,18 @@ panel_match <- function(lag, time.id, unit.id, treatment,
     }  
   }
   
-  if(qoi == "atc" || qoi == "art")
+  if (identical(qoi,"atc") || identical(qoi,"art"))
   {
-    if(is.null(continuous.treatment.info))
+    if (is.null(continuous.treatment.info))
     {
       ordered.data[, treatment] <- ifelse(ordered.data[, treatment] == 1,0,1) #flip the treatment variables   
     }
-    
+    if (identical(qoi, "art") && !is.null(continuous.treatment.info)) {
+      continuous.treatment.info[["direction"]] <- "negative"
+      # in the art case, we focus on negative changes in treatment
+      # this parameter of the list does not get modified by the user externally
+    } 
+    browser()
     msets <- perform_refinement(lag = lag, time.id = time.id, unit.id = unit.id, 
                                 treatment = treatment, 
                                 refinement.method = refinement.method,
@@ -344,9 +354,10 @@ panel_match <- function(lag, time.id, unit.id, treatment,
                                 listwise.deletion = listwise.delete,
                                 use.diag.covmat = use.diagonal.variance.matrix, 
                                 caliper.formula = caliper.formula, 
-                                continuous.treatment.info = continuous.treatment.info)
+                                continuous.treatment.info = continuous.treatment.info,
+                                placebo.test = placebo.test)
     #msets <- decode_index(msets, unit.index.map, og.unit.id)
-    if(!matching & match.missing)
+    if (!matching & match.missing)
     {
       attr(msets, "lag") <- old.lag
     }
@@ -361,13 +372,19 @@ panel_match <- function(lag, time.id, unit.id, treatment,
     if (!is.null(continuous.treatment.info))
     {
       attr(pm.obj, "continuous.treatment") <- TRUE
-      attr(pm.obj, "continous.treatment.direction") <- continuous.treatment.info[["direction"]]
+      
     } else {
       attr(pm.obj, "continuous.treatment") <- FALSE
     }
     return(pm.obj)
   } else if (qoi == "att")
   { #note that ordered.data at this point is in column order: unit, time, treatment, everything else
+    
+    if (identical(qoi, "att") && !is.null(continuous.treatment.info)) {
+      continuous.treatment.info[["direction"]] <- "positive"
+      # in the art case, we focus on negative changes in treatment
+      # this parameter of the list does not get modified by the user externally
+    } 
     
     msets <- perform_refinement(lag = lag, time.id = time.id, unit.id = unit.id, 
                                 treatment = treatment, 
@@ -381,10 +398,11 @@ panel_match <- function(lag, time.id, unit.id, treatment,
                                 listwise.deletion = listwise.delete,
                                 use.diag.covmat = use.diagonal.variance.matrix, 
                                 caliper.formula = caliper.formula, 
-                                continuous.treatment.info = continuous.treatment.info)
+                                continuous.treatment.info = continuous.treatment.info,
+                                placebo.test = placebo.test)
     
     #msets <- decode_index(msets, unit.index.map, og.unit.id)
-    if(!matching & match.missing)
+    if (!matching & match.missing)
     {
       attr(msets, "lag") <- old.lag
     }
@@ -396,85 +414,14 @@ panel_match <- function(lag, time.id, unit.id, treatment,
     attr(pm.obj, "lead") <- lead
     
     attr(pm.obj, "forbid.treatment.reversal") <- forbid.treatment.reversal
-    if(!is.null(continuous.treatment.info))
-    {
-      attr(pm.obj, "continuous.treatment") <- TRUE
-      attr(pm.obj, "continous.treatment.direction") <- continuous.treatment.info[["direction"]]
-    } else {
-      attr(pm.obj, "continuous.treatment") <- FALSE
-    }
-    return(pm.obj)
-  } else if(qoi == "ate")
-  {
-    if (!is.null(continuous.treatment.info))
-    {
-      qoi <- "att"
-    }
-    
-    msets <- perform_refinement(lag = lag, time.id = time.id, unit.id = unit.id, 
-                                treatment = treatment, 
-                                refinement.method = refinement.method,
-                                size.match = size.match, ordered.data = ordered.data, 
-                                match.missing = match.missing, covs.formula = covs.formula,
-                                verbose = verbose, lead = lead, outcome.var = outcome.var, 
-                                forbid.treatment.reversal = forbid.treatment.reversal, 
-                                qoi = qoi, matching = matching,
-                                exact.matching.variables = exact.match.variables, 
-                                listwise.deletion = listwise.delete,
-                                use.diag.covmat = use.diagonal.variance.matrix, 
-                                caliper.formula = caliper.formula, 
-                                continuous.treatment.info = continuous.treatment.info)
-    
-    if (is.null(continuous.treatment.info))
-    {
-      ordered.data[, treatment] <- ifelse(ordered.data[, treatment] == 1,0,1) #flip the treatment variables   
-    }
-    if (!is.null(continuous.treatment.info))
-    {
-      qoi <- "atc"
-    }
-    msets2 <- perform_refinement(lag = lag, time.id = time.id, unit.id = unit.id, 
-                                treatment = treatment, 
-                                refinement.method = refinement.method,
-                                size.match = size.match, ordered.data = ordered.data, 
-                                match.missing = match.missing, covs.formula = covs.formula,
-                                verbose = verbose, lead = lead, outcome.var = outcome.var, 
-                                forbid.treatment.reversal = forbid.treatment.reversal, 
-                                qoi = qoi, matching = matching,
-                                exact.matching.variables = exact.match.variables, 
-                                listwise.deletion = listwise.delete,
-                                use.diag.covmat = use.diagonal.variance.matrix, 
-                                caliper.formula = caliper.formula, 
-                                continuous.treatment.info = continuous.treatment.info)
-    
-    if (!is.null(continuous.treatment.info)) qoi <- "ate"
-    
-    
-    if (!matching & match.missing)
-    {
-      attr(msets, "lag") <- old.lag
-    }
-    
-    if (!matching & match.missing)
-    {
-      attr(msets2, "lag") <- old.lag
-    }
-  
-    
-    pm.obj <- list("att" = msets, "atc" = msets2)
-    class(pm.obj) <- "PanelMatch"
-    attr(pm.obj, "qoi") <- qoi
-    attr(pm.obj, "outcome.var") <- outcome.var
-    attr(pm.obj, "lead") <- lead
-    attr(pm.obj, "forbid.treatment.reversal") <- forbid.treatment.reversal
-    
     if (!is.null(continuous.treatment.info))
     {
       attr(pm.obj, "continuous.treatment") <- TRUE
-      attr(pm.obj, "continous.treatment.direction") <- continuous.treatment.info[["direction"]]
+      
     } else {
       attr(pm.obj, "continuous.treatment") <- FALSE
     }
+    attr(pm.obj, "placebo.test") <- placebo.test
     return(pm.obj)
   } else
   {

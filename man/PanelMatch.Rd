@@ -28,7 +28,8 @@ PanelMatch(
   caliper.formula = NULL,
   network.caliper.info = NULL,
   network.refinement.info = NULL,
-  continuous.treatment.info = NULL
+  continuous.treatment.info = NULL,
+  placebo.test = FALSE
 )
 }
 \arguments{
