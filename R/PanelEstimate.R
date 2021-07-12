@@ -272,7 +272,7 @@ panel_estimate <- function(sets,
     if (identical(qoi, "att")) treated.unit.ids.att <- NULL
   } 
   
-  browser()
+  
   
   data <- prepareData(data.in = data, lead = lead,
                       sets.att = sets.att, sets.atc = sets.atc,

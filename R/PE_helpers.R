@@ -291,64 +291,6 @@ prepareData <- function(data.in, lead, sets.att = NULL,
 }
 
 
-preparePlaceboTestData <- function(data.in, lead, sets.att = NULL,
-                                   sets.atc = NULL, continuous.treatment,
-                                   qoi.in, dependent.variable,
-                                   time.var,
-                                   id.var,
-                                   placebo.test = TRUE,
-                                   placebo.lag = NULL)
-{
-  
-  # lag DV by one
-  browser()
-  data.in$lag.dv <- c(NA, data.in[, dependent.variable][-nrow(data.in)])
-  data.in$lag.dv[which(!duplicated(data.in[,id.var]))] <- NA
-  
-  data.in[, dependent.variable] <- data.in$lag.dv
-  data.in <- data.in[, -ncol(data.in)] #remove lag.dv column
-  
-  if ( identical(qoi.in, "att") || identical(qoi.in, "art")) 
-  {
-    if (!identical(qoi.in, "ate")) qoi.t <- qoi.in
-    
-    for (lag.val in 2:placebo.lag) 
-    {
-      j <- lag.val - 2 #set lead
-      dense.wits <- getWits(lead = j, data = data.in, matched_sets = sets.att, 
-                            continuous.treatment = continuous.treatment)
-      data.in = merge(x = data.in, y = dense.wits, all.x = TRUE, 
-                      by.x = colnames(data.in)[1:2], by.y = c("id", "t"))
-      colnames(data.in)[length(data.in)] <- paste0("Wit_", qoi.t, j)
-      data.in[is.na(data.in[, length(data.in)]), length(data.in)] <- 0 #replace NAs with zeroes
-      
-      
-      data.in$lag.dv <- c(NA, data.in[, dependent.variable][-nrow(data.in)])
-      data.in$lag.dv[which(!duplicated(data.in[,id.var]))] <- NA
-      
-      data.in[, dependent.variable] <- data.in$lag.dv
-      data.in <- data.in[, -ncol(data.in)] #remove lag.dv column
-      
-    }
-    
-    data.in[, paste0("dit_", qoi.t)] <- getDits(matched_sets = sets.att, 
-                                                data = data.in)
-    colnames(data.in)[length(data.in)] <- paste0("dits_", qoi.t)
-    data.in[, paste0("Wit_", qoi.t, "-1")] <- 0
-    
-  } 
-  if (identical(qoi.in, "atc")) 
-  {
-    stop("atc not supported for placebo tests")
-  } 
-  #NOTE THE COMMENT/ASSUMPTION
-  
-  data.in[, dependent.variable][is.na(data.in[, dependent.variable])] <- 0 #replace the NAs with zeroes. 
-  #I think this is ok because the dits should always be zero for these, so the value is irrelevant.
-  return(data.in)
-  
-}
-
 calculateEstimates <- function(qoi.in, data.in, lead,
                                number.iterations,
                                att.treated.unit.ids,
@@ -476,7 +418,7 @@ calculatePlaceboEstimates <- function(qoi.in, data.in, lead,
     
     create.lagged.dfs <- function(d, dv, idx, k)
     {
-      d[, paste0(dv, "l", idx)] <- lapply(k, function(x) data.table::shift(d[, dv], n = k, type = "lag"))
+      d[, paste0(dv, "l", idx)] <- lapply(k, function(x) data.table::shift(d[, dv], n = x, type = "lag"))
       return(d)
     }
     y.in <- by(data.in, as.factor(data.in[, unit.id.variable]), 
@@ -485,7 +427,7 @@ calculatePlaceboEstimates <- function(qoi.in, data.in, lead,
                idx = placebo.lead - 1,
                k = placebo.lead - 1, 
                simplify = FALSE)
-    browser()
+    
     data.in <- do.call(rbind, y.in)
     y.in <- data.in[, paste0(outcome.variable, "l", (placebo.lead - 1)), drop = FALSE]
     z.in <- data.in[, paste0("dits_", qoi.in)]
@@ -496,7 +438,7 @@ calculatePlaceboEstimates <- function(qoi.in, data.in, lead,
     if (identical(qoi.in, "atc")) o.coefs <- -o.coefs
     
     
-    coefs <- matrix(NA, nrow = number.iterations, ncol = length(lead))
+    coefs <- matrix(NA, nrow = number.iterations, ncol = length(placebo.lead))
     
     for (k in 1:number.iterations) 
     {  
@@ -517,14 +459,10 @@ calculatePlaceboEstimates <- function(qoi.in, data.in, lead,
       df.bs <- lapply(units, function(x) which(data.in[, unit.id.variable] == x))
       d.sub1 <- data.in[unlist(df.bs),]
       
-      y.in <- d.sub1[,, paste0(outcome.variable, "l", (placebo.lead - 1)), drop = FALSE]
+      y.in <- d.sub1[, paste0(outcome.variable, "l", (placebo.lead - 1)), drop = FALSE]
       z.in <- d.sub1[, paste0("dits_", qoi.in)]
       
-      # at__new <- sapply(d.sub1[, col.idx, 
-      #                           drop = FALSE],
-      #                    equality_four,
-      #                    y = y.in,
-      #                    z = z.in)
+      
       at__new <- equality_four_placebo(d.sub1[, col.idx, drop = FALSE],
                             y = y.in,
                             z = z.in)
@@ -539,6 +477,8 @@ calculatePlaceboEstimates <- function(qoi.in, data.in, lead,
       sets <- atc.sets
     }
     
+    names(o.coefs) <- paste0("t-", placebo.lead)
+    #o.coefs <- rev(o.coefs) # for ease
     z <- list("estimates" = o.coefs,
               "bootstrapped.estimates" = coefs, 
               "bootstrap.iterations" = number.iterations, 

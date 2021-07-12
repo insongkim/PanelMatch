@@ -341,7 +341,7 @@ panel_match <- function(lag, time.id, unit.id, treatment,
       # in the art case, we focus on negative changes in treatment
       # this parameter of the list does not get modified by the user externally
     } 
-    browser()
+    
     msets <- perform_refinement(lag = lag, time.id = time.id, unit.id = unit.id, 
                                 treatment = treatment, 
                                 refinement.method = refinement.method,
