@@ -13,10 +13,8 @@ knitr::opts_chunk$set(echo = TRUE)
 First, we load and clean the Acemoglu data to include the variables that we will need. 
 ```{r, message=FALSE, warning=FALSE, echo=FALSE}
 library(PanelMatch)
-#library(dplyr)
+# replace this with built in data set?
 load("/Users/adamrauh/Downloads/lwd-tests/Acemoglu.RData")
-
-par(mfrow = c(1,3))
 
 formula_Ace <- 
   ~ I(lag(y, 1:4)) + I(lag(Populationages014oftotal, 1:4)) + 
@@ -25,9 +23,6 @@ formula_Ace <-
 
 
 d2$logpop <- 100 * log(d2$PopulationtotalSPPOPTOTL)
-# sdf <- select(d2, wbcode2, wbcode, country_name, dem,
-#               polity, polity2, year, y, Populationages014oftotal, Populationages1564oftota,
-#               unrest, tradewb, nfagdp, logpop)
 
 
 sdf <- d2[, c("wbcode2", "wbcode", "country_name", "dem", 
@@ -38,7 +33,7 @@ sdf <- d2[, c("wbcode2", "wbcode", "country_name", "dem",
 sdf$year <- as.integer(sdf$year)
 ```
 
-We can then create a baseline version of the Acemoglu results that calculates the ATT using the binary version of treatment. Substantively, we are estimating the effect of democratization for countries that go from autocracies to democracies. 
+We can then create a baseline version of the Acemoglu results that calculates the ATT using the binary version of treatment. Substantively, we are estimating the effect of democratization for countries that go from autocracies to democracies  
 ```{r, message=FALSE, warning=FALSE, echo=FALSE}
 PM.results.baseline <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
                                   treatment = "dem", refinement.method = "mahalanobis", 
