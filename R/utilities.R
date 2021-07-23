@@ -513,8 +513,17 @@ calculate_set_effects <- function(pm.obj, data.in, lead)
 #' @param data.in data.frame with the original data
 #' @param lead integer (or integer vector) indicating the time period(s) in the future for which the treatment effect size will be calculated. Calculations will be made for the period t + lead, where t is the time of treatment. If more than one lead value is provided, then calculations will be performed for each value. 
 #' 
+#' @examples
+#' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
+#                          treatment = "dem", refinement.method = "mahalanobis",
+#                          data = dem, match.missing = TRUE,
+#                          covs.formula = ~ I(lag(tradewb, 1:4)),
+#                          size.match = 5, qoi = "att",
+#                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE,
+#                          placebo.test = TRUE)
+#' set.effects <- getSetTreatmentEffects(pm.obj = PM.results, data.in = dem, lead = 0)
 #' @export
-get_set_treatment_effects <- function(pm.obj, data.in, lead)
+getSetTreatmentEffects <- function(pm.obj, data.in, lead)
 {
   return(lapply(lead, calculate_set_effects, pm.obj = pm.obj, data.in = data.in))
   
@@ -534,7 +543,16 @@ get_set_treatment_effects <- function(pm.obj, data.in, lead)
 #' @param confidence.level confidence level for the calculated standard error intervals
 #' @param plot logical indicating whether or not a plot should be generated, or just return the raw data from the calculations
 #' @param ... extra arguments to be passed to plot
-
+#' 
+#' @examples 
+#' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
+#'                          treatment = "dem", refinement.method = "mahalanobis",
+#'                          data = dem, match.missing = TRUE,
+#'                          covs.formula = ~ I(lag(tradewb, 1:4)),
+#'                          size.match = 5, qoi = "att",
+#'                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE,
+#'                          placebo.test = TRUE)
+#' placeboTest(PM.results, data.in = dem, number.iterations = 100, plot = FALSE)
 #' @export
 #' 
 #' 

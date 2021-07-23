@@ -67,8 +67,7 @@ The variables specified in this formula are used to define the similarity/distan
 \item{verbose}{option to include more information about the \code{matched.set} object calculations, 
 like the distances used to create the refined sets and weights.}
 
-\item{qoi}{quantity of interest: \code{att} (average treatment effect on treated units), 
-\code{atc} (average treatment effect on control units), \code{ate} (average treatment effect). 
+\item{qoi}{quantity of interest: \code{att} (average treatment effect on treated units), \code{art} (average effect of treatment reversal for units that experience treatment reversal)
 Note that the qoi for MSM methods will give the estimated average treatment effect of being treated for a chosen \code{lead} 
 time periods. This differs slightly from the non-MSM methods, where treatment reversal is permitted.}
 
@@ -120,7 +119,7 @@ The provided list must specify the following named elements:
 \code{use.proportion.data}, \code{proportion.lags}, \code{use.count.data}, \code{count.lags}. Please see the vignette for a discussion of these parameters and how network information is utilized in the package.}
 
 \item{continuous.treatment.info}{a named list with elements \code{treatment.threshold}, \code{type}, \code{units}, \code{direction}, \code{matching.threshold}, \code{control.treshold}, and optionally \code{minimum.treatment.threshold} and/or \code{maximum.treatment.threshold}.
-The treatment threshold corresponds to the minimum of the magnitude of the change in the treatment variable from time \code{t-1} to time \code{t}. It must be a positive number.
+The treatment threshold corresponds to the minimum of the magnitude of the change in the treatment variable from time \code{t-1} to time \code{t}. It must be a positive number. When the qoi is set to be "att", then treatment will be defined as a positive change (ie. an increase) in the treatment variable. When the qoi is set to be "art", treatment is defined as a negative change
 The type is either "raw" or "sd" (specified as a character string) and corresponds to the units of the treatment and mathing threshold. If "raw", then thresholds will be applied to the raw treatment data in the original units.
 If "sd", then the thresholds are interpreted to be provided in standard deviations, and the treatment variable data will be standardized. 
 The direction parameter specifies the direction of interest for the change in the treatment variable. It is specified as a character string: "positive", "negative", or "both".
