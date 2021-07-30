@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
-First, we load the needed variables from Acemoglu et al. (2019). The data used here are a slightly modified subset of the data originally used in that paper.  
+First, we load the needed variables from Acemoglu et al. (2019). The data used here are a slightly modified subset of the data originally used in that paper. Specifically, we add a variable that is the log of the population variable multiplied by 100 (named "logpop"). We then subset the data to include the following variables (described in the main paper): "wbcode2", "wbcode", "country_name", "dem", "polity", "polity2", "year", "y", "Populationages014oftotal", "Populationages1564oftota", "unrest", "tradewb", "nfagdp", "logpop".
 ```{r, message=FALSE, warning=FALSE, echo=FALSE}
 library(PanelMatch)
 # replace this with built in data set?
@@ -31,7 +31,7 @@ library(PanelMatch)
 
 # ATT
 
-We can create a baseline version of the Acemoglu et al. results that calculates the ATT using the original, binary version of treatment. Substantively, we are estimating the effect of democratization for countries that go from autocracies to democracies on that country's GDP. The treatment variable is a binary indicator of whether or not a country is a democracy, as measured by Acemoglu et al. (2019).
+First, we can create a baseline version of the Acemoglu et al. results that calculates the ATT using the original, binary version of treatment as defined by them. Substantively, we are estimating the effect of democratization for countries that go from autocracies to democracies on that country's GDP. The treatment variable is a binary indicator of whether or not a country is a democracy, as measured by Acemoglu et al. (2019).
 
 We first create a formula object containing the variables that we will use in the refinement stages throughout the analysis. Then, we use the `PanelMatch` function to identify treated units and matched control units. Here we will use mahalanobis distance and the variables in the `formula_Ace` formula to identify the most similar control units. Examining the distribution of the size of our matched sets, it seems that we have adequate data for our analysis.
 

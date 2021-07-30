@@ -1,6 +1,6 @@
 ---
 title: "Matched Set and Treatment Definitions"
-author: "Adam Rauh"
+author: ""
 date: "7/23/2021"
 output:
   pdf_document: default
@@ -25,11 +25,9 @@ Matched sets are defined differently, depending on whether the treatment variabl
 
 ### ATT
 
-\begin{eqnarray}
-  M_{it} & = & \{i^\prime : i^\prime \ne i, X_{i^\prime t} =0,
-                 X_{i^\prime t^\prime} = X_{i t^\prime} \textrm{ for
-                 all } t^\prime = t-1, \dots,t-L\} 
-\end{eqnarray}
+$$
+  M_{it} = \{i^\prime : i^\prime \ne i, X_{i^\prime t} =0, X_{i^\prime t^\prime} = X_{i t^\prime} \textrm{ for all } t^\prime = t-1, \dots,t-L\} 
+$$
 for the treated observations with $X_{it}=1$ and $X_{i,t-1}=0$. 
 
 ### ART
