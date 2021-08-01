@@ -149,7 +149,7 @@ pts <- function(sets, lead.in, method)
 }
 #returns a vector of Wits, as defined in the paper (equation 25 or equation 23). They should be in the same order as the data frame containing the original problem data. The pts, pcs, and getWits functions act for a specific 
 # lead. So, for instance if our lead window is 0,1,2,3,4, these function must be called for each of those -- so for 0, then for 1, etc.
-getWits <- function(matched_sets, lead, data, estimation.method)
+getWits <- function(matched_sets, lead, data, estimation.method = "bootstrap")
 {
   
   #sort the data
