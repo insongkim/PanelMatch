@@ -375,52 +375,97 @@ panel_estimate <- function(se.method = "bootstrap",
                         y = data[c(dependent)][,1],
                         z = data$dits_att)
       
-      ## fill in analytical bootstrap here
+      ## analytical bootstrap v2
+      
+      
+      # perunitSum <- function(udf, 
+      #                           lead.in,
+      #                           dependent.in) {
+      #   w.it.stars <- udf[, sapply(lead.in, 
+      #                              function(x) paste0("Wit_att", x)), 
+      #                     drop = FALSE]
+      #   w.it.stars[is.na(w.it.stars)] <- 0
+      #   return(colSums(apply(w.it.stars, MARGIN = 2, 
+      #                        FUN = function(j) return(j * udf[, dependent.in]))))
+      # }
+      # 
+      # Ais <- by(data, as.factor(data[, unit.id]), 
+      #    FUN = perunitSum, 
+      #    lead.in = lead, 
+      #    dependent.in = dependent)
+      # 
+      # tdf <- do.call(rbind, as.list(Ais))
+      # As <- colSums(tdf, na.rm = TRUE)
+      # 
+      # ###
+      # 
+      # perunitDits <- function(udf) {
+      #   dits <- udf[, paste0("dits_", qoi), drop = FALSE]
+      #   dits[is.na(dits)] <- 0
+      #   return(sum(dits, na.rm = TRUE))
+      # }
+      # 
+      # Bi <- as.numeric(by(data, as.factor(data[, unit.id]), 
+      #           FUN = perunitDits))
+      # 
+      # N <- length(unique(data[, unit.id]))
+      # 
+      # EB <- mean(Bi) * N
+      # VB <- var(Bi, na.rm = TRUE) * N
+      # vdf <- apply(tdf, 2, var, na.rm = TRUE) #should return a number or vector
+      # VA <- N * vdf
+      # EA <- N * colMeans(tdf, na.rm = TRUE)
+      # covAB <- apply(tdf, 2, FUN = function(x) return(cov(x, Bi)))
+      # 
+      # estimator.var <- (1 / (EB^2)) * (VA - (2 * (EA / EB) * covAB) + ( (EA^2 / EB^2) * VB) )
+      # 
+      # names(estimator.var) <- paste0("t+",lead)
+      # names(o.coefs) <- paste0("t+", lead)
+      
+      
+      ## analytical bootstrap v1
       
       
       perunitSum <- function(udf, 
-                                lead.in,
-                                dependent.in) {
-        w.it.stars <- udf[, sapply(lead.in, 
-                                   function(x) paste0("Wit_att", x)), 
-                          drop = FALSE]
+                             lead.in,
+                             dependent.in) {
+        w.it.stars <- udf[, sapply(lead.in, function(x) paste0("Wit_att", x)), drop = FALSE]
         w.it.stars[is.na(w.it.stars)] <- 0
-        return(colSums(apply(w.it.stars, MARGIN = 2, 
-                             FUN = function(j) return(j * udf[, dependent.in]))))
+        return(colSums(apply(w.it.stars, MARGIN = 2, FUN = function(j) return(j * udf[, dependent.in]))))
       }
+      per.unit.sums <- by(data, as.factor(data[, unit.id]), 
+                          FUN = perunitSum, 
+                          lead.in = lead, 
+                          dependent.in = dependent)
       
-      Ais <- by(data, as.factor(data[, unit.id]), 
-         FUN = perunitSum, 
-         lead.in = lead, 
-         dependent.in = dependent)
+      tdf <- do.call(rbind, as.list(per.unit.sums))
       
-      tdf <- do.call(rbind, as.list(Ais))
-      As <- colSums(tdf, na.rm = TRUE)
-      
-      ###
-      
-      perunitDits <- function(udf) {
-        dits <- udf[, paste0("dits_", qoi), drop = FALSE]
-        dits[is.na(dits)] <- 0
-        return(sum(dits, na.rm = TRUE))
-      }
-      
-      Bi <- as.numeric(by(data, as.factor(data[, unit.id]), 
-                FUN = perunitDits))
-      
-      N <- length(unique(data[, unit.id]))
-      
-      EB <- mean(Bi) * N
-      VB <- var(Bi, na.rm = TRUE) * N
       vdf <- apply(tdf, 2, var, na.rm = TRUE) #should return a number or vector
-      VA <- N * vdf
-      EA <- N * colMeans(tdf, na.rm = TRUE)
-      covAB <- apply(tdf, 2, FUN = function(x) return(cov(x, Bi)))
+      D.it <- sum(data[, paste0("dits_", qoi)])
+      D.it.denom <- D.it^2
       
-      estimator.var <- (1 / (EB^2)) * (VA - (2 * (EA / EB) * covAB) + ( (EA^2 / EB^2) * VB) )
+      checkWits <- function(udf, 
+                            lead.in) {
+        w.it.stars <- udf[, sapply(lead.in, function(x) paste0("Wit_att", x)), drop = FALSE]
+        w.it.stars[is.na(w.it.stars)] <- 0
+        apply(w.it.stars, 2, FUN = function(x) all(x == 0))
+      }
       
+      check.vecs <- by(data, as.factor(data[, unit.id]), 
+                       FUN = checkWits, 
+                       lead.in = lead)
+      
+      ndf <- do.call(rbind, as.list(check.vecs))
+      N.nums <- apply(ndf, 2, function(x) sum(!x))
+      
+      #N.units <- length(unique(data[, unit.id]))
+      #browser()
+      
+      estimator.var <- (N.nums * vdf) / D.it.denom
       names(estimator.var) <- paste0("t+",lead)
       names(o.coefs) <- paste0("t+", lead)
+      
+      ##########
       sets <- decode_index(sets, unit.index.map, og.unit.id)
       # changed return to class
       
@@ -492,52 +537,95 @@ panel_estimate <- function(se.method = "bootstrap",
                         y = data[c(dependent)][,1],
                         z = data$dits_att)
       
-      ## fill in analytical bootstrap here
+      ## analytical bootstrap v2
+      
+      
+      # perunitSum <- function(udf, 
+      #                        lead.in,
+      #                        dependent.in) {
+      #   w.it.stars <- udf[, sapply(lead.in, 
+      #                              function(x) paste0("Wit_atc", x)), 
+      #                     drop = FALSE]
+      #   w.it.stars[is.na(w.it.stars)] <- 0
+      #   return(colSums(apply(w.it.stars, MARGIN = 2, 
+      #                        FUN = function(j) return(j * udf[, dependent.in]))))
+      # }
+      # 
+      # Ais <- by(data, as.factor(data[, unit.id]), 
+      #           FUN = perunitSum, 
+      #           lead.in = lead, 
+      #           dependent.in = dependent)
+      # 
+      # tdf <- do.call(rbind, as.list(Ais))
+      # As <- colSums(tdf, na.rm = TRUE)
+      # 
+      # ###
+      # 
+      # perunitDits <- function(udf) {
+      #   dits <- udf[, paste0("dits_", qoi), drop = FALSE]
+      #   dits[is.na(dits)] <- 0
+      #   return(sum(dits, na.rm = TRUE))
+      # }
+      # 
+      # Bi <- as.numeric(by(data, as.factor(data[, unit.id]), 
+      #                     FUN = perunitDits))
+      # 
+      # N <- length(unique(data[, unit.id]))
+      # 
+      # EB <- mean(Bi) * N
+      # VB <- var(Bi, na.rm = TRUE) * N
+      # vdf <- apply(tdf, 2, var, na.rm = TRUE) #should return a number or vector
+      # VA <- N * vdf
+      # EA <- N * colMeans(tdf, na.rm = TRUE)
+      # covAB <- apply(tdf, 2, FUN = function(x) return(cov(x, Bi)))
+      # 
+      # estimator.var <- (1 / (EB^2)) * (VA - (2 * (EA / EB) * covAB) + ( (EA^2 / EB^2) * VB) )
+      # 
+      # names(estimator.var) <- paste0("t+",lead)
+      # names(o.coefs) <- paste0("t+", lead)
+      
+      ## analytical bootstrap v1
       
       
       perunitSum <- function(udf, 
                              lead.in,
                              dependent.in) {
-        w.it.stars <- udf[, sapply(lead.in, 
-                                   function(x) paste0("Wit_atc", x)), 
-                          drop = FALSE]
+        w.it.stars <- udf[, sapply(lead.in, function(x) paste0("Wit_atc", x)), drop = FALSE]
         w.it.stars[is.na(w.it.stars)] <- 0
-        return(colSums(apply(w.it.stars, MARGIN = 2, 
-                             FUN = function(j) return(j * udf[, dependent.in]))))
+        return(colSums(apply(w.it.stars, MARGIN = 2, FUN = function(j) return(j * udf[, dependent.in]))))
       }
+      per.unit.sums <- by(data, as.factor(data[, unit.id]), 
+                          FUN = perunitSum, 
+                          lead.in = lead, 
+                          dependent.in = dependent)
       
-      Ais <- by(data, as.factor(data[, unit.id]), 
-                FUN = perunitSum, 
-                lead.in = lead, 
-                dependent.in = dependent)
+      tdf <- do.call(rbind, as.list(per.unit.sums))
       
-      tdf <- do.call(rbind, as.list(Ais))
-      As <- colSums(tdf, na.rm = TRUE)
-      
-      ###
-      
-      perunitDits <- function(udf) {
-        dits <- udf[, paste0("dits_", qoi), drop = FALSE]
-        dits[is.na(dits)] <- 0
-        return(sum(dits, na.rm = TRUE))
-      }
-      
-      Bi <- as.numeric(by(data, as.factor(data[, unit.id]), 
-                          FUN = perunitDits))
-      
-      N <- length(unique(data[, unit.id]))
-      
-      EB <- mean(Bi) * N
-      VB <- var(Bi, na.rm = TRUE) * N
       vdf <- apply(tdf, 2, var, na.rm = TRUE) #should return a number or vector
-      VA <- N * vdf
-      EA <- N * colMeans(tdf, na.rm = TRUE)
-      covAB <- apply(tdf, 2, FUN = function(x) return(cov(x, Bi)))
+      D.it <- sum(data[, paste0("dits_", qoi)])
+      D.it.denom <- D.it^2
       
-      estimator.var <- (1 / (EB^2)) * (VA - (2 * (EA / EB) * covAB) + ( (EA^2 / EB^2) * VB) )
+      checkWits <- function(udf, 
+                            lead.in) {
+        w.it.stars <- udf[, sapply(lead.in, function(x) paste0("Wit_atc", x)), drop = FALSE]
+        w.it.stars[is.na(w.it.stars)] <- 0
+        apply(w.it.stars, 2, FUN = function(x) all(x == 0))
+      }
       
+      check.vecs <- by(data, as.factor(data[, unit.id]), 
+                       FUN = checkWits, 
+                       lead.in = lead)
+      
+      ndf <- do.call(rbind, as.list(check.vecs))
+      N.nums <- apply(ndf, 2, function(x) sum(!x))
+      
+      #N.units <- length(unique(data[, unit.id]))
+      #browser()
+      
+      estimator.var <- (N.nums * vdf) / D.it.denom
       names(estimator.var) <- paste0("t+",lead)
       names(o.coefs) <- paste0("t+", lead)
+      
       sets2 <- decode_index(sets2, unit.index.map, og.unit.id)
       # changed return to class
       
@@ -546,7 +634,7 @@ panel_estimate <- function(se.method = "bootstrap",
                 "method" = method, "lag" = lag,
                 "lead" = lead, "confidence.level" = confidence.level, 
                 "qoi" = qoi, se.method = se.method, 
-                "matched.sets" = sets)
+                "matched.sets" = sets2)
       class(z) <- "PanelEstimate"
       return(z)
     }
