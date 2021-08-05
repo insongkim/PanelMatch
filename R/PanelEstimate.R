@@ -744,8 +744,10 @@ summary.PanelEstimate <- function(object, verbose = TRUE, bias.corrected = FALSE
     }
     else if (identical(object$se.method, "analytical")) 
     {
+      #browser()
       critical.vals <- rep(qnorm( (1 - object$confidence.level) / 2), 2) * c(1, -1)
-      quants <- lapply(object$estimates, function(x) x + critical.vals)
+      #quants <- lapply(object$estimates, function(x) x + critical.vals * object)
+      quants <- mapply(FUN = function(x, y) x + critical.vals * y, x = object$estimates, y = object$standard.error, SIMPLIFY = FALSE)
       qts <- do.call(rbind, quants)
       df <- data.frame(estimate = object$estimates,
                           std.error = object$standard.error)
