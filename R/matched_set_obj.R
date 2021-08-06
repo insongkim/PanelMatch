@@ -651,3 +651,219 @@ encode_index <- function(mset, unit.index, new.unit.id)
 
   return(new.mset)
 }
+
+
+calculate_set_effects <- function(pm.obj, data.in, lead)
+{
+  if (identical(attr(pm.obj, "qoi"), "att"))
+  {
+    msets <- pm.obj[["att"]]
+    id.var <- attributes(msets)$id.var
+    t.var <- attributes(msets)$t.var
+    
+  } else if (identical(attr(pm.obj, "qoi"), "atc"))
+  {
+    msets <- pm.obj[["atc"]]
+    id.var <- attributes(msets)$id.var
+    t.var <- attributes(msets)$t.var
+  } else if (identical(attr(pm.obj, "qoi"), "ate"))
+  {
+    msets <- pm.obj[["att"]]
+    msets.atc <- pm.obj[["atc"]]
+    id.var <- attributes(msets)$id.var
+    t.var <- attributes(msets)$t.var
+    
+  } else if (identical(attr(pm.obj, "qoi"), "art"))
+  {
+    msets <- pm.obj[["art"]]
+    id.var <- attributes(msets)$id.var
+    t.var <- attributes(msets)$t.var
+  } else {
+    stop("invalid qoi")
+  }
+  
+  rownames(data.in) <- paste0(data.in[, id.var], ".", data.in[, t.var])
+  
+  get_ind_effects <- function(mset, data_in, 
+                              lead.val,
+                              mset.name,
+                              outcome, 
+                              use.abs.value = FALSE)
+  {
+    
+    if ( identical(length(mset), 0L)) return(NA)
+    t.val <- as.numeric(sub(".*\\.", "", mset.name))
+    id.val <- as.numeric(sub("\\..*", "", mset.name))
+    
+    
+    past.lookups <- paste0(mset, ".", (t.val - 1))
+    future.lookups <- paste0(mset, ".", (t.val + lead.val))
+    
+    t.past.lookup <- paste0(id.val, ".", (t.val - 1))
+    t.future.lookup <- paste0(id.val, ".", (t.val + lead.val))
+    
+    control.diffs <- data_in[future.lookups, outcome] - data_in[past.lookups, outcome]
+    
+    treat.diff <- data_in[t.future.lookup, outcome] - data_in[t.past.lookup, outcome]
+    
+    ind.effects <- treat.diff - sum(attr(mset, "weights") * control.diffs)
+    denom <- attr(mset, "treatment.change")
+    if (use.abs.value) denom <- abs(denom)
+    ind.effects <- ind.effects / denom
+    return(ind.effects)
+    
+  }
+  
+  
+  if ( identical(attributes(pm.obj)[["qoi"]], "att") || 
+       identical(attributes(pm.obj)[["qoi"]], "atc") )
+  { #using simplify = TRUE because we should always expect a vector, so nothing unexpected should happen
+    effects <- mapply(FUN = get_ind_effects,
+                      mset = msets,
+                      mset.name = names(msets),
+                      MoreArgs = list(lead.val = lead,
+                                      data_in = data.in,
+                                      outcome = attributes(pm.obj)[["outcome.var"]]),
+                      SIMPLIFY = TRUE)
+    
+    return(effects)
+  } else if (identical(attr(pm.obj, "qoi"), "ate"))
+  {
+    effects <- mapply(FUN = get_ind_effects,
+                      mset = msets,
+                      mset.name = names(msets),
+                      MoreArgs = list(lead.val = lead,
+                                      data_in = data.in,
+                                      outcome = attributes(pm.obj)[["outcome.var"]]),
+                      SIMPLIFY = TRUE)
+    
+    
+    effects.atc <- mapply(FUN = get_ind_effects,
+                          mset = msets.atc,
+                          mset.name = names(msets.atc),
+                          MoreArgs = list(lead.val = lead,
+                                          data_in = data.in,
+                                          outcome = attributes(pm.obj)[["outcome.var"]]),
+                          SIMPLIFY = TRUE)
+    
+    
+    return(list(att = effects,
+                atc = effects.atc))
+    
+  } else if (identical(attr(pm.obj, "qoi"), "art"))
+  {
+    effects <- mapply(FUN = get_ind_effects,
+                      mset = msets,
+                      mset.name = names(msets),
+                      MoreArgs = list(lead.val = lead,
+                                      data_in = data.in,
+                                      outcome = attributes(pm.obj)[["outcome.var"]],
+                                      use.abs.value = TRUE),
+                      SIMPLIFY = TRUE)
+    return(effects)
+  } else
+  {
+    stop("invalid qoi")
+  }
+  
+  
+  
+}
+
+
+
+#' get_set_treatment_effects
+#'
+#' Calculates the treatment effect size at the matched set level
+#'
+#'
+#' Calculate the size of treatment effects for each matched set.
+#' @param pm.obj an object of class \code{PanelMatch}
+#' @param data.in data.frame with the original data
+#' @param lead integer (or integer vector) indicating the time period(s) in the future for which the treatment effect size will be calculated. Calculations will be made for the period t + lead, where t is the time of treatment. If more than one lead value is provided, then calculations will be performed for each value. 
+#' 
+#' @examples
+#' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
+#                          treatment = "dem", refinement.method = "mahalanobis",
+#                          data = dem, match.missing = TRUE,
+#                          covs.formula = ~ I(lag(tradewb, 1:4)),
+#                          size.match = 5, qoi = "att",
+#                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE,
+#                          placebo.test = TRUE)
+#' set.effects <- getSetTreatmentEffects(pm.obj = PM.results, data.in = dem, lead = 0)
+#' @export
+getSetTreatmentEffects <- function(pm.obj, data.in, lead)
+{
+  return(lapply(lead, calculate_set_effects, pm.obj = pm.obj, data.in = data.in))
+  
+}
+
+
+#' placeboTest
+#'
+#' Calculates results for a placebo test
+#'
+#'
+#' Calculate the results of a placebo test, looking at the change in outcome at time = t-1, compared to other pre treatment periods in the lag window.
+#' @param pm.obj an object of class \code{PanelMatch}
+#' @param data.in data.frame with the original data
+#' @param lag.in integer indicating earliest the time period(s) in the future for which the placebo test change in outcome will be calculated. Calculations will be made over the period t - max(lag) to t-2, where t is the time of treatment. The results are similar to those returned by PanelEstimate, except t-1 is used as the period of comparison, rather than the lead window.
+#' @param number.iterations integer specifying the number of bootstrap iterations
+#' @param confidence.level confidence level for the calculated standard error intervals
+#' @param plot logical indicating whether or not a plot should be generated, or just return the raw data from the calculations
+#' @param ... extra arguments to be passed to plot
+#' 
+#' @examples 
+#' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
+#'                          treatment = "dem", refinement.method = "mahalanobis",
+#'                          data = dem, match.missing = TRUE,
+#'                          covs.formula = ~ I(lag(tradewb, 1:4)),
+#'                          size.match = 5, qoi = "att",
+#'                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE,
+#'                          placebo.test = TRUE)
+#' placeboTest(PM.results, data.in = dem, number.iterations = 100, plot = FALSE)
+#' @export
+#' 
+#' 
+placeboTest <- function(pm.obj, 
+                        data.in, 
+                        lag.in = NULL,
+                        number.iterations = 5000,
+                        df.adjustment = FALSE,
+                        confidence.level = .95,
+                        plot = FALSE,
+                        ...)
+{ 
+  qoi.in <- attr(pm.obj, "qoi")
+  # dont need to worry about ate case anymore.
+  matchedsets <- pm.obj[[qoi.in]]
+  if (is.null(lag.in))
+  {
+    lag.in <- attr(matchedsets, "lag")
+  } 
+  
+  matchedsets <- pm.obj[[qoi.in]]
+  if (lag.in == 1) stop("placebo test cannot be conducted for lag = 1")
+  if (lag.in > attr(matchedsets, "lag")) stop("provided lag.in value exceeds lag parameter from matching stage. Please specify a valid lag.in value, such that lag.in < lag")
+  
+  lag.in <- lag.in:2
+  
+  
+  placebo.results.raw <- panel_estimate(sets = pm.obj,
+                                        data = data.in,
+                                        number.iterations = number.iterations,
+                                        df.adjustment = df.adjustment,
+                                        placebo.test = TRUE,
+                                        placebo.lead = lag.in)
+  
+  if (plot)
+  {
+    plot(placebo.results.raw, ...)
+  } else {
+    colnames(placebo.results.raw$bootstrapped.estimates) <- names(placebo.results.raw$estimates)
+    ret.results <- list(estimates = placebo.results.raw$estimates,
+                        bootstrapped.estimates = placebo.results.raw$bootstrapped.estimates)
+    return(ret.results)
+  }
+}
+
