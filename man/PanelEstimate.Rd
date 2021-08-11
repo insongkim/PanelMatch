@@ -10,7 +10,8 @@ PanelEstimate(
   df.adjustment = FALSE,
   confidence.level = 0.95,
   moderator = NULL,
-  data
+  data,
+  se.method = "bootstrap"
 )
 }
 \arguments{
@@ -28,11 +29,11 @@ calculation. The default is \code{FALSE}.}
 estimates for statistical inference. The default is .95.}
 
 \item{moderator}{The name of a moderating variable, provided as a character string. If a moderating variable is provided
-the returned object will be a list of \code{PanelEstimate} objects. The names of the list will reflect the different values of the 
-moderating variable. More specifically, the moderating variable values will be converted to syntactically proper names using 
+the returned object will be a list of \code{PanelEstimate} objects. The names of the list will reflect the different values of the
+moderating variable. More specifically, the moderating variable values will be converted to syntactically proper names using
 \code{make.names}.}
 
-\item{data}{The same time series cross sectional data set provided to the PanelMatch function used to produce 
+\item{data}{The same time series cross sectional data set provided to the PanelMatch function used to produce
 the matched sets}
 }
 \value{
@@ -50,23 +51,23 @@ the matched sets}
 \item{standard.error}{the standard error(s) of the point estimates}
 }
 \description{
-\code{PanelEstimate} estimates a causal quantity of interest, including the average treatment effect for 
+\code{PanelEstimate} estimates a causal quantity of interest, including the average treatment effect for
 treated or control units (att and atc, respectively), or average treatment effect (ate), as specified in \code{PanelMatch}.
 This is done by estimating the counterfactual outcomes for each treated unit using
 matched sets. Users will provide matched sets that were obtained by the
 \code{PanelMatch} function and obtain point estimates via a
-weighted average computation with weighted bootstrap standard errors. Point estimates and standard errors will be 
-produced for each period in the lead window specified by the \code{lead} argument from \code{PanelMatch}. 
-Users may run multiple estimations by providing lists of each argument to the function. 
-However, in this format, every argument must be explicitly specified in each configuration 
-and must adhere to the same data types/structures outlined below. See the included code examples for more about 
+weighted average computation with weighted bootstrap standard errors. Point estimates and standard errors will be
+produced for each period in the lead window specified by the \code{lead} argument from \code{PanelMatch}.
+Users may run multiple estimations by providing lists of each argument to the function.
+However, in this format, every argument must be explicitly specified in each configuration
+and must adhere to the same data types/structures outlined below. See the included code examples for more about
 how this functionality works.
 }
 \examples{
-PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
-                         treatment = "dem", refinement.method = "mahalanobis", 
-                         data = dem, match.missing = TRUE, 
-                         covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
+PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
+                         treatment = "dem", refinement.method = "mahalanobis",
+                         data = dem, match.missing = TRUE,
+                         covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
                          size.match = 5, qoi = "att",
                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = TRUE)
 PE.results <- PanelEstimate(sets = PM.results, data = dem, number.iterations = 100)

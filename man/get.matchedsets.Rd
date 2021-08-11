@@ -14,7 +14,10 @@ get.matchedsets(
   treatedvar,
   hasbeensorted = FALSE,
   match.on.missingness = TRUE,
-  matching = TRUE
+  matching = TRUE,
+  restrict.control.period = NULL,
+  continuous = FALSE,
+  continuous.treatment.formula = NULL
 )
 }
 \arguments{
