@@ -338,17 +338,23 @@ panel_estimate <- function(se.method = "bootstrap",
       }
       coefs <- matrix(NA, nrow = number.iterations, ncol = length(lead))
       
+      #create index for fast extraction
+      #rownames(data) <- paste0(data[, unit.id],".",data[,time.id])
+      # all units have same time periods
+      #t.periods <- unique(data[, time.id])
       for (k in 1:number.iterations) 
       {  
         # make new data
         clusters <- unique(data[, unit.id])
-        units <- sample(clusters, size = length(clusters), replace=T)
+        units <- sample(clusters, size = length(clusters), replace=TRUE)
         while(all(!units %in% treated.unit.ids)) #while none of the units are treated units, resample
         {
           units <- sample(clusters, size = length(clusters), replace=T)
         }
-        # create bootstap sample with sapply
-        #d.sub1 <- data[ data[,unit.id] %in% units, ]
+        #browser()
+        #extract.units <- unlist(lapply(units, function(x) paste0(x, ".", t.periods)))
+        #d.sub1 <- data[extract.units, ]
+        
         df.bs <- lapply(units, function(x) which(data[,unit.id]==x))
         d.sub1 <- data[unlist(df.bs),]
         
