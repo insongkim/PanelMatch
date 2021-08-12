@@ -538,10 +538,11 @@ panel_estimate <- function(se.method = "bootstrap",
       return(z)
       
     } else {
-      o.coefs <- sapply(data[, sapply(lead, function(x) paste0("Wit_atc", x)), drop = FALSE],
-                        equality_four,
-                        y = data[c(dependent)][,1],
-                        z = data$dits_att)
+      
+      o.coefs <-  -sapply(data[, sapply(lead, function(x) paste0("Wit_atc", x)), drop = FALSE],
+                          equality_four,
+                          y = data[c(dependent)][,1],
+                          z = data$dits_atc)
       
       ## analytical bootstrap v2
       
