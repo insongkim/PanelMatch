@@ -342,6 +342,41 @@ panel_estimate <- function(se.method = "bootstrap",
       #rownames(data) <- paste0(data[, unit.id],".",data[,time.id])
       # all units have same time periods
       #t.periods <- unique(data[, time.id])
+      #####***************
+      perunitSum <- function(udf, 
+                             lead.in,
+                             dependent.in) {
+        w.it.stars <- udf[, sapply(lead.in, function(x) paste0("Wit_att", x)), drop = FALSE]
+        
+        w.it.stars[is.na(w.it.stars)] <- 0
+        return(colSums(apply(w.it.stars, MARGIN = 2, FUN = function(j) return(j * udf[, dependent.in]))))
+      }
+      
+      per.unit.sums <- by(data, as.factor(data[, unit.id]), 
+                          FUN = perunitSum, 
+                          lead.in = lead, 
+                          dependent.in = dependent)
+      
+      
+      perunitSum_Dit <- function(udf) {
+        d.it <- udf[, paste0("dits_",qoi)] #should always return a vector
+        d.it[is.na(d.it)] <- 0
+        return(sum(d.it))
+      }
+      
+      per.unit.dit.sums <- by(data, as.factor(data[, unit.id]), 
+                          FUN = perunitSum_Dit)
+      
+      
+      
+      units.id <- names(per.unit.sums)
+      tdf <- as.data.frame(do.call(rbind, as.list(per.unit.sums)))
+      colnames(tdf) <- sapply(lead, function(x) paste0("Wit_",qoi, x))
+      tdf$unit.id <- NA
+      tdf$unit.id <- as.character(unlist(units.id))
+      # should be in the same order...
+      tdf$Dit <- as.numeric(unlist(per.unit.dit.sums))
+      #####***************
       for (k in 1:number.iterations) 
       {  
         # make new data
@@ -351,19 +386,17 @@ panel_estimate <- function(se.method = "bootstrap",
         {
           units <- sample(clusters, size = length(clusters), replace=T)
         }
-        #browser()
-        #extract.units <- unlist(lapply(units, function(x) paste0(x, ".", t.periods)))
-        #d.sub1 <- data[extract.units, ]
+  
+        fdf <- as.data.frame(table(units))
+        colnames(fdf) <- c('unit.id', 'frequency')
+        bdf <- merge(x = tdf, y = fdf, all.x = TRUE)
+        bdf$frequency[is.na(bdf$frequency)] <- 0
         
-        df.bs <- lapply(units, function(x) which(data[,unit.id]==x))
-        d.sub1 <- data[unlist(df.bs),]
+        coefs[k,] <- colSums(bdf[, 
+                                 sapply(lead, function(x) paste0("Wit_att", x)), 
+                                 drop = FALSE] * bdf[, 'frequency'], na.rm = FALSE) / (sum(bdf[, 'frequency'] * bdf[, 'Dit']))
         
-        att_new <-  sapply(d.sub1[, sapply(lead, function(x) paste0("Wit_att", x)), 
-                                  drop = FALSE],
-                           equality_four,
-                           y = d.sub1[,outcome.variable],
-                           z = d.sub1$dits_att)
-        coefs[k,] <- att_new
+
       }
       sets <- decode_index(sets, unit.index.map, og.unit.id)
       # changed return to class
@@ -381,57 +414,8 @@ panel_estimate <- function(se.method = "bootstrap",
                         y = data[c(dependent)][,1],
                         z = data$dits_att)
       
-      ## analytical bootstrap v2
-      
-      
-      # perunitSum <- function(udf, 
-      #                           lead.in,
-      #                           dependent.in) {
-      #   w.it.stars <- udf[, sapply(lead.in, 
-      #                              function(x) paste0("Wit_att", x)), 
-      #                     drop = FALSE]
-      #   w.it.stars[is.na(w.it.stars)] <- 0
-      #   return(colSums(apply(w.it.stars, MARGIN = 2, 
-      #                        FUN = function(j) return(j * udf[, dependent.in]))))
-      # }
-      # 
-      # Ais <- by(data, as.factor(data[, unit.id]), 
-      #    FUN = perunitSum, 
-      #    lead.in = lead, 
-      #    dependent.in = dependent)
-      # 
-      # tdf <- do.call(rbind, as.list(Ais))
-      # As <- colSums(tdf, na.rm = TRUE)
-      # 
-      # ###
-      # 
-      # perunitDits <- function(udf) {
-      #   dits <- udf[, paste0("dits_", qoi), drop = FALSE]
-      #   dits[is.na(dits)] <- 0
-      #   return(sum(dits, na.rm = TRUE))
-      # }
-      # 
-      # Bi <- as.numeric(by(data, as.factor(data[, unit.id]), 
-      #           FUN = perunitDits))
-      # 
-      # N <- length(unique(data[, unit.id]))
-      # 
-      # EB <- mean(Bi) * N
-      # VB <- var(Bi, na.rm = TRUE) * N
-      # vdf <- apply(tdf, 2, var, na.rm = TRUE) #should return a number or vector
-      # VA <- N * vdf
-      # EA <- N * colMeans(tdf, na.rm = TRUE)
-      # covAB <- apply(tdf, 2, FUN = function(x) return(cov(x, Bi)))
-      # 
-      # estimator.var <- (1 / (EB^2)) * (VA - (2 * (EA / EB) * covAB) + ( (EA^2 / EB^2) * VB) )
-      # 
-      # names(estimator.var) <- paste0("t+",lead)
-      # names(o.coefs) <- paste0("t+", lead)
-      
-      
+
       ## analytical bootstrap v1
-      
-      
       perunitSum <- function(udf, 
                              lead.in,
                              dependent.in) {
@@ -439,10 +423,12 @@ panel_estimate <- function(se.method = "bootstrap",
         w.it.stars[is.na(w.it.stars)] <- 0
         return(colSums(apply(w.it.stars, MARGIN = 2, FUN = function(j) return(j * udf[, dependent.in]))))
       }
+      
       per.unit.sums <- by(data, as.factor(data[, unit.id]), 
                           FUN = perunitSum, 
                           lead.in = lead, 
                           dependent.in = dependent)
+      
       
       tdf <- do.call(rbind, as.list(per.unit.sums))
       
@@ -509,6 +495,43 @@ panel_estimate <- function(se.method = "bootstrap",
       
       coefs <- matrix(NA, nrow = number.iterations, ncol = length(lead))
       
+      #####***************
+      perunitSum <- function(udf, 
+                             lead.in,
+                             dependent.in) {
+        w.it.stars <- udf[, sapply(lead.in, function(x) paste0("Wit_atc", x)), drop = FALSE]
+        w.it.stars[is.na(w.it.stars)] <- 0
+        
+        return(colSums(apply(w.it.stars, MARGIN = 2, FUN = function(j) return(j * udf[, dependent.in]))))
+      }
+      
+      per.unit.sums <- by(data, as.factor(data[, unit.id]), 
+                          FUN = perunitSum, 
+                          lead.in = lead, 
+                          dependent.in = dependent)
+      
+      
+      perunitSum_Dit <- function(udf) {
+        d.it <- udf[, paste0("dits_",qoi)] #should always return a vector
+        d.it[is.na(d.it)] <- 0
+        return(sum(d.it))
+      }
+      
+      per.unit.dit.sums <- by(data, as.factor(data[, unit.id]), 
+                              FUN = perunitSum_Dit)
+      
+      
+      
+      units.id <- names(per.unit.sums)
+      tdf <- as.data.frame(do.call(rbind, as.list(per.unit.sums)))
+      colnames(tdf) <- sapply(lead, function(x) paste0("Wit_",qoi, x))
+      tdf$unit.id <- NA
+      tdf$unit.id <- as.character(unlist(units.id))
+      # should be in the same order...
+      tdf$Dit <- as.numeric(unlist(per.unit.dit.sums))
+      #####***************
+      
+      
       for (k in 1:number.iterations) 
       {  
         # make new data
@@ -518,17 +541,16 @@ panel_estimate <- function(se.method = "bootstrap",
         {
           units <- sample(clusters, size = length(clusters), replace=T)
         }
-        #d.sub1 <- data[ data[,unit.id] %in% units, ]
-        df.bs <- lapply(units, function(x) which(data[,unit.id]==x))
-        d.sub1 <- data[unlist(df.bs),]
         
-        atc_new <- -sapply(d.sub1[, sapply(lead, function(x) paste0("Wit_atc", x)), 
-                                  drop = FALSE],
-                           equality_four,
-                           y = d.sub1[,outcome.variable],
-                           z = d.sub1$dits_atc)
+        fdf <- as.data.frame(table(units))
+        colnames(fdf) <- c('unit.id', 'frequency')
+        bdf <- merge(x = tdf, y = fdf, all.x = TRUE)
+        bdf$frequency[is.na(bdf$frequency)] <- 0
         
-        coefs[k,] <- atc_new
+        coefs[k,] <- -colSums(bdf[, 
+                                 sapply(lead, function(x) paste0("Wit_atc", x)), 
+                                 drop = FALSE] * bdf[, 'frequency'], na.rm = FALSE) / (sum(bdf[, 'frequency'] * bdf[, 'Dit']))
+        
       }
       sets2 <- decode_index(sets2, unit.index.map, og.unit.id)
       z <- list("estimates" = o.coefs,
@@ -543,55 +565,6 @@ panel_estimate <- function(se.method = "bootstrap",
                           equality_four,
                           y = data[c(dependent)][,1],
                           z = data$dits_atc)
-      
-      ## analytical bootstrap v2
-      
-      
-      # perunitSum <- function(udf, 
-      #                        lead.in,
-      #                        dependent.in) {
-      #   w.it.stars <- udf[, sapply(lead.in, 
-      #                              function(x) paste0("Wit_atc", x)), 
-      #                     drop = FALSE]
-      #   w.it.stars[is.na(w.it.stars)] <- 0
-      #   return(colSums(apply(w.it.stars, MARGIN = 2, 
-      #                        FUN = function(j) return(j * udf[, dependent.in]))))
-      # }
-      # 
-      # Ais <- by(data, as.factor(data[, unit.id]), 
-      #           FUN = perunitSum, 
-      #           lead.in = lead, 
-      #           dependent.in = dependent)
-      # 
-      # tdf <- do.call(rbind, as.list(Ais))
-      # As <- colSums(tdf, na.rm = TRUE)
-      # 
-      # ###
-      # 
-      # perunitDits <- function(udf) {
-      #   dits <- udf[, paste0("dits_", qoi), drop = FALSE]
-      #   dits[is.na(dits)] <- 0
-      #   return(sum(dits, na.rm = TRUE))
-      # }
-      # 
-      # Bi <- as.numeric(by(data, as.factor(data[, unit.id]), 
-      #                     FUN = perunitDits))
-      # 
-      # N <- length(unique(data[, unit.id]))
-      # 
-      # EB <- mean(Bi) * N
-      # VB <- var(Bi, na.rm = TRUE) * N
-      # vdf <- apply(tdf, 2, var, na.rm = TRUE) #should return a number or vector
-      # VA <- N * vdf
-      # EA <- N * colMeans(tdf, na.rm = TRUE)
-      # covAB <- apply(tdf, 2, FUN = function(x) return(cov(x, Bi)))
-      # 
-      # estimator.var <- (1 / (EB^2)) * (VA - (2 * (EA / EB) * covAB) + ( (EA^2 / EB^2) * VB) )
-      # 
-      # names(estimator.var) <- paste0("t+",lead)
-      # names(o.coefs) <- paste0("t+", lead)
-      
-      ## analytical bootstrap v1
       
       
       perunitSum <- function(udf, 
@@ -678,6 +651,77 @@ panel_estimate <- function(se.method = "bootstrap",
       
       coefs <- matrix(NA, nrow = number.iterations, ncol = length(lead))
       
+      #####***************
+      perunitSum <- function(udf, 
+                             lead.in,
+                             dependent.in) {
+        w.it.stars <- udf[, sapply(lead.in, function(x) paste0("Wit_att", x)), drop = FALSE]
+        w.it.stars[is.na(w.it.stars)] <- 0
+        
+        return(colSums(apply(w.it.stars, MARGIN = 2, FUN = function(j) return(j * udf[, dependent.in]))))
+      }
+      
+      per.unit.sums <- by(data, as.factor(data[, unit.id]), 
+                          FUN = perunitSum, 
+                          lead.in = lead, 
+                          dependent.in = dependent)
+      
+      
+      perunitSum_Dit <- function(udf) {
+        d.it <- udf[, paste0("dits_","att")] #should always return a vector
+        d.it[is.na(d.it)] <- 0
+        return(sum(d.it))
+      }
+      
+      per.unit.dit.sums <- by(data, as.factor(data[, unit.id]), 
+                              FUN = perunitSum_Dit)
+      
+      
+      
+      units.id <- names(per.unit.sums)
+      tdf <- as.data.frame(do.call(rbind, as.list(per.unit.sums)))
+      colnames(tdf) <- sapply(lead, function(x) paste0("Wit_","att", x))
+      tdf$unit.id <- NA
+      tdf$unit.id <- as.character(unlist(units.id))
+      # should be in the same order...
+      tdf$Dit <- as.numeric(unlist(per.unit.dit.sums))
+      #####***************
+      
+      #####***************
+      perunitSum <- function(udf, 
+                             lead.in,
+                             dependent.in) {
+        w.it.stars <- udf[, sapply(lead.in, function(x) paste0("Wit_atc", x)), drop = FALSE]
+        w.it.stars[is.na(w.it.stars)] <- 0
+        
+        return(colSums(apply(w.it.stars, MARGIN = 2, FUN = function(j) return(j * udf[, dependent.in]))))
+      }
+      
+      per.unit.sums <- by(data, as.factor(data[, unit.id]), 
+                          FUN = perunitSum, 
+                          lead.in = lead, 
+                          dependent.in = dependent)
+      
+      
+      perunitSum_Dit <- function(udf) {
+        d.it <- udf[, paste0("dits_","atc")] #should always return a vector
+        d.it[is.na(d.it)] <- 0
+        return(sum(d.it))
+      }
+      
+      per.unit.dit.sums <- by(data, as.factor(data[, unit.id]), 
+                              FUN = perunitSum_Dit)
+      
+      
+      
+      units.id <- names(per.unit.sums)
+      tdf.atc <- as.data.frame(do.call(rbind, as.list(per.unit.sums)))
+      colnames(tdf.atc) <- sapply(lead, function(x) paste0("Wit_","atc", x))
+      tdf.atc$unit.id <- NA
+      tdf.atc$unit.id <- as.character(unlist(units.id))
+      # should be in the same order...
+      tdf.atc$Dit <- as.numeric(unlist(per.unit.dit.sums))
+      #####***************
       
       for (k in 1:number.iterations) {
         # make new data
@@ -687,24 +731,25 @@ panel_estimate <- function(se.method = "bootstrap",
         {
           units <- sample(clusters, size = length(clusters), replace=T)
         }
-        # create bootstap sample with sapply
-        #d.sub1 <- data[ data[,unit.id] %in% units, ]
-        df.bs <- lapply(units, function(x) which(data[,unit.id]==x))
-        d.sub1 <- data[unlist(df.bs),]
         
-        att_new <-sapply(d.sub1[, sapply(lead, function(x) paste0("Wit_att", x)), 
-                                drop = FALSE],
-                         equality_four,
-                         y = d.sub1[,outcome.variable],
-                         z = d.sub1$dits_att)
+        fdf <- as.data.frame(table(units))
+        colnames(fdf) <- c('unit.id', 'frequency')
+        bdf <- merge(x = tdf, y = fdf, all.x = TRUE)
+        bdf$frequency[is.na(bdf$frequency)] <- 0
         
-        atc_new <- -sapply(d.sub1[, sapply(lead, function(x) paste0("Wit_atc", x)), 
-                                  drop = FALSE],
-                           equality_four,
-                           y = d.sub1[,outcome.variable],
-                           z = d.sub1$dits_atc)
-        coefs[k,] <- (att_new*sum(d.sub1$dits_att) + atc_new*sum(d.sub1$dits_atc))/
-          (sum(d.sub1$dits_att) + sum(d.sub1$dits_atc))
+        att_new <- colSums(bdf[, sapply(lead, function(x) paste0("Wit_att", x)), 
+                                  drop = FALSE] * bdf[, 'frequency'], na.rm = FALSE) / (sum(bdf[, 'frequency'] * bdf[, 'Dit']))
+        
+        
+        bdf.atc <- merge(x = tdf.atc, y = fdf, all.x = TRUE)
+        bdf.atc$frequency[is.na(bdf.atc$frequency)] <- 0
+        
+        atc_new <- -colSums(bdf.atc[, sapply(lead, function(x) paste0("Wit_atc", x)), 
+                               drop = FALSE] * bdf.atc[, 'frequency'], na.rm = FALSE) / (sum(bdf.atc[, 'frequency'] * bdf.atc[, 'Dit']))
+        
+        coefs[k,] <- (att_new*sum(bdf$Dit * bdf$frequency) + atc_new*sum(bdf.atc$Dit * bdf.atc$frequency)) /
+          (sum(bdf$Dit * bdf$frequency) + sum(bdf.atc$Dit * bdf.atc$frequency))
+        
         
         
       }
