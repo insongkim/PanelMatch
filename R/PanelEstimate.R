@@ -209,7 +209,7 @@ panel_estimate <- function(se.method = "bootstrap",
   #method = inference
   method <- attr(sets, "refinement.method")
   
-  forbid.treatment.reversal <- attr(sets, "forbid.treatment.reversal") # this doesnt exist yet, not sure what it means.
+  forbid.treatment.reversal <- attr(sets, "forbid.treatment.reversal") 
   #add in checks about forbid.treatment.reversal and wfe, etc. 
   
   if(!"data.frame" %in% class(data)) stop("please convert data to data.frame class")
@@ -338,10 +338,7 @@ panel_estimate <- function(se.method = "bootstrap",
       }
       coefs <- matrix(NA, nrow = number.iterations, ncol = length(lead))
       
-      #create index for fast extraction
-      #rownames(data) <- paste0(data[, unit.id],".",data[,time.id])
-      # all units have same time periods
-      #t.periods <- unique(data[, time.id])
+      
       #####***************
       perunitSum <- function(udf, 
                              lead.in,
