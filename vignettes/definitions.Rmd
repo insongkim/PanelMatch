@@ -1,0 +1,103 @@
+---
+title: "Matched Set and Treatment Definitions"
+author: ""
+date: "7/23/2021"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+header-includes:
+- \usepackage{amsmath}
+- \usepackage{mathtools}
+- \usepackage{amssymb}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Matched Set Definitions
+
+Matched sets are defined differently, depending on whether the treatment variable is binary or continuous. Furthermore, for each case, there are two supported quantities of interest: the average treatment effect of treated units (ATT) and the average effect of treatment reversal on units that experience treatment reversal (ART).
+
+## Binary Treatment
+
+
+### ATT
+
+$$
+  M_{it} = \{i^\prime : i^\prime \ne i, X_{i^\prime t} =0, X_{i^\prime t^\prime} = X_{i t^\prime} \textrm{ for all } t^\prime = t-1, \dots,t-L\} 
+$$
+for the treated observations with $X_{it}=1$ and $X_{i,t-1}=0$. 
+
+### ART
+
+$M_{it} = \{i^\prime : i^\prime \ne i, X_{i^\prime t} =1,
+X_{i^\prime t^\prime} = X_{i t^\prime} \textrm{ for all } t^\prime =
+t-1, \dots,t-L\}$.  
+
+The observations in this set are matched to the reversed observations with $X_{it}=0$ and $X_{i,t-1}=1$.
+
+
+## Continuous Treatment
+
+There are additional parameters to be set for the continuous cases: $k_1, k_2$, and $k_3$. These are all positive numbers that represent different thresholds, depending on whether one is estimating the ATT or the ART. There are also two additional optional parameters which can be set: $k_4$ and $k_5$. These can be positive or negative and will be defined below.
+
+### ATT 
+
+
+For the continuous ATT, the matched set is defined as,
+$$
+  M_{it}  =  \{i^\prime : i^\prime \ne i, \lvert X_{i^\prime t} - X_{i^\prime t-1} \lvert \leq k_2,
+                 \lvert X_{i^\prime t^\prime} - X_{i t^\prime} \lvert \leq k_3 \textrm{ for all } t^\prime = t-1, \dots,t-L\} 
+$$
+for the treated observations with: 
+$$ 
+\lvert X_{it} - X_{it-1} \lvert \geq k_1
+$$
+When parameters $k_4$ or $k_5$ are specified, treated observations must meet additional requirements, defined as: $\lvert X_{it} - X_{it-1} \lvert \geq k_1, X_{it} \geq k_4$ or $\lvert X_{it} - X_{it-1} \lvert \geq k_1, X_{it} \leq k_5$, respectively.
+
+The constant $k_1$ specifies a ``threshold'' level of treatment. When the magnitude of the change of treatment levels from time $t-1$ to $t$ exceed $k_1$ for a given unit, treated status is assigned. Note that all control units must have less than $k_2$ change in treatment level. The constant $k_3$ controls the amount of permissible distance in treatment levels between treated and control units over the treatment history window. When specified, $k_4$ and $k_5$ specify a threshold of minimum or maximum level of treatment for treated units, respectively. For instance, if $k_4$ is specified, and for a given unit $\lvert X_{it} - X_{it-1} \lvert \geq k_1$ is satisfied but $X_{it} < k_4$, the $(i,t)$ pair is not considered to be a treated observation. The $k_5$ parameter behaves similarly. At most one of $k_4$ or $k_5$ can be specified, but both the $k_1$ and $k_4$ or $k_5$ threshold requirements must be met when they are specified. 
+
+### ART
+
+The ART in the continuous treatment setting is similar to the ATT, except "treated units" are units that experience a decrease in treatment levels. So, matched sets are defined the same as in the ATT:
+
+$$
+  M_{it}  =  \{i^\prime : i^\prime \ne i, \lvert X_{i^\prime t} - X_{i^\prime t-1} \lvert \leq k_2,
+                 \lvert X_{i^\prime t^\prime} - X_{i t^\prime} \lvert \leq k_3 \textrm{ for all } t^\prime = t-1, \dots,t-L\} 
+$$
+However, the observations in this set are matched to the observations that experience a reversal in treatment with $X_{it} - X_{i,t-1}  \leq -k_1$.
+
+As in the ATT, one can specify $k_4$ or $k_5$ to filter the set of units experiencing treatment reversal as: $\lvert X_{it} - X_{it-1} \lvert \leq -k_1, X_{it} \geq k_4$ or $\lvert X_{it} - X_{it-1} \lvert \leq -k_1, X_{it} \leq k_5$, respectively.
+
+# Estimators
+The ATT and ART are estimated using the following definitions:
+
+\subsection{ATT and ART (Brute Force)}
+\begin{align*}
+&\frac{1}{\sum_{i=1}^N \sum_{t=L+1}^{T-F} D_{it}} \sum_{i=1}^N \sum_{t=L+1}^{T-F} \notag  
+& D_{it} \frac{(Y_{i,t+F - Y_{i,t-1}}) - \sum_{i^\prime \in M_{it}} w_{it}^{i^\prime} (Y_{i^\prime,t+F} - Y_{i^\prime,t-1}) }{|X_{i,t} - X_{i,t-1}|}
+\end{align*}
+In the binary case: for ATT and ART, $|X_{i,t} - X_{i,t-1}| = 1$ when $D_{it} = 1$. In the continuous case, the difference between ATT and ART is only substantive and set with the parameters described above.
+\subsection{ATT and ART (package implementation)}
+\begin{align*}
+ W_{it}^\ast = \sum_{i^\prime=1}^N \sum_{t^\prime = 1}^T D_{i^\prime
+    t^\prime} \cdot v_{it}^{i^\prime t^\prime} 
+\end{align*}    
+\begin{align*}
+    v_{it}^{i^\prime t^\prime}& = 
+    \begin{cases}
+       \frac{1}{|X_{i^\prime t^\prime} - X_{i^\prime t^\prime-1}|} \text{ if }(i,t) = (i^\prime, t^\prime + F),\\
+       \frac{- 1}{|X_{i^\prime t^\prime} - X_{i^\prime t^\prime-1}|} \text{ if } (i,t) = (i^\prime,t^\prime -1) \\
+       \frac{- w_{i^\prime t^\prime}^i}{|X_{i^\prime t^\prime} - X_{i^\prime t^\prime-1}|} \text{ if } i \in  M_{i^\prime t^\prime}, t = t^\prime + F\\
+       \frac{w_{i^\prime t^\prime}^i}{|X_{i^\prime t^\prime} - X_{i^\prime t^\prime-1}|} \text{ if } i \in  M_{i^\prime t^\prime}, t = t^\prime - 1 \\
+       0 \text{ otherwise. }
+    \end{cases}
+\end{align*}
+
+\begin{align*}
+    \hat\delta(F,L) = \sum_{t=1}^T W_{it}^\ast Y_{it} /\sum_{i=1}^N\sum_{t=1}^T
+D_{it}
+\end{align*}
+

@@ -162,8 +162,7 @@ set_lwd_refinement <- function(mset, local.data, time, id,
     old.lag <- lag
     lag <- 0
     tlist <- expand.treated.ts(lag, treated.ts = treated.ts)
-    idxlist <- get_yearly_dmats(ordered.data, treated.ids, tlist, paste0(ordered.data[,unit.id], ".", 
-                                                                         ordered.data[, time.id]), matched_sets = msets, lag)
+    idxlist <- get_yearly_dmats(ordered.data, treated.ids, tlist, matched_sets = msets, lag)
     mahalmats <- build_maha_mats(ordered_expanded_data = ordered.data, idx =  idxlist)
     msets <- handle_mahalanobis_calculations(mahalmats, msets, size.match, verbose, use.diagonal.covmat = use.diag.covmat)
     lag <- old.lag
@@ -176,8 +175,7 @@ set_lwd_refinement <- function(mset, local.data, time, id,
     {
       f <- lead[i]
       tf <- expand.treated.ts(lag, treated.ts = treated.ts + f)
-      tf.index <- get_yearly_dmats(ordered.data, treated.ids, tf, paste0(ordered.data[,unit.id], ".", 
-                                                                         ordered.data[, time.id]), matched_sets = msets, lag)
+      tf.index <- get_yearly_dmats(ordered.data, treated.ids, tf, matched_sets = msets, lag)
       expanded.sets.tf <- build_ps_data(tf.index, ordered.data, lag)
       #pre.pooled <- ordered.data[ordered.data[, time.id] %in% (treated.ts + f), ]
       pre.pooled <- rbindlist(expanded.sets.tf)
@@ -236,8 +234,7 @@ set_lwd_refinement <- function(mset, local.data, time, id,
   {
     if(!all(refinement.method %in% c("CBPS.weight", "CBPS.match", "ps.weight", "ps.match"))) stop("please choose valid refinement method")
     tlist <- expand.treated.ts(lag, treated.ts = treated.ts)
-    idxlist <- get_yearly_dmats(ordered.data, treated.ids, tlist, paste0(ordered.data[,unit.id], ".", 
-                                                                         ordered.data[, time.id]), matched_sets = msets, lag)
+    idxlist <- get_yearly_dmats(ordered.data, treated.ids, tlist, matched_sets = msets, lag)
     expanded.sets.t0 <- build_ps_data(idxlist, ordered.data, lag)
     pre.pooled <- rbindlist(expanded.sets.t0)
     pooled <- unique(pre.pooled[complete.cases(pre.pooled), ])

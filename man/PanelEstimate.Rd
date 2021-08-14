@@ -6,16 +6,19 @@
 \usage{
 PanelEstimate(
   sets,
+  data,
   number.iterations = 1000,
   df.adjustment = FALSE,
   confidence.level = 0.95,
-  moderator = NULL,
-  data
+  moderator = NULL
 )
 }
 \arguments{
 \item{sets}{A \code{PanelMatch} object attained via the
 \code{PanelMatch} function.}
+
+\item{data}{The same time series cross sectional data set provided to the PanelMatch function used to produce 
+the matched sets}
 
 \item{number.iterations}{An integer value indicating the number of bootstrap
 iterations. The default is 1000.}
@@ -31,9 +34,6 @@ estimates for statistical inference. The default is .95.}
 the returned object will be a list of \code{PanelEstimate} objects. The names of the list will reflect the different values of the 
 moderating variable. More specifically, the moderating variable values will be converted to syntactically proper names using 
 \code{make.names}.}
-
-\item{data}{The same time series cross sectional data set provided to the PanelMatch function used to produce 
-the matched sets}
 }
 \value{
 \code{PanelEstimate} returns a list of class

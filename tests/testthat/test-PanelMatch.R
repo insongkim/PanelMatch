@@ -230,6 +230,21 @@ test_that("(ATC) PanelEstimate Runs", {
   
 })
 
+test_that("(ART) PanelEstimate Runs", {
+  qoi_ <- "art"
+  pm1 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
+                    treatment = "dem", refinement.method = "mahalanobis",
+                    data = dem, match.missing = FALSE, covs.formula = ~ I(lag(y, 1:4)) + I(lag(tradewb, 1:4)),
+                    size.match = 5, qoi = qoi_,
+                    outcome.var = "y",
+                    lead = 0:3, forbid.treatment.reversal = FALSE)
+  
+  pe.results <- PanelEstimate(pm1, data = dem)
+  comp.results <-  c(5.2177188648897,8.02138564165901,8.75646876914828,8.12399471507353)
+  expect_equivalent(pe.results$estimates, comp.results)
+  
+})
+
 
 test_that("(ATE) PanelEstimate Runs", {
   qoi_ <- "ate"
@@ -262,19 +277,1158 @@ test_that("summary.PanelEstimate", {
   
 })
 
+test_that("Basic Network test", {
+  #each odd unit is neighboring the even unit after it, each even unit is treated
+  ejmat = data.frame(v1 = seq(from = 1, to = 10, by = 2), v2 = seq(from = 2, to = 10, by = 2), e = 1)
+  
+  input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+  input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+  input.data[input.data$id %in% c(2,4,6,8, 10), 'treatment'] <- 1
+  
+  d2 <- PanelMatch:::calculate_neighbor_treatment(input.data, ejmat, 1, 'id', 'time', 'treatment')
+  
+  ## expect proportions to all be 100% and 1 treated neighbor
+  expect_true(all(d2[d2$id %in% c(1,3,5,7,9), 'neighborhood_t_prop.1'] == 1))
+  
+  expect_true(all(d2[d2$id %in% c(1,3,5,7,9), 'neighborhood_t_count.1'] == 1))
+  
+})
+
+
+test_that("Variation in treated neighbors", {
+  #each odd unit is neighboring the even unit after it, not everything is treated
+  ejmat = data.frame(v1 = seq(from = 1, to = 10, by = 2), v2 = seq(from = 2, to = 10, by = 2), e = 1)
+  
+  input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+  input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+  input.data[input.data$id %in% c(2,4,6), 'treatment'] <- 1
+  
+  d2 <- PanelMatch:::calculate_neighbor_treatment(input.data, ejmat, 1, 'id', 'time', 'treatment')
+  
+  ## expect some to be 100 percent and 1, others to have no trated neighbors, 0%
+  expect_true(all(d2[d2$id %in% c(1,3,5), 'neighborhood_t_prop.1'] == 1))
+  
+  expect_true(all(d2[d2$id %in% c(1,3,5), 'neighborhood_t_count.1'] == 1))
+  
+  expect_true(all(d2[d2$id %in% c(7,9), 'neighborhood_t_prop.1'] == 0))
+  
+  expect_true(all(d2[d2$id %in% c(7,9), 'neighborhood_t_count.1'] == 0))
+  
+})
+
+test_that("Multiple Neighbors, mix of treated", {
+  ##mix of treated and untreated neighbors
+  ejmat = data.frame(v1 = seq(from = 1, to = 10, by = 2), v2 = seq(from = 2, to = 10, by = 2), e = 1)
+  ejmat = rbind(ejmat, data.frame(v1 = c(1,5), v2 = 3, e =1))
+  ### we give 1 and 5 a second neighbor: 3, which is untreated, so they have a mix of treated/untreated neighbors
+  
+  input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+  input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+  input.data[input.data$id %in% c(2,4,6,8, 10), 'treatment'] <- 1
+  
+  d2 <- PanelMatch:::calculate_neighbor_treatment(input.data, ejmat, 1, 'id', 'time', 'treatment')
+  
+  
+  expect_true(all(d2[d2$id %in% c(1,5), 'neighborhood_t_prop.1'] == .5))
+  
+  expect_true(all(d2[d2$id %in% c(1,5), 'neighborhood_t_count.1'] == 1))
+  
+  expect_true(all(d2[d2$id %in% c(7,9), 'neighborhood_t_prop.1'] == 1))
+  
+  expect_true(all(d2[d2$id %in% c(7,9), 'neighborhood_t_count.1'] == 1))
+  
+  expect_true(all(d2[d2$id %in% c(3), 'neighborhood_t_prop.1'] == (1/3)))
+  
+  expect_true(all(d2[d2$id %in% c(3), 'neighborhood_t_count.1'] == 1))
+  
+})
+
+
+
+test_that("time variation", {
+  ##adding some time variation across units for treated neighbor count and status
+  
+  ejmat = data.frame(v1 = seq(from = 1, to = 10, by = 2), v2 = seq(from = 2, to = 10, by = 2), e = 1)
+  
+  input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+  input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+  input.data[input.data$id %in% c(2,4,6,8,10) & input.data$time %in% c(2,4,6,8,10), 'treatment'] <- 1
+  
+  d2 <- PanelMatch:::calculate_neighbor_treatment(input.data, ejmat, 1, 'id', 'time', 'treatment')
+  
+  
+  
+  expect_true(all(d2[d2$id %in% c(1,3,5,7,9) & input.data$time %in% c(2,4,6,8,10), 'neighborhood_t_prop.1'] == 1))
+  
+  expect_true(all(d2[d2$id %in% c(1,3,5,7,9) & input.data$time %in% c(2,4,6,8,10), 'neighborhood_t_count.1'] == 1))
+  
+  
+  expect_true(all(d2[d2$id %in% c(1,3,5,7,9) & input.data$time %in% c(1,3,5,7,9), 'neighborhood_t_prop.1'] == 0))
+  
+  expect_true(all(d2[d2$id %in% c(1,3,5,7,9) & input.data$time %in% c(1,3,5,7,9), 'neighborhood_t_count.1'] == 0))
+  
+})
+
+test_that("more neighbor variation", {
+  ejmat = data.frame(v1 = seq(from = 1, to = 10, by = 2), v2 = seq(from = 2, to = 10, by = 2), e = 1)
+  ejmat = rbind(ejmat, data.frame(v1 = c(1,5), v2 = 4, e =1))
+  
+  
+  input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+  input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+  input.data[input.data$id %in% c(2,4,6,8, 10), 'treatment'] <- 1
+  
+  d2 <- PanelMatch:::calculate_neighbor_treatment(input.data, ejmat, 1, 'id', 'time', 'treatment')
+  
+  
+  expect_true(all(d2[d2$id %in% c(1,5), 'neighborhood_t_prop.1'] == 1))
+  
+  expect_true(all(d2[d2$id %in% c(1,5), 'neighborhood_t_count.1'] == 2))
+  
+  expect_true(all(d2[d2$id %in% c(3, 7,9), 'neighborhood_t_prop.1'] == 1))
+  
+  expect_true(all(d2[d2$id %in% c(3, 7,9), 'neighborhood_t_count.1'] == 1))
+  
+  expect_true(all(d2[d2$id %in% c(4), 'neighborhood_t_prop.1'] == 0))
+  
+  expect_true(all(d2[d2$id %in% c(4), 'neighborhood_t_count.1'] == 0))
+})
+
+
+test_that("complex variation", {
+  ejmat = data.frame(v1 = seq(from = 1, to = 10, by = 2), v2 = seq(from = 2, to = 10, by = 2), e = 1)
+  ejmat = rbind(ejmat, data.frame(v1 = c(1), v2 = 10, e =1))
+  
+  
+  input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+  input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+  input.data[input.data$id %in% c(2,4,6,8,10) & input.data$time %in% c(2,4,6,8,10), 'treatment'] <- 1
+  input.data[input.data$id %in% c(2) & input.data$time %in% c(1,3), 'treatment'] <- 1
+  
+  
+  d2 <- PanelMatch:::calculate_neighbor_treatment(input.data, ejmat, 1, 'id', 'time', 'treatment')
+  
+  
+  expect_true(all(d2[d2$id %in% c(1) & d2$time %in% c(1,3) , 'neighborhood_t_prop.1'] == .5))
+  expect_true(all(d2[d2$id %in% c(1) & d2$time %in% c(1,3) , 'neighborhood_t_count.1'] == 1))
+  expect_true(all(d2[d2$id %in% c(1) & d2$time %in% c(2) , 'neighborhood_t_prop.1'] == 1))
+  expect_true(all(d2[d2$id %in% c(1) & d2$time %in% c(2) , 'neighborhood_t_count.1'] == 2))
+  
+  expect_true(all(d2[d2$id %in% c(1) & d2$time %in% c(4,6,8,10) , 'neighborhood_t_prop.1'] == 1))
+  
+  expect_true(all(d2[d2$id %in% c(3,5,7,9) & input.data$time %in% c(2,4,6,8,10), 'neighborhood_t_prop.1'] == 1))
+  
+  expect_true(all(d2[d2$id %in% c(3,5,7,9) & input.data$time %in% c(2,4,6,8,10), 'neighborhood_t_count.1'] == 1))
+  
+  expect_true(all(d2[d2$id %in% c(3,5,7,9) & input.data$time %in% c(1,3,5,7,9), 'neighborhood_t_prop.1'] == 0))
+  
+  expect_true(all(d2[d2$id %in% c(3,5,7,9) & input.data$time %in% c(1,3,5,7,9), 'neighborhood_t_count.1'] == 0))
+})
+
+test_that("max, numeric, adjusting caliper", {
+  
+  #####Next few tests is just changing the caliper up to see if the refinement responds appropriately
+  ## using max method, numeric data
+  input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+  input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+  input.data[input.data$id %in% c(2,4,6) & input.data$time > 5, 'treatment'] <- 1
+  input.data$cal.data <- input.data$id
+  input.data$outcome <- rnorm(nrow(input.data))
+  ###How does caliper work? 
+  
+  
+  PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
+                           treatment = "treatment", refinement.method = "none", # should be none for all of them
+                           data = input.data, match.missing = TRUE, 
+                           size.match = 5, qoi = "att" , outcome.var = "outcome",
+                           lead = 0:4, forbid.treatment.reversal = FALSE,
+                           caliper.formula = ~ I(caliper(cal.data,"max", 1, "numeric", "raw")) )
+  
+  expect_true(length(PM.results$att) == 3)
+  expect_true(all(PM.results$att[[1]] == c(1,3)))
+  expect_true(all(PM.results$att[[2]] == c(3,5)))
+  expect_true(all(PM.results$att[[3]] == c(5, 7)))
+  
+  
+  ####*****#####******
+  
+  
+  input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+  input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+  input.data[input.data$id %in% c(2,4,6) & input.data$time > 5, 'treatment'] <- 1
+  input.data$cal.data <- input.data$id
+  input.data$outcome <- rnorm(nrow(input.data))
+  ###How does caliper work? 
+  
+  
+  PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
+                           treatment = "treatment", refinement.method = "none", # should be none for all of them
+                           data = input.data, match.missing = TRUE, 
+                           size.match = 5, qoi = "att" , outcome.var = "outcome",
+                           lead = 0:4, forbid.treatment.reversal = FALSE,
+                           caliper.formula = ~ I(caliper(cal.data,"max", 2, "numeric", "raw")) )
+  
+  expect_true(length(PM.results$att) == 3)
+  expect_true(all(PM.results$att[[1]] == c(1,3)))
+  expect_true(all(PM.results$att[[2]] == c(3,5)))
+  expect_true(all(PM.results$att[[3]] == c(5,7,8)))
+  
+  ####*****#####******
+  
+  
+  input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+  input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+  input.data[input.data$id %in% c(2,4,6) & input.data$time > 5, 'treatment'] <- 1
+  input.data$cal.data <- input.data$id
+  input.data$outcome <- rnorm(nrow(input.data))
+  ###How does caliper work? 
+  
+  
+  PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
+                           treatment = "treatment", refinement.method = "none", # should be none for all of them
+                           data = input.data, match.missing = TRUE, 
+                           size.match = 5, qoi = "att" , outcome.var = "outcome",
+                           lead = 0:4, forbid.treatment.reversal = FALSE,
+                           caliper.formula = ~ I(caliper(cal.data,"max", 3, "numeric", "raw")) )
+  
+  expect_true(length(PM.results$att) == 3)
+  expect_true(all(PM.results$att[[1]] == c(1,3, 5)))
+  expect_true(all(PM.results$att[[2]] == c(1, 3, 5, 7)))
+  expect_true(all(PM.results$att[[3]] == c(3, 5, 7, 8, 9)))
+  
+  
+})
+
+
+test_that("average, numerical", {
+  input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+  input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+  input.data[input.data$id %in% c(2,4,6) & input.data$time > 5, 'treatment'] <- 1
+  input.data$cal.data <- input.data$id
+  input.data[input.data$id %in% c(1), 'cal.data'] <- c(rep(1, 5), rep(0, 5))
+  input.data[input.data$id %in% c(3), 'cal.data'] <- c(rep(3, 5), rep(2, 5))
+  
+  input.data$outcome <- rnorm(nrow(input.data))
+  
+  
+  PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
+                           treatment = "treatment", refinement.method = "none", # should be none for all of them
+                           data = input.data, match.missing = TRUE, 
+                           size.match = 5, qoi = "att" , outcome.var = "outcome",
+                           lead = 0:4, forbid.treatment.reversal = FALSE,
+                           caliper.formula = ~ I(caliper(cal.data,"average", 1, "numeric", "raw")) )
+  
+  expect_true(length(PM.results$att) == 3)
+  expect_true(all(PM.results$att[[1]] == c(3)))
+  expect_true(all(PM.results$att[[2]] == c(5)))
+  expect_true(all(PM.results$att[[3]] == c(5, 7)))
+})
+
+
+
+test_that("categorical, max", {
+  input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+  input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+  input.data[input.data$id %in% c(2,4,6) & input.data$time > 5, 'treatment'] <- 1 #created treated units
+  input.data$cal.data <- input.data$id
+  input.data[input.data$id %in% c(1,3), 'cal.data'] <- 2
+  input.data[input.data$id %in% c(5), 'cal.data'] <- 4
+  input.data[input.data$id %in% c(7,8,9,10), 'cal.data'] <- 6
+  input.data$outcome <- rnorm(nrow(input.data))
+  
+  
+  
+  PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
+                           treatment = "treatment", refinement.method = "none", # should be none for all of them
+                           data = input.data, match.missing = TRUE, 
+                           size.match = 5, qoi = "att" , outcome.var = "outcome",
+                           lead = 0:4, forbid.treatment.reversal = FALSE,
+                           caliper.formula = ~ I(caliper(cal.data,"max", 1, "categorical", "raw")) )
+  
+  expect_true(length(PM.results$att) == 3)
+  expect_true(all(PM.results$att[[1]] == c(1,3)))
+  expect_true(all(PM.results$att[[2]] == c(5)))
+  expect_true(all(PM.results$att[[3]] == c(7,8,9, 10) ))
+})
+
+
+
+test_that("categorical, average", {
+  input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+  input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+  input.data[input.data$id %in% c(2,4,6) & input.data$time > 5, 'treatment'] <- 1 #created treated units
+  input.data$cal.data <- input.data$id
+  input.data[input.data$id %in% c(1,3), 'cal.data'] <- 2
+  input.data[input.data$id %in% c(1,3) & input.data$time %in% 4:5, 'cal.data'] <- 3 #not 2
+  
+  input.data[input.data$id %in% c(5), 'cal.data'] <- 4
+  input.data[input.data$id %in% c(7,8,9,10), 'cal.data'] <- 6
+  input.data[input.data$id %in% c(7,8) & input.data$time %in% 3:5, 'cal.data'] <- 7 #not six, these should drop out
+  
+  input.data$outcome <- rnorm(nrow(input.data))
+  
+  
+  
+  PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
+                           treatment = "treatment", refinement.method = "none", # should be none for all of them
+                           data = input.data, match.missing = TRUE, 
+                           size.match = 5, qoi = "att" , outcome.var = "outcome",
+                           lead = 0:4, forbid.treatment.reversal = FALSE,
+                           caliper.formula = ~ I(caliper(cal.data,"average", .5, "categorical", "raw")) )
+  
+  expect_true(length(PM.results$att) == 3)
+  expect_true(all(PM.results$att[[1]] == c(1,3)))
+  expect_true(all(PM.results$att[[2]] == c(5)))
+  expect_true(all(PM.results$att[[3]] == c(9, 10) ))
+})
+
+
+test_that("network caliper and refinement tests", {
+  ### verify that formulas are updated:
+
+  network.refinement.info = list(use.proportion.data = TRUE,
+                                 proportion.lags = 0:4,
+                                 use.count.data = TRUE,
+                                 count.lags = 0:4)
+  network.caliper.info = list(use.proportion.data = TRUE,
+                              proportion.caliper.method = "average",
+                              proportion.caliper.threshold = .5,
+                              prop.unit.type = "raw",
+                              use.count.data = TRUE,
+                              count.caliper.method = "max",
+                              count.caliper.threshold = 1, 
+                              count.unit.type = "raw")
+
+
+  ejmat = data.frame(v1 = seq(from = 1, to = 10, by = 2), v2 = seq(from = 2, to = 10, by = 2), e = 1)
+
+  input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+  input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+  input.data[input.data$id %in% c(2,4,6,8, 10), 'treatment'] <- 1
+  input.data$outcome <- rnorm(nrow(input.data))
+  input.data$cal.data <- input.data$id
+
+  d2 <- PanelMatch:::calculate_neighbor_treatment(input.data, ejmat, 1, 'id', 'time', 'treatment')
+
+  ll <- PanelMatch:::handle_network_caliper_and_refinement(network.caliper.info, network.refinement.info, d2,
+                                                           ejmat, 1, 'id', 'time', 'treatment',
+                                                           NULL, NULL)
+  
+  covs.formula <- ll[[1]]
+  # expect_true(identical(covs.formula, ~I(lag(neighborhood_t_prop.1, 0:4)) + I(lag(neighborhood_t_count.1, 
+  #                                                                                 0:4))))
+  expect_true(covs.formula == ~I(lag(neighborhood_t_prop.1, 0:4)) + I(lag(neighborhood_t_count.1, 0:4)))
+  
+  caliper.formula <- ll[[2]]
+  expect_true(caliper.formula == ~ I(caliper(neighborhood_t_prop.1, "average", 0.5, "numeric", "raw")) + I(caliper(neighborhood_t_count.1, "max", 1, "numeric", "raw")))
+
+  ##Unclear why identical fails but == works...guessing because of environment which is not as important right now.
+  network.refinement.info = list(use.proportion.data = FALSE,
+                                 proportion.lags = 0,
+                                 use.count.data = TRUE,
+                                 count.lags = 0:2)
+  network.caliper.info = list(use.proportion.data = TRUE,
+                              proportion.caliper.method = "max",
+                              proportion.caliper.threshold = .5,
+                              prop.unit.type = "raw",
+                              use.count.data = TRUE,
+                              count.caliper.method = "max",
+                              count.caliper.threshold = 1,
+                              count.unit.type = "raw")
+
+  ll <- PanelMatch:::handle_network_caliper_and_refinement(network.caliper.info, network.refinement.info, d2,
+                                                           ejmat, 1, 'id', 'time', 'treatment',
+                                                           ~ outcome, NULL)
+  covs.formula <- ll[[1]]
+  caliper.formula <- ll[[2]]
+
+
+  covs.formula <- ll[[1]]
+  expect_true(identical(covs.formula, ~ outcome + I(lag(neighborhood_t_count.1, 0:2))))
+  caliper.formula <- ll[[2]]
+  expect_true(identical(caliper.formula, ~I(caliper(neighborhood_t_prop.1, "max", 0.5, "numeric", "raw")) + I(caliper(neighborhood_t_count.1, "max", 1, "numeric",
+                                                                                                                          "raw"))))
 
 
 
 
+  network.refinement.info = list(use.proportion.data = FALSE,
+                                 proportion.lags = 0,
+                                 use.count.data = FALSE,
+                                 count.lags = 2)
+  network.caliper.info = list(use.proportion.data = TRUE,
+                              proportion.caliper.method = "average",
+                              proportion.caliper.threshold = .2,
+                              prop.unit.type = "raw",
+                              use.count.data = TRUE,
+                              count.caliper.method = "max",
+                              count.caliper.threshold = 4,
+                              count.unit.type = "sd")
+
+  ll <- PanelMatch:::handle_network_caliper_and_refinement(network.caliper.info, network.refinement.info, d2,
+                                                           ejmat, 1, 'id', 'time', 'treatment',
+                                                           ~ outcome,
+                                                           ~ I(caliper(cal.data,"average", .5, "categorical", "raw")))
+
+
+  covs.formula <- ll[[1]]
+  expect_true(identical(covs.formula, ~ outcome))
+  caliper.formula <- ll[[2]]
+  expect_true(identical(caliper.formula, ~I(caliper(cal.data,"average", .5, "categorical", "raw")) + I(caliper(neighborhood_t_prop.1, "average", 0.2, "numeric", "raw")) + I(caliper(neighborhood_t_count.1, "max", 4, "numeric",
+                                                                                                                      "sd"))))
+
+
+  network.refinement.info = list(use.proportion.data = TRUE,
+                                 proportion.lags = 0:4,
+                                 use.count.data = TRUE,
+                                 count.lags = 0:4)
+  network.caliper.info = list(use.proportion.data = FALSE,
+                              proportion.caliper.method = "average",
+                              proportion.caliper.threshold = .2,
+                              prop.unit.type = "raw",
+                              use.count.data = FALSE,
+                              count.caliper.method = "max",
+                              count.caliper.threshold = 4,
+                              count.unit.type = "sd")
+  ll <- PanelMatch:::handle_network_caliper_and_refinement(network.caliper.info, network.refinement.info, d2,
+                                                           ejmat, 1, 'id', 'time', 'treatment',
+                                                           NULL,
+                                                           ~ I(caliper(cal.data,"average", .5, "categorical", "raw")))
+
+  covs.formula <- ll[[1]]
+  expect_true(covs.formula == ~I(lag(neighborhood_t_prop.1, 0:4)) + I(lag(neighborhood_t_count.1,
+                                                                                  0:4)))
+  caliper.formula <- ll[[2]]
+  expect_true(identical(caliper.formula, ~ I(caliper(cal.data,"average", .5, "categorical", "raw"))))
+
+
+
+  network.refinement.info = list(use.proportion.data = TRUE,
+                                 proportion.lags = 0:2,
+                                 use.count.data = TRUE,
+                                 count.lags = 0:2)
+  network.caliper.info = list(use.proportion.data = FALSE,
+                              proportion.caliper.method = "average",
+                              proportion.caliper.threshold = .2,
+                              prop.unit.type = "raw",
+                              use.count.data = TRUE,
+                              count.caliper.method = "max",
+                              count.caliper.threshold = 4,
+                              count.unit.type = "sd")
+  ll <- PanelMatch:::handle_network_caliper_and_refinement(network.caliper.info, network.refinement.info, d2,
+                                                           ejmat, 1, 'id', 'time', 'treatment',
+                                                           ~ outcome,
+                                                           ~ I(caliper(cal.data,"max", .2, "numeric", "sd")))
+  covs.formula <- ll[[1]]
+  expect_true(identical(covs.formula, ~outcome + I(lag(neighborhood_t_prop.1, 0:2)) + I(lag(neighborhood_t_count.1,
+                                                                                  0:2))))
+  caliper.formula <- ll[[2]]
+  expect_true(identical(caliper.formula, ~ I(caliper(cal.data,"max", .2, "numeric", "sd"))+ I(caliper(neighborhood_t_count.1, "max", 4, "numeric", "sd"))))
+
+
+
+  network.refinement.info = list(use.proportion.data = TRUE,
+                                 proportion.lags = 0:4,
+                                 use.count.data = TRUE,
+                                 count.lags = 0:4)
+  network.caliper.info = list(use.proportion.data = TRUE,
+                              proportion.caliper.method = "average",
+                              proportion.caliper.threshold = .2,
+                              prop.unit.type = "raw",
+                              use.count.data = FALSE,
+                              count.caliper.method = "max",
+                              count.caliper.threshold = 4,
+                              count.unit.type = "sd")
+  ll <- PanelMatch:::handle_network_caliper_and_refinement(network.caliper.info, network.refinement.info, d2,
+                                                           ejmat, 1, 'id', 'time', 'treatment',
+                                                           ~ outcome,
+                                                           ~ I(caliper(cal.data, "max", .2, "categorical", "raw")))
+  covs.formula <- ll[[1]]
+  expect_true(identical(covs.formula, ~outcome + I(lag(neighborhood_t_prop.1, 0:4)) + I(lag(neighborhood_t_count.1,
+                                                                                            0:4))))
+  caliper.formula <- ll[[2]]
+  expect_true(identical(caliper.formula, ~ I(caliper(cal.data,"max", .2, "categorical", "raw"))+ I(caliper(neighborhood_t_prop.1, "average", .2, "numeric", "raw"))))
+})
+
+
+test_that("Testing Continuous Matching: basic, att", {
+  input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+  input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+  input.data[input.data$id %in% c(2,4,6) & input.data$time > 5, 'treatment'] <- 1 + .43
+  input.data[input.data[, 'treatment'] == 0, 'treatment'] <- .035
+  
+  
+  input.data$cal.data <- input.data$id
+  input.data$outcome <- rnorm(nrow(input.data))
+  
+
+  
+  continuous.treatment.info <- list(treatment.threshold = .5, direction = "both", 
+                                    units = "raw", matching.threshold = 2) #include everything 
+  
+  PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
+                           treatment = "treatment", refinement.method = "none", # should be none for all of them
+                           data = input.data, match.missing = TRUE, 
+                           size.match = 5, qoi = "att" , outcome.var = "outcome",
+                           lead = 0:4, forbid.treatment.reversal = FALSE,
+                           continuous.treatment.info = continuous.treatment.info)
+  
+  expect_true(length(PM.results$att) == 3)
+  expect_true(all(PM.results$att[[1]] == c(1,3,5,7, 8, 9, 10)))
+  expect_true(all(PM.results$att[[2]] == c(1,3,5,7, 8,9,10)))
+  expect_true(all(PM.results$att[[3]] == c(1,3,5,7,8,9,10)))
+})
+  
+test_that("Continuous Matching, att, unmatchable controls", {
+  
+  # making two control units too far away to be matched with anything
+  input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+  input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+  input.data[input.data$id %in% c(2,4,6) & input.data$time > 5, 'treatment'] <- 1 + .43
+  input.data[input.data[, 'treatment'] == 0, 'treatment'] <- .035
+  
+  input.data[input.data$id %in% c(9, 10) & input.data$time < 5, 'treatment'] <- 5
+  
+  input.data$cal.data <- input.data$id
+  input.data$outcome <- rnorm(nrow(input.data))
+  
+  
+  continuous.treatment.info <- list(treatment.threshold = .5, direction = "both", 
+                                    units = "raw", matching.threshold = 2) 
+  
+  PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
+                           treatment = "treatment", refinement.method = "none", # should be none for all of them
+                           data = input.data, match.missing = TRUE, 
+                           size.match = 5, qoi = "att" , outcome.var = "outcome",
+                           lead = 0:4, forbid.treatment.reversal = FALSE,
+                           continuous.treatment.info = continuous.treatment.info)
+  
+  expect_true(length(PM.results$att) == 5)
+  expect_true(all(PM.results$att[[1]] == c(1,3,5,7,8)))
+  expect_true(all(PM.results$att[[2]] == c(1,3,5,7,8)))
+  expect_true(all(PM.results$att[[3]] == c(1,3,5,7,8)))
+})
+  
+  
+test_that("continuous matching, att, various exceptions", {
+  
+  # making one unit have one time period that will violate the caliper
+  input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+  input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+  
+  input.data[input.data$id %in% c(2,4,6) & input.data$time > 5, 'treatment'] <- 1 + .43
+  input.data[input.data[, 'treatment'] == 0, 'treatment'] <- .035
+  
+  input.data[input.data$id %in% c(10) & input.data$time == 3, 'treatment'] <- 5
+  
+  input.data$cal.data <- input.data$id
+  input.data$outcome <- rnorm(nrow(input.data))
+  
+  
+  continuous.treatment.info <- list(treatment.threshold = .5, direction = "both", 
+                                    units = "raw", matching.threshold = 2) #include everything 
+  
+  PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
+                           treatment = "treatment", refinement.method = "none", # should be none for all of them
+                           data = input.data, match.missing = TRUE, 
+                           size.match = 5, qoi = "att" , outcome.var = "outcome",
+                           lead = 0:4, forbid.treatment.reversal = FALSE,
+                           continuous.treatment.info = continuous.treatment.info)
+  
+  expect_true(length(PM.results$att) == 3)
+  expect_true(all(PM.results$att[[1]] == c(1,3,5,7,8,9)))
+  expect_true(all(PM.results$att[[2]] == c(1,3,5,7,8,9)))
+  expect_true(all(PM.results$att[[3]] == c(1,3,5,7,8,9)))
+  
+
+  
+  
+  ####*****#####*****
+  # making one unit have one time period that will violate the caliper
+  input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+  input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+  
+  input.data[input.data$id %in% c(2,4,6) & input.data$time > 5, 'treatment'] <- 1 + .43
+  input.data[input.data[, 'treatment'] == 0, 'treatment'] <- .035
+  
+  input.data[input.data$id %in% c(10) & input.data$time == 3, 'treatment'] <- 5
+  
+  input.data$cal.data <- input.data$id
+  input.data$outcome <- rnorm(nrow(input.data))
+  
+  
+  continuous.treatment.info <- list(treatment.threshold = .5, direction = "both", 
+                                    units = "raw", matching.threshold = 2) #include everything 
+  
+  PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
+                           treatment = "treatment", refinement.method = "none", # should be none for all of them
+                           data = input.data, match.missing = TRUE, 
+                           size.match = 5, qoi = "att" , outcome.var = "outcome",
+                           lead = 0:4, forbid.treatment.reversal = FALSE,
+                           continuous.treatment.info = continuous.treatment.info)
+  
+  expect_true(length(PM.results$att) == 3)
+  expect_true(all(PM.results$att[[1]] == c(1,3,5,7,8,9)))
+  expect_true(all(PM.results$att[[2]] == c(1,3,5,7,8,9)))
+  expect_true(all(PM.results$att[[3]] == c(1,3,5,7,8,9)))
+  
+  
+  
+  
+  # making one unit have one time period that will be different but still be included in the matching
+  input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+  input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+  
+  input.data[input.data$id %in% c(2,4,6) & input.data$time > 5, 'treatment'] <- 1 + .43
+  input.data[input.data[, 'treatment'] == 0, 'treatment'] <- .035
+  
+  input.data[input.data$id %in% c(10) & input.data$time == 3, 'treatment'] <- .2
+  
+  input.data$cal.data <- input.data$id
+  input.data$outcome <- rnorm(nrow(input.data))
+  
+  
+  continuous.treatment.info <- list(treatment.threshold = .5, direction = "both", 
+                                    units = "raw", matching.threshold = 2) #include everything 
+  
+  PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
+                           treatment = "treatment", refinement.method = "none", # should be none for all of them
+                           data = input.data, match.missing = TRUE, 
+                           size.match = 5, qoi = "att" , outcome.var = "outcome",
+                           lead = 0:4, forbid.treatment.reversal = FALSE,
+                           continuous.treatment.info = continuous.treatment.info)
+  
+  expect_true(length(PM.results$att) == 3)
+  expect_true(all(PM.results$att[[1]] == c(1,3,5,7,8,9, 10)))
+  expect_true(all(PM.results$att[[2]] == c(1,3,5,7,8,9, 10)))
+  expect_true(all(PM.results$att[[3]] == c(1,3,5,7,8,9, 10)))
+  
+  
+  ####*****#####*****
+  # making one unit have one time period that will violate the caliper, one that has different values but still will be matched
+  input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+  input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+  
+  input.data[input.data$id %in% c(2,4,6) & input.data$time > 5, 'treatment'] <- 1 + .43
+  input.data[input.data[, 'treatment'] == 0, 'treatment'] <- .035
+  
+  input.data[input.data$id %in% c(10) & input.data$time %in% 1:3, 'treatment'] <- .5
+  input.data[input.data$id %in% c(9) & input.data$time %in% 2:3, 'treatment'] <- 52
+  
+  input.data$cal.data <- input.data$id
+  input.data$outcome <- rnorm(nrow(input.data))
+  
+  
+  continuous.treatment.info <- list(treatment.threshold = .5, direction = "both", 
+                                    units = "raw", matching.threshold = 2) #include everything 
+  
+  PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
+                           treatment = "treatment", refinement.method = "none", # should be none for all of them
+                           data = input.data, match.missing = TRUE, 
+                           size.match = 5, qoi = "att" , outcome.var = "outcome",
+                           lead = 0:4, forbid.treatment.reversal = FALSE,
+                           continuous.treatment.info = continuous.treatment.info)
+  
+  expect_true(length(PM.results$att) == 3)
+  expect_true(all(PM.results$att[[1]] == c(1,3,5,7,8,10)))
+  expect_true(all(PM.results$att[[2]] == c(1,3,5,7,8,10)))
+  expect_true(all(PM.results$att[[3]] == c(1,3,5,7,8,10)))
+  
+})
+test_that("checking new definition of ATT (continuous) explicitly", {
+
+  ####*****#####*****
+  # CHECKING NEW DEFINITION OF ATT
+  input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+  input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+  
+  input.data[input.data$id %in% c(2,4) & input.data$time > 5, 'treatment'] <- 1 + .43
+  
+  input.data[input.data$id %in% c(6) & input.data$time > 5, 'treatment'] <- -1.43
+  input.data[input.data[, 'treatment'] == 0, 'treatment'] <- .035
+  
+  input.data[input.data$id %in% c(10) & input.data$time %in% 1:3, 'treatment'] <- .5
+  input.data[input.data$id %in% c(9) & input.data$time %in% 2:3, 'treatment'] <- 52
+  
+  input.data$cal.data <- input.data$id
+  input.data$outcome <- rnorm(nrow(input.data))
+  
+  
+  continuous.treatment.info <- list(treatment.threshold = .5, direction = "both", 
+                                    units = "raw", matching.threshold = 2) #include everything 
+  
+  PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
+                           treatment = "treatment", refinement.method = "none", # should be none for all of them
+                           data = input.data, match.missing = TRUE, 
+                           size.match = 5, qoi = "att" , outcome.var = "outcome",
+                           lead = 0:4, forbid.treatment.reversal = FALSE,
+                           continuous.treatment.info = continuous.treatment.info)
+  
+  expect_true(length(PM.results$att) == 3) 
+  expect_true(all(PM.results$att[[1]] == c(1,3,5,7,8,10)))
+  expect_true(all(PM.results$att[[2]] == c(1,3,5,7,8,10)))
+  
+
+  
+  
+  ####*****#####*****
+  # changing some numbers around to make sure the thresholds work as intended
+  input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+  input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+  
+  input.data[input.data$id %in% c(2,4,6) & input.data$time > 5, 'treatment'] <- 1.2
+  input.data[input.data$id %in% c(2,4,6) & input.data$time <= 5, 'treatment'] <- 1.1
+  #input.data[input.data[, 'treatment'] == 0, 'treatment'] <- .035
+  
+  
+  input.data[input.data$id %in% c(1,3), 'treatment'] <- .5
+  input.data[input.data$id %in% c(5,7), 'treatment'] <- 2
+  input.data[input.data$id %in% c(9), 'treatment'] <- 52
+  
+  input.data$cal.data <- input.data$id
+  input.data$outcome <- rnorm(nrow(input.data))
+  
+  
+  continuous.treatment.info <- list(treatment.threshold = .05, direction = "both", 
+                                    units = "raw", matching.threshold = 1) #small threshold for att matching 
+  
+  PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
+                           treatment = "treatment", refinement.method = "none", # should be none for all of them
+                           data = input.data, match.missing = TRUE, 
+                           size.match = 5, qoi = "att" , outcome.var = "outcome",
+                           lead = 0:4, forbid.treatment.reversal = FALSE,
+                           continuous.treatment.info = continuous.treatment.info)
+  
+  expect_true(length(PM.results$att) == 3)
+  expect_true(all(PM.results$att[[1]] == c(1,3,5,7))) ## 9 has giant fluctuation, 8 and 10 are all zeroes which are too far away by the threshold. 
+  expect_true(all(PM.results$att[[2]] == c(1,3,5,7)))
+  expect_true(all(PM.results$att[[3]] == c(1,3,5,7)))
+  
+
+  
+  #########*************************************************
+  ## including some control units in "both directions"
+  input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+  input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+  input.data[input.data$id %in% c(2,4,6) & input.data$time > 5, 'treatment'] <- 10
+  
+  input.data[input.data$id %in% c(1,3,5,7) & input.data$time %in% 1:10, 'treatment'] <- 1
+  input.data[input.data$id %in% c(8) & input.data$time %in% 1:10, 'treatment'] <- -1
+  input.data[input.data$id %in% c(9, 10) & input.data$time %in% 1:10, 'treatment'] <- 4
+  
+  
+  input.data$cal.data <- input.data$id
+  input.data$outcome <- rnorm(nrow(input.data))
+  
+  continuous.treatment.info <- list(treatment.threshold = .5, direction = "both", 
+                                    units = "raw", matching.threshold = 2) #include everything 
+  
+  PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
+                           treatment = "treatment", refinement.method = "none", # should be none for all of them
+                           data = input.data, match.missing = TRUE, 
+                           size.match = 5, qoi = "att" , outcome.var = "outcome",
+                           lead = 0:4, forbid.treatment.reversal = FALSE,
+                           continuous.treatment.info = continuous.treatment.info)
+  
+  expect_true(length(PM.results$att) == 3)
+  expect_true(all(PM.results$att[[1]] == c(1,3,5,7,8))) # 9 and 10 are now too far away
+  expect_true(all(PM.results$att[[2]] == c(1,3,5,7,8)))
+  expect_true(all(PM.results$att[[3]] == c(1,3,5,7,8)))
+  
+  
+  ##################################################################################################################
+  ######################################testing the matching threshold
+  input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+  input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+  input.data[input.data$id %in% c(2,4) & input.data$time > 5, 'treatment'] <- .6
+  input.data[input.data$id %in% c(6) & input.data$time > 5, 'treatment'] <- .4
+  #input.data[input.data[, 'treatment'] == 0, 'treatment'] <- .035
+  
+  
+  input.data$cal.data <- input.data$id
+  input.data$outcome <- rnorm(nrow(input.data))
+  
+  input.data[input.data$id %in% c(1,3,5, 6, 7, 8, 9, 10), 'treatment']  <- 100
+  
+  continuous.treatment.info <- list(treatment.threshold = .5, direction = "both", 
+                                    method = "max", units = "raw", matching.threshold = 2) #include everything 
+  
+  PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
+                           treatment = "treatment", refinement.method = "none", # should be none for all of them
+                           data = input.data, match.missing = TRUE, 
+                           size.match = 5, qoi = "att" , outcome.var = "outcome",
+                           lead = 0:4, forbid.treatment.reversal = FALSE,
+                           continuous.treatment.info = continuous.treatment.info)
+  
+  expect_true(length(PM.results$att) == 2) 
+  expect_true(all(c("2.6","4.6") %in% names(PM.results$att)))
+  
+  expect_true(all(PM.results$att[[1]] == c(1,3,5, 6, 7, 8, 9, 10)))
+  expect_true(all(PM.results$att[[2]] == c(1,3,5,6, 7, 8,9,10))) #six is no longer a treated unit so it will be matched like everything else  
+})
 
 
 
 
+test_that("empty sets exist, continuous treatment", {
+  
+  ####*****#####*****
+  input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+  input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+  input.data[input.data$id %in% c(2,4) & input.data$time > 5, 'treatment'] <- .6
+  input.data[input.data$id %in% c(6) & input.data$time > 5, 'treatment'] <- .4
+  #input.data[input.data[, 'treatment'] == 0, 'treatment'] <- .035
+  
+  
+  input.data$cal.data <- input.data$id
+  input.data$outcome <- rnorm(nrow(input.data))
+  
+  input.data[input.data$id %in% c(1,3,5, 6, 7, 8, 9, 10), 'treatment']  <- 100
+  
+  continuous.treatment.info <- list(treatment.threshold = .5, direction = "both", 
+                                    method = "max", units = "raw", matching.threshold = 2) #include everything 
+  
+  PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
+                           treatment = "treatment", refinement.method = "none", # should be none for all of them
+                           data = input.data, match.missing = TRUE, 
+                           size.match = 5, qoi = "att" , outcome.var = "outcome",
+                           lead = 0:4, forbid.treatment.reversal = FALSE,
+                           continuous.treatment.info = continuous.treatment.info)
+  
+  
+})
 
 
 
 
+test_that("test new ATC (continuous) basic", {
+  ##################################################################################################################
+  ######################################testing NEW ATC functionality############################################################################
+  ##################################################################################################################
+  
+  
+  input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+  input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+  input.data[,'treatment'] <- rep(seq(10, 100, by = 10), 10)
+  input.data[input.data$id %in% c(2,4, 6) & input.data$time == 6, 'treatment'] <- 50
+  
+  
+  input.data$cal.data <- input.data$id
+  input.data$outcome <- rnorm(nrow(input.data))
+  
+  continuous.treatment.info <- list(treatment.threshold = .5, direction = "both", 
+                                    units = "raw", matching.threshold = 10) #include everything 
+  
+  PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
+                           treatment = "treatment", refinement.method = "none", # should be none for all of them
+                           data = input.data, match.missing = TRUE, 
+                           size.match = 5, qoi = "atc" , outcome.var = "outcome",
+                           lead = 0:4, forbid.treatment.reversal = FALSE,
+                           continuous.treatment.info = continuous.treatment.info)
+  
+  
+  expect_true(length(PM.results$atc) == 3) 
+  expect_true(all(c("2.6","4.6", "6.6") %in% names(PM.results$atc)))
+  
+  expect_true(all(PM.results$atc[[1]] == c(1,3,5,7,8,9,10)))
+  expect_true(all(PM.results$atc[[2]] == c(1,3,5,7,8,9,10))) #six is no longer a treated unit so it will be matched like everything else
+  
+})
+
+test_that("test new ATC (continuous) varied treatments", {
+  ##################################################################################################################
+  ######################################testing NEW ATC functionality############################################################################
+  ##################################################################################################################
+  
+  
+  input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+  input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+  input.data[,'treatment'] <- rep(seq(10, 100, by = 10), 10)
+  input.data[input.data$id %in% c(2,4, 6) & input.data$time == 6, 'treatment'] <- 50 
+  
+  input.data[input.data$id %in% c(8, 9,10) , 'treatment'] <- rep(seq(5, 50, 5), 3) #exceeds treatment threshold (so are controls by ATC specification) but removed via filter
+  
+  input.data$cal.data <- input.data$id
+  input.data$outcome <- rnorm(nrow(input.data))
+  
+  continuous.treatment.info <- list(treatment.threshold = 4, direction = "both", 
+                                    units = "raw", matching.threshold = 10) #do some filtering at the caliper stage
+  
+  PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
+                           treatment = "treatment", refinement.method = "none", # should be none for all of them
+                           data = input.data, match.missing = TRUE, 
+                           size.match = 5, qoi = "atc" , outcome.var = "outcome",
+                           lead = 0:4, forbid.treatment.reversal = FALSE,
+                           continuous.treatment.info = continuous.treatment.info)
+  
+  
+  expect_true(length(PM.results$atc) == 3) 
+  expect_true(all(c("2.6","4.6", "6.6") %in% names(PM.results$atc)))
+  
+  expect_true(all(PM.results$atc[[1]] == c(1,3,5,7)))
+  expect_true(all(PM.results$atc[[2]] == c(1,3,5,7))) #six is no longer a treated unit so it will be matched like everything else
+  expect_true(all(PM.results$atc[[3]] == c(1,3,5,7)))
+  
+  
+  input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+  input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+  input.data[,'treatment'] <- rep(seq(10, 100, by = 10), 10)
+  input.data[input.data$id %in% c(2,4, 6) & input.data$time == 6, 'treatment'] <- 50
+  
+  input.data[input.data$id %in% c(8, 9,10) , 'treatment'] <- rep(seq(5, 50, 5), 3)
+  
+  input.data$cal.data <- input.data$id
+  input.data$outcome <- rnorm(nrow(input.data))
+  
+  continuous.treatment.info <- list(treatment.threshold = 4, direction = "both", 
+                                    units = "raw", matching.threshold = 30) #expand the caliper so that everything makes it through as a control...
+  
+  PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
+                           treatment = "treatment", refinement.method = "none", # should be none for all of them
+                           data = input.data, match.missing = TRUE, 
+                           size.match = 5, qoi = "atc" , outcome.var = "outcome",
+                           lead = 0:4, forbid.treatment.reversal = FALSE,
+                           continuous.treatment.info = continuous.treatment.info)
+  
+  
+  expect_true(length(PM.results$atc) == 3) 
+  expect_true(all(c("2.6","4.6", "6.6") %in% names(PM.results$atc)))
+  
+  expect_true(all(PM.results$atc[[1]] == c(1,3,5,7,8,9,10)))
+  expect_true(all(PM.results$atc[[2]] == c(1,3,5,7,8,9,10))) #six is no longer a treated unit so it will be matched like everything else
+  expect_true(all(PM.results$atc[[3]] == c(1,3,5,7,8,9,10)))
+  
+  
+})
 
 
+test_that("test new ATC (continuous) varied treatments and thresholds", {
+  ##################################################################################################################
+  ######################################testing NEW ATC functionality############################################################################
+  ##################################################################################################################
+  
+  
+  input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+  input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+  input.data[,'treatment'] <- rep(seq(10, 100, by = 10), 10)
+  input.data[input.data$id %in% c(2,4, 6) & input.data$time == 6, 'treatment'] <- 50
+  
+  input.data[input.data$id %in% c(8, 9,10) & input.data$time == 6 , 'treatment'] <- 53 #doing the opposite of before, it moves, but less than the threshold so these are still controls (treatments in atc)
+  
+  input.data$cal.data <- input.data$id
+  input.data$outcome <- rnorm(nrow(input.data))
+  
+  continuous.treatment.info <- list(treatment.threshold = 6, direction = "both",  #this should mean that 8, 9, 10 are now "treated" units in the ATC framework
+                                    units = "raw", matching.threshold = 50) 
+  
+  PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
+                           treatment = "treatment", refinement.method = "none", # should be none for all of them
+                           data = input.data, match.missing = TRUE, 
+                           size.match = 5, qoi = "atc" , outcome.var = "outcome",
+                           lead = 0:4, forbid.treatment.reversal = FALSE,
+                           continuous.treatment.info = continuous.treatment.info)
+  
+  
+  expect_true(length(PM.results$atc) == 6) 
+  expect_true(all(c("2.6","4.6", "6.6", "8.6", "9.6", "10.6") %in% names(PM.results$atc)))
+  
+  expect_true(all(PM.results$atc[[1]] == c(1,3,5,7)))
+  expect_true(all(PM.results$atc[[2]] == c(1,3,5,7))) 
+  expect_true(all(PM.results$atc[[3]] == c(1,3,5,7)))
+  
+  
+})
+
+
+
+test_that("test new ATE (continuous)", {
+  ##################################################################################################################
+  ######################################testing ATE functionality
+  
+  input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+  input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+  input.data[input.data$id %in% c(2,4) & input.data$time > 5, 'treatment'] <- -.6
+  input.data[input.data$id %in% c(6) & input.data$time > 5, 'treatment'] <- .4
+  #input.data[input.data[, 'treatment'] == 0, 'treatment'] <- .035
+  
+  input.data$cal.data <- input.data$id
+  input.data$outcome <- rnorm(nrow(input.data))
+  
+  continuous.treatment.info <- list(treatment.threshold = .2, direction = "both", 
+                                    method = "max", units = "raw", matching.threshold = 2) #include everything 
+  
+  PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
+                           treatment = "treatment", refinement.method = "none", # should be none for all of them
+                           data = input.data, match.missing = TRUE, 
+                           size.match = 5, qoi = "ate" , outcome.var = "outcome",
+                           lead = 0:4, forbid.treatment.reversal = FALSE,
+                           continuous.treatment.info = continuous.treatment.info)
+  
+  expect_true(length(PM.results$att) == 3) 
+  expect_true(all(c("2.6","4.6", "6.6") %in% names(PM.results$att)))
+  
+  expect_true(all(PM.results$att[[1]] == c(1,3,5, 7, 8, 9, 10)))
+  expect_true(all(PM.results$att[[2]] == c(1,3,5, 7, 8,9,10))) 
+  expect_true(all(PM.results$att[[3]] == c(1,3,5, 7, 8,9,10))) 
+  
+  expect_true(length(PM.results$atc) == 57) 
+  ### check this...
+  
+  
+})
+
+test_that("testing directionality (ATT)", {
+  ## testing directionality
+  
+  input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+  input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+  
+  input.data[input.data$id %in% c(2,6) & input.data$time > 5, 'treatment'] <- (1 + .43)
+  input.data[input.data$id %in% c(4) & input.data$time > 5, 'treatment'] <- (1 + .43) * -1 
+  input.data[input.data[, 'treatment'] == 0, 'treatment'] <- .035
+  
+  input.data[input.data$id %in% c(10) & input.data$time == 3, 'treatment'] <- 5
+  
+  input.data$cal.data <- input.data$id
+  input.data$outcome <- rnorm(nrow(input.data))
+  
+  
+  continuous.treatment.info <- list(treatment.threshold = .5, type = "numeric", 
+                                    units = "raw",direction = "both",
+                                    matching.threshold = 0) #include everything 
+  
+  PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
+                           treatment = "treatment", refinement.method = "none", # should be none for all of them
+                           data = input.data, match.missing = TRUE, 
+                           size.match = 5, qoi = "att" , outcome.var = "outcome",
+                           lead = 0, forbid.treatment.reversal = FALSE,
+                           continuous.treatment.info = continuous.treatment.info)
+  
+  expect_true(all(names(PM.results$att) == c("2.6", "4.6", "6.6")))
+  
+  continuous.treatment.info <- list(treatment.threshold = .5, type = "numeric", 
+                                    units = "raw",direction = "positive",
+                                    matching.threshold = 0) #include everything 
+  
+  PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
+                           treatment = "treatment", refinement.method = "none", # should be none for all of them
+                           data = input.data, match.missing = TRUE, 
+                           size.match = 5, qoi = "att" , outcome.var = "outcome",
+                           lead = 0, forbid.treatment.reversal = FALSE,
+                           continuous.treatment.info = continuous.treatment.info)
+  
+  expect_true(all(names(PM.results$att) == c("2.6", "6.6")))
+  
+  continuous.treatment.info <- list(treatment.threshold = .5, type = "numeric", 
+                                    units = "raw",direction = "negative",
+                                    matching.threshold = 0) #include everything 
+  
+  PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
+                           treatment = "treatment", refinement.method = "none", # should be none for all of them
+                           data = input.data, match.missing = TRUE, 
+                           size.match = 5, qoi = "att" , outcome.var = "outcome",
+                           lead = 0, forbid.treatment.reversal = FALSE,
+                           continuous.treatment.info = continuous.treatment.info)
+  
+  expect_true(all(names(PM.results$att) == c("4.6")))
+})
+
+
+test_that("simple brute force match? (continuous)", {
+  
+  brute_force_did_continuous <- function(matched.set, data, treatment.variable,
+                                         outcome.variable, F_lead, time, id)
+  {
+    all.data <- as.numeric(unlist(strsplit(names(matched.set), split = "[.]")))
+    tids <- all.data[seq(from = 1, to = length(all.data), by = 2)]
+    ts <- all.data[seq(from = 2, to = length(all.data), by = 2)]
+    set.dids <- list()
+    for (i in 1:length(tids)) {
+      
+      t0 <- ts[i] + F_lead
+      true.t0 <- ts[i] + 0
+      controls <- matched.set[[i]]
+      controls <- controls[attr(controls, "weights") > 0]
+      
+      checkdf1 <- data[data[, id] %in% controls & data[, time] == (ts[i] - 1), ]
+      checkdf2 <- data[data[, id] %in% controls & data[, time] == t0, ]
+      treated1 <- data[data[, id] == tids[i] & data[, time] == (ts[i] - 1), ]
+      treated2 <- data[data[, id] == tids[i] & data[, time] == t0, ]
+      
+      std1 <- data[data[, id] == tids[i] & data[, time] == (ts[i] - 1), ]
+      std2 <- data[data[, id] == tids[i] & data[, time] == true.t0, ]
+      
+      d1 <- sum((checkdf2[,outcome.variable] - checkdf1[, outcome.variable]) * attr(matched.set[[i]], "weights")[attr(matched.set[[i]], "weights") > 0])
+      
+      standardized.denom <- std2[,treatment.variable] - std1[, treatment.variable]
+      
+      d2 <- treated2[,outcome.variable] - treated1[, outcome.variable]
+      
+      set.dids[i] <- (d2 - d1) / standardized.denom
+      
+      #set.dids[i] <- treated[,outcome.variable] - (mean(treated[,outcome.variable] - checkdf[, outcome.variable])) ## should always be of length one
+    }
+    
+    return(mean(unlist(set.dids), na.rm = T))
+  }
+  
+  
+  continuous.treatment.info <- list(treatment.threshold = 1, direction = "both",
+                                    units = "raw", matching.threshold = 20) 
+  
+  
+  sdt <- data.frame(time = rep(1:10, 10), 
+                    id = unlist(sapply(1:10, function(x) rep(x, 10), simplify = FALSE)),
+                    treatment = 0, outcome = 4)
+  
+  sdt$treatment[5:10] <- 2
+  sdt$outcome[5:10] <- 5
+  
+  sdt$treatment[16:20] <- 3
+  sdt$outcome[16:20] <- 6
+  
+  sdt$treatment[27:30] <- 4
+  sdt$outcome[27:30] <- 7
+  
+  
+  s <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
+                  treatment = "treatment", refinement.method = "none", # should be none for all of them
+                  data = sdt, match.missing = TRUE, 
+                  size.match = 5, qoi = "att" , outcome.var = "outcome",
+                  lead = 0, forbid.treatment.reversal = FALSE,
+                  continuous.treatment.info = continuous.treatment.info)
+  
+  brute.force.result <- brute_force_did_continuous(matched.set = s$att, data = sdt, 
+                             treatment.variable = 'treatment', 
+                             outcome.variable = "outcome", 
+                             F_lead = 0, time = "time", id = "id")
+  
+  
+  pe <- PanelEstimate(sets = s, data = sdt)
+  
+  expect_equivalent(brute.force.result, pe$estimates)
+  
+  sdt$refine <- rnorm(n = nrow(sdt))
+  
+  
+  s <- PanelMatch(lag = 2, time.id = "time", unit.id = "id", 
+                  treatment = "treatment", refinement.method = "ps.weight", # should be none for all of them
+                  data = sdt, match.missing = TRUE, covs.formula = ~ I(lag(refine, 1:2)),
+                  size.match = 3, qoi = "att" , outcome.var = "outcome",
+                  lead = 0, forbid.treatment.reversal = FALSE,
+                  continuous.treatment.info = continuous.treatment.info)
+  
+  brute.force.result <- brute_force_did_continuous(matched.set = s$att, data = sdt, 
+                                                   treatment.variable = 'treatment', 
+                                                   outcome.variable = "outcome", 
+                                                   F_lead = 0, time = "time", id = "id")
+  
+  
+  pe <- PanelEstimate(sets = s, data = sdt)
+  
+  expect_equivalent(brute.force.result, pe$estimates)
+  
+  
+})
 
 
