@@ -245,9 +245,10 @@ prepareData <- function(data.in, lead, sets.att = NULL,
                         sets.atc = NULL, continuous.treatment,
                         qoi.in, dependent.variable)
 {
-  if ( identical(qoi.in, "att") || identical(qoi.in, "art"))
+  if ( identical(qoi.in, "att") || identical(qoi.in, "art") || identical(qoi.in, "ate"))
   {
     if (!identical(qoi.in, "ate")) qoi.t <- qoi.in
+    if (identical(qoi.in, "ate")) qoi.t <- "att"
     for (j in lead)
     {
 
@@ -265,7 +266,7 @@ prepareData <- function(data.in, lead, sets.att = NULL,
     data.in[, paste0("Wit_", qoi.t, "-1")] <- 0
 
   }
-  if (identical(qoi.in, "atc"))
+  if (identical(qoi.in, "atc") || identical(qoi.in, "ate"))
   {
 
     for (j in lead)
@@ -324,7 +325,7 @@ calculateEstimates <- function(qoi.in, data.in, lead,
       #do coefficient flip for atc
       if (identical(qoi.in, "atc")) o.coefs <- -o.coefs
       
-      if (all(lead >= 0)) #not placebo/regular case
+      if (all(lead >= 0)) 
       {
         if (length(lead[lead < 0]) > 1)
         {
@@ -350,7 +351,7 @@ calculateEstimates <- function(qoi.in, data.in, lead,
         return(colSums(apply(w.it.stars, MARGIN = 2, FUN = function(j) return(j * udf[, dependent.in]))))
       }
       
-      per.unit.sums <- by(data, as.factor(data[, unit.id.variable]),
+      per.unit.sums <- by(data.in, as.factor(data.in[, unit.id.variable]),
                           FUN = perunitSum,
                           lead.in = lead,
                           dependent.in = outcome.variable)
@@ -362,7 +363,7 @@ calculateEstimates <- function(qoi.in, data.in, lead,
         return(sum(d.it))
       }
       
-      per.unit.dit.sums <- by(data, as.factor(data[, unit.id.variable]),
+      per.unit.dit.sums <- by(data.in, as.factor(data.in[, unit.id.variable]),
                               FUN = perunitSum_Dit)
       
       units.id <- names(per.unit.sums)
@@ -426,17 +427,147 @@ calculateEstimates <- function(qoi.in, data.in, lead,
       return(z)
       
     } else if (identical(qoi.in, "ate")) {
+      o.coefs_att <-  sapply(data.in[, sapply(lead, function(x) paste0("Wit_att", x)),
+                                  drop = FALSE],
+                             equality_four,
+                             y = data.in[c(outcome.variable)][,1],
+                             z = data.in$dits_att)
       
+      o.coefs_atc <-  -sapply(data.in[, sapply(lead, function(x) paste0("Wit_atc", x)),
+                                   drop = FALSE],
+                              equality_four,
+                              y = data.in[c(outcome.variable)][,1],
+                              z = data.in$dits_atc)
+      
+      o.coefs_ate <- (o.coefs_att*sum(data.in$dits_att) + o.coefs_atc*sum(data.in$dits_atc))/
+        (sum(data.in$dits_att) + sum(data.in$dits_atc))
+      
+      if (length(lead[lead<0]) > 1)
+      {
+        names(o.coefs_ate)[(length(o.coefs_ate)-max(lead[lead>=0])):
+                             length(o.coefs_ate)] <- sapply(lead[lead>=0], function(x) paste0("t+", x))
+        names(o.coefs_ate)[(length(o.coefs_ate)-length(lead) + 1):
+                             length(lead[lead<0])] <- sapply(lead[lead<0], function(x) paste0("t", x))
+        
+      } else
+      {
+        names(o.coefs_ate) <- sapply(lead, function(x) paste0("t+", x))
+      }
+      
+      coefs <- matrix(NA, nrow = number.iterations, ncol = length(lead))
+      
+      ##### ** precompute some values for the bootstrap iterations
+      qoi.in <- "att"
+      perunitSum <- function(udf,
+                             lead.in,
+                             dependent.in) {
+        w.it.stars <- udf[, sapply(lead.in, function(x) paste0("Wit_", qoi.in, x)), drop = FALSE]
+        
+        w.it.stars[is.na(w.it.stars)] <- 0
+        return(colSums(apply(w.it.stars, MARGIN = 2, FUN = function(j) return(j * udf[, dependent.in]))))
+      }
+      
+      perunitSum_Dit <- function(udf) {
+        d.it <- udf[, paste0("dits_",qoi.in)] #should always return a vector
+        d.it[is.na(d.it)] <- 0
+        return(sum(d.it))
+      }
+      
+      per.unit.sums <- by(data.in, as.factor(data.in[, unit.id.variable]),
+                          FUN = perunitSum,
+                          lead.in = lead,
+                          dependent.in = outcome.variable)
+      
+      
+
+      
+      per.unit.dit.sums <- by(data.in, as.factor(data.in[, unit.id.variable]),
+                              FUN = perunitSum_Dit)
+      
+      units.id <- names(per.unit.sums)
+      tdf <- as.data.frame(do.call(rbind, as.list(per.unit.sums)))
+      colnames(tdf) <- sapply(lead, function(x) paste0("Wit_","att", x))
+      tdf$unit.id <- NA
+      tdf$unit.id <- as.character(unlist(units.id))
+      # should be in the same order...
+      tdf$Dit <- as.numeric(unlist(per.unit.dit.sums))
+      
+      qoi.in <- "atc"
+      
+      per.unit.sums <- by(data.in, as.factor(data.in[, unit.id.variable]),
+                          FUN = perunitSum,
+                          lead.in = lead,
+                          dependent.in = outcome.variable)
+      
+      
+      
+      
+      per.unit.dit.sums <- by(data.in, as.factor(data.in[, unit.id.variable]),
+                              FUN = perunitSum_Dit)
+      
+      
+      units.id <- names(per.unit.sums)
+      tdf.atc <- as.data.frame(do.call(rbind, as.list(per.unit.sums)))
+      colnames(tdf.atc) <- sapply(lead, function(x) paste0("Wit_","atc", x))
+      tdf.atc$unit.id <- NA
+      tdf.atc$unit.id <- as.character(unlist(units.id))
+      # should be in the same order...
+      tdf.atc$Dit <- as.numeric(unlist(per.unit.dit.sums))
+      #####***************
+      
+      for (k in 1:number.iterations) {
+        # make new data
+        clusters <- unique(data.in[, unit.id.variable])
+        units <- sample(clusters, size = length(clusters), replace=TRUE)
+        while(all(!units %in% att.treated.unit.ids) | all(!units %in% atc.treated.unit.ids)) #while none of the units are treated units (att and atc), resample
+        {
+          units <- sample(clusters, size = length(clusters), replace=TRUE)
+        }
+        
+        fdf <- as.data.frame(table(units))
+        colnames(fdf) <- c('unit.id', 'frequency')
+        bdf <- merge(x = tdf, y = fdf, all.x = TRUE)
+        bdf$frequency[is.na(bdf$frequency)] <- 0
+        
+        att_new <- colSums(bdf[, sapply(lead, function(x) paste0("Wit_att", x)),
+                               drop = FALSE] * bdf[, 'frequency'], na.rm = FALSE) / (sum(bdf[, 'frequency'] * bdf[, 'Dit']))
+        
+        
+        bdf.atc <- merge(x = tdf.atc, y = fdf, all.x = TRUE)
+        bdf.atc$frequency[is.na(bdf.atc$frequency)] <- 0
+        
+        atc_new <- -colSums(bdf.atc[, sapply(lead, function(x) paste0("Wit_atc", x)),
+                                    drop = FALSE] * bdf.atc[, 'frequency'], na.rm = FALSE) / (sum(bdf.atc[, 'frequency'] * bdf.atc[, 'Dit']))
+        
+        coefs[k,] <- (att_new*sum(bdf$Dit * bdf$frequency) + atc_new*sum(bdf.atc$Dit * bdf.atc$frequency)) /
+          (sum(bdf$Dit * bdf$frequency) + sum(bdf.atc$Dit * bdf.atc$frequency))
+        
+        
+        
+      }
+      # return(list("o.coef" = DID_ATE, "boots" = coefs))
+      
+      z <- list("estimates" = o.coefs_ate,
+                "bootstrapped.estimates" = coefs, 
+                "bootstrap.iterations" = number.iterations, 
+                "standard.error" = apply(coefs, 2, sd, na.rm = T),
+                "lead" = lead, "confidence.level" = confidence.level, 
+                "qoi" = "ate", "matched.sets" = list(att = att.sets, atc = atc.sets))
+      class(z) <- "PanelEstimate"
+      return(z)
       
     } else {
       stop("invalid qoi")
     }
+    
+    
   } else if (identical(se.method, "analytical"))
   {
-    o.coefs <- sapply(data[, sapply(lead, function(x) paste0("Wit_",qoi.in, x)), drop = FALSE],
+    if (identical(qoi.in, "ate")) stop("analytical standard errors not available for ATE")
+    o.coefs <- sapply(data.in[, sapply(lead, function(x) paste0("Wit_",qoi.in, x)), drop = FALSE],
                       equality_four,
-                      y = data[c(outcome.variable)][,1],
-                      z = data$dits_att)
+                      y = data.in[c(outcome.variable)][,1],
+                      z = data.in[, paste0("dits_", qoi.in)])
     if (qoi.in == "atc")
     {
       o.coefs <- o.coefs * -1
@@ -451,7 +582,7 @@ calculateEstimates <- function(qoi.in, data.in, lead,
       return(colSums(apply(w.it.stars, MARGIN = 2, FUN = function(j) return(j * udf[, dependent.in]))))
     }
     
-    per.unit.sums <- by(data, as.factor(data[, unit.id.variable]),
+    per.unit.sums <- by(data.in, as.factor(data.in[, unit.id.variable]),
                         FUN = perunitSum,
                         lead.in = lead,
                         dependent.in = outcome.variable)
@@ -460,7 +591,7 @@ calculateEstimates <- function(qoi.in, data.in, lead,
     tdf <- do.call(rbind, as.list(per.unit.sums))
     
     vdf <- apply(tdf, 2, var, na.rm = TRUE) #should return a number or vector
-    D.it <- sum(data[, paste0("dits_", qoi.in)])
+    D.it <- sum(data.in[, paste0("dits_", qoi.in)])
     D.it.denom <- D.it^2
     
     checkWits <- function(udf,
@@ -470,7 +601,7 @@ calculateEstimates <- function(qoi.in, data.in, lead,
       apply(w.it.stars, 2, FUN = function(x) all(x == 0))
     }
     
-    check.vecs <- by(data, as.factor(data[, unit.id.variable]),
+    check.vecs <- by(data.in, as.factor(data.in[, unit.id.variable]),
                      FUN = checkWits,
                      lead.in = lead)
     
@@ -483,6 +614,25 @@ calculateEstimates <- function(qoi.in, data.in, lead,
     estimator.var <- (N.nums * vdf) / D.it.denom
     names(estimator.var) <- paste0("t+",lead)
     names(o.coefs) <- paste0("t+", lead)
+    
+    if (is.null(atc.sets))
+    {
+      sets <- att.sets
+    } else if (is.null(att.sets)) {
+      sets <- atc.sets
+    } else {
+      stop("missing sets")
+    }
+    z <- list("estimates" = o.coefs,
+              "standard.error" = sqrt(estimator.var),
+              "lag" = lag,
+              "lead" = lead,
+              "confidence.level" = confidence.level,
+              "qoi" = qoi.in,
+              "matched.sets" = sets)
+    class(z) <- "PanelEstimate"
+    return(z)
+    
   } else {
     stop("invalid standard error method")
   }

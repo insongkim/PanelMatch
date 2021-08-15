@@ -191,7 +191,7 @@ panel_estimate <- function(sets,
   lead <- attr(sets, "lead")
   outcome.variable <- attr(sets, "outcome.var")
   continuous.treatment <- attr(sets,'continuous.treatment')
-
+  if (is.null(continuous.treatment)) continuous.treatment <- FALSE
   if (class(sets) != "PanelMatch") stop("sets parameter is not a PanelMatch object")
   qoi <- attr(sets, "qoi")
 
@@ -199,27 +199,32 @@ panel_estimate <- function(sets,
   #this is just for meta data extraction
   if (qoi == "ate")
   {
-    stop("qoi = ate no longer supported")
+    t.sets <- sets[["att"]]
+    t.sets.2 <- sets[["atc"]]
+    sets.x <- t.sets[sapply(t.sets, length) > 0]
+    sets.y <- t.sets.2[sapply(t.sets.2, length) > 0]
+    if (length(sets.x) == 0 && length(sets.y) == 0) stop("do not have adequate data to proceed")
+    ##stop("qoi = ate no longer supported")
   }
   else
   {
-    sets <- sets[[qoi]]
+    t.sets <- sets[[qoi]]
   }
-  sets <- sets[sapply(sets, length) > 0]
-  if (length(sets) == 0)
+  # sets <- sets[sapply(sets, length) > 0] REPLACE THIS BELOW!!!!
+  if (length(t.sets) == 0)
   {
     return(NA)
   }
 
-  lag.in <- attr(sets, "lag")
+  lag.in <- attr(t.sets, "lag")
   dependent = outcome.variable
-  treatment <- attr(sets, "treatment.var")
-  unit.id <- attr(sets, "id.var")
-  time.id <- attr(sets, "t.var")
+  treatment <- attr(t.sets, "treatment.var")
+  unit.id <- attr(t.sets, "id.var")
+  time.id <- attr(t.sets, "t.var")
   #method = inference
-  method <- attr(sets, "refinement.method")
+  method <- attr(t.sets, "refinement.method")
 
-  forbid.treatment.reversal <- attr(sets, "forbid.treatment.reversal")
+  forbid.treatment.reversal <- attr(t.sets, "forbid.treatment.reversal")
   #add in checks about forbid.treatment.reversal and wfe, etc.
 
   if (!"data.frame" %in% class(data)) stop("please convert data to data.frame class")
@@ -250,23 +255,32 @@ panel_estimate <- function(sets,
   data <- data[, c(unit.id, time.id, treatment, othercols)] #reorder columns
 
 
+  if (identical(qoi, "ate"))
+  {
+    sets.att <- sets[["att"]]
+    sets.att <- sets.att[sapply(sets.att, length) > 0]
+    sets.atc <- sets[["atc"]]
+    sets.atc <- sets.atc[sapply(sets.atc, length) > 0]
+  }
   if (identical(qoi, "atc"))
   {
-    sets.atc <- sets
+    sets.atc <- sets[["atc"]]
+    sets.atc <- sets.atc[sapply(sets.atc, length) > 0]
     sets.att <- NULL
   }
   if (identical(qoi, "att") || identical(qoi, "art"))
   {
-    sets.att <- sets #art = att from here on out
+    sets.att <- sets[[qoi]] #art = att from here on out
     sets.atc <- NULL
+    sets.att <- sets.att[sapply(sets.att, length) > 0]
   }
 
-  if (qoi == "att" | qoi == "art")
+  if (qoi == "att" || qoi == "art" || qoi == "ate")
   {
     treated.unit.ids.att <- as.numeric(sub("\\..*", "", names(sets.att)))
     if (identical(qoi, "att") || identical(qoi, "art")) treated.unit.ids.atc <- NULL
   }
-  if (qoi == "atc")
+  if (qoi == "atc" || qoi == "ate")
   {
     treated.unit.ids.atc <- as.numeric(sub("\\..*", "", names(sets.atc)))
     if (identical(qoi, "att")) treated.unit.ids.att <- NULL
@@ -280,7 +294,7 @@ panel_estimate <- function(sets,
                       qoi.in = qoi,
                       dependent.variable = dependent)
   
-  #NOTE THE COMMENT/ASSUMPTION
+  
   if (placebo.test)
   {
     
@@ -312,7 +326,8 @@ panel_estimate <- function(sets,
                                      confidence.level = confidence.level,
                                      att.sets = sets.att,
                                      atc.sets = sets.atc,
-                                     lag = lag.in)
+                                     lag = lag.in,
+                                     se.method = se.method)
   }
   return(pe.results)
   

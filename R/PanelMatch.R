@@ -405,7 +405,7 @@ panel_match <- function(lag, time.id, unit.id, treatment,
                                 continuous.treatment.info = continuous.treatment.info,
                                 placebo.test = placebo.test)
     
-    #msets <- decode_index(msets, unit.index.map, og.unit.id)
+    
     if (!matching & match.missing)
     {
       attr(msets, "lag") <- old.lag
@@ -427,9 +427,59 @@ panel_match <- function(lag, time.id, unit.id, treatment,
     }
     attr(pm.obj, "placebo.test") <- placebo.test
     return(pm.obj)
-  } else
+  } else if (identical(qoi, "ate") && is.null(continuous.treatment.info))
   {
-    stop("qoi not specified correctly!")
+    msets <- perform_refinement(lag = lag, time.id = time.id, unit.id = unit.id, 
+                                treatment = treatment, 
+                                refinement.method = refinement.method,
+                                size.match = size.match, ordered.data = ordered.data, 
+                                match.missing = match.missing, covs.formula = covs.formula,
+                                verbose = verbose, lead = lead, outcome.var = outcome.var, 
+                                forbid.treatment.reversal = forbid.treatment.reversal, 
+                                qoi = qoi, matching = matching,
+                                exact.matching.variables = exact.match.variables, 
+                                listwise.deletion = listwise.delete,
+                                use.diag.covmat = use.diagonal.variance.matrix, 
+                                caliper.formula = caliper.formula, 
+                                continuous.treatment.info = continuous.treatment.info,
+                                placebo.test = placebo.test)
+    ordered.data[, treatment] <- ifelse(ordered.data[, treatment] == 1,0,1) #flip the treatment variables 
+    
+    msets2 <- perform_refinement(lag = lag, time.id = time.id, unit.id = unit.id, 
+                                 treatment = treatment, 
+                                 refinement.method = refinement.method,
+                                 size.match = size.match, ordered.data = ordered.data, 
+                                 match.missing = match.missing, covs.formula = covs.formula,
+                                 verbose = verbose, lead = lead, outcome.var = outcome.var, 
+                                 forbid.treatment.reversal = forbid.treatment.reversal, 
+                                 qoi = qoi, matching = matching,
+                                 exact.matching.variables = exact.match.variables, 
+                                 listwise.deletion = listwise.delete,
+                                 use.diag.covmat = use.diagonal.variance.matrix, 
+                                 caliper.formula = caliper.formula, 
+                                 continuous.treatment.info = continuous.treatment.info,
+                                 placebo.test = placebo.test)
+    
+    if(!matching & match.missing)
+    {
+      attr(msets, "lag") <- old.lag
+    }
+    
+    if(!matching & match.missing)
+    {
+      attr(msets2, "lag") <- old.lag
+    }
+    pm.obj <- list("att" = msets, "atc" = msets2)
+    class(pm.obj) <- "PanelMatch"
+    attr(pm.obj, "qoi") <- qoi
+    attr(pm.obj, "outcome.var") <- outcome.var
+    attr(pm.obj, "lead") <- lead
+    attr(pm.obj, "forbid.treatment.reversal") <- forbid.treatment.reversal
+    return(pm.obj)
+    
+    
+  } else {
+    stop("qoi not specified correctly")
   }
   
   
