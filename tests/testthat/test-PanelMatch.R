@@ -13,6 +13,30 @@ test_that("ATT (no refinement) runs", {
 })
 
 
+test_that("ATT/ATC/ATE/ART dimension edge case checks", {
+  PM.object <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
+                          treatment = "dem", refinement.method = "none",
+                          data = dem, match.missing = FALSE,
+                          size.match = 5, qoi = "att",
+                          outcome.var = "y",
+                          lead = 0, forbid.treatment.reversal = FALSE)
+  
+  PM.object <- PanelMatch(lag = 1, time.id = "year", unit.id = "wbcode2",
+                          treatment = "dem", refinement.method = "none",
+                          data = dem, match.missing = FALSE,
+                          size.match = 5, qoi = "att",
+                          outcome.var = "y",
+                          lead = 0, forbid.treatment.reversal = FALSE)
+  
+  
+  expect_equal(class(PM.object), "PanelMatch")
+  expect_equal(class(PM.object$att), "matched.set")
+  expect_equal(length(PM.object), 1)
+  expect_equal(length(PM.object$att), 105)
+  expect_equal(names(PM.object)[1], "att")
+})
+
+
 test_that("ATC (no refinement) runs", {
   PM.object <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                           treatment = "dem", refinement.method = "none",
