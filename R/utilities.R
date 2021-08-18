@@ -191,7 +191,8 @@ get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.wei
   
   
   # we can remove time of treatment, since we expect a change
-  pointmatrix <- pointmatrix[-nrow(pointmatrix),]
+  
+  #pointmatrix <- pointmatrix[-nrow(pointmatrix),]
   
   if (!plot) return(pointmatrix)
   

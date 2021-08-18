@@ -15,7 +15,11 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
 {
 
   if ( !is.null(mset.object) ) stop('This should never run!')
-
+  if (identical(class(ordered.data[, unit.id]), "numeric"))
+  {
+    warning("converting unit id variable data to integer")
+    class(ordered.data[, unit.id]) <- "integer"
+  }
   continuous.treatment <- !is.null(continuous.treatment.info) #to make this easier
   if (continuous.treatment)
   {
