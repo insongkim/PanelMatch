@@ -146,7 +146,7 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
      class(outcome.var) == "list" & class(forbid.treatment.reversal) == "list" &
      class(matching) == "list" & class(listwise.delete) == "list" & class(use.diagonal.variance.matrix) == "list") #everything but data must be provided explicitly
   {
-    stop("looped version of PanelMatch currently unavailable")
+    #stop("looped version of PanelMatch currently unavailable")
     if(length(unique(length(lag) , length(time.id)  , length(unit.id)  , length(treatment)  , 
                      length(refinement.method)  , length(size.match)  , length(match.missing)  , 
                      length(covs.formula)  , length(verbose)  , length(qoi)  , length(lead)  , 
@@ -170,11 +170,11 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
              listwise.delete = listwise.delete,
              use.diagonal.variance.matrix = use.diagonal.variance.matrix,
              adjacency.matrix = adjacency.matrix,
-             neighborhood.degree = neighborhood.degree,
-             caliper.formula = caliper.formula,
-             network.caliper.info = network.caliper.info,
-             network.refinement.info = network.refinement.info,
-             continuous.treatment.info = continuous.treatment.info,
+             #neighborhood.degree = neighborhood.degree,
+             #caliper.formula = caliper.formula,
+             #network.caliper.info = network.caliper.info,
+             #network.refinement.info = network.refinement.info,
+             #continuous.treatment.info = continuous.treatment.info,
              placebo.test = placebo.test,
              MoreArgs = list(data = data)
              , SIMPLIFY = FALSE)

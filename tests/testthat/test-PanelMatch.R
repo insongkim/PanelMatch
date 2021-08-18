@@ -46,6 +46,58 @@ test_that("ATE (no refinement) runs", {
 })
 
 
+test_that("edge case matching checks", {
+  PM.object <- PanelMatch(lag = 1, time.id = "year", unit.id = "wbcode2",
+                          treatment = "dem", refinement.method = "none",
+                          data = dem, match.missing = FALSE,
+                          size.match = 5, qoi = "att",
+                          outcome.var = "y",
+                          lead = 0, forbid.treatment.reversal = FALSE)
+  expect_equal(class(PM.object), "PanelMatch")
+  expect_equal(class(PM.object$att), "matched.set")
+  pe.results <- PanelEstimate(PM.object, data = dem)
+  pe.results <- PanelEstimate(PM.object, data = dem)
+  
+  PM.object <- PanelMatch(lag = 1, time.id = "year", unit.id = "wbcode2",
+                          treatment = "dem", refinement.method = "none",
+                          data = dem, match.missing = FALSE,
+                          size.match = 5, qoi = "art",
+                          outcome.var = "y",
+                          lead = 0, forbid.treatment.reversal = FALSE)
+  expect_equal(class(PM.object), "PanelMatch")
+  expect_equal(class(PM.object$art), "matched.set")
+  pe.results <- PanelEstimate(PM.object, data = dem)
+  pe.results <- PanelEstimate(PM.object, data = dem)
+  
+  PM.object <- PanelMatch(lag = 1, time.id = "year", unit.id = "wbcode2",
+                          treatment = "dem", refinement.method = "none",
+                          data = dem, match.missing = FALSE,
+                          size.match = 5, qoi = "atc",
+                          outcome.var = "y",
+                          lead = 0, forbid.treatment.reversal = FALSE)
+  expect_equal(class(PM.object), "PanelMatch")
+  expect_equal(class(PM.object$atc), "matched.set")
+  pe.results <- PanelEstimate(PM.object, data = dem)
+  pe.results <- PanelEstimate(PM.object, data = dem)
+  
+  PM.object <- PanelMatch(lag = 1, time.id = "year", unit.id = "wbcode2",
+                          treatment = "dem", refinement.method = "none",
+                          data = dem, match.missing = FALSE,
+                          size.match = 5, qoi = "ate",
+                          outcome.var = "y",
+                          lead = 0, forbid.treatment.reversal = FALSE)
+  expect_equal(class(PM.object), "PanelMatch")
+  expect_equal(class(PM.object$att), "matched.set")
+  expect_equal(class(PM.object$atc), "matched.set")
+  pe.results <- PanelEstimate(PM.object, data = dem)
+  pe.results <- PanelEstimate(PM.object, data = dem)
+  
+})
+
+
+
+
+
 test_that("ATT: refinement method (excluding MSM) does not affect unrefined matched sets", {
   pm1 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                           treatment = "dem", refinement.method = "mahalanobis",
@@ -1489,6 +1541,7 @@ test_that("(ART) bootstrap SEs", {
 
 
 test_that("(ATE) bootstrap SEs", {
+  set.seed(1)
   qoi_ <- "ate"
   pm1 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                     treatment = "dem", refinement.method = "mahalanobis",
@@ -1498,7 +1551,7 @@ test_that("(ATE) bootstrap SEs", {
                     lead = 0:3, forbid.treatment.reversal = FALSE)
   
   pe.results <- PanelEstimate(pm1, data = dem)
-  dcomp.results <-  c(1.40908029917124,2.55357045354071,3.31650068953231,3.93452991794896)
+  comp.results <-  c(1.40908029917124,2.55357045354071,3.31650068953231,3.93452991794896)
   expect_equivalent(pe.results$estimates, comp.results)
   expect_equal(pe.results$standard.error, c(0.7732067 ,1.2230371, 1.5587862, 1.8037509), tolerance = .0000001)
 })
@@ -1529,7 +1582,7 @@ test_that("(ATT) PanelEstimate Runs: analytical SEs", {
                     outcome.var = "y",
                     lead = 0:3, forbid.treatment.reversal = FALSE)
   
-  pe.results <- PanelEstimate(pm1, data = dem, se.method = "analytical")
+  pe.results <- PanelEstimate(pm1, data = dem, se.method = "conditional")
   comp.results <-  c(-0.593399771464233,-0.321260212377162,0.456311286847623,1.73182162255356)
   expect_equivalent(pe.results$estimates, comp.results)
   comp.results <- c(0.7386351, 1.2103820 ,1.5592321 ,1.8248642)
@@ -1548,7 +1601,7 @@ test_that("(ATC) PanelEstimate Runs: analytical SEs", {
                     outcome.var = "y",
                     lead = 0:3, forbid.treatment.reversal = FALSE)
   
-  pe.results <- PanelEstimate(pm1, data = dem, se.method = "analytical")
+  pe.results <- PanelEstimate(pm1, data = dem, se.method = "conditional")
   comp.results <-  c(5.2177188648897,8.02138564165901,8.75646876914828,8.12399471507353)
   expect_equivalent(pe.results$estimates, comp.results)
   comp.results <- c(1.026000, 1.483106 ,1.919551 ,2.150267)
@@ -1566,7 +1619,7 @@ test_that("(ART) PanelEstimate Runs: analytical SEs ", {
                     outcome.var = "y",
                     lead = 0:3, forbid.treatment.reversal = FALSE)
   
-  pe.results <- PanelEstimate(pm1, data = dem, se.method = "analytical")
+  pe.results <- PanelEstimate(pm1, data = dem, se.method = "conditional")
   comp.results <-  -c(5.2177188648897,8.02138564165901,8.75646876914828,8.12399471507353)
   expect_equivalent(pe.results$estimates, comp.results)
   comp.results <- c(1.026000, 1.483106 ,1.919551 ,2.150267)
@@ -1574,6 +1627,68 @@ test_that("(ART) PanelEstimate Runs: analytical SEs ", {
   expect_equal(pe.results$standard.error, comp.results, tolerance = .0000002)
   
 })
+
+
+
+
+
+
+test_that("(ATT) PanelEstimate Runs: unconditional analytical SEs", {
+  qoi_ <- "att"
+  pm1 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
+                    treatment = "dem", refinement.method = "mahalanobis",
+                    data = dem, match.missing = FALSE, covs.formula = ~ I(lag(y, 1:4)) + I(lag(tradewb, 1:4)),
+                    size.match = 5, qoi = qoi_,
+                    outcome.var = "y",
+                    lead = 0:3, forbid.treatment.reversal = FALSE)
+  
+  pe.results <- PanelEstimate(pm1, data = dem, se.method = "unconditional")
+  comp.results <-  c(-0.593399771464233,-0.321260212377162,0.456311286847623,1.73182162255356)
+  expect_equivalent(pe.results$estimates, comp.results)
+  comp.results <- c(0.7386351, 1.2103820 ,1.5592321 ,1.8248642)
+  names(comp.results) <- paste0("t+", 0:3)
+  expect_equal(pe.results$standard.error, comp.results, tolerance = .0000001)
+})
+
+
+
+test_that("(ATC) PanelEstimate Runs: unconditional analytical SEs", {
+  qoi_ <- "atc"
+  pm1 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
+                    treatment = "dem", refinement.method = "mahalanobis",
+                    data = dem, match.missing = FALSE, covs.formula = ~ I(lag(y, 1:4)) + I(lag(tradewb, 1:4)),
+                    size.match = 5, qoi = qoi_,
+                    outcome.var = "y",
+                    lead = 0:3, forbid.treatment.reversal = FALSE)
+  
+  pe.results <- PanelEstimate(pm1, data = dem, se.method = "unconditional")
+  comp.results <-  c(5.2177188648897,8.02138564165901,8.75646876914828,8.12399471507353)
+  expect_equivalent(pe.results$estimates, comp.results)
+  comp.results <- c(1.026000, 1.483106 ,1.919551 ,2.150267)
+  names(comp.results) <- paste0("t+", 0:3)
+  expect_equal(pe.results$standard.error, comp.results, tolerance = .0000002)
+  
+})
+
+test_that("(ART) PanelEstimate Runs: unconditional analytical SEs ", {
+  qoi_ <- "art"
+  pm1 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
+                    treatment = "dem", refinement.method = "mahalanobis",
+                    data = dem, match.missing = FALSE, covs.formula = ~ I(lag(y, 1:4)) + I(lag(tradewb, 1:4)),
+                    size.match = 5, qoi = qoi_,
+                    outcome.var = "y",
+                    lead = 0:3, forbid.treatment.reversal = FALSE)
+  
+  pe.results <- PanelEstimate(pm1, data = dem, se.method = "unconditional")
+  comp.results <-  -c(5.2177188648897,8.02138564165901,8.75646876914828,8.12399471507353)
+  expect_equivalent(pe.results$estimates, comp.results)
+  comp.results <- c(1.026000, 1.483106 ,1.919551 ,2.150267)
+  names(comp.results) <- paste0("t+", 0:3)
+  expect_equal(pe.results$standard.error, comp.results, tolerance = .0000002)
+  
+})
+
+
 
 test_that("(ATE) PanelEstimate fails: analytical SEs ", {
   qoi_ <- "ate"
@@ -1584,7 +1699,22 @@ test_that("(ATE) PanelEstimate fails: analytical SEs ", {
                     outcome.var = "y",
                     lead = 0:3, forbid.treatment.reversal = FALSE)
   
-  expect_error(PanelEstimate(pm1, data = dem, se.method = "analytical"))
+  expect_error(PanelEstimate(pm1, data = dem, se.method = "conditional"))
+  expect_error(PanelEstimate(pm1, data = dem, se.method = "unconditional"))
+  
+})
+
+test_that("summary.PanelEstimate (analytical)", {
+  qoi_ <- "att"
+  pm1 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
+                    treatment = "dem", refinement.method = "mahalanobis",
+                    data = dem, match.missing = FALSE, covs.formula = ~ I(lag(y, 1:4)) + I(lag(tradewb, 1:4)),
+                    size.match = 5, qoi = qoi_,
+                    outcome.var = "y",
+                    lead = 0:3, forbid.treatment.reversal = FALSE)
+  
+  pe.results <- PanelEstimate(pm1, data = dem, se.method = "conditional")
+  expect_output(summary(pe.results)) 
   
   
 })
@@ -1598,8 +1728,10 @@ test_that("summary.PanelEstimate (analytical)", {
                     outcome.var = "y",
                     lead = 0:3, forbid.treatment.reversal = FALSE)
   
-  pe.results <- PanelEstimate(pm1, data = dem, se.method = "analytical")
+  pe.results <- PanelEstimate(pm1, data = dem, se.method = "unconditional")
   expect_output(summary(pe.results)) 
   
   
 })
+
+
