@@ -70,6 +70,11 @@ summary.PanelEstimate <- function(object, verbose = TRUE,
       qoi <- "Average Treatment Effect (ATE)"
     }
     
+    if (object$qoi == "art")
+    {
+      qoi <- "Average Effect of Treatment Reversal on the Reversed (ART)"
+    }
+    
     cat("\nEstimate of", qoi, "by Period:\n")
   }
   if(bias.corrected && identical(object$se.method, "bootstrap"))
@@ -111,7 +116,7 @@ summary.PanelEstimate <- function(object, verbose = TRUE,
       if(!verbose) return(t(df))
       return(list("summary" = tdf, "lag" = lag, "iterations" = object$bootstrap.iterations, "qoi" = object$qoi) )   
     }
-    else if (identical(object$se.method, "analytical")) 
+    else if (identical(object$se.method, "conditional") || identical(object$se.method, "unconditional")) 
     {
       #browser()
       critical.vals <- rep(qnorm( (1 - object$confidence.level) / 2), 2) * c(1, -1)
