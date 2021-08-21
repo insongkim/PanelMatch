@@ -29,10 +29,6 @@ check_time_data <- function(data, time.id)
 #' @param legend logical indicating whether or not a legend identifying the variables should be included on the plot. Default is TRUE.
 #' @param ylab Label for y axis. Default is "SD". This is the same as the ylab argument to \code{plot}.
 #' @param use.equal.weights logical. If set to TRUE, then equal weights will be assigned to control units, rather than using whatever calculated weights have been assigned. This is helpful for assessing the improvement in covariate balance as a result of refining the matched sets.
-#' @param calculate.network.proportion.balance logical TRUE/FALSE. If TRUE, the proportion of treated neighbors will be included as a covariate in the balance calculations
-#' @param calculate.network.count.balance logical TRUE/FALSE. If TRUE, the number of treated neighbors will be included as a covariate in the balance calculations
-#' @param adjacency.matrix data.frame object. This first two columns of this data frame should contain the IDs of nodes in the network. The third column should be a binary indicator of adjacency between nodes.
-#' @param neighborhood.degree Integer that specifies the upper limit of the degree of neighbors that should be included in the network calculations
 #' @param ... Additional graphical parameters to be passed to the \code{plot} function in base R.
 #' @examples
 #' #add some additional data to data set for demonstration purposes
@@ -48,16 +44,24 @@ check_time_data <- function(data, time.id)
 #'                          plot = TRUE, ylim = c(-2,2))
 #'
 #' @export
-get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.weights = FALSE,
-                                  verbose = TRUE, plot = FALSE,
-                                  reference.line = TRUE, legend = TRUE, ylab = "SD",
-                                  calculate.network.proportion.balance = FALSE,
-                                  calculate.network.count.balance = FALSE,
-                                  adjacency.matrix = NULL,
-                                  neighborhood.degree = NULL,
-                                  continuous.treatment = FALSE,
+get_covariate_balance <- function(matched.sets, 
+                                  data, 
+                                  covariates,
+                                  use.equal.weights = FALSE,
+                                  verbose = TRUE,
+                                  plot = FALSE,
+                                  reference.line = TRUE,
+                                  legend = TRUE, 
+                                  ylab = "SD",
                                   ...)
 {
+  # not ready yet, so provide defaults 
+  calculate.network.proportion.balance = FALSE
+  calculate.network.count.balance = FALSE
+  adjacency.matrix = NULL
+  neighborhood.degree = NULL
+  continuous.treatment = FALSE
+  
   if(is.null(covariates))
   {
     stop("please specify the covariates for which you would like to check the balance")
@@ -204,7 +208,7 @@ get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.wei
     {
       #browser()
       
-      if(treated.included)
+      if (treated.included)
       {
         treated.data <- pointmatrix[,which(colnames(pointmatrix) == treatment)] # treated data
         pointmatrix <- pointmatrix[,-which(colnames(pointmatrix) == treatment)] #all non-treatment variable data
@@ -244,7 +248,7 @@ get_covariate_balance <- function(matched.sets, data,  covariates, use.equal.wei
       
     }
     
-    if(legend) {
+    if (legend) {
       if (treated.included)
       {
         legend("topleft", legend = c(colnames(pointmatrix), treatment), 
@@ -504,7 +508,7 @@ calculate_set_effects <- function(pm.obj, data.in, lead)
 
 
 
-#' get_set_treatment_effects
+#' getSetTreatmentEffects
 #'
 #' Calculates the treatment effect size at the matched set level
 #'
@@ -512,25 +516,29 @@ calculate_set_effects <- function(pm.obj, data.in, lead)
 #' Calculate the size of treatment effects for each matched set.
 #' @param pm.obj an object of class \code{PanelMatch}
 #' @param data.in data.frame with the original data
-#' @param lead integer (or integer vector) indicating the time period(s) in the future for which the treatment effect size will be calculated. Calculations will be made for the period t + lead, where t is the time of treatment. If more than one lead value is provided, then calculations will be performed for each value. 
-#' 
+#' @param lead integer (or integer vector) indicating the time period(s) in the future for which the treatment effect size will be calculated. Calculations will be made for the period t + lead, where t is the time of treatment. If more than one lead value is provided, then calculations will be performed for each value.
+#'
 #' @examples
+#' 
 #' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
-#                          treatment = "dem", refinement.method = "mahalanobis",
-#                          data = dem, match.missing = TRUE,
-#                          covs.formula = ~ I(lag(tradewb, 1:4)),
-#                          size.match = 5, qoi = "att",
-#                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE,
-#                          placebo.test = TRUE)
+#'                          treatment = "dem", refinement.method = "mahalanobis",
+#'                          data = dem, match.missing = TRUE,
+#'                          covs.formula = ~ I(lag(tradewb, 1:4)),
+#'                          size.match = 5, qoi = "att",
+#'                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE,
+#'                          placebo.test = FALSE)
 #' set.effects <- getSetTreatmentEffects(pm.obj = PM.results, data.in = dem, lead = 0)
+#'
+#'
 #' @export
+
 getSetTreatmentEffects <- function(pm.obj, data.in, lead)
 {
   return(lapply(lead, calculate_set_effects, pm.obj = pm.obj, data.in = data.in))
-  
+
 }
-
-
+#' 
+#' 
 #' placeboTest
 #'
 #' Calculates results for a placebo test
@@ -544,8 +552,8 @@ getSetTreatmentEffects <- function(pm.obj, data.in, lead)
 #' @param confidence.level confidence level for the calculated standard error intervals
 #' @param plot logical indicating whether or not a plot should be generated, or just return the raw data from the calculations
 #' @param ... extra arguments to be passed to plot
-#' 
-#' @examples 
+#'
+#' @examples
 #' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
 #'                          treatment = "dem", refinement.method = "mahalanobis",
 #'                          data = dem, match.missing = TRUE,
@@ -554,40 +562,42 @@ getSetTreatmentEffects <- function(pm.obj, data.in, lead)
 #'                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE,
 #'                          placebo.test = TRUE)
 #' placeboTest(PM.results, data.in = dem, number.iterations = 100, plot = FALSE)
+#' 
+#' 
 #' @export
-#' 
-#' 
-placeboTest <- function(pm.obj, 
-                        data.in, 
+#'
+#'
+placeboTest <- function(pm.obj,
+                        data.in,
                         lag.in = NULL,
                         number.iterations = 5000,
-                        df.adjustment = FALSE,
                         confidence.level = .95,
                         plot = FALSE,
                         ...)
-{ 
+{
+  df.adjustment <- FALSE
   qoi.in <- attr(pm.obj, "qoi")
   # dont need to worry about ate case anymore.
   matchedsets <- pm.obj[[qoi.in]]
   if (is.null(lag.in))
   {
     lag.in <- attr(matchedsets, "lag")
-  } 
-  
+  }
+
   matchedsets <- pm.obj[[qoi.in]]
   if (lag.in == 1) stop("placebo test cannot be conducted for lag = 1")
   if (lag.in > attr(matchedsets, "lag")) stop("provided lag.in value exceeds lag parameter from matching stage. Please specify a valid lag.in value, such that lag.in < lag")
-  
+
   lag.in <- lag.in:2
-  
-  
+
+
   placebo.results.raw <- panel_estimate(sets = pm.obj,
                                         data = data.in,
                                         number.iterations = number.iterations,
                                         df.adjustment = df.adjustment,
                                         placebo.test = TRUE,
                                         placebo.lead = lag.in)
-  
+
   if (plot)
   {
     plot(placebo.results.raw, ...)

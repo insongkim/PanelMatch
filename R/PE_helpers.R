@@ -413,11 +413,12 @@ calculateEstimates <- function(qoi.in, data.in, lead,
       } else if (identical(qoi.in, "atc")) {
         sets <- atc.sets
       }
-      
+      ses <- apply(coefs, 2, sd, na.rm = T)
+      names(ses) <- paste0("t+",lead)
       z <- list("estimates" = o.coefs,
                 "bootstrapped.estimates" = coefs,
                 "bootstrap.iterations" = number.iterations,
-                "standard.error" = apply(coefs, 2, sd, na.rm = T),
+                "standard.error" = ses,
                 "lag" = lag,
                 "lead" = lead,
                 "confidence.level" = confidence.level,
@@ -546,12 +547,13 @@ calculateEstimates <- function(qoi.in, data.in, lead,
         
         
       }
-      # return(list("o.coef" = DID_ATE, "boots" = coefs))
+      ses <- apply(coefs, 2, sd, na.rm = T)
+      names(ses) <- paste0("t+",lead)
       
       z <- list("estimates" = o.coefs_ate,
                 "bootstrapped.estimates" = coefs, 
                 "bootstrap.iterations" = number.iterations, 
-                "standard.error" = apply(coefs, 2, sd, na.rm = T),
+                "standard.error" = ses,
                 "lead" = lead, "confidence.level" = confidence.level, 
                 "qoi" = "ate", "matched.sets" = list(att = att.sets, atc = atc.sets),
                 "se.method" = se.method)
@@ -636,7 +638,8 @@ calculateEstimates <- function(qoi.in, data.in, lead,
     class(z) <- "PanelEstimate"
     return(z)
     
-  } else if (identical(se.method, "unconditional")) {
+  } else if (identical(se.method, "unconditional")) 
+  {
     if (identical(qoi.in, "ate")) stop("analytical standard errors not available for ATE")
     
     if (identical(qoi.in, "ate")) stop("analytical standard errors not available for ATE")

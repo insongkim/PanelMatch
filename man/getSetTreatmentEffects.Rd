@@ -2,7 +2,7 @@
 % Please edit documentation in R/utilities.R
 \name{getSetTreatmentEffects}
 \alias{getSetTreatmentEffects}
-\title{get_set_treatment_effects}
+\title{getSetTreatmentEffects}
 \usage{
 getSetTreatmentEffects(pm.obj, data.in, lead)
 }
@@ -20,6 +20,15 @@ Calculates the treatment effect size at the matched set level
 Calculate the size of treatment effects for each matched set.
 }
 \examples{
+
 PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
+                         treatment = "dem", refinement.method = "mahalanobis",
+                         data = dem, match.missing = TRUE,
+                         covs.formula = ~ I(lag(tradewb, 1:4)),
+                         size.match = 5, qoi = "att",
+                         outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE,
+                         placebo.test = FALSE)
 set.effects <- getSetTreatmentEffects(pm.obj = PM.results, data.in = dem, lead = 0)
+
+
 }

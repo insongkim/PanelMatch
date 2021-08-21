@@ -11,7 +11,7 @@
 
 \item{verbose}{logical indicating whether or not output should be printed in an expanded form. Default is TRUE}
 
-\item{bias.corrected}{logical indicating whether or not bias corrected estimates should be provided. Default is FALSE}
+\item{bias.corrected}{logical indicating whether or not bias corrected estimates should be provided. Default is FALSE. This argument only applies for standard errors calculated with the bootstrap.}
 
 \item{...}{optional additional arguments. Currently, no additional arguments are supported.}
 }

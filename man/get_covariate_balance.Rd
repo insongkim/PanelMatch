@@ -14,11 +14,6 @@ get_covariate_balance(
   reference.line = TRUE,
   legend = TRUE,
   ylab = "SD",
-  calculate.network.proportion.balance = FALSE,
-  calculate.network.count.balance = FALSE,
-  adjacency.matrix = NULL,
-  neighborhood.degree = NULL,
-  continuous.treatment = FALSE,
   ...
 )
 }
@@ -40,14 +35,6 @@ get_covariate_balance(
 \item{legend}{logical indicating whether or not a legend identifying the variables should be included on the plot. Default is TRUE.}
 
 \item{ylab}{Label for y axis. Default is "SD". This is the same as the ylab argument to \code{plot}.}
-
-\item{calculate.network.proportion.balance}{logical TRUE/FALSE. If TRUE, the proportion of treated neighbors will be included as a covariate in the balance calculations}
-
-\item{calculate.network.count.balance}{logical TRUE/FALSE. If TRUE, the number of treated neighbors will be included as a covariate in the balance calculations}
-
-\item{adjacency.matrix}{data.frame object. This first two columns of this data frame should contain the IDs of nodes in the network. The third column should be a binary indicator of adjacency between nodes.}
-
-\item{neighborhood.degree}{Integer that specifies the upper limit of the degree of neighbors that should be included in the network calculations}
 
 \item{...}{Additional graphical parameters to be passed to the \code{plot} function in base R.}
 }

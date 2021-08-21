@@ -9,7 +9,6 @@ placeboTest(
   data.in,
   lag.in = NULL,
   number.iterations = 5000,
-  df.adjustment = FALSE,
   confidence.level = 0.95,
   plot = FALSE,
   ...
@@ -45,4 +44,6 @@ PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE,
                          placebo.test = TRUE)
 placeboTest(PM.results, data.in = dem, number.iterations = 100, plot = FALSE)
+
+
 }

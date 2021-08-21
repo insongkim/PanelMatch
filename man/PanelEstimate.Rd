@@ -19,10 +19,9 @@ PanelEstimate(
 \code{PanelMatch} function.}
 
 \item{data}{The same time series cross sectional data set provided to the PanelMatch function used to produce
-the matched sets}
+the matched sets.}
 
-\item{number.iterations}{An integer value indicating the number of bootstrap
-iterations. The default is 1000.}
+\item{number.iterations}{If using bootstrapping for calculating standard errors, this is the number of bootstrap iterations. Provide as integer.}
 
 \item{df.adjustment}{A logical value indicating whether or not a
 degree-of-freedom adjustment should be performed for the standard error
@@ -31,15 +30,15 @@ calculation. The default is \code{FALSE}.}
 \item{confidence.level}{A numerical value specifying the confidence level and range of interval
 estimates for statistical inference. The default is .95.}
 
-\item{moderator}{The name of a moderating variable, provided as a character string. If a moderating variable is provided
-the returned object will be a list of \code{PanelEstimate} objects. The names of the list will reflect the different values of the
-moderating variable. More specifically, the moderating variable values will be converted to syntactically proper names using
-\code{make.names}.}
+\item{moderator}{The name of a moderating variable, provided as a character string. If a moderating variable is provided,the returned object will be a list of \code{PanelEstimate} objects. The names of the list will reflect the different values of the moderating variable. More specifically, the moderating variable values will be converted to syntactically proper names using \code{make.names}.}
+
+\item{se.method}{Method used for calculating standard errors, provided as a character string. Users must choose between "bootstrap", "conditional", and "unconditional" methods. Default is "bootstrap". The bootstrap uses a block bootstrapping procedure to calculate standard errors. The conditional method calculates the variance of the estimator, assuming that D and X are fixed, as described in Imai, Kim, and Wang (2021). The unconditional method also calculates the variance of the estimator analytically, but makes no assumptions about D or X. When the quantity of interest is "att", "atc", or "art", all methods are available. Only "bootstrap" is available for the ate.}
 }
 \value{
 \code{PanelEstimate} returns a list of class
 `PanelEstimate' containing the following components:
 \item{estimates}{the point estimates of the quantity of interest for the lead periods specified}
+\item{se.method}{The method used to calculate standard errors. This is the same as the argument provided to the function.}
 \item{bootstrapped.estimates}{the bootstrapped point estimate values}
 \item{bootstrap.iterations}{the number of iterations used in bootstrapping}
 \item{method}{refinement method used to create the matched sets from which the estimates were calculated}
@@ -52,7 +51,7 @@ moderating variable. More specifically, the moderating variable values will be c
 }
 \description{
 \code{PanelEstimate} estimates a causal quantity of interest, including the average treatment effect for
-treated or control units (att and atc, respectively), or average treatment effect (ate), as specified in \code{PanelMatch}.
+treated or control units (att and atc, respectively), the average effect of treatment reversal on reversed units, or average treatment effect (ate), as specified in \code{PanelMatch}.
 This is done by estimating the counterfactual outcomes for each treated unit using
 matched sets. Users will provide matched sets that were obtained by the
 \code{PanelMatch} function and obtain point estimates via a
@@ -76,7 +75,7 @@ PE.results <- PanelEstimate(sets = PM.results, data = dem, number.iterations = 1
 
 }
 \references{
-Imai, Kosuke, In Song Kim, and Erik Wang (2018)
+Imai, Kosuke, In Song Kim, and Erik Wang (2021)
 }
 \author{
 In Song Kim <insong@mit.edu>, Erik Wang

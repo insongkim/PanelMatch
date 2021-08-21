@@ -23,12 +23,6 @@ PanelMatch(
   matching = TRUE,
   listwise.delete = FALSE,
   use.diagonal.variance.matrix = FALSE,
-  adjacency.matrix = NULL,
-  neighborhood.degree = NULL,
-  caliper.formula = NULL,
-  network.caliper.info = NULL,
-  network.refinement.info = NULL,
-  continuous.treatment.info = NULL,
   placebo.test = FALSE
 )
 }
@@ -95,38 +89,7 @@ In many cases, setting this to TRUE can lead to better covariate balance, especi
 high correlation between variables. Default is FALSE. This argument is only necessary when 
 \code{refinement.method = mahalanobis} and will have no impact otherwise.}
 
-\item{adjacency.matrix}{a data.frame object describing an undirected network. The first two columns of the data frame should contain unit ids, and the third column should contain a 1 or 0 indicating adjacency. The unit ids in the first two columns
-must match the unit ids in the column specified in the \code{unit.id} argument. The third column must be binary, as there are no edge weights currently incorporated into this feature.}
-
-\item{neighborhood.degree}{an integer specifying the degree of the neighborhood to be considered for each node in the calculations. For instance, setting \code{neighborhood.degree = 1}means
-that the code will consider the first degree neighbors of each node, but \code{neighborhood.degree = 2} will consider both first and second degree neighbors of each node. Please see the vignette for more information about what network information is calculated.}
-
-\item{caliper.formula}{a formula object that specifies the caliper to be applied to the data. The caliper is applied after units are matched on treatment history, but before the refinement process. Each caliper is specified in a format
-similar to the format of the \code{lag} function in the \code{covs.formula} argument. Specifically, it takes the form of a custom function with five positional arguments. 
-One must specify the name of the variable to use, the caliper method ("average", or "max"), the threshold value, whether the data is categorical or numeric ("categorical" or "numeric"), and whether the threshold should be applied 
-on a standardized scale (ie. use standard deviations as units) or the original units ("sd" or "raw"). The caliper method parameter specifies whether the threshold should be applied to the distance between
-a treated unit and each possible control unit over each period in the lag window or to the average distance over the entire lag window (as specified by L). For instance, 
-\code{caliper.formula = ~ I(caliper(cal.data,"average", .5, "categorical", "raw")) would filter matched sets such that they only contain control units that are <= .5 units of the cal.data variable
-of the treated unit, on average. In contrast, ~ I(caliper(cal.data,"max", .5, "categorical", "raw"))} would include only control units that are <= .5 units of the cal.data at every period in the lag window. Please see the vignette for more.}
-
-\item{network.caliper.info}{a named list specifying if/how network data should be used as a caliper. If not specified or set to \code{NULL}, no network information is used in the caliper process. 
-The provided list must specify the following named elements:
-\code{use.proportion.data}, \code{proportion.caliper.method}, \code{proportion.caliper.threshold}, \code{prop.unit.type}, \code{use.count.data}, \code{count.caliper.method},
-\code{count.caliper.threshold}, \code{count.unit.type}. Please see the vignette for more about these parameters and a general discussion about how network information is calculated and used.}
-
-\item{network.refinement.info}{a named list specifying if/how network data should be used in the refinment process. If not specified or set to \code{NULL}, no network information is used in the refinement process.
-The provided list must specify the following named elements:
-\code{use.proportion.data}, \code{proportion.lags}, \code{use.count.data}, \code{count.lags}. Please see the vignette for a discussion of these parameters and how network information is utilized in the package.}
-
-\item{continuous.treatment.info}{a named list with elements \code{treatment.threshold}, \code{type}, \code{units}, \code{direction}, \code{matching.threshold}, \code{control.treshold}, and optionally \code{minimum.treatment.threshold} and/or \code{maximum.treatment.threshold}.
-The treatment threshold corresponds to the minimum of the magnitude of the change in the treatment variable from time \code{t-1} to time \code{t}. It must be a positive number. When the qoi is set to be "att", then treatment will be defined as a positive change (ie. an increase) in the treatment variable. When the qoi is set to be "art", treatment is defined as a negative change
-The type is either "raw" or "sd" (specified as a character string) and corresponds to the units of the treatment and mathing threshold. If "raw", then thresholds will be applied to the raw treatment data in the original units.
-If "sd", then the thresholds are interpreted to be provided in standard deviations, and the treatment variable data will be standardized. 
-The direction parameter specifies the direction of interest for the change in the treatment variable. It is specified as a character string: "positive", "negative", or "both".
-So, for example, if the \code{qoi} is set to "att" and the direction is "positive", then only treated units with a positive change in the treatment variable larger than the specified \code{treatment.threshold}
-will factor into the calculated estimates. The \code{matching.threshold} parameter corresponds to the maximum permissible absolute value of the difference in the treatment variable 
-between treated units and control units. This is similar to the threshold provided for numerical data in the caliper formula. \code{control.threshold} is a number that specifies the maximum permissable deviation from t-1 to t to still be considered a treated unit.
-When specified, the minimum (maximum) treatment threshold specifies the minimum (maximum) acceptable value for a treated unit at time t to be considered a viable treatment unit.}
+\item{placebo.test}{logical TRUE/FALSE. indicates whether or not you want to be able to run a placebo test. This will add additional requirements on the data -- specifically, it requires that no unit included in the matching/refinement process can having missing outcome data over the lag window. Additionally, you should not use the outcome variable in refinement when \code{placebo.test = TRUE}.}
 }
 \value{
 \code{PanelMatch} returns an object of class "PanelMatch". This is a list that contains a few specific elements: 

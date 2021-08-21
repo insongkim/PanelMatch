@@ -1,7 +1,7 @@
 #' PanelEstimate
 #'
 #' \code{PanelEstimate} estimates a causal quantity of interest, including the average treatment effect for
-#' treated or control units (att and atc, respectively), or average treatment effect (ate), as specified in \code{PanelMatch}.
+#' treated or control units (att and atc, respectively), the average effect of treatment reversal on reversed units, or average treatment effect (ate), as specified in \code{PanelMatch}.
 #' This is done by estimating the counterfactual outcomes for each treated unit using
 #' matched sets. Users will provide matched sets that were obtained by the
 #' \code{PanelMatch} function and obtain point estimates via a
@@ -12,24 +12,22 @@
 #' and must adhere to the same data types/structures outlined below. See the included code examples for more about
 #' how this functionality works.
 #'
-#' @param number.iterations An integer value indicating the number of bootstrap
-#' iterations. The default is 1000.
 #' @param sets A \code{PanelMatch} object attained via the
 #' \code{PanelMatch} function.
+#' @param data The same time series cross sectional data set provided to the PanelMatch function used to produce
+#' the matched sets.
+#' @param se.method Method used for calculating standard errors, provided as a character string. Users must choose between "bootstrap", "conditional", and "unconditional" methods. Default is "bootstrap". The bootstrap uses a block bootstrapping procedure to calculate standard errors. The conditional method calculates the variance of the estimator, assuming that D and X are fixed, as described in Imai, Kim, and Wang (2021). The unconditional method also calculates the variance of the estimator analytically, but makes no assumptions about D or X. When the quantity of interest is "att", "atc", or "art", all methods are available. Only "bootstrap" is available for the ate. 
+#' @param number.iterations If using bootstrapping for calculating standard errors, this is the number of bootstrap iterations. Provide as integer.
 #' @param df.adjustment A logical value indicating whether or not a
 #' degree-of-freedom adjustment should be performed for the standard error
 #' calculation. The default is \code{FALSE}.
 #' @param confidence.level A numerical value specifying the confidence level and range of interval
 #' estimates for statistical inference. The default is .95.
-#' @param moderator The name of a moderating variable, provided as a character string. If a moderating variable is provided
-#' the returned object will be a list of \code{PanelEstimate} objects. The names of the list will reflect the different values of the
-#' moderating variable. More specifically, the moderating variable values will be converted to syntactically proper names using
-#' \code{make.names}.
-#' @param data The same time series cross sectional data set provided to the PanelMatch function used to produce
-#' the matched sets
+#' @param moderator The name of a moderating variable, provided as a character string. If a moderating variable is provided,the returned object will be a list of \code{PanelEstimate} objects. The names of the list will reflect the different values of the moderating variable. More specifically, the moderating variable values will be converted to syntactically proper names using \code{make.names}.
 #' @return \code{PanelEstimate} returns a list of class
 #' `PanelEstimate' containing the following components:
 #' \item{estimates}{the point estimates of the quantity of interest for the lead periods specified}
+#' \item{se.method}{The method used to calculate standard errors. This is the same as the argument provided to the function.}
 #' \item{bootstrapped.estimates}{the bootstrapped point estimate values}
 #' \item{bootstrap.iterations}{the number of iterations used in bootstrapping}
 #' \item{method}{refinement method used to create the matched sets from which the estimates were calculated}
@@ -40,7 +38,7 @@
 #' \item{matched.sets}{the refined matched sets used to produce the estimations}
 #' \item{standard.error}{the standard error(s) of the point estimates}
 #'
-#' @references Imai, Kosuke, In Song Kim, and Erik Wang (2018)
+#' @references Imai, Kosuke, In Song Kim, and Erik Wang (2021)
 #' @author In Song Kim <insong@mit.edu>, Erik Wang
 #' <haixiao@Princeton.edu>, Adam Rauh <amrauh@umich.edu>, and Kosuke Imai <imai@harvard.edu>
 #'
@@ -65,18 +63,21 @@ PanelEstimate <- function(sets, data,
 {
   #se.method <- "bootstrap"
 
-  if(se.method == "wfe") stop("wfe is no longer supported. Please specify se.method = 'bootstrap'")
-  if(class(number.iterations) == "list" & class(df.adjustment) == "list" &
-     class(confidence.level) == "list" & class(sets) == "list")
+  if (se.method == "wfe") stop("wfe is no longer supported. Please specify se.method = 'bootstrap', 'conditional', or 'unconditional'")
+  if (class(number.iterations) == "list" & 
+     class(df.adjustment) == "list" &
+     class(confidence.level) == "list" & 
+     class(sets) == "list")
   {
-    if(length(unique(length(se.method), length(number.iterations), length(df.adjustment),
+    if (length(unique(length(se.method), length(number.iterations), length(df.adjustment),
                      length(confidence.level), length(sets))) == 1)
     {
       if(!is.null(moderator))
       {
 
         handle.nesting <- function(data, sets.in, moderating.variable.in,
-                                   se.method.in, number.iterations.in, df.adjustment.in, confidence.level.in)
+                                   se.method.in, number.iterations.in, 
+                                   df.adjustment.in, confidence.level.in)
         {
             if(attr(sets.in, "qoi") == "att")
             {
@@ -107,20 +108,33 @@ PanelEstimate <- function(sets, data,
                                                  unit.id = unit.id, time.id = time.id,
                                                  PM.object = sets.in)
 
-              res <- lapply(set.list, FUN = panel_estimate, se.method = se.method, number.iterations = number.iterations.in,
-                          df.adjustment = df.adjustment.in, confidence.level = confidence.level.in, data = data)
+              res <- lapply(set.list, FUN = panel_estimate, 
+                            se.method = se.method, 
+                            number.iterations = number.iterations.in,
+                            df.adjustment = df.adjustment.in, 
+                            confidence.level = confidence.level.in, 
+                            data = data)
               return(res)
         }
-        res <- mapply(FUN = handle.nesting, number.iterations.in = number.iterations,
-                     df.adjustment.in = df.adjustment, confidence.level.in = confidence.level, sets.in = sets,
-                     MoreArgs = list(data = data, se.method = se.method, moderating.variable.in = moderator),
+        res <- mapply(FUN = handle.nesting, 
+                      number.iterations.in = number.iterations,
+                      df.adjustment.in = df.adjustment,
+                      confidence.level.in = confidence.level, 
+                      sets.in = sets,
+                     MoreArgs = list(data = data, 
+                                     se.method = se.method, 
+                                     moderating.variable.in = moderator),
                      SIMPLIFY = FALSE)
       }
       else
       {
-        res = mapply(FUN = panel_estimate, number.iterations = number.iterations,
-                     df.adjustment = df.adjustment, confidence.level= confidence.level, sets = sets,
-                     MoreArgs = list(data = data, se.method = se.method),
+        res = mapply(FUN = panel_estimate, 
+                     number.iterations = number.iterations,
+                     df.adjustment = df.adjustment,
+                     confidence.level = confidence.level, 
+                     sets = sets,
+                     MoreArgs = list(data = data, 
+                                     se.method = se.method),
                      SIMPLIFY = FALSE)
       }
 
@@ -162,14 +176,23 @@ PanelEstimate <- function(sets, data,
                                              PM.object = sets)
 
 
-      res <- lapply(set.list, FUN = panel_estimate, se.method = se.method, number.iterations = number.iterations,
-                    df.adjustment = df.adjustment, confidence.level = confidence.level, data = data)
+      res <- lapply(set.list, 
+                    FUN = panel_estimate, 
+                    se.method = se.method, 
+                    number.iterations = number.iterations,
+                    df.adjustment = df.adjustment, 
+                    confidence.level = confidence.level, 
+                    data = data)
 
     }
     else
     {
-      res = panel_estimate(se.method = se.method, number.iterations = number.iterations,
-                           df.adjustment = df.adjustment, confidence.level = confidence.level, sets = sets, data = data)
+      res = panel_estimate(se.method = se.method, 
+                           number.iterations = number.iterations,
+                           df.adjustment = df.adjustment, 
+                           confidence.level = confidence.level, 
+                           sets = sets, 
+                           data = data)
     }
 
   }
@@ -187,7 +210,7 @@ panel_estimate <- function(sets,
                            placebo.lead = NULL
                            )
 {
-  #browser()
+  
   lead <- attr(sets, "lead")
   outcome.variable <- attr(sets, "outcome.var")
   continuous.treatment <- attr(sets,'continuous.treatment')

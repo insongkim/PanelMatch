@@ -7,7 +7,7 @@
 #'
 #' @param object A PanelEstimate object
 #' @param verbose logical indicating whether or not output should be printed in an expanded form. Default is TRUE
-#' @param bias.corrected logical indicating whether or not bias corrected estimates should be provided. Default is FALSE
+#' @param bias.corrected logical indicating whether or not bias corrected estimates should be provided. Default is FALSE. This argument only applies for standard errors calculated with the bootstrap. 
 #' @param ... optional additional arguments. Currently, no additional arguments are supported. 
 #' @examples
 #' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
@@ -77,62 +77,67 @@ summary.PanelEstimate <- function(object, verbose = TRUE,
     
     cat("\nEstimate of", qoi, "by Period:\n")
   }
-  if(bias.corrected && identical(object$se.method, "bootstrap"))
+  if (bias.corrected && identical(object$se.method, "bootstrap"))
   {
-    if(is.null(object$bootstrap.iterations)) stop("bias corrected estimates only available for bootstrap method currently")
+    if (!identical(object$se.method, "bootstrap")) stop("bias corrected estimates only available for bootstrap method currently")
     df <- rbind(t(as.data.frame(object$estimates)), # point estimate
                 
                 apply(object$bootstrapped.estimates, 2, sd, na.rm = T), # bootstrap se
                 
                 # Efron & Tibshirani 1993 p170 - 171
-                apply(object$bootstrapped.estimates, 2, quantile, probs = c( (1-object$confidence.level)/2, object$confidence.level+(1-object$confidence.level)/2 ), na.rm = T), # percentile confidence.level
+                apply(object$bootstrapped.estimates, 2, quantile, probs = c( (1 - object$confidence.level)/2, object$confidence.level + (1 - object$confidence.level)/2 ), na.rm = T), # percentile confidence.level
                 # Efron & Tibshirani 1993 p138
                 2*object$estimates - colMeans(object$bootstrapped.estimates, na.rm = T), # bc point estimate
                 
                 apply( (2*matrix(nrow = object$bootstrap.iterations, ncol = length(object$estimates), object$estimates, byrow = TRUE) - object$bootstrapped.estimates), 2, quantile, 
-                       probs = c((1-object$confidence.level)/2, object$confidence.level+(1-object$confidence.level)/2), 
+                       probs = c((1 - object$confidence.level)/2, object$confidence.level + (1 - object$confidence.level)/2), 
                        na.rm = T) ) # bc percentile confidence.level)
     rownames(df) <- c("estimate", "std.error", 
-                      paste0((1-object$confidence.level)/2 * 100, "%"),
-                      paste0( (object$confidence.level+(1-object$confidence.level)/2) * 100, "%"),
+                      paste0((1 - object$confidence.level)/2 * 100, "%"),
+                      paste0( (object$confidence.level + (1 - object$confidence.level)/2) * 100, "%"),
                       "estimate(bias corrected)", 
-                      paste0((1-object$confidence.level)/2 * 100, "%", "(bias corrected)"),
-                      paste0((object$confidence.level+(1-object$confidence.level)/2) * 100, "%", "(bias corrected)"))
+                      paste0((1 - object$confidence.level)/2 * 100, "%", "(bias corrected)"),
+                      paste0((object$confidence.level + (1 - object$confidence.level)/2) * 100, "%", "(bias corrected)"))
   }
   else
   {
-    if( identical(object$se.method, "bootstrap") )
+    if ( identical(object$se.method, "bootstrap") )
     {
       df <- rbind(t(as.data.frame(object$estimates)), # point estimate
                   
                   apply(object$bootstrapped.estimates, 2, sd, na.rm = T), # bootstrap se
                   
                   # Efron & Tibshirani 1993 p170 - 171
-                  apply(object$bootstrapped.estimates, 2, quantile, probs = c( (1-object$confidence.level)/2, object$confidence.level+(1-object$confidence.level)/2 ), na.rm = T))
+                  apply(object$bootstrapped.estimates, 2, quantile, probs = c( (1 - object$confidence.level)/2, object$confidence.level + (1 - object$confidence.level)/2 ), na.rm = T))
       rownames(df) <- c("estimate", "std.error", 
-                        paste0((1-object$confidence.level)/2 * 100, "%"),
-                        paste0( (object$confidence.level+(1-object$confidence.level)/2) * 100, "%"))
+                        paste0((1 - object$confidence.level)/2 * 100, "%"),
+                        paste0( (object$confidence.level + (1 - object$confidence.level)/2) * 100, "%"))
       tdf <- t(df)
-      if(!verbose) return(t(df))
+      if (!verbose) return(t(df))
       return(list("summary" = tdf, "lag" = lag, "iterations" = object$bootstrap.iterations, "qoi" = object$qoi) )   
     }
     else if (identical(object$se.method, "conditional") || identical(object$se.method, "unconditional")) 
     {
-      #browser()
+      
       critical.vals <- rep(qnorm( (1 - object$confidence.level) / 2), 2) * c(1, -1)
-      #quants <- lapply(object$estimates, function(x) x + critical.vals * object)
-      quants <- mapply(FUN = function(x, y) x + critical.vals * y, x = object$estimates, y = object$standard.error, SIMPLIFY = FALSE)
+      
+      quants <- mapply(FUN = function(x, y) x + critical.vals * y,
+                       x = object$estimates, 
+                       y = object$standard.error,
+                       SIMPLIFY = FALSE)
       qts <- do.call(rbind, quants)
       df <- data.frame(estimate = object$estimates,
                        std.error = object$standard.error)
       
       tdf <- cbind(df, qts)
       colnames(tdf) <- c("estimate", "std.error", 
-                         paste0((1-object$confidence.level)/2 * 100, "%"),
-                         paste0( (object$confidence.level+(1-object$confidence.level)/2) * 100, "%"))
+                         paste0((1 - object$confidence.level)/2 * 100, "%"),
+                         paste0( (object$confidence.level + (1 - object$confidence.level)/2) * 100, "%"))
       rownames(tdf) <- names(object$estimates)
-      if(!verbose) return(tdf)
+      if (!verbose) return(tdf)
       return(list("summary" = tdf, "lag" = lag, "qoi" = object$qoi) )
+    } else {
+      stop("se.method not specified correctly")
     }
     
   }
