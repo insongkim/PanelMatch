@@ -72,7 +72,7 @@ Next, we will move to the `PanelMatch` function. The primary purposes of this fu
 
 #### Setting the Quantity of Interest
 
-This process of matching on treatment history is also affected by the specified quantity of interest, which is specified using the `qoi` parameter, set to either "att", "atc", or "ate". See Imai, Kim, and Wang (2018) <http://web.mit.edu/insong/www/pdf/tscs.pdf> for full descriptions. When the `qoi` is set to "att", control units have `0` in the treatment variable column, and treated units have `1`. The process is flipped when the `qoi` is set to `atc`. When `ate` is specified as the `qoi`, sets are computed for both the `att` and `atc` setups.
+This process of matching on treatment history is also affected by the specified quantity of interest, which is specified using the `qoi` parameter, set to either "att", "atc", "art", or "ate". See Imai, Kim, and Wang (2021) <http://web.mit.edu/insong/www/pdf/tscs.pdf> for full descriptions. When the `qoi` is set to "att", control units have `0` in the treatment variable column, and treated units have `1`. The process is flipped when the `qoi` is set to `atc` and `art`. When `ate` is specified as the `qoi`, sets are computed for both the `att` and `atc` setups.
 
 ### Visualize Treatment History Matching
 
@@ -105,7 +105,7 @@ DisplayTreatment(unit.id = "wbcode2",
 In order to refine the matched sets further and assign weights to control units, the user must specify 1) a method for calculating similarity/distance between units and 2) the variables to be used in similarity/distance calculations to compare units. Other parameters do affect the refinement process, and the user should consult the documentation for a more complete list and set of descriptions.
 
 #### Select a Refinement Method
-Users must choose a refinement method by setting the `refinement.method` argument to one of "mahalanobis", "ps.match", "CBPS.match", "ps.weight", "CBPS.weight", "ps.msm.weight", "CBPS.msm.weight", or "none". The "matching" (any method that has "match" in the name) and mahalanobis refinement methods will assign equal weights to the `size.match` most similar control units in a matched set. The "weighting" methods (methods with "weight" in the name) will generate weights in such a way that control units more similar to treated units will be assigned higher weights. Please consult the documentation and/or Imai, Kim, and Wang (2018) <http://web.mit.edu/insong/www/pdf/tscs.pdf> for descriptions of each refinement method.
+Users must choose a refinement method by setting the `refinement.method` argument to one of "mahalanobis", "ps.match", "CBPS.match", "ps.weight", "CBPS.weight", "ps.msm.weight", "CBPS.msm.weight", or "none". The "matching" (any method that has "match" in the name) and mahalanobis refinement methods will assign equal weights to the `size.match` most similar control units in a matched set. The "weighting" methods (methods with "weight" in the name) will generate weights in such a way that control units more similar to treated units will be assigned higher weights. Please consult the documentation and/or Imai, Kim, and Wang (2021) <http://web.mit.edu/insong/www/pdf/tscs.pdf> for descriptions of each refinement method.
 
 #### Variable Selection
 Users must also define which covariates should be used in this process for defining similarity between units. This is set using the `covs.formula` argument, which takes the form of a one sided formula object. The variables defined on the right hand side of the formula are the variables used in these calculations. Users can included "lagged" versions of variables using `I(lag(name.of.var, 0:n))`.
@@ -114,7 +114,7 @@ We will now turn to understanding how to work with the `PanelMatch` function and
 
 ## Understanding `PanelMatch` and `matched.set` objects
 
-The `PanelMatch` function returns a `PanelMatch` object. These objects contain a number of elements, the most important of which is the `matched.set` object. Within the `PanelMatch` object, the attached `matched.set` object is always named either `att` or `atc`. It should be noted that when `qoi = ate`, then there are two `matched.set` objects included in the results of the `PanelMatch` call. Specifically, there will be two matched sets, named `att` and `atc`, respectively.
+The `PanelMatch` function returns a `PanelMatch` object. These objects contain a number of elements, the most important of which is the `matched.set` object. Within the `PanelMatch` object, the attached `matched.set` object is always named either `att`, `art`, or `atc`. It should be noted that when `qoi = ate`, then there are two `matched.set` objects included in the results of the `PanelMatch` call. Specifically, there will be two matched sets, named `att` and `atc`, respectively.
 
 In implementation, the `matched.set` is just a named list with some added attributes (lag, names of treatment, unit, and time variables) and a structured name scheme. Each entry in the list corresponds to a matched set of treated and control units. Specifically, the names of the elements correspond to the unit and time identifiers of the treated units. This naming scheme is structured, using the pattern `[id varable]`.`[time variable]`. Each element in the list is a vector indicating the control units (as a vector of the unit ids) that are matched with the treated unit specified in the name of that element.
 
@@ -267,6 +267,7 @@ get_covariate_balance(PM.results.ps.weight$att,
                       ylim = c(-1, 1))
 
 # Compare covariate balance to refined sets
+# See large improvement in balance
 get_covariate_balance(PM.results.ps.weight$att,
                       data = dem,
                       covariates = c("tradewb", "y"),
@@ -287,15 +288,30 @@ balance_scatter(non_refined_set = PM.results.none$att,
 
 # PanelEstimate
 
-We now move to the other major part of the package: obtaining point estimates and standard errors using `PanelEstimate`. The package uses bootstrapping to obtain standard errors. By default, 1000 bootstrap iterations are used, and .95 is the default confidence level.
+We now move to the other major part of the package: obtaining point estimates and standard errors using `PanelEstimate`. There are a variety of methods for calculating standard errors: "bootstrap", "conditional", and "unconditional". By default, the package uses a bootstrap approach for calculating standard errors (1000 bootstrap iterations are used by default). When the `qoi` is set to "att", "art", or "atc", you may also use analytical methods for calculating standard errors: "conditional" or "unconditional", each making different assumptions about the data. Consult Imai, Kim, and Wang (2021) for descriptions about these methods. .95 is the default confidence level. 
 
 The function returns a `PanelEstimate` object, which behaves like a list, much like the other objects in the package. As such, you can access the various elements just as you would in a list.
 
 ```{r}
-PE.results <- PanelEstimate(sets = PM.results.ps.weight, data = dem)
+PE.results <- PanelEstimate(sets = PM.results.ps.weight, data = dem, 
+                            se.method = "bootstrap", 
+                            number.iterations = 1000,
+                            confidence.level = .95)
 
 # View the point estimates
 PE.results[["estimates"]]
+# View standard errors
+PE.results[["standard.error"]]
+
+# use conditional method
+PE.results <- PanelEstimate(sets = PM.results.ps.weight, data = dem, 
+                            se.method = "conditional", 
+                            confidence.level = .95)
+
+# View the point estimates
+PE.results[["estimates"]]
+# View standard errors
+PE.results[["standard.error"]]
 
 ```
 

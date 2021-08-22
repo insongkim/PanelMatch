@@ -712,8 +712,73 @@ test_that("summary.PanelEstimate (bootstrap)", {
   comp.vec <- c(-0.593399771464233,-0.321260212377162,0.456311286847623,1.73182162255356,0.906705857062448,1.46876653085356,1.87876179592695,2.21608840568008,-2.47319633748927,-3.25290871525436,-3.34863750081872,-2.68949846129008,1.12752178115124,2.43516177434591,4.04890571881315,5.89171531990835)
   expect_equal(cmat, comp.vec, tolerance = .0000001)
   
+})
+
+test_that("set level treatment effects", {
   
+  PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
+                           treatment = "dem", refinement.method = "mahalanobis",
+                           data = dem, match.missing = TRUE,
+                           covs.formula = ~ I(lag(tradewb, 1:4)),
+                           size.match = 5, qoi = "att",
+                           outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE,
+                           placebo.test = FALSE)
+  set.effects <- getSetTreatmentEffects(pm.obj = PM.results, data.in = dem, lead = 0:1)
+  #mean(set.effects[[1]], na.rm = TRUE)
+  #mean(set.effects[[2]], na.rm = TRUE)
+  pe.results <- PanelEstimate(PM.results, data = dem)
+  expect_equivalent(c(mean(set.effects[[1]], na.rm = TRUE), 
+                      mean(set.effects[[2]], na.rm = TRUE)), 
+                    pe.results$estimates[1:2], tolerance = .000001)
+  
+  
+  PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
+                           treatment = "dem", refinement.method = "mahalanobis",
+                           data = dem, match.missing = TRUE,
+                           covs.formula = ~ I(lag(tradewb, 1:4)),
+                           size.match = 5, qoi = "art",
+                           outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE,
+                           placebo.test = FALSE)
+  set.effects <- getSetTreatmentEffects(pm.obj = PM.results, data.in = dem, lead = 0:1)
+  #mean(set.effects[[1]], na.rm = TRUE)
+  #mean(set.effects[[2]], na.rm = TRUE)
+  pe.results <- PanelEstimate(PM.results, data = dem)
+  expect_equivalent(c(mean(set.effects[[1]], na.rm = TRUE), 
+                      mean(set.effects[[2]], na.rm = TRUE)), 
+                    pe.results$estimates[1:2], tolerance = .000001)
+  
+  PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
+                           treatment = "dem", refinement.method = "mahalanobis",
+                           data = dem, match.missing = TRUE,
+                           covs.formula = ~ I(lag(tradewb, 1:4)),
+                           size.match = 5, qoi = "atc",
+                           outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE,
+                           placebo.test = FALSE)
+  set.effects <- getSetTreatmentEffects(pm.obj = PM.results, data.in = dem, lead = 0:1)
+  #mean(set.effects[[1]], na.rm = TRUE)
+  #mean(set.effects[[2]], na.rm = TRUE)
+  pe.results <- PanelEstimate(PM.results, data = dem)
+  expect_equivalent(c(mean(set.effects[[1]], na.rm = TRUE), 
+                      mean(set.effects[[2]], na.rm = TRUE)), 
+                    pe.results$estimates[1:2], tolerance = .000001)
+  
+  
+  # PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
+  #                          treatment = "dem", refinement.method = "mahalanobis",
+  #                          data = dem, match.missing = TRUE,
+  #                          covs.formula = ~ I(lag(tradewb, 1:4)),
+  #                          size.match = 5, qoi = "ate",
+  #                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE,
+  #                          placebo.test = FALSE)
+  # set.effects <- getSetTreatmentEffects(pm.obj = PM.results, data.in = dem, lead = 0:1)
+  # #mean(set.effects[[1]], na.rm = TRUE)
+  # #mean(set.effects[[2]], na.rm = TRUE)
+  # pe.results <- PanelEstimate(PM.results, data = dem)
+  # expect_equivalent(c(mean(set.effects[[1]], na.rm = TRUE), 
+  #                     mean(set.effects[[2]], na.rm = TRUE)), 
+  #                   pe.results$estimates[1:2], tolerance = .000001)
   
   
 })
+
 

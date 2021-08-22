@@ -17,10 +17,10 @@
 #' @param data The same time series cross sectional data set provided to the PanelMatch function used to produce
 #' the matched sets.
 #' @param se.method Method used for calculating standard errors, provided as a character string. Users must choose between "bootstrap", "conditional", and "unconditional" methods. Default is "bootstrap". The bootstrap uses a block bootstrapping procedure to calculate standard errors. The conditional method calculates the variance of the estimator, assuming that D and X are fixed, as described in Imai, Kim, and Wang (2021). The unconditional method also calculates the variance of the estimator analytically, but makes no assumptions about D or X. When the quantity of interest is "att", "atc", or "art", all methods are available. Only "bootstrap" is available for the ate. 
-#' @param number.iterations If using bootstrapping for calculating standard errors, this is the number of bootstrap iterations. Provide as integer.
+#' @param number.iterations If using bootstrapping for calculating standard errors, this is the number of bootstrap iterations. Provide as integer. If se.method is not equal to "bootstrap", this argument has no effect.
 #' @param df.adjustment A logical value indicating whether or not a
 #' degree-of-freedom adjustment should be performed for the standard error
-#' calculation. The default is \code{FALSE}.
+#' calculation. The default is \code{FALSE}. This parameter is only available for the bootstrap method of standard error calculation.
 #' @param confidence.level A numerical value specifying the confidence level and range of interval
 #' estimates for statistical inference. The default is .95.
 #' @param moderator The name of a moderating variable, provided as a character string. If a moderating variable is provided,the returned object will be a list of \code{PanelEstimate} objects. The names of the list will reflect the different values of the moderating variable. More specifically, the moderating variable values will be converted to syntactically proper names using \code{make.names}.

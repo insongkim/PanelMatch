@@ -189,7 +189,7 @@ get_covariate_balance <- function(matched.sets,
   {
     removed.vars <- names(which(apply(apply(pointmatrix, 2, is.nan), 2, any)))
     pointmatrix <- pointmatrix[, !remove.vars.idx]
-    warning(paste0("Some variables were removed due to low variation: ", removed.vars))
+    warning(paste0("Some variables were removed due to low variation, inadequate data needed for calculation: ", removed.vars))
   }
   
   
@@ -202,7 +202,7 @@ get_covariate_balance <- function(matched.sets,
   
   if (plot)
   {
-    
+    # when binary, no real reason you'd want to calculate this
     treated.included <- treatment %in% colnames(pointmatrix)
     if (!continuous.treatment)
     {
@@ -553,6 +553,8 @@ getSetTreatmentEffects <- function(pm.obj, data.in, lead)
 #' @param plot logical indicating whether or not a plot should be generated, or just return the raw data from the calculations
 #' @param ... extra arguments to be passed to plot
 #'
+#' @return list with 2 elements: "estimates", which contains the point estimates for the test and "bootstrapped.estimates", containing the bootstrapped point estimates for the test for each specified lag window period.
+#'
 #' @examples
 #' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
 #'                          treatment = "dem", refinement.method = "mahalanobis",
@@ -570,22 +572,34 @@ getSetTreatmentEffects <- function(pm.obj, data.in, lead)
 placeboTest <- function(pm.obj,
                         data.in,
                         lag.in = NULL,
-                        number.iterations = 5000,
+                        number.iterations = 1000,
                         confidence.level = .95,
                         plot = FALSE,
                         ...)
 {
   df.adjustment <- FALSE
   qoi.in <- attr(pm.obj, "qoi")
-  # dont need to worry about ate case anymore.
-  matchedsets <- pm.obj[[qoi.in]]
   if (is.null(lag.in))
   {
-    lag.in <- attr(matchedsets, "lag")
+    if (identical(qoi.in, "ate"))
+    {
+      #just pick one
+      matchedsets <- pm.obj[["att"]]
+      lag.in <- attr(matchedsets, "lag")
+    } else {
+      matchedsets <- pm.obj[[qoi.in]]
+      
+    }
   }
-
-  matchedsets <- pm.obj[[qoi.in]]
+  
+  if (identical(qoi.in, "ate"))
+  {
+    #just pick one for boundary check
+    matchedsets <- pm.obj[["att"]]
+  }
+  #matchedsets <- pm.obj[[qoi.in]]
   if (lag.in == 1) stop("placebo test cannot be conducted for lag = 1")
+  if (length(lag.in) >1) stop("lag.in should be a single integer")
   if (lag.in > attr(matchedsets, "lag")) stop("provided lag.in value exceeds lag parameter from matching stage. Please specify a valid lag.in value, such that lag.in < lag")
 
   lag.in <- lag.in:2

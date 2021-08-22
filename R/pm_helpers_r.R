@@ -62,11 +62,11 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
                            continuous.treatment.info = continuous.treatment.info)
   e.sets <- msets[sapply(msets, length) == 0]
   msets <- msets[sapply(msets, length) > 0 ]
-  if(length(msets) == 0)
+  if (length(msets) == 0)
   {
     t.attributes <- attributes(e.sets)[names(attributes(e.sets)) != "names"]
     msets <- e.sets
-    for(idx in names(t.attributes))
+    for (idx in names(t.attributes))
     {
       attr(msets, idx) <- t.attributes[[idx]]
     }
@@ -107,7 +107,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
         }
       }
     }
-    #browser()
+    
     msets <- msets[names(msets) != "remove"]
 
     for (i in 1:length(msets)) {
@@ -120,13 +120,13 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
   {
     msets <- enforce_lead_restrictions(msets, ordered.data, max(lead), time.id, unit.id, treatment.var = treatment)
   }
-  if(length(msets) == 0)
+  if (length(msets) == 0)
   {
     warn.str <- paste0("no matched sets for ", qoi, " specification")
     stop(warn.str)
   }
 
-  if(!is.null(exact.matching.variables))
+  if (!is.null(exact.matching.variables))
   {
     msets <- do_exact_matching(msets, ordered.data, exact.matching.variables)
 
@@ -137,7 +137,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
 
 
   ####apply calipers here
-  if(!is.null(caliper.formula))
+  if (!is.null(caliper.formula))
   {
     msets <- handle_calipers(plain.ordered.data = ordered.data, caliper.formula,
                              matched.sets = msets, lag.window = 0:lag)

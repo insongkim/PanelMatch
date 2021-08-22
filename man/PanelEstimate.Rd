@@ -21,11 +21,11 @@ PanelEstimate(
 \item{data}{The same time series cross sectional data set provided to the PanelMatch function used to produce
 the matched sets.}
 
-\item{number.iterations}{If using bootstrapping for calculating standard errors, this is the number of bootstrap iterations. Provide as integer.}
+\item{number.iterations}{If using bootstrapping for calculating standard errors, this is the number of bootstrap iterations. Provide as integer. If se.method is not equal to "bootstrap", this argument has no effect.}
 
 \item{df.adjustment}{A logical value indicating whether or not a
 degree-of-freedom adjustment should be performed for the standard error
-calculation. The default is \code{FALSE}.}
+calculation. The default is \code{FALSE}. This parameter is only available for the bootstrap method of standard error calculation.}
 
 \item{confidence.level}{A numerical value specifying the confidence level and range of interval
 estimates for statistical inference. The default is .95.}

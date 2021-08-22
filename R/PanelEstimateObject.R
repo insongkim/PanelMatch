@@ -57,6 +57,12 @@ summary.PanelEstimate <- function(object, verbose = TRUE,
           object$bootstrap.iterations, "Weighted bootstrap samples\n")  
     }
     
+    if (identical(object$se.method, "conditional") || identical(object$se.method, "unconditional"))
+    {
+      cat("\nStandard errors computed with", 
+          object$se.method, " method\n")
+    }
+    
     if (object$qoi == "att")
     {
       qoi <- "Average Treatment Effect on the Treated (ATT)"

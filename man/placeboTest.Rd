@@ -8,7 +8,7 @@ placeboTest(
   pm.obj,
   data.in,
   lag.in = NULL,
-  number.iterations = 5000,
+  number.iterations = 1000,
   confidence.level = 0.95,
   plot = FALSE,
   ...
@@ -28,6 +28,9 @@ placeboTest(
 \item{plot}{logical indicating whether or not a plot should be generated, or just return the raw data from the calculations}
 
 \item{...}{extra arguments to be passed to plot}
+}
+\value{
+list with 2 elements: "estimates", which contains the point estimates for the test and "bootstrapped.estimates", containing the bootstrapped point estimates for the test for each specified lag window period.
 }
 \description{
 Calculates results for a placebo test

@@ -61,7 +61,7 @@ The variables specified in this formula are used to define the similarity/distan
 \item{verbose}{option to include more information about the \code{matched.set} object calculations, 
 like the distances used to create the refined sets and weights.}
 
-\item{qoi}{quantity of interest: \code{att} (average treatment effect on treated units), \code{art} (average effect of treatment reversal for units that experience treatment reversal)
+\item{qoi}{quantity of interest, provided as a string: \code{att} (average treatment effect on treated units), \code{atc} (average treatment effect of treatment on the control units) \code{art} (average effect of treatment reversal for units that experience treatment reversal), or \code{ate} (average treatment effect). 
 Note that the qoi for MSM methods will give the estimated average treatment effect of being treated for a chosen \code{lead} 
 time periods. This differs slightly from the non-MSM methods, where treatment reversal is permitted.}
 
@@ -93,10 +93,10 @@ high correlation between variables. Default is FALSE. This argument is only nece
 }
 \value{
 \code{PanelMatch} returns an object of class "PanelMatch". This is a list that contains a few specific elements: 
-First, a \code{matched.set} object(s) that has the same name as the provided qoi if the qoi is "att" or "atc". See the vignette about continuous treatment for examples and more information.
+First, a \code{matched.set} object(s) that has the same name as the provided qoi if the qoi is "att", "art", or "atc". 
 If qoi = "ate" then two \code{matched.set} objects will be attached, named "att" and "atc." Please consult the documentation for
-\code{matched_set} to read more about the structure and usage of \code{matched.set} objects. Also, see the wiki page for 
-more information about these objects: \url{https://github.com/insongkim/PanelMatch/wiki/Matched-Set-Objects}.
+\code{matched_set} to read more about the structure and usage of \code{matched.set} objects. Also, see the vignette page about matched.set objects for 
+more information about these objects: \code{vignette("matched_set_objects", package = "PanelMatch")}.
 The \code{PanelMatch} object also has some additional attributes:
 \item{qoi}{The qoi specified in the original function call}
 \item{lead}{the lead window specified in the original function call}

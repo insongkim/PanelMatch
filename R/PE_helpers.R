@@ -521,7 +521,7 @@ calculateEstimates <- function(qoi.in, data.in, lead,
         # make new data
         clusters <- unique(data.in[, unit.id.variable])
         units <- sample(clusters, size = length(clusters), replace=TRUE)
-        while(all(!units %in% att.treated.unit.ids) | all(!units %in% atc.treated.unit.ids)) #while none of the units are treated units (att and atc), resample
+        while(all(!units %in% att.treated.unit.ids) || all(!units %in% atc.treated.unit.ids)) #while none of the units are treated units (att and atc), resample
         {
           units <- sample(clusters, size = length(clusters), replace=TRUE)
         }
@@ -823,6 +823,119 @@ calculatePlaceboEstimates <- function(qoi.in, data.in, lead,
         class(z) <- "PanelEstimate"
         return(z)
         
+      } else if (identical(qoi.in, "ate")) 
+      {
+        col.idx <- sapply(placebo.lead - 2, function(x) paste0("Wit_", "att", x))
+        x.in <- data.in[, col.idx, drop = FALSE]
+        
+        #y.in <- data.in[c(outcome.variable)][,1]
+        
+        create.lagged.dfs <- function(d, dv, idx, k)
+        {
+          d[, paste0(dv, "l", idx)] <- lapply(k, function(x) data.table::shift(d[, dv], n = x, type = "lag"))
+          return(d)
+        }
+        y.in <- by(data.in, as.factor(data.in[, unit.id.variable]),
+                   FUN = create.lagged.dfs,
+                   dv = outcome.variable,
+                   idx = placebo.lead - 1,
+                   k = placebo.lead - 1,
+                   simplify = FALSE)
+        
+        data.in <- do.call(rbind, y.in)
+        y.in <- data.in[, paste0(outcome.variable, "l", (placebo.lead - 1)), drop = FALSE]
+        z.in <- data.in[, paste0("dits_", "att")]
+        
+        att.coefs <- equality_four_placebo(x.in, y.in, z.in)
+        
+        col.idx <- sapply(placebo.lead - 2, function(x) paste0("Wit_", "atc", x))
+        x.in <- data.in[, col.idx, drop = FALSE]
+        
+        #y.in <- data.in[c(outcome.variable)][,1]
+        
+        create.lagged.dfs <- function(d, dv, idx, k)
+        {
+          d[, paste0(dv, "l", idx)] <- lapply(k, function(x) data.table::shift(d[, dv], n = x, type = "lag"))
+          return(d)
+        }
+        y.in <- by(data.in, as.factor(data.in[, unit.id.variable]),
+                   FUN = create.lagged.dfs,
+                   dv = outcome.variable,
+                   idx = placebo.lead - 1,
+                   k = placebo.lead - 1,
+                   simplify = FALSE)
+        
+        data.in <- do.call(rbind, y.in)
+        y.in <- data.in[, paste0(outcome.variable, "l", (placebo.lead - 1)), drop = FALSE]
+        z.in <- data.in[, paste0("dits_", "atc")]
+        
+        atc.coefs <- equality_four_placebo(x.in, y.in, z.in)
+        atc.coefs <- -atc.coefs
+        
+        
+        o.coefs_ate <- (att.coefs*sum(data.in$dits_att) + atc.coefs*sum(data.in$dits_atc))/
+          (sum(data.in$dits_att) + sum(data.in$dits_atc))
+       
+        
+        
+        coefs <- matrix(NA, nrow = number.iterations, ncol = length(placebo.lead))
+        
+        for (k in 1:number.iterations)
+        {
+          # make new data
+          clusters <- unique(data.in[, unit.id.variable])
+          units <- sample(clusters, size = length(clusters), replace = TRUE)
+          
+          while(all(!units %in% att.treated.unit.ids) || all(!units %in% atc.treated.unit.ids)) #while none of the units are treated units (att and atc), resample
+          {
+            units <- sample(clusters, size = length(clusters), replace=TRUE)
+          }
+          
+          
+          
+          df.bs <- lapply(units, function(x) which(data.in[, unit.id.variable] == x))
+          d.sub1 <- data.in[unlist(df.bs),]
+          
+          y.in <- d.sub1[, paste0(outcome.variable, "l", (placebo.lead - 1)), drop = FALSE]
+          z.in <- d.sub1[, paste0("dits_", "att")]
+          
+          
+          att_new <- equality_four_placebo(d.sub1[, sapply(placebo.lead - 2, function(x) paste0("Wit_", "att", x)), drop = FALSE],
+                                           y = y.in,
+                                           z = z.in)
+          
+          
+          y.in <- d.sub1[, paste0(outcome.variable, "l", (placebo.lead - 1)), drop = FALSE]
+          z.in <- d.sub1[, paste0("dits_", "atc")]
+          
+          
+          atc_new <- equality_four_placebo(d.sub1[, sapply(placebo.lead - 2, function(x) paste0("Wit_", "atc", x)), drop = FALSE],
+                                           y = y.in,
+                                           z = z.in)
+          
+          atc_new <- -atc_new
+          coefs[k,] <- (att_new*sum(d.sub1$dits_att) + atc_new*sum(d.sub1$dits_atc))/
+            (sum(d.sub1$dits_att) + sum(d.sub1$dits_atc))
+        }
+        
+        
+        
+        names(o.coefs_ate) <- paste0("t-", placebo.lead)
+        #o.coefs <- rev(o.coefs) # for ease
+        colnames(coefs) <- names(o.coefs_ate)
+        z <- list("estimates" = o.coefs_ate,
+                  "bootstrapped.estimates" = coefs,
+                  "bootstrap.iterations" = number.iterations,
+                  "standard.error" = apply(coefs, 2, sd, na.rm = T),
+                  "lag" = lag,
+                  "lead" = lead,
+                  "confidence.level" = confidence.level,
+                  "qoi" = qoi.in,
+                  "matched.sets" = list(att = att.sets,
+                                        atc = atc.sets),
+                  "se.method" = se.method)
+        class(z) <- "PanelEstimate"
+        return(z)
       } else {
         stop("invalid qoi")
         
@@ -831,7 +944,7 @@ calculatePlaceboEstimates <- function(qoi.in, data.in, lead,
     {
       stop("not currently implemented")
     } else {
-    stop("invalid standard error method provided!")
+    stop("placebo tests only currently available with bootstrap!")
   }
   
   

@@ -73,11 +73,11 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
   # @param group_on Character name of column with a categorical variable that is not time dependent. 
   # If provided, units with shared values will be grouped together and each group will be highlighted on the resulting plot.
   ###############
-  if(class(data) != "data.frame") stop("please convert data to data.frame class")
-  if(any(is.na(data[, unit.id]))) stop("Cannot have NA unit ids")
+  if (class(data) != "data.frame") stop("please convert data to data.frame class")
+  if (any(is.na(data[, unit.id]))) stop("Cannot have NA unit ids")
   # if(!class(data[, unit.id]) %in% c("integer", "numeric")) stop("please convert unit id column to integer or numeric")
-  if(class(data[, time.id]) != "integer") stop("please convert time id to consecutive integers")
-  if(show.set.only & !is.null(matched.set) & length(matched.set) == 1 & class(matched.set) == "matched.set")
+  if (class(data[, time.id]) != "integer") stop("please convert time id to consecutive integers")
+  if (show.set.only & !is.null(matched.set) & length(matched.set) == 1 & class(matched.set) == "matched.set")
   {
     info <- unlist(strsplit(names(matched.set)[1], split = ".", fixed = TRUE))
     id <- info[1]
@@ -113,9 +113,9 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
   }
   #x.size = NULL
   #y.size = NULL
-  if(!is.null(group_on))
+  if (!is.null(group_on))
   {
-    if(!is.null(sort_by))
+    if (!is.null(sort_by))
     {
       data <- na.omit(data[c(unit.id, time.id, treatment, group_on, sort_by)])  
       colnames(data) <- c("unit.id", "time.id", "treatment", group_on, sort_by)
@@ -129,7 +129,7 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
   }
   else
   {
-    if(!is.null(sort_by))
+    if (!is.null(sort_by))
     {
       data <- na.omit(data[c(unit.id, time.id, treatment, sort_by)])
       # rename variables to match with the object names in the loop below
@@ -149,19 +149,19 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
   # data$unit.id <- as.character(data$unit.id)
   # Sorting units by treatment intensity -- default behavior 
   
-  if(is.null(sort_by) & !decreasing)
+  if (is.null(sort_by) & !decreasing)
   {
     data$trintens <- tapply(data$treatment, data$unit.id, mean, na.rm = T)[as.character(data$unit.id)]
     data <- data[order(data$trintens), ]  
   }
-  else if(is.null(sort_by) & decreasing)
+  else if (is.null(sort_by) & decreasing)
   {
     data$trintens <- tapply(data$treatment, data$unit.id, mean, na.rm = T)[as.character(data$unit.id)]
     data <- data[order(data$trintens, decreasing = TRUE), ] 
   }
-  else if(!is.null(sort_by))
+  else if (!is.null(sort_by))
   {
-    if(!decreasing)
+    if (!decreasing)
     {
       data$sortvar <- tapply(data[, sort_by], data$unit.id, mean, na.rm = T)[as.character(data$unit.id)]
       data <- data[order(data$sortvar), ]  
@@ -175,11 +175,11 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
   
   
   # then sort again by group for plotting, if specified by the user
-  if(!is.null(group_on))
+  if (!is.null(group_on))
   {
-    if(group_on %in% colnames(data))
+    if (group_on %in% colnames(data))
     {
-      if(length(unique(data[, group_on])) == 1)
+      if (length(unique(data[, group_on])) == 1)
       {
         group_on <- NULL
         warning("only one group possible for group provided")
@@ -201,9 +201,9 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
   }
   data$old.index <- data$unit.id
   data$unit.id <- match(data$unit.id, unique(data$unit.id) ) 
-  data$unit.id <- factor(data$unit.id, levels=unique(as.character(data$unit.id)))
-  data$time.id <- factor(x = data$time.id, levels = sort(unique(data$time.id)), ordered = T)
-  if(!is.null(group_on))
+  data$unit.id <- factor(data$unit.id, levels = unique(as.character(data$unit.id)))
+  data$time.id <- factor(x = data$time.id, levels = sort(unique(data$time.id)), ordered = TRUE)
+  if (!is.null(group_on))
   {
     lvls <- levels(data[, group_on])
     .get_y.max <- function(level)
@@ -219,13 +219,13 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
   }
   
   
-  if(!is.null(matched.set) & length(matched.set) == 1 & class(matched.set) == "matched.set")
+  if (!is.null(matched.set) & length(matched.set) == 1 & class(matched.set) == "matched.set")
   {
     lag <- attr(matched.set, "lag")
     .in.set <- function(id_comp)
     {
       
-      if(id_comp == id | id_comp %in% unlist(matched.set))
+      if (id_comp == id | id_comp %in% unlist(matched.set))
       {
         return(TRUE)
       }
@@ -391,7 +391,7 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
   else
   {
     clrs <- NULL
-    if(!dense.plot)
+    if (!dense.plot)
     {
       p <- ggplot(data, aes(unit.id, time.id)) + geom_tile(aes(fill = treatment),
                                                            colour = "white") +
@@ -429,7 +429,7 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
   }
   
   
-  if(!is.null(group_on))
+  if (!is.null(group_on))
   {
     dat <- ggplot_build(p)$data[[1]] 
     
@@ -441,7 +441,13 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
     # adding in some extra space between the lines for clarity-- might be a better way to do this systematically, or just remove
     max.vals.x[1:length(max.vals.x) - 1] <- max.vals.x[1:length(max.vals.x) - 1] - .02
     min.vals.x[2:length(min.vals.x)] <- min.vals.x[2:length(min.vals.x)] + .02
-    pj <-  p + annotate("rect", xmin = min.vals.x, xmax = max.vals.x, ymin = min.vals.y, ymax = max.vals.y, alpha = 0, color = factor(lvls), size = 1.25)  
+    pj <-  p + annotate("rect", xmin = min.vals.x, 
+                        xmax = max.vals.x, 
+                        ymin = min.vals.y, 
+                        ymax = max.vals.y, 
+                        alpha = 0, 
+                        color = factor(lvls), 
+                        size = 1.25)  
   }
   else
   {

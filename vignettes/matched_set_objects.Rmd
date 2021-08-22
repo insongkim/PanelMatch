@@ -34,7 +34,7 @@ DisplayTreatment(unit.id = "wbcode2", time.id = "year", treatment = 'dem', data 
 
 ### PanelMatch and matched.set objects
 
-We can use the `PanelMatch` function with `refinement.method` set to `none` to obtain a `PanelMatch` object, from which we will extract a `matched.set` object. `PanelMatch` returns an S3 object of the `PanelMatch` class. These objects are just lists with some additional attributes. Here, we will focus on one element contained within `PanelMatch` objects: `matched.set` objects. Within the `PanelMatch` object, this element is always named either `att` or `atc`. When `qoi = ate`, then there are two `matched.set` objects included in the resulting `PanelMatch` call. Specifically, there will be two matched sets named `att` and `atc`, respectively.
+We can use the `PanelMatch` function with `refinement.method` set to `none` to obtain a `PanelMatch` object, from which we will extract a `matched.set` object. `PanelMatch` returns an S3 object of the `PanelMatch` class. These objects are just lists with some additional attributes. Here, we will focus on one element contained within `PanelMatch` objects: `matched.set` objects. Within the `PanelMatch` object, this element is always named either `att`, `art`, or `atc`. When `qoi = ate`, then there are two `matched.set` objects included in the resulting `PanelMatch` call. Specifically, there will be two matched sets named `att` and `atc`, respectively.
 
 ```{r}
 
@@ -83,7 +83,7 @@ Note that this returns a vector of weights. The names of each element in the vec
 
 ### Subsetting matched.set objects.
 
-The '[' and '[[' operators are implemented and should work intuitively. 
+The '[' and '[[' operators are implemented for `matched.set` objects and should work intuitively. 
 
 Using '[' returns a subsetted `matched.set` object (list). The additional attributes will be copied and transferred as well with the custom operator. Note how, by default, it prints like the full form of the `matched.set`. Using '[[' will return the unit ids of the control units in the specified matched set.
 
