@@ -124,7 +124,9 @@ get_covariate_balance <- function(matched.sets,
   #subset to keep only needed covariates
   othercols <- othercols[othercols %in% covariates]
   
-  ordered.data <- ordered.data[, c(unit.id, time.id, treatment, othercols)] #reorder columns 
+  ordered.data <- ordered.data[, c(unit.id, time.id, treatment, othercols), drop = FALSE] #reorder columns 
+  ordered.data <- ordered.data[, unique(c(unit.id, time.id, treatment, covariates)), drop = FALSE]
+  # Don't think we need to keep any other columns than the ones here...
   #they will either all have or not have weights, so we can check the first matched set to see if we need to add equal weighting
   #i dont think that its possible for sets to not have any weights now, but don't think it hurts to keep this in
   if(is.null(attr(matched.sets[[1]], "weights")) | use.equal.weights)
@@ -588,7 +590,7 @@ placeboTest <- function(pm.obj,
       lag.in <- attr(matchedsets, "lag")
     } else {
       matchedsets <- pm.obj[[qoi.in]]
-      
+      lag.in <- attr(matchedsets, "lag")
     }
   }
   
