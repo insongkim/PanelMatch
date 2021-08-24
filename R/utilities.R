@@ -546,7 +546,7 @@ getSetTreatmentEffects <- function(pm.obj, data.in, lead)
 #' Calculates results for a placebo test
 #'
 #'
-#' Calculate the results of a placebo test, looking at the change in outcome at time = t-1, compared to other pre treatment periods in the lag window.
+#' Calculate the results of a placebo test, looking at the change in outcome at time = t-1, compared to other pre-treatment periods in the lag window.
 #' @param pm.obj an object of class \code{PanelMatch}
 #' @param data.in data.frame with the original data
 #' @param lag.in integer indicating earliest the time period(s) in the future for which the placebo test change in outcome will be calculated. Calculations will be made over the period t - max(lag) to t-2, where t is the time of treatment. The results are similar to those returned by PanelEstimate, except t-1 is used as the period of comparison, rather than the lead window.

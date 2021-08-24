@@ -288,7 +288,7 @@ balance_scatter(non_refined_set = PM.results.none$att,
 
 # PanelEstimate
 
-We now move to the other major part of the package: obtaining point estimates and standard errors using `PanelEstimate`. There are a variety of methods for calculating standard errors: "bootstrap", "conditional", and "unconditional". By default, the package uses a bootstrap approach for calculating standard errors (1000 bootstrap iterations are used by default). When the `qoi` is set to "att", "art", or "atc", you may also use analytical methods for calculating standard errors: "conditional" or "unconditional", each making different assumptions about the data. Consult Imai, Kim, and Wang (2021) for descriptions about these methods. .95 is the default confidence level. 
+We now move to the other major part of the package: obtaining point estimates and standard errors using `PanelEstimate`. There are a variety of methods for calculating standard errors: "bootstrap", "conditional", and "unconditional". By default, the package uses a bootstrap approach for calculating standard errors (1000 bootstrap iterations are used by default). When the `qoi` is set to "att", "art", or "atc", you may also use analytical methods for calculating standard errors: "conditional" or "unconditional", with the former assuming independence across units (but not time) and the latter not making such assumptions. Consult Imai, Kim, and Wang (2021) for descriptions about these methods. .95 is the default confidence level. 
 
 The function returns a `PanelEstimate` object, which behaves like a list, much like the other objects in the package. As such, you can access the various elements just as you would in a list.
 

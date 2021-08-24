@@ -9,14 +9,13 @@
 #' produced for each period in the lead window specified by the \code{lead} argument from \code{PanelMatch}.
 #' Users may run multiple estimations by providing lists of each argument to the function.
 #' However, in this format, every argument must be explicitly specified in each configuration
-#' and must adhere to the same data types/structures outlined below. See the included code examples for more about
-#' how this functionality works.
+#' and must adhere to the same data types/structures outlined below. 
 #'
 #' @param sets A \code{PanelMatch} object attained via the
 #' \code{PanelMatch} function.
 #' @param data The same time series cross sectional data set provided to the PanelMatch function used to produce
 #' the matched sets.
-#' @param se.method Method used for calculating standard errors, provided as a character string. Users must choose between "bootstrap", "conditional", and "unconditional" methods. Default is "bootstrap". The bootstrap uses a block bootstrapping procedure to calculate standard errors. The conditional method calculates the variance of the estimator, assuming that D and X are fixed, as described in Imai, Kim, and Wang (2021). The unconditional method also calculates the variance of the estimator analytically, but makes no assumptions about D or X. When the quantity of interest is "att", "atc", or "art", all methods are available. Only "bootstrap" is available for the ate. 
+#' @param se.method Method used for calculating standard errors, provided as a character string. Users must choose between "bootstrap", "conditional", and "unconditional" methods. Default is "bootstrap". "bootstrap" uses a block bootstrapping procedure to calculate standard errors. The conditional method calculates the variance of the estimator, assuming independence across units but not across time. The unconditional method also calculates the variance of the estimator analytically, but makes no such assumptions about independence across units. When the quantity of interest is "att", "atc", or "art", all methods are available. Only "bootstrap" is available for the ate. See Section 3.4 of Imai, Kim, and Wang (2021) for more details.
 #' @param number.iterations If using bootstrapping for calculating standard errors, this is the number of bootstrap iterations. Provide as integer. If se.method is not equal to "bootstrap", this argument has no effect.
 #' @param df.adjustment A logical value indicating whether or not a
 #' degree-of-freedom adjustment should be performed for the standard error
@@ -28,8 +27,8 @@
 #' `PanelEstimate' containing the following components:
 #' \item{estimates}{the point estimates of the quantity of interest for the lead periods specified}
 #' \item{se.method}{The method used to calculate standard errors. This is the same as the argument provided to the function.}
-#' \item{bootstrapped.estimates}{the bootstrapped point estimate values}
-#' \item{bootstrap.iterations}{the number of iterations used in bootstrapping}
+#' \item{bootstrapped.estimates}{the bootstrapped point estimate values, when applicable}
+#' \item{bootstrap.iterations}{the number of iterations used in bootstrapping, when applicable}
 #' \item{method}{refinement method used to create the matched sets from which the estimates were calculated}
 #' \item{lag}{See PanelMatch argument \code{lag} for more information.}
 #' \item{lead}{The lead window sequence for which \code{PanelEstimate} is producing point estimates and standard errors.}

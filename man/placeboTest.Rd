@@ -36,7 +36,7 @@ list with 2 elements: "estimates", which contains the point estimates for the te
 Calculates results for a placebo test
 }
 \details{
-Calculate the results of a placebo test, looking at the change in outcome at time = t-1, compared to other pre treatment periods in the lag window.
+Calculate the results of a placebo test, looking at the change in outcome at time = t-1, compared to other pre-treatment periods in the lag window.
 }
 \examples{
 PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
