@@ -20,7 +20,7 @@
 #' of matches by examining the resulting covariate balance.
 #'
 #' \tabular{ll}{ Package: \tab PanelMatch\cr Type: \tab Package\cr Version: \tab 2.0.0-\cr
-#' Date: \tab 2021-08-20\cr License: \tab GPL (>= 3)\cr }
+#' Date: \tab 2021-09-02\cr License: \tab GPL (>= 3)\cr }
 #'
 #' @name PanelMatch-package
 #' @useDynLib PanelMatch
