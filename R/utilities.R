@@ -618,6 +618,7 @@ treatmentChangeDistribution <- function(pm.object,
                                         y.label = NULL,
                                         title = NULL,
                                         bins = NULL,
+                                        jitter = FALSE,
                                         ...)
 {
   if (identical(pm.object[["qoi"]], "ate"))
@@ -645,8 +646,36 @@ treatmentChangeDistribution <- function(pm.object,
   
   if (type == "scatter")
   {
+    args <- list(...)
+    if (all(!"xlab" %in% args))
+    {
+      xlab <- "Treatment level, time = t-1"
+    }
+    
+    if (all(!"ylab" %in% args))
+    {
+      ylab <- "Treatment level, time = t-1"
+    }
+    
+    if (all(!"main" %in% args))
+    {
+      main.t <- "Treatment levels at t-1 vs t for Treated Units"
+    }
+    #if (jitter) t1.treatment <- base::jitter(t1.treatment)
+    # plot(x = t1.treatment,
+    #      y = t.treatment,
+    #      xlab = xlab,
+    #      ylab = ylab,
+    #      main = main.t,
+    #      ...)
+    
     plot(x = t1.treatment,
          y = t.treatment,
+         xlab = xlab,
+         ylab = ylab,
+         main = main.t,
+         pch = 16,
+         col=rgb(red=0, green=0, blue=0, alpha=0.2),
          ...)
   }
 
@@ -666,6 +695,7 @@ treatmentChangeDistribution <- function(pm.object,
     
     ggplot(data.frame(x = t1.treatment, y = t.treatment), 
            aes(x=x, y=y) ) +
+      #geom_hex(bins = bins) + ggtitle(main.t) +
       geom_bin2d(bins = bins) + ggtitle(main.t) +
       xlab(x.label) + ylab(y.label) +
       theme_bw()
