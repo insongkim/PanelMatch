@@ -597,3 +597,79 @@ placeboTest <- function(pm.obj,
     return(ret.results)
   }
 }
+
+
+
+
+#' treatmentChangeDistribution
+#'
+#' Calculates results for a placebo test
+#'
+#'
+#' Plots the levels of treatment at time = t-1 and time = t
+#' 
+#' @export
+#' 
+#' 
+treatmentChangeDistribution <- function(pm.object, 
+                                        data.in,
+                                        type, 
+                                        x.label = NULL, 
+                                        y.label = NULL,
+                                        title = NULL,
+                                        bins = NULL,
+                                        ...)
+{
+  if (identical(pm.object[["qoi"]], "ate"))
+  {
+    stop("Diagnostic not available for ate")
+  }
+  #browser()
+  qoi.in <-  attr(pm.object, "qoi")
+  matched.sets <- pm.object[[qoi.in]]
+  
+  
+  tvar <- attr(matched.sets, "t.var")
+  id.var <- attr(matched.sets, "id.var")
+  treatment.var <- attr(matched.sets, "treatment.var")
+  
+  
+  rownames(data.in) <- paste0(data.in[, id.var], ".", data.in[, tvar])
+
+  pretreatment.ts <- as.integer(sub(".*\\.", "", names(matched.sets))) - 1
+  treated.ids <- as.integer(sub("\\..*", "", names(matched.sets)))
+  
+  t.treatment <- data.in[names(matched.sets), treatment.var]
+  
+  t1.treatment <- data.in[paste0(treated.ids, ".", pretreatment.ts), treatment.var]
+  
+  if (type == "scatter")
+  {
+    plot(x = t1.treatment,
+         y = t.treatment,
+         ...)
+  }
+
+  else {
+    if (is.null(x.label))
+    {
+      x.label <- "Treatment level, time = t-1"
+    }
+    if (is.null(y.label))
+    {
+      y.label <- "Treatment level, time = t"
+    }
+    if (is.null(title))
+    {
+      main.t <- "Treatment levels at t-1 vs t for Treated Units"
+    }
+    
+    ggplot(data.frame(x = t1.treatment, y = t.treatment), 
+           aes(x=x, y=y) ) +
+      geom_bin2d(bins = bins) + ggtitle(main.t) +
+      xlab(x.label) + ylab(y.label) +
+      theme_bw()
+  }
+}
+
+
