@@ -7,6 +7,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // get_vit_index
 Rcpp::NumericVector get_vit_index(Rcpp::CharacterVector t_id_key, Rcpp::CharacterVector control_treatment_t_ids, Rcpp::NumericVector control_treatment_set_nums);
 RcppExport SEXP _PanelMatch_get_vit_index(SEXP t_id_keySEXP, SEXP control_treatment_t_idsSEXP, SEXP control_treatment_set_numsSEXP) {
@@ -157,6 +162,22 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type L(LSEXP);
     Rcpp::traits::input_parameter< int >::type missing_window(missing_windowSEXP);
     rcpp_result_gen = Rcpp::wrap(non_matching_matcher(control_history_list, widemat, t_as_col_nums, ids, L, missing_window));
+    return rcpp_result_gen;
+END_RCPP
+}
+// filter_placebo_results
+Rcpp::List filter_placebo_results(Rcpp::NumericMatrix expanded_data, Rcpp::NumericVector ordered_outcome_data, Rcpp::NumericVector treated_ids, Rcpp::NumericVector treated_ts, Rcpp::List sets, int lag);
+RcppExport SEXP _PanelMatch_filter_placebo_results(SEXP expanded_dataSEXP, SEXP ordered_outcome_dataSEXP, SEXP treated_idsSEXP, SEXP treated_tsSEXP, SEXP setsSEXP, SEXP lagSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type expanded_data(expanded_dataSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type ordered_outcome_data(ordered_outcome_dataSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type treated_ids(treated_idsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type treated_ts(treated_tsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type sets(setsSEXP);
+    Rcpp::traits::input_parameter< int >::type lag(lagSEXP);
+    rcpp_result_gen = Rcpp::wrap(filter_placebo_results(expanded_data, ordered_outcome_data, treated_ids, treated_ts, sets, lag));
     return rcpp_result_gen;
 END_RCPP
 }

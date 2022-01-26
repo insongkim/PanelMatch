@@ -45,6 +45,10 @@ non_matching_matcher <- function(control_history_list, widemat, t_as_col_nums, i
     .Call('_PanelMatch_non_matching_matcher', PACKAGE = 'PanelMatch', control_history_list, widemat, t_as_col_nums, ids, L, missing_window)
 }
 
+filter_placebo_results <- function(expanded_data, ordered_outcome_data, treated_ids, treated_ts, sets, lag) {
+    .Call('_PanelMatch_filter_placebo_results', PACKAGE = 'PanelMatch', expanded_data, ordered_outcome_data, treated_ids, treated_ts, sets, lag)
+}
+
 get_yearly_dmats <- function(expanded_data, treated_ids, ts_to_fetch, matched_sets, lag) {
     .Call('_PanelMatch_get_yearly_dmats', PACKAGE = 'PanelMatch', expanded_data, treated_ids, ts_to_fetch, matched_sets, lag)
 }

@@ -230,3 +230,85 @@ Rcpp:: List non_matching_matcher(const Rcpp::List &control_history_list,
   return matched_sets;
 }
 
+
+// [[Rcpp::export]]
+Rcpp::List filter_placebo_results(Rcpp::NumericMatrix expanded_data,
+                                  Rcpp::NumericVector ordered_outcome_data,
+                                  Rcpp::NumericVector treated_ids,
+                                  Rcpp::NumericVector treated_ts,
+                                  Rcpp::List sets,
+                                  int lag) {
+  
+  //creating the mapping of key to index for easier lookups without search
+  std::unordered_map<std::string, int> indexMap;
+  Rcpp::List subsets(treated_ids.size());
+  for(int i = 0; i < expanded_data.nrow(); i++)
+  {
+    int id_1 = expanded_data(i,0);
+    int t_1 = expanded_data(i,1);
+    
+    std::string id = std::to_string(id_1);
+    std::string t = std::to_string(t_1);
+    
+    std::string key = id + "." + t;
+    
+    indexMap[key] = i;
+    
+  }
+  
+  for(int i = 0; i < sets.size(); i++) //iterating over the matched sets
+  {
+    
+    
+    //check treated unit
+    int id_t = treated_ids[i];
+    std::string id = std::to_string(id_t);
+    //std::string t = std::to_string(treated_ts[i]);
+    int t = treated_ts[i];
+    bool check_controls = true;
+    for (int j = lag; j > 0; j--)
+    {
+      int new_time = t - j;
+      std::string xx = std::to_string(new_time);
+      std::string key = id + "." + xx;
+//Rcpp::Rcout << indexMap[key] << std::endl;
+      if(Rcpp::internal::Rcpp_IsNA(ordered_outcome_data[indexMap[key]]))
+      {
+        check_controls = false;
+      }
+    }
+    //check control units
+    
+    Rcpp::NumericVector control_ids = sets[i];
+    Rcpp::LogicalVector keep(control_ids.size()); //default to false
+    
+    if (check_controls)
+    {
+      for (int y = 0; y < control_ids.size(); y++) //iterating over the controls in a particular matched set
+      {
+        
+        int ctrl = control_ids[y];
+        std::string id = std::to_string(ctrl);
+        keep[y] = true;
+        for (int j = lag; j > 0; j--) //iterating over the window for each control unit
+        {
+          int new_time = t - j;
+          std::string xx = std::to_string(new_time);
+          std::string key = id + "." + xx;
+          
+          if(Rcpp::internal::Rcpp_IsNA(ordered_outcome_data[indexMap[key]]))
+          {
+            keep[y] = false;
+          } 
+        }
+      }
+      subsets[i] = control_ids[keep];
+    } else 
+    {
+      subsets[i] = control_ids[keep];
+    }
+    
+  }
+  return subsets; //then just filter empty sets when they're back.
+  
+}

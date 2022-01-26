@@ -82,40 +82,62 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
   #browser()
   if (placebo.test)
   {
+    
     treated.ts <- as.integer(sub(".*\\.", "", names(msets)))
     treated.ids <- as.integer(sub("\\..*", "", names(msets)))
 
     rownames(ordered.data) <- paste0(ordered.data[, unit.id],".", ordered.data[, time.id])
-
-    for (i in 1:length(msets)) {
-      cur.id <- treated.ids[i]
-      cur.t <- treated.ts[i]
-      to.check <- paste0(cur.id, ".", (cur.t - lag):(cur.t - 1))
-
-      if ( any(is.na(ordered.data[to.check, outcome.var])) )
-      {
-
-        names(msets)[i] <- "remove"
-      } else
-      {
-        for (j in 1:length(msets[[i]])) {
-          to.check <- paste0(msets[[i]][j], ".", (cur.t - lag):(cur.t - 1))
-          if ( any(is.na(ordered.data[to.check, outcome.var])) )
-          {
-            msets[[i]][j] <- NA
-          }
-        }
-      }
-    }
+    msets2 <- filter_placebo_results(expanded_data = as.matrix(ordered.data[, c(unit.id, time.id)]),
+                                     ordered_outcome_data = ordered.data[, outcome.var],
+                                     treated_ids = treated.ids,
+                                     treated_ts = treated.ts,
+                                     sets = msets,
+                                     lag = lag)
     
-    msets <- msets[names(msets) != "remove"]
-
-    for (i in 1:length(msets)) {
-      msets[[i]] <- msets[[i]][!is.na(msets[[i]])]
-    }
-    msets <- msets[sapply(msets, length) > 0 ]
+    # for (i in 1:length(msets)) {
+    #   cur.id <- treated.ids[i]
+    #   cur.t <- treated.ts[i]
+    #   to.check <- paste0(cur.id, ".", (cur.t - lag):(cur.t - 1))
+    # 
+    #   if ( any(is.na(ordered.data[to.check, outcome.var])) )
+    #   {
+    # 
+    #     names(msets)[i] <- "remove"
+    #   } else
+    #   {
+    #     for (j in 1:length(msets[[i]])) {
+    #       to.check <- paste0(msets[[i]][j], ".", (cur.t - lag):(cur.t - 1))
+    #       if ( any(is.na(ordered.data[to.check, outcome.var])) )
+    #       {
+    #         msets[[i]][j] <- NA
+    #       }
+    #     }
+    #   }
+    # }
+    # 
+    # msets <- msets[names(msets) != "remove"]
+    # 
+    # for (i in 1:length(msets)) {
+    #   msets[[i]] <- msets[[i]][!is.na(msets[[i]])]
+    # }
+    # msets <- msets[sapply(msets, length) > 0 ]
+  
+    msets2 <- msets2[sapply(msets2, length) > 0 ]
+    
+    attr(msets2, "lag") <- lag
+    attr(msets2, "t.var") <- time.id
+    attr(msets2, "id.var" ) <- unit.id
+    attr(msets2, "treatment.var") <- treatment
+    class(msets2) <- "matched.set"
+    #browser()  
   }
-
+  # filter_placebo_results(expanded_data = as.matrix(ordered.data[, c(unit.id, time.id)]),
+  #                        ordered_outcome_data = ordered.data[, outcome.var],
+  #                        treated_ids = treated.ids,
+  #                        treated_ts = treated.ts,
+  #                        sets = msets,
+  #                        lag = lag)
+  
   if (forbid.treatment.reversal)
   {
     msets <- enforce_lead_restrictions(msets, ordered.data, max(lead), time.id, unit.id, treatment.var = treatment)
