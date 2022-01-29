@@ -182,6 +182,7 @@ get_covariate_balance <- function(matched.sets,
     plotpoints[[k]] <- var.points
     
   }
+  #browser()
   names(plotpoints) <- paste0("t_", lag:0)
   pointmatrix <- apply((as.matrix(do.call(rbind, plotpoints))), 2, function(x){(as.numeric(x))})
   rownames(pointmatrix) <- names(plotpoints)
@@ -198,7 +199,7 @@ get_covariate_balance <- function(matched.sets,
   
   # we can remove time of treatment, since we expect a change
   
-  #pointmatrix <- pointmatrix[-nrow(pointmatrix),]
+  pointmatrix <- pointmatrix[-nrow(pointmatrix),]
   
   if (!plot) return(pointmatrix)
   
