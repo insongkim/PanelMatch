@@ -164,15 +164,31 @@ PanelEstimate <- function(sets, data,
         # sets[["atc"]]
         unit.id <- attr(s1, "id.var")
         time.id <- attr(s1, "t.var")
+      } 
+      if (attr(sets, "qoi") == "art")
+      {
+        s1 <- sets[["art"]]
+        unit.id <- attr(s1, "id.var")
+        time.id <- attr(s1, "t.var")
       }
       
+      if ((attr(sets, "qoi") == "art") || 
+          (attr(sets, "qoi") == "att"))
+      {
+        att.sets.in <- s1
+      } else {
+        att.sets.in <- NULL
+      }
+      #this might be wrong...
       ordered.data <- data[order(data[,unit.id], data[,time.id]), ]
       set.list <- handle_moderating_variable(ordered.data = ordered.data,
-                                             att.sets = sets[["att"]],
+                                             att.sets = att.sets.in,
                                              atc.sets = sets[["atc"]],
                                              moderator = moderator,
-                                             unit.id = unit.id, time.id = time.id,
-                                             PM.object = sets)
+                                             unit.id = unit.id, 
+                                             time.id = time.id,
+                                             PM.object = sets, 
+                                             qoi.in = attr(sets, "qoi"))
       
       
       res <- lapply(set.list, 

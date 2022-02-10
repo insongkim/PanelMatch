@@ -1,13 +1,17 @@
 handle_moderating_variable <- function(ordered.data, att.sets, atc.sets, PM.object,
-                                       moderator, unit.id, time.id)
+                                       moderator, unit.id, time.id, qoi.in)
 {
-  .reconstruct_pm_objects <- function(att.set = NULL, atc.set = NULL, PM.object_)
+  .reconstruct_pm_objects <- function(att.set = NULL, 
+                                      atc.set = NULL, 
+                                      PM.object_)
   {
-
+    #TODO: maybe add somthing about the qoi in? 
+    # needs to handle both att and art here..
     t.pm.object <- list()
     if(!is.null(att.set))
     {
-      t.pm.object[["att"]] <- att.set
+      #t.pm.object[["att"]] <- att.set
+      t.pm.object[[qoi.in]] <- att.set
     }
     if(!is.null(atc.set))
     {
@@ -88,7 +92,7 @@ handle_moderating_variable <- function(ordered.data, att.sets, atc.sets, PM.obje
                       att.set = moderated.sets.att, atc.set = moderated.sets.atc,
                       MoreArgs = list(PM.object_ = PM.object))
   }
-
+  names(ret.obj) <- as.character(as.vector(na.omit(moderating.values)))
   return(ret.obj)
 }
 
