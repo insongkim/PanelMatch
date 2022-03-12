@@ -275,14 +275,13 @@ get_covariate_balance <- function(matched.sets,
 #' the x-axis refers to balance for covariates before refinement, and y-axis
 #' refers to balance after refinement. Users can utilize parameters powered by \code{plot}
 #' in base R to further customize the figure.
-#' @param non_refined_set a \code{matched.set} object produced by setting `refinement.method` to "none" in `PanelMatch`
-#' @param refined_list a list of one or two \code{matched.set} objects
+#' @param matched_set_list a list of one or more \code{matched.set} objects
 #' @param xlim xlim of the scatter plot. This is the same as the \code{xlim} argument in \code{plot}
 #' @param ylim ylim of the scatter plot. This is the same as the \code{ylim} argument in \code{plot}
 #' @param main title of the scatter plot. This is the same as the \code{main} argument in \code{plot}
 #' @param x.axis.label x axis label
 #' @param y.axis.label y axis label
-#' @param pchs one or two pch indicators for the symbols on the scatter plot. See \code{plot} for more information
+#' @param pchs one or more pch indicators for the symbols on the scatter plot. You should specify a phc symbol for each matched.set you specify in matched_set_list. See \code{plot} for more information
 #' @param covariates variables for which balance is displayed
 #' @param data the same time series cross sectional data set used to create the matched sets.
 #' @param ... optional arguments to be passed to \code{plot}
@@ -321,7 +320,7 @@ get_covariate_balance <- function(matched.sets,
 #'
 #' # use the function to produce the scatter plot
 #' balance_scatter(non_refined_set = sets0$att,
-#'               refined_list = list(sets1$att, sets2$att),
+#'               matched_set_list = list(sets1$att, sets2$att),
 #'               data = dem,
 #'               covariates = c("y", "tradewb"))
 #' # add legend
@@ -337,7 +336,7 @@ get_covariate_balance <- function(matched.sets,
 #'
 #'
 #' @export
-balance_scatter <- function(non_refined_set, refined_list,
+balance_scatter <- function(matched_set_list,
                             xlim = c(0, .8),
                             ylim = c(0, .8),
                             main = "Standardized Mean Difference of Covariates",
@@ -346,26 +345,28 @@ balance_scatter <- function(non_refined_set, refined_list,
                             x.axis.label = "Before refinement",
                             y.axis.label = "After refinement",
                             ...) {
+  if (length(matched_set_list) < 1) stop("Please provide at least one matched.set object")
   # first, get balance for non-refined set
-  non_refined_balance <- get_covariate_balance(matched.sets = non_refined_set,
+  # use first matched set and generate unrefined balance using get_covariate_balance
+  non_refined_balance <- get_covariate_balance(matched.sets = matched_set_list[[1]],
                                                data = data,
-                                               covariates = covariates)
+                                               covariates = covariates,
+                                               use.equal.weights = TRUE)
   
   # second, get balance for refined sets
   refined_balance <- list()
-  for (i in 1:length(refined_list)) {
+  for (i in 1:length(matched_set_list)) {
     refined_balance[[i]] <-
-      get_covariate_balance(matched.sets = refined_list[[i]],
+      get_covariate_balance(matched.sets = matched_set_list[[i]],
                             data = data,
                             covariates = covariates)
   }
   
   # extract values for x-axis from the non-refined sets
-  benchmark <- non_refined_balance
-  benchmark <- as.vector(benchmark[1:(nrow(benchmark)-1),]) # delete balance results after t-1
+  benchmark <- as.vector(non_refined_balance)
   
-  # extract values for y-axis from refined sets and delete balance results after t-1
-  compared <- sapply(refined_balance, function(x) x <- x[1:(nrow(x)-1),])
+  
+  compared <- sapply(refined_balance, function(x) x <- x[1:(nrow(x)),])
   
   graphics::plot(abs(as.numeric(benchmark)),
                  abs(as.numeric(compared[,1])), pch = 1,

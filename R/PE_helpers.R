@@ -525,7 +525,8 @@ calculateEstimates <- function(qoi.in, data.in, lead,
         # make new data
         clusters <- unique(data.in[, unit.id.variable])
         units <- sample(clusters, size = length(clusters), replace=TRUE)
-        while(all(!units %in% att.treated.unit.ids) || all(!units %in% atc.treated.unit.ids)) #while none of the units are treated units (att and atc), resample
+        while(all(!units %in% att.treated.unit.ids) || 
+              all(!units %in% atc.treated.unit.ids)) #while none of the units are treated units (att and atc), resample
         {
           units <- sample(clusters, size = length(clusters), replace=TRUE)
         }
@@ -944,7 +945,8 @@ calculatePlaceboEstimates <- function(qoi.in, data.in, lead,
         stop("invalid qoi")
         
       }
-    } else if (identical(se.method, "conditional") || identical(se.method, "unconditional")) 
+    } else if (identical(se.method, "conditional") || 
+               identical(se.method, "unconditional")) 
     {
       stop("not currently implemented")
     } else {
