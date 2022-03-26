@@ -247,7 +247,7 @@ build_balance_mats <- function(idx, ordered_expanded_data, msets)
   unnest <- function(mset.idx, mset)
   {
     # print(mset.idx)
-    # browser()
+    
     lapply(mset.idx, subset.per.matchedset, set = mset)
   }
   result <- mapply(FUN = unnest, mset.idx = idx, mset = msets, SIMPLIFY = FALSE)

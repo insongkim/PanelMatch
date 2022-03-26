@@ -118,8 +118,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // get_comparison_histories
-Rcpp::List get_comparison_histories(const Rcpp::NumericMatrix& compmat, const Rcpp::NumericVector& ts, const Rcpp::NumericVector& ids, int t_col, int id_col, int L, int treat_col);
-RcppExport SEXP _PanelMatch_get_comparison_histories(SEXP compmatSEXP, SEXP tsSEXP, SEXP idsSEXP, SEXP t_colSEXP, SEXP id_colSEXP, SEXP LSEXP, SEXP treat_colSEXP) {
+Rcpp::List get_comparison_histories(const Rcpp::NumericMatrix& compmat, const Rcpp::NumericVector& ts, const Rcpp::NumericVector& ids, int t_col, int id_col, int L, int treat_col, bool atc);
+RcppExport SEXP _PanelMatch_get_comparison_histories(SEXP compmatSEXP, SEXP tsSEXP, SEXP idsSEXP, SEXP t_colSEXP, SEXP id_colSEXP, SEXP LSEXP, SEXP treat_colSEXP, SEXP atcSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -130,7 +130,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type id_col(id_colSEXP);
     Rcpp::traits::input_parameter< int >::type L(LSEXP);
     Rcpp::traits::input_parameter< int >::type treat_col(treat_colSEXP);
-    rcpp_result_gen = Rcpp::wrap(get_comparison_histories(compmat, ts, ids, t_col, id_col, L, treat_col));
+    Rcpp::traits::input_parameter< bool >::type atc(atcSEXP);
+    rcpp_result_gen = Rcpp::wrap(get_comparison_histories(compmat, ts, ids, t_col, id_col, L, treat_col, atc));
     return rcpp_result_gen;
 END_RCPP
 }

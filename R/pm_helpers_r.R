@@ -41,8 +41,12 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
     ## add filter in here
   } else
   {
-    temp.treateds <- findBinaryTreated(ordered.data, treatedvar = treatment, time.var = time.id,
-                                       unit.var = unit.id, hasbeensorted = TRUE)
+    
+    temp.treateds <- findBinaryTreated(ordered.data, qoi.in = qoi,
+                                       treatedvar = treatment, 
+                                       time.var = time.id,
+                                       unit.var = unit.id, 
+                                       hasbeensorted = TRUE)
   }
 
 
@@ -59,7 +63,9 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
                            treatedvar = treatment, hasbeensorted = TRUE,
                            match.on.missingness = match.missing, matching = TRUE,
                            continuous = continuous.treatment,
-                           continuous.treatment.info = continuous.treatment.info)
+                           continuous.treatment.info = continuous.treatment.info,
+                           qoi.in = qoi)
+  
   e.sets <- msets[sapply(msets, length) == 0]
   msets <- msets[sapply(msets, length) > 0 ]
   if (length(msets) == 0)
@@ -79,7 +85,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
   msets <- clean_leads(msets, ordered.data, max(lead), time.id, unit.id, outcome.var)
 
 
-  #browser()
+  
   if (placebo.test)
   {
     
@@ -94,34 +100,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
                                      sets = msets,
                                      lag = lag)
     
-    # for (i in 1:length(msets)) {
-    #   cur.id <- treated.ids[i]
-    #   cur.t <- treated.ts[i]
-    #   to.check <- paste0(cur.id, ".", (cur.t - lag):(cur.t - 1))
-    # 
-    #   if ( any(is.na(ordered.data[to.check, outcome.var])) )
-    #   {
-    # 
-    #     names(msets)[i] <- "remove"
-    #   } else
-    #   {
-    #     for (j in 1:length(msets[[i]])) {
-    #       to.check <- paste0(msets[[i]][j], ".", (cur.t - lag):(cur.t - 1))
-    #       if ( any(is.na(ordered.data[to.check, outcome.var])) )
-    #       {
-    #         msets[[i]][j] <- NA
-    #       }
-    #     }
-    #   }
-    # }
-    # 
-    # msets <- msets[names(msets) != "remove"]
-    # 
-    # for (i in 1:length(msets)) {
-    #   msets[[i]] <- msets[[i]][!is.na(msets[[i]])]
-    # }
-    # msets <- msets[sapply(msets, length) > 0 ]
-  
+    
     msets2 <- msets2[sapply(msets2, length) > 0 ]
     
     attr(msets2, "lag") <- lag
@@ -129,14 +108,9 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
     attr(msets2, "id.var" ) <- unit.id
     attr(msets2, "treatment.var") <- treatment
     class(msets2) <- "matched.set"
-    #browser()  
+    
   }
-  # filter_placebo_results(expanded_data = as.matrix(ordered.data[, c(unit.id, time.id)]),
-  #                        ordered_outcome_data = ordered.data[, outcome.var],
-  #                        treated_ids = treated.ids,
-  #                        treated_ts = treated.ts,
-  #                        sets = msets,
-  #                        lag = lag)
+
   
   if (forbid.treatment.reversal)
   {
@@ -233,22 +207,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
   treated.ids <- as.integer(sub("\\..*", "", names(msets)))
 
 
-  # ###################################network code (old?)########################################
-  # if (!is.null(network.caliper.info) || !is.null(network.refinement.info))
-  # {
-  #   # browser()
-  #   treated.names <- c(names(msets), names(e.sets))
-  #   ordered.data <- calculate_neighbor_treatment(ordered.data, adjacency.matrix,
-  #                                                neighborhood.degree, unit.id,
-  #                                                time.id, treatment)
-  #   ll <- handle_network_caliper_and_refinement(network.caliper.info, network.refinement.info, ordered.data,
-  #                                               adjacency.matrix, neighborhood.degree,
-  #                                               unit.id, time.id, treatment,
-  #                                               covs.formula, caliper.formula)
-  #   covs.formula <- ll[[1]]
-  #   caliper.formula <- ll[[2]]
-  # }
-  # ###########################################################################
+  
 
   ordered.data <- parse_and_prep(formula = covs.formula, data = ordered.data)
   if (any(c("character", "factor") %in% sapply(ordered.data, class)))
@@ -505,7 +464,7 @@ handle_distance_matrices <- function(ordered_expanded_data, matched.sets, calipe
                                                 treated.ts, control.threshold)
       #full.controls <- unique(ordered_expanded_data_[, idvar])
       ####THIS IS WHERE WE WANT TO UPDATE TO APPLY A FILTER TO CONTROL UNITS
-      #browser()
+      
       #not.valid.ids <- all.treated.ids[all.treated.ts %in% treated.ts] #cant include other treated units from the same time
       #matched.set <- full.controls[!full.controls %in% not.valid.ids] # start with everything, then remove any units that are treated
       # during the same period as the current t/id pair under consideration
@@ -672,14 +631,7 @@ handle_mahalanobis_calculations <- function(mahal.nested.list, msets, max.size, 
     dists <- colMeans(tmat)
     #n.dists <- dists[dists > 0]
     n.dists <- dists
-    #if(length(n.dists) == 0)
-    #{
-    #  w <- 1 / length(dists)
-    #  newdists <- dists
-    #  newdists <- rep(w, length(newdists))
-    #}
-    #if(length(n.dists) == 0 ) browser()#stop("a matched set contain only identical units. Please examine the data and remove this set.")
-    #else
+    
 
     if(length(n.dists) < max.set.size) #case where total number of units in matched set < max.set size
     {

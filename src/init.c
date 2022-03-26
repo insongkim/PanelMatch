@@ -15,7 +15,7 @@ extern SEXP _PanelMatch_check_treated_units_for_treatment_reversion(SEXP, SEXP, 
 extern SEXP _PanelMatch_do_exact_matching_refinement(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP _PanelMatch_equality_four_cpp(SEXP, SEXP, SEXP);
 extern SEXP _PanelMatch_filter_placebo_results(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
-extern SEXP _PanelMatch_get_comparison_histories(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP _PanelMatch_get_comparison_histories(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP _PanelMatch_get_dits(SEXP, SEXP);
 extern SEXP _PanelMatch_get_msets_helper(SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP _PanelMatch_get_treated_indices(SEXP, SEXP, SEXP, SEXP);
@@ -36,7 +36,7 @@ static const R_CallMethodDef CallEntries[] = {
   {"_PanelMatch_do_exact_matching_refinement",                  (DL_FUNC) &_PanelMatch_do_exact_matching_refinement,                  6},
   {"_PanelMatch_equality_four_cpp",                             (DL_FUNC) &_PanelMatch_equality_four_cpp,                             3},
   {"_PanelMatch_filter_placebo_results",                        (DL_FUNC) &_PanelMatch_filter_placebo_results,                        6},
-  {"_PanelMatch_get_comparison_histories",                      (DL_FUNC) &_PanelMatch_get_comparison_histories,                      7},
+  {"_PanelMatch_get_comparison_histories",                      (DL_FUNC) &_PanelMatch_get_comparison_histories,                      8},
   {"_PanelMatch_get_dits",                                      (DL_FUNC) &_PanelMatch_get_dits,                                      2},
   {"_PanelMatch_get_msets_helper",                              (DL_FUNC) &_PanelMatch_get_msets_helper,                              5},
   {"_PanelMatch_get_treated_indices",                           (DL_FUNC) &_PanelMatch_get_treated_indices,                           4},

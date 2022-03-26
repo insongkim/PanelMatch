@@ -111,7 +111,7 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
   {
     data <- data[data[, "unit.id"] %in% c(t.id, wtd.ids), ]
   }
-  #browser()
+  
   
   if (!gradient.weights)
   {
@@ -157,7 +157,7 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
     
     if(gradient.weights)
     {
-      #browser()
+      
       wts <- attr(matched.set[[1]], "weights")
       max.wt <- max(wts)
       min.wt <- min(wts[wts > 0])

@@ -51,7 +51,11 @@ Rcpp::LogicalVector get_treated_indices(const Rcpp::NumericMatrix &ordered_df, c
  same length as the 'ts' and 'ids' vectors passed in initially and able to be matched together by index number.
  */
 // [[Rcpp::export()]]
-Rcpp::List get_comparison_histories(const Rcpp::NumericMatrix &compmat, const Rcpp::NumericVector &ts, const Rcpp::NumericVector &ids, int t_col, int id_col, int L, int treat_col)
+Rcpp::List get_comparison_histories(const Rcpp::NumericMatrix &compmat, 
+                                    const Rcpp::NumericVector &ts, 
+                                    const Rcpp::NumericVector &ids, 
+                                    int t_col, int id_col, int L, int treat_col,
+                                    bool atc)
 {
   
   Rcpp::List comp_hists(ts.length()); //length of its and ids should be the same
@@ -70,8 +74,13 @@ Rcpp::List get_comparison_histories(const Rcpp::NumericMatrix &compmat, const Rc
         {
           control_hist[k] = compmat(j - L + k, treat_col); 
         } // ...read the treatment history over the window into a vector...
+        if (!atc)
+        {
+          control_hist[control_hist.length() - 1] = 0; //... and change the last entry to give the needed treatment history of a control unit for this t,id pair. Entry here should always be 1 before we change it here
+        } else { // is atc
+          control_hist[control_hist.length() - 1] = 1;
+        }
         
-        control_hist[control_hist.length() - 1] = 0; //... and change the last entry to give the needed treatment history of a control unit for this t,id pair. Entry here should always be 1 before we change it here
         comp_hists[i] = control_hist;
         break;
       }

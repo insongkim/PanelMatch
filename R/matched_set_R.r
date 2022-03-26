@@ -14,7 +14,11 @@
 #' @keywords internal
 #'
 
-findBinaryTreated <- function(dmat, treatedvar, time.var, unit.var, hasbeensorted = FALSE)
+findBinaryTreated <- function(dmat, qoi.in,
+                              treatedvar, 
+                              time.var, 
+                              unit.var, 
+                              hasbeensorted = FALSE)
 {
   dmat <- dmat[, c(unit.var, time.var, treatedvar)]
   #subset the columns to just the data needed for this operation
@@ -44,17 +48,36 @@ findBinaryTreated <- function(dmat, treatedvar, time.var, unit.var, hasbeensorte
     stop("unit id variable data provided not integer")
     #dmat[, unit.var] <- as.integer(dmat[, unit.var])
   }
-
-  t.history <- odf[,treatedvar]
-  t.idxs <- which(t.history == 1)
-
-  num.df <- as.matrix(odf)
-  if (!is.numeric(num.df)) stop("data in treated, time, or id columns is not numeric")
-
-  ind <- get_treated_indices(num.df, t.idxs - 1, colidx - 1, uidx - 1)
-  treated.unit.indices <- t.idxs[ind]
-  odf <- odf[treated.unit.indices, ]
-  rownames(odf) <- NULL
+  
+  if (identical(qoi.in, "atc")) 
+  {
+    
+    t.history <- odf[, treatedvar]
+    id.history <- odf[, unit.var]
+    c.idxs <- which(t.history == 0)
+    t1 <- c.idxs - 1
+    
+    t1[t1 == 0] <- NA
+    
+    idx <- t.history[c.idxs] == 0 & 
+      t.history[t1] == 0 & 
+      (id.history[c.idxs] == id.history[t1])
+    idx[is.na(idx)] <- FALSE
+    odf <- odf[c.idxs[idx],]
+    rownames(odf) <- NULL
+  } else {
+    t.history <- odf[,treatedvar]
+    t.idxs <- which(t.history == 1)
+    
+    num.df <- as.matrix(odf)
+    if (!is.numeric(num.df)) stop("data in treated, time, or id columns is not numeric")
+    
+    ind <- get_treated_indices(num.df, t.idxs - 1, colidx - 1, uidx - 1)
+    treated.unit.indices <- t.idxs[ind]
+    odf <- odf[treated.unit.indices, ]
+    rownames(odf) <- NULL
+  }
+  
   return(odf)
 }
 
@@ -81,7 +104,8 @@ findBinaryTreated <- function(dmat, treatedvar, time.var, unit.var, hasbeensorte
 get.matchedsets <- function(t, id, data, L, t.column, id.column, treatedvar,
                             hasbeensorted = FALSE, match.on.missingness = TRUE,
                             matching = TRUE, continuous = FALSE,
-                            continuous.treatment.info = NULL)
+                            continuous.treatment.info = NULL,
+                            qoi.in)
 {
 
   if (length(t) == 0 | length(id) == 0)
@@ -126,11 +150,12 @@ get.matchedsets <- function(t, id, data, L, t.column, id.column, treatedvar,
       d[is.na(d[,treatedvar]), treatedvar] <- -1
       compmat[is.na(compmat)] <- -1
     }
-
+    
     control.histories <- get_comparison_histories(d, t, id, which(colnames(d) == t.column) - 1 ,
                                                   which(colnames(d) == id.column) - 1, L,
-                                                  which(colnames(d) == treatedvar) - 1) #control histories should be a list
-
+                                                  which(colnames(d) == treatedvar) - 1,
+                                                  identical(qoi.in, "atc")) #control histories should be a list
+    
     if (!matching & !match.on.missingness)
     {
       tidx <- !unlist(lapply(control.histories, function(x)return(any(is.na(x)))))
@@ -251,12 +276,12 @@ extract.differences <- function(indexed.data, matched.set,
   treated.key.t <- names(matched.set)
   treated.key.tm1 <- paste0(treated.id, ".", treated.tm1)
   
-  if (qoi == "atc") {
-    multi.factor <- -1
-  } else {
-    multi.factor <- 1
-  }
-  
+  # if (qoi == "atc") {
+  #   multi.factor <- 1
+  # } else {
+  #   multi.factor <- 1
+  # }
+  multi.factor <- 1 #leaving this like this for now in case we do need to do some multiplication here
   if(length(matched.set[[1]]) > 0)
   {
     control.keys.t <- paste0(matched.set[[1]], ".", treated.t)

@@ -33,8 +33,8 @@ get_treated_indices <- function(ordered_df, treated_indices, treat_col_idx, unit
     .Call('_PanelMatch_get_treated_indices', PACKAGE = 'PanelMatch', ordered_df, treated_indices, treat_col_idx, unit_var_col)
 }
 
-get_comparison_histories <- function(compmat, ts, ids, t_col, id_col, L, treat_col) {
-    .Call('_PanelMatch_get_comparison_histories', PACKAGE = 'PanelMatch', compmat, ts, ids, t_col, id_col, L, treat_col)
+get_comparison_histories <- function(compmat, ts, ids, t_col, id_col, L, treat_col, atc) {
+    .Call('_PanelMatch_get_comparison_histories', PACKAGE = 'PanelMatch', compmat, ts, ids, t_col, id_col, L, treat_col, atc)
 }
 
 get_msets_helper <- function(control_history_list, widemat, t_as_col_nums, ids, L) {

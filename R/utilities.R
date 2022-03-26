@@ -182,7 +182,7 @@ get_covariate_balance <- function(matched.sets,
     plotpoints[[k]] <- var.points
     
   }
-  #browser()
+  
   names(plotpoints) <- paste0("t_", lag:0)
   pointmatrix <- apply((as.matrix(do.call(rbind, plotpoints))), 2, function(x){(as.numeric(x))})
   rownames(pointmatrix) <- names(plotpoints)
@@ -209,7 +209,7 @@ get_covariate_balance <- function(matched.sets,
     treated.included <- treatment %in% colnames(pointmatrix)
     if (!continuous.treatment)
     {
-      #browser()
+      
       
       if (treated.included)
       {

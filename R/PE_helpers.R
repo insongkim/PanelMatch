@@ -462,7 +462,7 @@ calculateEstimates <- function(qoi.in, data.in, lead,
       
       coefs <- matrix(NA, nrow = number.iterations, ncol = length(lead))
       
-      ##### ** precompute some values for the bootstrap iterations
+      
       qoi.in <- "att"
       perunitSum <- function(udf,
                              lead.in,
@@ -618,7 +618,7 @@ calculateEstimates <- function(qoi.in, data.in, lead,
     N.nums <- apply(ndf, 2, function(x) sum(!x))
     
     #N.units <- length(unique(data[, unit.id]))
-    #browser()
+    
     
     estimator.var <- (N.nums * vdf) / D.it.denom
     names(estimator.var) <- paste0("t+",lead)
@@ -647,7 +647,6 @@ calculateEstimates <- function(qoi.in, data.in, lead,
   {
     if (identical(qoi.in, "ate")) stop("analytical standard errors not available for ATE")
     
-    if (identical(qoi.in, "ate")) stop("analytical standard errors not available for ATE")
     o.coefs <- sapply(data.in[, sapply(lead, function(x) paste0("Wit_",qoi.in, x)), drop = FALSE],
                       equality_four,
                       y = data.in[c(outcome.variable)][,1],

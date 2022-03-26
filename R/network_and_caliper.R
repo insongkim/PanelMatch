@@ -385,7 +385,7 @@ handle_perlag_caliper_calculations <- function(nested.list, msets, caliper.metho
     # tmat <- tmat[, 1:(ncol(tmat)-1), drop = FALSE]
     meets_caliper <- function(col, cal, cal.method, sd.vals, IS_FACTOR)
     {
-      # browser()
+      
       # print(cal)
       if (IS_FACTOR)
       {
