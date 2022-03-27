@@ -233,6 +233,11 @@ panel_match <- function(lag, time.id, unit.id, treatment,
   if (class(data[, time.id]) != "integer") stop("please convert time id to consecutive integers")
   if ( !all(c(time.id, unit.id, treatment, outcome.var)  %in% colnames(data)) ) stop("time id, unit id, outcome, or treatment column name invalid")
   
+  if (forbid.treatment.reversal && !identical(qoi, "att"))
+  {
+    stop("forbid.treatment.reversal = TRUE only valid for qoi = att")
+  }
+  
   if (!is.null(continuous.treatment.info))
   {
     if (!(all(c("treatment.threshold", "units", "matching.threshold", "control.threshold") %in% names(continuous.treatment.info))))
