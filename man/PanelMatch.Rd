@@ -23,6 +23,7 @@ PanelMatch(
   matching = TRUE,
   listwise.delete = FALSE,
   use.diagonal.variance.matrix = FALSE,
+  restrict.control.period = NULL,
   placebo.test = FALSE
 )
 }
@@ -82,12 +83,13 @@ This is primarily used for diagnostic purposes, and most users will never need t
 
 \item{listwise.delete}{TRUE/FALSE indicating whether or not missing data should be handled using listwise deletion or the package's default missing data handling procedures. Default is FALSE.}
 
-\item{use.diagonal.variance.matrix}{TRUE/FALSE indicating whether or not a regular covariance matrix should be used in 
-mahalanobis distance calculations during refinement, 
+\item{use.diagonal.variance.matrix}{TRUE/FALSE indicating whether or not a regular covariance matrix should be used in mahalanobis distance calculations during refinement, 
 or if a diagonal matrix with only covariate variances should be used instead. 
 In many cases, setting this to TRUE can lead to better covariate balance, especially when there is 
 high correlation between variables. Default is FALSE. This argument is only necessary when 
 \code{refinement.method = mahalanobis} and will have no impact otherwise.}
+
+\item{restrict.control.period}{(optional) integer specifying the number of pre-treatment periods that treated units and potentially matched control units should be non-NULL and in the control state. For instance, specifying 4 would mean that the treatment history cannot contain any missing data or treatment from t-4 to t.}
 
 \item{placebo.test}{logical TRUE/FALSE. indicates whether or not you want to be able to run a placebo test. This will add additional requirements on the data -- specifically, it requires that no unit included in the matching/refinement process can having missing outcome data over the lag window. Additionally, you should not use the outcome variable in refinement when \code{placebo.test = TRUE}.}
 }

@@ -11,7 +11,8 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
                                network.refinement.info = NULL,
                                adjacency.matrix,
                                neighborhood.degree,
-                               placebo.test = FALSE)
+                               placebo.test = FALSE,
+                               restrict.control.period = NULL)
 {
 
   if ( !is.null(mset.object) ) stop('This should never run!')
@@ -64,7 +65,8 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
                            match.on.missingness = match.missing, matching = TRUE,
                            continuous = continuous.treatment,
                            continuous.treatment.info = continuous.treatment.info,
-                           qoi.in = qoi)
+                           qoi.in = qoi,
+                           restrict.control.period = restrict.control.period)
   
   e.sets <- msets[sapply(msets, length) == 0]
   msets <- msets[sapply(msets, length) > 0 ]

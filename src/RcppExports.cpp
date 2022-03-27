@@ -288,3 +288,15 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// enforce_strict_histories
+Rcpp::LogicalVector enforce_strict_histories(Rcpp::List control_histories, int strict_period);
+RcppExport SEXP _PanelMatch_enforce_strict_histories(SEXP control_historiesSEXP, SEXP strict_periodSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type control_histories(control_historiesSEXP);
+    Rcpp::traits::input_parameter< int >::type strict_period(strict_periodSEXP);
+    rcpp_result_gen = Rcpp::wrap(enforce_strict_histories(control_histories, strict_period));
+    return rcpp_result_gen;
+END_RCPP
+}

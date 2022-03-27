@@ -16,7 +16,9 @@ get.matchedsets(
   match.on.missingness = TRUE,
   matching = TRUE,
   continuous = FALSE,
-  continuous.treatment.info = NULL
+  continuous.treatment.info = NULL,
+  qoi.in,
+  restrict.control.period = NULL
 )
 }
 \arguments{

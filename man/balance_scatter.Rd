@@ -5,8 +5,7 @@
 \title{balance_scatter}
 \usage{
 balance_scatter(
-  non_refined_set,
-  refined_list,
+  matched_set_list,
   xlim = c(0, 0.8),
   ylim = c(0, 0.8),
   main = "Standardized Mean Difference of Covariates",
@@ -19,9 +18,7 @@ balance_scatter(
 )
 }
 \arguments{
-\item{non_refined_set}{a \code{matched.set} object produced by setting `refinement.method` to "none" in `PanelMatch`}
-
-\item{refined_list}{a list of one or two \code{matched.set} objects}
+\item{matched_set_list}{a list of one or more \code{matched.set} objects}
 
 \item{xlim}{xlim of the scatter plot. This is the same as the \code{xlim} argument in \code{plot}}
 
@@ -29,7 +26,7 @@ balance_scatter(
 
 \item{main}{title of the scatter plot. This is the same as the \code{main} argument in \code{plot}}
 
-\item{pchs}{one or two pch indicators for the symbols on the scatter plot. See \code{plot} for more information}
+\item{pchs}{one or more pch indicators for the symbols on the scatter plot. You should specify a phc symbol for each matched.set you specify in matched_set_list. See \code{plot} for more information}
 
 \item{covariates}{variables for which balance is displayed}
 
@@ -83,7 +80,7 @@ sets2 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
 
 # use the function to produce the scatter plot
 balance_scatter(non_refined_set = sets0$att,
-              refined_list = list(sets1$att, sets2$att),
+              matched_set_list = list(sets1$att, sets2$att),
               data = dem,
               covariates = c("y", "tradewb"))
 # add legend

@@ -77,3 +77,7 @@ check_missing_data_control_units <- function(subset_data, sets, prepared_sets, t
     .Call('_PanelMatch_check_missing_data_control_units', PACKAGE = 'PanelMatch', subset_data, sets, prepared_sets, tid_pairs, lead)
 }
 
+enforce_strict_histories <- function(control_histories, strict_period) {
+    .Call('_PanelMatch_enforce_strict_histories', PACKAGE = 'PanelMatch', control_histories, strict_period)
+}
+

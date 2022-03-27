@@ -105,7 +105,8 @@ get.matchedsets <- function(t, id, data, L, t.column, id.column, treatedvar,
                             hasbeensorted = FALSE, match.on.missingness = TRUE,
                             matching = TRUE, continuous = FALSE,
                             continuous.treatment.info = NULL,
-                            qoi.in)
+                            qoi.in,
+                            restrict.control.period = NULL)
 {
 
   if (length(t) == 0 | length(id) == 0)
@@ -156,6 +157,14 @@ get.matchedsets <- function(t, id, data, L, t.column, id.column, treatedvar,
                                                   which(colnames(d) == treatedvar) - 1,
                                                   identical(qoi.in, "atc")) #control histories should be a list
     
+    if (!is.null(restrict.control.period))
+    {
+      indx <- enforce_strict_histories(control.histories, restrict.control.period)
+      control.histories <- control.histories[indx]
+      t <- t[indx]
+      id <- id[indx]
+    }
+    
     if (!matching & !match.on.missingness)
     {
       tidx <- !unlist(lapply(control.histories, function(x)return(any(is.na(x)))))
@@ -185,7 +194,7 @@ get.matchedsets <- function(t, id, data, L, t.column, id.column, treatedvar,
       named.sets <- matched_set(matchedsets = sets, id = id, t = t, L = L,
                                 t.var = t.column, id.var = id.column, treatment.var = treatedvar)
     }
-
+    attr(named.sets, "restrict.control.period") <- restrict.control.period
     return(named.sets)
   } else # continuous
   {
@@ -213,6 +222,7 @@ get.matchedsets <- function(t, id, data, L, t.column, id.column, treatedvar,
                                                lag.window = 1:L, 
                                                is.continuous.matching = TRUE,
                                                control.threshold = continuous.treatment.info[["control.threshold"]])
+    
     return(continuous.matched.sets) #should maybe attach extra attributes for continuously matched msets
   }
 }

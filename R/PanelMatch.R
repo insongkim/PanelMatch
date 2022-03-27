@@ -50,12 +50,12 @@
 #' @param exact.match.variables character vector giving the names of variables to be exactly matched on. These should be time invariant variables. 
 #' Exact matching for time varying covariates is not currently supported. 
 #' @param listwise.delete TRUE/FALSE indicating whether or not missing data should be handled using listwise deletion or the package's default missing data handling procedures. Default is FALSE.
-#' @param use.diagonal.variance.matrix TRUE/FALSE indicating whether or not a regular covariance matrix should be used in 
-#' mahalanobis distance calculations during refinement, 
+#' @param use.diagonal.variance.matrix TRUE/FALSE indicating whether or not a regular covariance matrix should be used in mahalanobis distance calculations during refinement, 
 #' or if a diagonal matrix with only covariate variances should be used instead. 
 #' In many cases, setting this to TRUE can lead to better covariate balance, especially when there is 
 #' high correlation between variables. Default is FALSE. This argument is only necessary when 
 #' \code{refinement.method = mahalanobis} and will have no impact otherwise.
+#' @param restrict.control.period (optional) integer specifying the number of pre-treatment periods that treated units and potentially matched control units should be non-NULL and in the control state. For instance, specifying 4 would mean that the treatment history cannot contain any missing data or treatment from t-4 to t.
 #' @param placebo.test logical TRUE/FALSE. indicates whether or not you want to be able to run a placebo test. This will add additional requirements on the data -- specifically, it requires that no unit included in the matching/refinement process can having missing outcome data over the lag window. Additionally, you should not use the outcome variable in refinement when \code{placebo.test = TRUE}.
 #' @return \code{PanelMatch} returns an object of class "PanelMatch". This is a list that contains a few specific elements: 
 #' First, a \code{matched.set} object(s) that has the same name as the provided qoi if the qoi is "att", "art", or "atc". 
@@ -104,6 +104,7 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
                        matching = TRUE,
                        listwise.delete = FALSE,
                        use.diagonal.variance.matrix = FALSE,
+                       restrict.control.period = NULL,
                        placebo.test = FALSE
                        ) 
 {
@@ -145,6 +146,7 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
              matching = matching,
              listwise.delete = listwise.delete,
              use.diagonal.variance.matrix = use.diagonal.variance.matrix,
+             restrict.control.period = restrict.control.period,
              #adjacency.matrix = adjacency.matrix,
              #neighborhood.degree = neighborhood.degree,
              #caliper.formula = caliper.formula,
@@ -177,6 +179,7 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
                 matching,
                 listwise.delete,
                 use.diagonal.variance.matrix,
+                restrict.control.period,
                 adjacency.matrix,
                 neighborhood.degree,
                 caliper.formula,
@@ -203,6 +206,7 @@ panel_match <- function(lag, time.id, unit.id, treatment,
                         matching,
                         listwise.delete,
                         use.diagonal.variance.matrix,
+                        restrict.control.period,
                         adjacency.matrix = NULL,
                         neighborhood.degree = NULL,
                         caliper.formula = NULL,
@@ -242,6 +246,17 @@ panel_match <- function(lag, time.id, unit.id, treatment,
     {
       stop("treatment.threshold must be > 0")
     }
+  }
+  
+  if(!is.null(restrict.control.period))
+  {
+    if(restrict.control.period < 1) stop("restricted control period specification must be >=1")
+    if(restrict.control.period > lag) stop("restricted control period specification cannot be greater than lag")
+  }
+  
+  if(!is.null(restrict.control.period) && !is.null(continuous.treatment.info))
+  {
+    stop("restricted control period options only available for binary treatment")
   }
   
   if (any(c("character", "factor") %in% sapply(data, class)))
@@ -332,6 +347,7 @@ panel_match <- function(lag, time.id, unit.id, treatment,
                                 qoi = qoi, matching = matching,
                                 exact.matching.variables = exact.match.variables, 
                                 listwise.deletion = listwise.delete,
+                                restrict.control.period = restrict.control.period,
                                 use.diag.covmat = use.diagonal.variance.matrix, 
                                 caliper.formula = caliper.formula, 
                                 continuous.treatment.info = continuous.treatment.info,
@@ -376,6 +392,7 @@ panel_match <- function(lag, time.id, unit.id, treatment,
                                 qoi = qoi, matching = matching,
                                 exact.matching.variables = exact.match.variables, 
                                 listwise.deletion = listwise.delete,
+                                restrict.control.period = restrict.control.period,
                                 use.diag.covmat = use.diagonal.variance.matrix, 
                                 caliper.formula = caliper.formula, 
                                 continuous.treatment.info = continuous.treatment.info,
@@ -416,6 +433,7 @@ panel_match <- function(lag, time.id, unit.id, treatment,
                                 qoi = "att", matching = matching,
                                 exact.matching.variables = exact.match.variables, 
                                 listwise.deletion = listwise.delete,
+                                restrict.control.period = restrict.control.period,
                                 use.diag.covmat = use.diagonal.variance.matrix, 
                                 caliper.formula = caliper.formula, 
                                 continuous.treatment.info = continuous.treatment.info,
@@ -431,6 +449,7 @@ panel_match <- function(lag, time.id, unit.id, treatment,
                                  qoi = "atc", matching = matching,
                                  exact.matching.variables = exact.match.variables, 
                                  listwise.deletion = listwise.delete,
+                                 restrict.control.period = restrict.control.period,
                                  use.diag.covmat = use.diagonal.variance.matrix, 
                                  caliper.formula = caliper.formula, 
                                  continuous.treatment.info = continuous.treatment.info,
