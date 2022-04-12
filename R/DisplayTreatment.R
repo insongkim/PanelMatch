@@ -12,9 +12,9 @@
 #' @param title Title of the plot provided as character string
 #' @param xlab Character label of the x-axis
 #' @param ylab Character label of the y-axis
-#' @param x.size Numeric size of the text for xlab or x axis label. Default is 10. Assign x.size = NULL to use built in ggplot2 method of determining label size. 
+#' @param x.size Numeric size of the text for xlab or x axis tick labels. Assign x.size = NULL to use built in ggplot2 method of determining label size. 
 #' When the length of the time period is long, consider setting to NULL and adjusting size and ratio of the plot.
-#' @param y.size Numeric size of the text for ylab or y axis label. Default is 5. Assign y.size = NULL to use built in ggplot2 method of determining label size. 
+#' @param y.size Numeric size of the text for ylab or y axis tick labels. Assign y.size = NULL to use built in ggplot2 method of determining label size. 
 #' When the number of units is large, consider setting to NULL and adjusting size and ratio of the plot.
 #' @param x.angle Angle (in degrees) of the tick labels for x-axis
 #' @param y.angle Angle (in degrees) of the tick labels for y-axis
@@ -26,8 +26,8 @@
 #' @param show.set.only logical. If TRUE, only the treated unit and control units contained in the provided \code{matched.set} object will be shown on the plot. 
 #' Default is FALSE. If no \code{matched.set} is provided, then this argument will have no effect.
 #' @param gradient.weights logical. If TRUE, the "darkness"/shade of units in the provided \code{matched.set} object will be displayed according to their weight. Control units with higher weights will appear darker on the resulting plot. Control units with lower weights will appear lighter. This argument has no effect unless a \code{matched.set} is provided.
-#' @param hide.x.axis.label logical. If TRUE, x axis labels are not shown. Default is FALSE. 
-#' @param hide.y.axis.label logical. If TRUE, y axis labels are not shown. Default is FALSE.
+#' @param hide.x.tick.label logical. If TRUE, x axis tick labels are not shown. Default is FALSE. 
+#' @param hide.y.tick.label logical. If TRUE, y axis tick labels are not shown. Default is FALSE.
 #' @param dense.plot logical. if TRUE, lines between tiles are removed on resulting plot. This is useful for producing more readable plots in situations where the number of units and/or time periods is very high.
 #' @return \code{DisplayTreatment} returns a treatment variation plot (using ggplot2),
 #' which visualizes the variation of treatment across unit and time.
@@ -56,8 +56,8 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
                               decreasing = FALSE,
                               matched.set = NULL,
                               show.set.only = FALSE,
-                              hide.x.axis.label = FALSE,
-                              hide.y.axis.label = FALSE,
+                              hide.x.tick.label = FALSE,
+                              hide.y.tick.label = FALSE,
                               gradient.weights = FALSE,
                               dense.plot = FALSE)
 
@@ -138,7 +138,7 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
                         high = color.of.treated, guide = "legend",
                         breaks = c(0,1), labels = legend.labels) +
       theme_bw() +
-      labs(list(title = title, x = ylab, y = xlab, fill = "")) +
+      labs(title = title, x = xlab, y = ylab, fill = "") +
       theme(axis.ticks.x=element_blank(),
             panel.grid.major = element_blank(), panel.border = element_blank(),
             legend.position = legend.position,
@@ -206,7 +206,7 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
                                  high = color.of.treated, guide = "legend",
                                  breaks = c(0,1), labels = legend.labels) +
       theme_bw() +
-      labs(list(title = title, x = ylab, y = xlab, fill = "")) +
+      labs(title = title, x = xlab, y = ylab, fill = "") +
       theme(axis.ticks.x=element_blank(),
             panel.grid.major = element_blank(), panel.border = element_blank(),
             legend.position = legend.position,
@@ -217,19 +217,19 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
     
   }
     
-  if(hide.x.axis.label)
+  if(hide.x.tick.label)
   {
     p <- p + theme(axis.text.x = element_blank(), 
                      axis.ticks.x = element_blank())
   }
-  if(hide.y.axis.label)
+  if(hide.y.tick.label)
   {
     p <- p + theme(axis.text.y = element_blank(), 
                      axis.ticks.y = element_blank())
   }
   
-  if (hide.x.axis.label ||
-      hide.y.axis.label)
+  if (hide.x.tick.label ||
+      hide.y.tick.label)
   {
     pjp <- p
   } else {
