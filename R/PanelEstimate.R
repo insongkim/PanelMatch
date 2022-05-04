@@ -58,10 +58,15 @@ PanelEstimate <- function(sets, data,
                           df.adjustment = FALSE,
                           confidence.level = .95,
                           moderator = NULL,
-                          se.method = "bootstrap")
+                          se.method = "bootstrap",
+                          pooled = FALSE)
 {
   #se.method <- "bootstrap"
-  
+  if (pooled && !identical(se.method, "bootstrap"))
+  {
+    se.method = "bootstrap"
+    warning("Pooled results only available with bootstrap SEs")
+  }
   if (se.method == "wfe") stop("wfe is no longer supported. Please specify se.method = 'bootstrap', 'conditional', or 'unconditional'")
   if (class(number.iterations) == "list" & 
       class(df.adjustment) == "list" &
@@ -112,7 +117,8 @@ PanelEstimate <- function(sets, data,
                         number.iterations = number.iterations.in,
                         df.adjustment = df.adjustment.in, 
                         confidence.level = confidence.level.in, 
-                        data = data)
+                        data = data,
+                        pooled = pooled)
           return(res)
         }
         res <- mapply(FUN = handle.nesting, 
@@ -122,7 +128,8 @@ PanelEstimate <- function(sets, data,
                       sets.in = sets,
                       MoreArgs = list(data = data, 
                                       se.method = se.method, 
-                                      moderating.variable.in = moderator),
+                                      moderating.variable.in = moderator,
+                                      pooled = pooled),
                       SIMPLIFY = FALSE)
       }
       else
@@ -133,7 +140,8 @@ PanelEstimate <- function(sets, data,
                      confidence.level = confidence.level, 
                      sets = sets,
                      MoreArgs = list(data = data, 
-                                     se.method = se.method),
+                                     se.method = se.method,
+                                     pooled = pooled),
                      SIMPLIFY = FALSE)
       }
       
@@ -197,7 +205,8 @@ PanelEstimate <- function(sets, data,
                     number.iterations = number.iterations,
                     df.adjustment = df.adjustment, 
                     confidence.level = confidence.level, 
-                    data = data)
+                    data = data,
+                    pooled = pooled)
       
     }
     else
@@ -207,7 +216,8 @@ PanelEstimate <- function(sets, data,
                            df.adjustment = df.adjustment, 
                            confidence.level = confidence.level, 
                            sets = sets, 
-                           data = data)
+                           data = data,
+                           pooled = pooled)
     }
     
   }
@@ -222,8 +232,8 @@ panel_estimate <- function(sets,
                            df.adjustment = FALSE,
                            confidence.level = .95,
                            placebo.test = FALSE,
-                           placebo.lead = NULL
-)
+                           placebo.lead = NULL,
+                           pooled = FALSE)
 {
   
   lead <- attr(sets, "lead")
@@ -365,7 +375,8 @@ panel_estimate <- function(sets,
                                      att.sets = sets.att,
                                      atc.sets = sets.atc,
                                      lag = lag.in,
-                                     se.method = se.method)
+                                     se.method = se.method,
+                                     pooled = pooled)
   }
   return(pe.results)
   

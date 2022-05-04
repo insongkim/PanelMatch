@@ -308,7 +308,8 @@ calculateEstimates <- function(qoi.in, data.in, lead,
                                atc.sets,
                                placebo.test = FALSE,
                                lag,
-                               se.method)
+                               se.method,
+                               pooled = FALSE)
 {
   if (identical(se.method, "bootstrap"))
   {
@@ -329,6 +330,8 @@ calculateEstimates <- function(qoi.in, data.in, lead,
       #do coefficient flip for atc
       if (identical(qoi.in, "atc")) o.coefs <- -o.coefs
       
+      
+      
       if (all(lead >= 0)) 
       {
         if (length(lead[lead < 0]) > 1)
@@ -342,6 +345,12 @@ calculateEstimates <- function(qoi.in, data.in, lead,
         {
           names(o.coefs) <- sapply(lead, function(x) paste0("t+", x))
         }
+      }
+      
+      if (pooled)
+      {
+        o.coefs <- mean(o.coefs, na.rm = TRUE)
+        names(o.coefs) <- NULL
       }
       
       coefs <- matrix(NA, nrow = number.iterations, ncol = length(lead))
@@ -411,6 +420,11 @@ calculateEstimates <- function(qoi.in, data.in, lead,
         
       }
       
+      if (pooled)
+      {
+        coefs <- as.matrix(rowMeans(coefs), ncol = 1)
+      }
+      
       if (identical(qoi.in, "att") || identical(qoi.in, "art"))
       {
         sets <- att.sets
@@ -418,7 +432,12 @@ calculateEstimates <- function(qoi.in, data.in, lead,
         sets <- atc.sets
       }
       ses <- apply(coefs, 2, sd, na.rm = T)
-      names(ses) <- paste0("t+",lead)
+      
+      if (!pooled)
+      {
+        names(ses) <- paste0("t+",lead)
+      }
+      
       z <- list("estimates" = o.coefs,
                 "bootstrapped.estimates" = coefs,
                 "bootstrap.iterations" = number.iterations,
@@ -448,6 +467,8 @@ calculateEstimates <- function(qoi.in, data.in, lead,
       o.coefs_ate <- (o.coefs_att*sum(data.in$dits_att) + o.coefs_atc*sum(data.in$dits_atc))/
         (sum(data.in$dits_att) + sum(data.in$dits_atc))
       
+      
+      
       if (length(lead[lead<0]) > 1)
       {
         names(o.coefs_ate)[(length(o.coefs_ate)-max(lead[lead>=0])):
@@ -459,6 +480,13 @@ calculateEstimates <- function(qoi.in, data.in, lead,
       {
         names(o.coefs_ate) <- sapply(lead, function(x) paste0("t+", x))
       }
+      
+      if (pooled)
+      {
+        o.coefs_ate <- mean(o.coefs_ate, na.rm = TRUE)
+        names(o.coefs_ate) <- NULL
+      }
+      
       
       coefs <- matrix(NA, nrow = number.iterations, ncol = length(lead))
       
@@ -552,8 +580,19 @@ calculateEstimates <- function(qoi.in, data.in, lead,
         
         
       }
+      
+      if (pooled)
+      {
+        coefs <- as.matrix(rowMeans(coefs), ncol = 1)
+      }
+      
       ses <- apply(coefs, 2, sd, na.rm = T)
-      names(ses) <- paste0("t+",lead)
+      
+      if (!pooled)
+      {
+        names(ses) <- paste0("t+",lead)
+      }
+      
       
       z <- list("estimates" = o.coefs_ate,
                 "bootstrapped.estimates" = coefs, 
