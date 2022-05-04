@@ -11,7 +11,8 @@ PanelEstimate(
   df.adjustment = FALSE,
   confidence.level = 0.95,
   moderator = NULL,
-  se.method = "bootstrap"
+  se.method = "bootstrap",
+  pooled = FALSE
 )
 }
 \arguments{
@@ -30,7 +31,8 @@ calculation. The default is \code{FALSE}. This parameter is only available for t
 \item{confidence.level}{A numerical value specifying the confidence level and range of interval
 estimates for statistical inference. The default is .95.}
 
-\item{moderator}{The name of a moderating variable, provided as a character string. If a moderating variable is provided,the returned object will be a list of \code{PanelEstimate} objects. The names of the list will reflect the different values of the moderating variable. More specifically, the moderating variable values will be converted to syntactically proper names using \code{make.names}.}
+\item{moderator}{The name of a moderating variable, provided as a character string. If a moderating variable is provided,the returned object will be a list of \code{PanelEstimate} objects. The names of the list will reflect the different values of the moderating variable. More specifically, the moderating variable values will be converted to syntactically proper names using \code{make.names}.
+#' @param pooled Logical. If TRUE, estimates and standard errors are returned for treatment effects pooled across the entire lead window. Only available for \code{se.method = ``bootstrap''}}
 
 \item{se.method}{Method used for calculating standard errors, provided as a character string. Users must choose between "bootstrap", "conditional", and "unconditional" methods. Default is "bootstrap". "bootstrap" uses a block bootstrapping procedure to calculate standard errors. The conditional method calculates the variance of the estimator, assuming independence across units but not across time. The unconditional method also calculates the variance of the estimator analytically, but makes no such assumptions about independence across units. When the quantity of interest is "att", "atc", or "art", all methods are available. Only "bootstrap" is available for the ate. See Section 3.4 of Imai, Kim, and Wang (2021) for more details.}
 }
