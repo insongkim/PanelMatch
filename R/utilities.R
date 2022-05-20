@@ -428,13 +428,14 @@ calculate_set_effects <- function(pm.obj, data.in, lead)
                               lead.val,
                               mset.name,
                               outcome, 
-                              use.abs.value = FALSE)
+                              use.abs.value = FALSE,
+                              is.atc = FALSE)
   {
     
     if ( identical(length(mset), 0L)) return(NA)
     t.val <- as.numeric(sub(".*\\.", "", mset.name))
     id.val <- as.numeric(sub("\\..*", "", mset.name))
-    
+    #browser()
     
     past.lookups <- paste0(mset, ".", (t.val - 1))
     future.lookups <- paste0(mset, ".", (t.val + lead.val))
@@ -446,17 +447,24 @@ calculate_set_effects <- function(pm.obj, data.in, lead)
     
     treat.diff <- data_in[t.future.lookup, outcome] - data_in[t.past.lookup, outcome]
     
-    ind.effects <- treat.diff - sum(attr(mset, "weights") * control.diffs)
+    if (is.atc)
+    {
+      ind.effects <- sum(attr(mset, "weights") * control.diffs) - treat.diff
+    } else {
+      ind.effects <- treat.diff - sum(attr(mset, "weights") * control.diffs)
+    }
+    
+    
     denom <- attr(mset, "treatment.change")
     if (use.abs.value) denom <- abs(denom)
+    if (is.atc) denom <- 1
     ind.effects <- ind.effects / denom
     return(ind.effects)
     
   }
   
   
-  if ( identical(attributes(pm.obj)[["qoi"]], "att") || 
-       identical(attributes(pm.obj)[["qoi"]], "atc") )
+  if ( identical(attributes(pm.obj)[["qoi"]], "att"))
   { #using simplify = TRUE because we should always expect a vector, so nothing unexpected should happen
     effects <- mapply(FUN = get_ind_effects,
                       mset = msets,
@@ -464,6 +472,18 @@ calculate_set_effects <- function(pm.obj, data.in, lead)
                       MoreArgs = list(lead.val = lead,
                                       data_in = data.in,
                                       outcome = attributes(pm.obj)[["outcome.var"]]),
+                      SIMPLIFY = TRUE)
+    
+    return(effects)
+  } else if (identical(attributes(pm.obj)[["qoi"]], "atc"))
+  {
+    effects <- mapply(FUN = get_ind_effects,
+                      mset = msets,
+                      mset.name = names(msets),
+                      MoreArgs = list(lead.val = lead,
+                                      data_in = data.in,
+                                      outcome = attributes(pm.obj)[["outcome.var"]],
+                                      is.atc = TRUE),
                       SIMPLIFY = TRUE)
     
     return(effects)

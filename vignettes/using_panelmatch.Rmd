@@ -3,10 +3,10 @@ title: "Using PanelMatch"
 author: "In Song Kim, Adam Rauh, Erik Wang, Kosuke Imai"
 date: "`r Sys.Date()`"
 output:
-  html_document:
-    df_print: paged
   pdf_document:
     number_sections: no
+  html_document:
+    df_print: paged
   fig_width: 6
   fig_height: 4
 vignette: |
@@ -50,7 +50,7 @@ DisplayTreatment(unit.id = "wbcode2",
                  time.id = "year", legend.position = "none",
                  xlab = "year", ylab = "Country Code",
                  treatment = "dem", data = dem,
-                 hide.x.axis.label = TRUE, hide.y.axis.label = TRUE) # axis label options
+                 hide.x.tick.label = TRUE, hide.y.tick.label = TRUE) # axis label options
 ```
 
 ```{r}
@@ -58,7 +58,7 @@ DisplayTreatment(unit.id = "wbcode2",
                  time.id = "year", legend.position = "none",
                  xlab = "year", ylab = "Country Code",
                  treatment = "dem", data = dem,
-                 hide.x.axis.label = TRUE, hide.y.axis.label = TRUE,
+                 hide.x.tick.label = TRUE, hide.y.tick.label = TRUE,
                  dense.plot = TRUE) # setting dense.plot to TRUE
 ```
 
@@ -279,8 +279,9 @@ get_covariate_balance(PM.results.ps.weight$att,
 We can also evaluate our results using the `balance_scatter` function:
 
 ```{r}
-balance_scatter(non_refined_set = PM.results.none$att,
-               refined_list = list(PM.results.maha$att, PM.results.ps.weight$att),
+balance_scatter(matched_set_list =
+                  list(PM.results.maha$att,
+                       PM.results.ps.weight$att),
                data = dem,
                covariates = c("y", "tradewb"))
 ```

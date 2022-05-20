@@ -63,8 +63,7 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
 
 {
   
-  colref <- NULL #for some reason --as-cran checks need this
-  color.manual <- NULL
+  alphaweight <- NULL #for some reason --as-cran checks need this
   
   if (class(data) != "data.frame") stop("please convert data to data.frame class")
   if (any(is.na(data[, unit.id]))) stop("Cannot have NA unit ids")
