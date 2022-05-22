@@ -379,6 +379,9 @@ panel_estimate <- function(sets,
                                      lag = lag.in,
                                      se.method = se.method,
                                      pooled = pooled)
+
+   
+    
   }
   return(pe.results)
   
