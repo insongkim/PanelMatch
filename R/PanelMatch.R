@@ -270,7 +270,7 @@ panel_match <- function(lag, time.id, unit.id, treatment,
   }
   
   #######take this out when negative lead is implemented:
-  if (any(lead < 0)) stop("Please provide positive lead values. Please see the placeboTest function for more.")
+  if (any(lead < 0)) stop("Please provide positive lead values. Please see the placebo_test function for more.")
   
   if (any(table(data[, unit.id]) != max(table(data[, unit.id]))))
   {

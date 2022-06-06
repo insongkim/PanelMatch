@@ -182,9 +182,9 @@ get_covariate_balance <- function(matched.sets,
     plotpoints[[k]] <- var.points
     
   }
-  
+  #browser()
   names(plotpoints) <- paste0("t_", lag:0)
-  pointmatrix <- apply((as.matrix(do.call(rbind, plotpoints))), 2, function(x){(as.numeric(x))})
+  pointmatrix <- apply((as.matrix(do.call(rbind, plotpoints))), 2, function(x){(as.numeric(x))}, simplify = TRUE)
   rownames(pointmatrix) <- names(plotpoints)
   
   remove.vars.idx <- apply(apply(pointmatrix, 2, is.nan), 2, any)
@@ -199,7 +199,7 @@ get_covariate_balance <- function(matched.sets,
   
   # we can remove time of treatment, since we expect a change
   
-  pointmatrix <- pointmatrix[-nrow(pointmatrix),]
+  pointmatrix <- pointmatrix[-nrow(pointmatrix), ,drop = FALSE]
   
   if (!plot) return(pointmatrix)
   
@@ -532,14 +532,14 @@ calculate_set_effects <- function(pm.obj, data.in, lead)
 
 
 
-#' getSetTreatmentEffects
+#' get_set_treatment_effects
 #'
 #' Calculates the treatment effect size at the matched set level
 #'
 #'
 #' Calculate the size of treatment effects for each matched set.
 #' @param pm.obj an object of class \code{PanelMatch}
-#' @param data.in data.frame with the original data
+#' @param data data.frame with the original data
 #' @param lead integer (or integer vector) indicating the time period(s) in the future for which the treatment effect size will be calculated. Calculations will be made for the period t + lead, where t is the time of treatment. If more than one lead value is provided, then calculations will be performed for each value.
 #'
 #' @examples
@@ -551,26 +551,26 @@ calculate_set_effects <- function(pm.obj, data.in, lead)
 #'                          size.match = 5, qoi = "att",
 #'                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE,
 #'                          placebo.test = FALSE)
-#' set.effects <- getSetTreatmentEffects(pm.obj = PM.results, data.in = dem, lead = 0)
+#' set.effects <- get_set_treatment_effects(pm.obj = PM.results, data = dem, lead = 0)
 #'
 #'
 #' @export
 
-getSetTreatmentEffects <- function(pm.obj, data.in, lead)
+get_set_treatment_effects <- function(pm.obj, data, lead)
 {
-  return(lapply(lead, calculate_set_effects, pm.obj = pm.obj, data.in = data.in))
+  return(lapply(lead, calculate_set_effects, pm.obj = pm.obj, data.in = data))
 
 }
 #' 
 #' 
-#' placeboTest
+#' placebo_test
 #'
 #' Calculates results for a placebo test
 #'
 #'
 #' Calculate the results of a placebo test, looking at the change in outcome at time = t-1, compared to other pre-treatment periods in the lag window.
 #' @param pm.obj an object of class \code{PanelMatch}
-#' @param data.in data.frame with the original data
+#' @param data data.frame with the original data
 #' @param lag.in integer indicating earliest the time period(s) in the future for which the placebo test change in outcome will be calculated. Calculations will be made over the period t - max(lag) to t-2, where t is the time of treatment. The results are similar to those returned by PanelEstimate, except t-1 is used as the period of comparison, rather than the lead window.
 #' @param number.iterations integer specifying the number of bootstrap iterations
 #' @param confidence.level confidence level for the calculated standard error intervals
@@ -587,14 +587,14 @@ getSetTreatmentEffects <- function(pm.obj, data.in, lead)
 #'                          size.match = 5, qoi = "att",
 #'                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE,
 #'                          placebo.test = TRUE)
-#' placeboTest(PM.results, data.in = dem, number.iterations = 100, plot = FALSE)
+#' placebo_test(PM.results, data = dem, number.iterations = 100, plot = FALSE)
 #' 
 #' 
 #' @export
 #'
 #'
-placeboTest <- function(pm.obj,
-                        data.in,
+placebo_test <- function(pm.obj,
+                        data,
                         lag.in = NULL,
                         number.iterations = 1000,
                         confidence.level = .95,
@@ -630,7 +630,7 @@ placeboTest <- function(pm.obj,
 
 
   placebo.results.raw <- panel_estimate(sets = pm.obj,
-                                        data = data.in,
+                                        data = data,
                                         number.iterations = number.iterations,
                                         df.adjustment = df.adjustment,
                                         placebo.test = TRUE,

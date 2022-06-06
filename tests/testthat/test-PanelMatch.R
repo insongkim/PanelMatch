@@ -738,7 +738,7 @@ test_that("set level treatment effects", {
                            size.match = 5, qoi = "att",
                            outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE,
                            placebo.test = FALSE)
-  set.effects <- getSetTreatmentEffects(pm.obj = PM.results, data.in = dem, lead = 0:1)
+  set.effects <- get_set_treatment_effects(pm.obj = PM.results, data = dem, lead = 0:1)
   #mean(set.effects[[1]], na.rm = TRUE)
   #mean(set.effects[[2]], na.rm = TRUE)
   pe.results <- PanelEstimate(PM.results, data = dem)
@@ -754,7 +754,7 @@ test_that("set level treatment effects", {
                            size.match = 5, qoi = "art",
                            outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE,
                            placebo.test = FALSE)
-  set.effects <- getSetTreatmentEffects(pm.obj = PM.results, data.in = dem, lead = 0:1)
+  set.effects <- get_set_treatment_effects(pm.obj = PM.results, data = dem, lead = 0:1)
   #mean(set.effects[[1]], na.rm = TRUE)
   #mean(set.effects[[2]], na.rm = TRUE)
   pe.results <- PanelEstimate(PM.results, data = dem)
@@ -769,7 +769,7 @@ test_that("set level treatment effects", {
                            size.match = 5, qoi = "atc",
                            outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE,
                            placebo.test = FALSE)
-  set.effects <- getSetTreatmentEffects(pm.obj = PM.results, data.in = dem, lead = 0:1)
+  set.effects <- get_set_treatment_effects(pm.obj = PM.results, data = dem, lead = 0:1)
   #mean(set.effects[[1]], na.rm = TRUE)
   #mean(set.effects[[2]], na.rm = TRUE)
   pe.results <- PanelEstimate(PM.results, data = dem)
@@ -785,7 +785,7 @@ test_that("set level treatment effects", {
   #                          size.match = 5, qoi = "ate",
   #                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE,
   #                          placebo.test = FALSE)
-  # set.effects <- getSetTreatmentEffects(pm.obj = PM.results, data.in = dem, lead = 0:1)
+  # set.effects <- get_set_treatment_effects(pm.obj = PM.results, data = dem, lead = 0:1)
   # #mean(set.effects[[1]], na.rm = TRUE)
   # #mean(set.effects[[2]], na.rm = TRUE)
   # pe.results <- PanelEstimate(PM.results, data = dem)
