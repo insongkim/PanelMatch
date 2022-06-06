@@ -4,21 +4,7 @@ status](https://github.com/r-lib/usethis/workflows/R-CMD-check/badge.svg)](https
 
 Authors: In Song Kim (insong@mit.edu), Adam Rauh (amrauh@umich.edu), Erik Wang (haixiaow@Princeton.edu), Kosuke Imai (imai@harvard.edu)
 
-This R package provides a set of methodological tools that enable
-researchers to apply matching methods to time-series cross-sectional
-data.  Imai, Kim, and Wang (2018) proposes a nonparametric
-generalization of difference-in-differences estimator, which does not
-rely on the linearity assumption as often done in
-practice. Researchers first select a method of matching each treated
-observation from a given unit in a particular time period with control
-observations from other units in the same time period that have a
-similar treatment and covariate history.  These methods include
-standard matching and weighting methods based on propensity score and Mahalanobis distance.
-Once matching is done, both short-term and long-term average treatment
-effects for the treated can be estimated with standard errors. The
-package also offers a visualization technique that allows researchers
-to assess the quality of matches by examining the resulting covariate
-balance.
+PanelMatch is an R package implementing a set of methodological tools proposed by Imai, Kim, and Wang (2021) that enables researchers to apply matching methods for causal inference on time-series cross-sectional data with binary treatments. The package includes implementations of matching methods based on propensity scores and Mahalanobis distance, as well as weighting methods. PanelMatch enables users to easily calculate a variety of possible quantities of interest, along with standard errors. The software is flexible, allowing users to tune the matching, refinement, and estimation procedures with a large number of parameters. The package also offers a variety of visualization and diagnostic tools for researchers to better understand their data and assess their results.
 
 Installation Instructions
 -------------------------
@@ -39,7 +25,7 @@ Then, load `devtools` and use the function `install_github()` to install `PanelM
 
 ``` r
 library(devtools)
-install_github("insongkim/PanelMatch", dependencies=TRUE)
+install_github("insongkim/PanelMatch", dependencies=TRUE, ref = "se_comparison")
 ```
 If you encounter problems during installation, please consult [the wiki page](https://github.com/insongkim/PanelMatch/wiki/Installation-Troubleshooting) that has some ideas for handling common issues. 
 
@@ -82,7 +68,7 @@ PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                          lead = 0:4, forbid.treatment.reversal = FALSE)
 
 ```							
-The `PanelMatch` function will return an object of class "PanelMatch". This is a list that contains a few specific elements: First, a matched.set object(s) that has the same name as the provided qoi -- if the qoi is "att", "atc". If qoi = "ate" then two matched.set objects will be attached, named "att" and "atc." Users can extract information about individual matched sets as well as statistics about all created matched sets from this object. Consult the [Wiki page on Matched Set Objects](https://github.com/insongkim/PanelMatch/wiki/Matched-Set-Objects) for a more detailed walkthrough and description of these objects. Put simply, `matched.set` objects are merely lists with some assumed structure and special attributes.
+The `PanelMatch` function will return an object of class "PanelMatch". This is a list that contains a few specific elements: First, a matched.set object(s) that has the same name as the provided qoi -- if the qoi is "att", "atc". If qoi = "ate" then two matched.set objects will be attached, named "att" and "atc." Users can extract information about individual matched sets as well as statistics about all created matched sets from this object. Consult the [Wiki page on Matched Set Objects](https://github.com/insongkim/PanelMatch/wiki/Matched-Set-Objects) for a more detailed walk through and description of these objects. Put simply, `matched.set` objects are merely lists with some assumed structure and special attributes.
 
 The `PanelMatch` object also has some additional attributes: "qoi", "lead", "forbid.treatment.reversal" (a logical value that is the same as what was specified in the function call), and "outcome.var" (character value that is the same as what was specified in the function call)
 
@@ -90,12 +76,11 @@ You can check covariate balance using the `get_covariate_balance` function:
 
 ```{r}
 get_covariate_balance(PM.results$att, dem, covariates = c("tradewb"), plot = FALSE, ylim = c(-2,2))
-       tradewb
-t_4 0.14247452
-t_3 0.08363034
-t_2 0.11718424
-t_1 0.25036846
-t_0 0.28859923
+        tradewb
+t_4  0.05459705
+t_3 -0.03101839
+t_2 -0.01828529
+t_1  0.07784846
 ```
 See the documentation for more information about this function.
 
@@ -126,12 +111,12 @@ Standard errors computed with 1000 Weighted bootstrap samples
 
 Estimate of Average Treatment Effect on the Treated (ATT) by Period:
 $summary
-      estimate std.error      2.5%     97.5%
-t+0 -0.8913640  0.649573 -2.104339 0.3319704
-t+1 -0.4709856  1.099428 -2.656029 1.6943853
-t+2  0.4803681  1.464809 -2.285216 3.4092224
-t+3  1.3447573  1.769004 -1.971492 4.7865140
-t+4  1.0782767  1.901539 -2.615567 4.9641979
+      estimate std.error      2.5%    97.5%
+t+0 -0.5349572 0.9231828 -2.434598 1.314614
+t+1 -0.2396204 1.4565119 -2.970407 2.506002
+t+2  0.5532550 1.8562746 -2.949847 4.059749
+t+3  1.8425824 2.1679704 -2.421909 5.953401
+t+4  1.9920680 2.3756352 -2.648517 6.569985
 
 $lag
 [1] 4
@@ -141,10 +126,9 @@ $iterations
 
 $qoi
 [1] "att"
-
 ```
 
 ```r
 plot(PE.results)
 ```
-![](https://github.com/insongkim/repo-data/blob/master/panelmatch/pe_plot_1_20.png)
+![](https://github.com/insongkim/repo-data/blob/master/panelmatch/pe_plot_6_22.png)
