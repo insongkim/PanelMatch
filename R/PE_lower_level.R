@@ -453,6 +453,7 @@ handle_moderating_variable <- function(ordered.data, att.sets, atc.sets, PM.obje
 pcs <- function(sets, lead.in,
                 continuous.treatment = FALSE)
 {
+  
   L <- attr(sets, "lag")
   ts <- as.numeric(sub(".*\\.", "", names(sets)))
   
@@ -581,6 +582,7 @@ getDits <- function(matched_sets, data)
 
 #function that ultimately calculates the point estimate values
 equality_four <- function(x, y, z){
+  
   return(sum(x*y)/sum(z))
 }
 

@@ -117,11 +117,22 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
   continuous.treatment.info = NULL
   
   if (placebo.test) warning("when placebo.test = TRUE, using the dependent variable in refinment is invalid")
-  if(class(lag) == "list" & class(time.id) == "list" & class(unit.id) == "list" & class(treatment) == "list" & 
-     class(refinement.method) == "list" & class(size.match) == "list" & class(match.missing) == "list" & 
-     class(covs.formula) == "list" & class(verbose) == "list" & class(qoi) == "list" & class(lead) == "list" & 
-     class(outcome.var) == "list" & class(forbid.treatment.reversal) == "list" &
-     class(matching) == "list" & class(listwise.delete) == "list" & class(use.diagonal.variance.matrix) == "list") #everything but data must be provided explicitly
+  if(inherits(lag, "list") & 
+     inherits(time.id, "list") & 
+     inherits(unit.id, "list") & 
+     inherits(treatment, "list") & 
+     inherits(refinement.method, "list") & 
+     inherits(size.match, "list") &
+     inherits(match.missing, "list") &
+     inherits(covs.formula, "list") & 
+     inherits(verbose, "list") & 
+     inherits(qoi, "list") & 
+     inherits(lead, "list") & 
+     inherits(outcome.var, "list") & 
+     inherits(forbid.treatment.reversal, "list") &
+     inherits(matching, "list") & 
+     inherits(listwise.delete, "list") & 
+     inherits(use.diagonal.variance.matrix, "list")) #everything but data must be provided explicitly
   {
     #stop("looped version of PanelMatch currently unavailable")
     if(length(unique(length(lag) , length(time.id)  , length(unit.id)  , length(treatment)  , 
@@ -226,11 +237,18 @@ panel_match <- function(lag, time.id, unit.id, treatment,
   }
   if (listwise.delete & match.missing) stop("set match.missing = FALSE when listwise.delete = TRUE")
   if (lag < 1) stop("please specify a lag value >= 1")
-  if (class(data) != "data.frame") stop("please convert data to data.frame class")
+  # if (class(data) != "data.frame") stop("please convert data to data.frame class")
+  if (!inherits(data, 'data.frame')) stop("please convert data to data.frame class")
   if (!all(refinement.method %in% c("mahalanobis", "ps.weight", "ps.match", "CBPS.weight", "CBPS.match", "ps.msm.weight", "CBPS.msm.weight", "none"))) stop("please choose a valid refinement method")
   if (any(duplicated(data[, c(unit.id, time.id)]))) stop("Time, unit combinations should uniquely identify rows. Please remove duplicates")
-  if (!class(data[, unit.id]) %in% c("integer", "numeric")) stop("please convert unit id column to integer or numeric")
-  if (class(data[, time.id]) != "integer") stop("please convert time id to consecutive integers")
+  
+  # if (!class(data[, unit.id]) %in% c("integer", "numeric")) stop("please convert unit id column to integer or numeric")
+  
+  if (!inherits(data[, unit.id], "integer") && !inherits(data[, unit.id], "numeric")) stop("please convert unit id column to integer or numeric")
+  
+  #if (class(data[, time.id]) != "integer") stop("please convert time id to consecutive integers")
+  if (!inherits(data[, time.id], "integer")) stop("please convert time id to consecutive integers")
+  
   if ( !all(c(time.id, unit.id, treatment, outcome.var)  %in% colnames(data)) ) stop("time id, unit id, outcome, or treatment column name invalid")
   
   if (forbid.treatment.reversal && !identical(qoi, "att"))

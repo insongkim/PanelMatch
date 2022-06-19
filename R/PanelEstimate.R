@@ -70,10 +70,10 @@ PanelEstimate <- function(sets, data,
     warning("Pooled results only available with bootstrap SEs")
   }
   if (se.method == "wfe") stop("wfe is no longer supported. Please specify se.method = 'bootstrap', 'conditional', or 'unconditional'")
-  if (class(number.iterations) == "list" & 
-      class(df.adjustment) == "list" &
-      class(confidence.level) == "list" & 
-      class(sets) == "list")
+  if (inherits(number.iterations, "list") & 
+      inherits(df.adjustment, "list") &
+      inherits(confidence.level, "list")& 
+      inherits(sets, "list") == "list")
   {
     if (length(unique(length(se.method), length(number.iterations), length(df.adjustment),
                       length(confidence.level), length(sets))) == 1)
@@ -242,7 +242,7 @@ panel_estimate <- function(sets,
   outcome.variable <- attr(sets, "outcome.var")
   continuous.treatment <- attr(sets,'continuous.treatment')
   if (is.null(continuous.treatment)) continuous.treatment <- FALSE
-  if (class(sets) != "PanelMatch") stop("sets parameter is not a PanelMatch object")
+  if (!inherits(sets, "PanelMatch")) stop("sets parameter is not a PanelMatch object")
   qoi <- attr(sets, "qoi")
   
   
@@ -277,10 +277,14 @@ panel_estimate <- function(sets,
   #forbid.treatment.reversal <- attr(t.sets, "forbid.treatment.reversal")
   #add in checks about forbid.treatment.reversal and wfe, etc.
   
-  if (!"data.frame" %in% class(data)) stop("please convert data to data.frame class")
+  if (!inherits(data, "data.frame")) stop("please convert data to data.frame class")
+  #if (!"data.frame" %in% class(data)) stop("please convert data to data.frame class")
   
-  if (!class(data[, unit.id]) %in% c("integer", "numeric")) stop("please convert unit id column to integer or numeric")
-  if (class(data[, time.id]) != "integer") stop("please convert time id to consecutive integers")
+  #if (!class(data[, unit.id]) %in% c("integer", "numeric")) stop("please convert unit id column to integer or numeric")
+  if (!inherits(data[, unit.id], "integer") && !inherits(data[, unit.id], "numeric")) stop("please convert unit id column to integer or numeric")
+  
+  #if (class(data[, time.id]) != "integer") stop("please convert time id to consecutive integers")
+  if (!inherits(data[, time.id], "integer")) stop("please convert time id to consecutive integers")
   
   if (any(table(data[, unit.id]) != max(table(data[, unit.id]))))
   {

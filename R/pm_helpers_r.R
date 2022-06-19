@@ -16,7 +16,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
 {
 
   if ( !is.null(mset.object) ) stop('This should never run!')
-  if (identical(class(ordered.data[, unit.id]), "numeric"))
+  if (inherits(ordered.data[, unit.id], "numeric"))
   {
     warning("converting unit id variable data to integer")
     class(ordered.data[, unit.id]) <- "integer"
@@ -657,7 +657,15 @@ handle_mahalanobis_calculations <- function(mahal.nested.list, msets, max.size, 
       # {
       #   newdists <- ifelse(dists < scoretobeat & dists > 0, 1 / max.set.size, 0)
       # }
-
+      
+      # bcheck <- sub.list[[1]]
+      # if (bcheck[nrow(bcheck), 1] == 12 && bcheck[nrow(bcheck), 2] == 1991){
+      
+      # }
+      
+      # TESTING ROUNDING
+      dists <- round(dists, 8)
+      scoretobeat <- round(scoretobeat, 8)
       if(sum(dists < scoretobeat) < max.set.size) #change this if we want to be more strict about max.set.size enforcements
       {
         new.denom <- sum(dists <= scoretobeat)
@@ -923,7 +931,7 @@ enforce_lead_restrictions <- function(matched_sets, ordered.data, max.lead, t.va
     if (sum(all.gone.counter == 0) > 0) #case in which all the controls in a particular group were dropped
     {
       #warning("all controls in a particular matched set were removed due to missing data")
-      #browser()
+      
       idx[all.gone.counter == 0] <- FALSE
       sub.index <- ll[idx]
       sub.set <- matched_sets[idx]

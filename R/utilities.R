@@ -1,6 +1,7 @@
 check_time_data <- function(data, time.id)
 {
-  if(class(data[, time.id]) != "integer") stop("time data is not integer")
+  #if(class(data[, time.id]) != "integer") stop("time data is not integer")
+  if (!inherits(data[, time.id], "integer")) stop("time data is not integer")
   u.times <- unique(data[, time.id])
   increase.by.one <- all(seq(min(u.times), max(u.times), by = 1) %in% u.times)
   if(increase.by.one)
@@ -70,13 +71,19 @@ get_covariate_balance <- function(matched.sets,
   {
     stop("Some of the specified covariates are not columns in the data set.")
   }
-  if(!any(class(matched.sets) %in% "matched.set")) stop("Please pass a matched.set object")
+  
+  #if(!any(class(matched.sets) %in% "matched.set")) stop("Please pass a matched.set object")
+  if (!inherits(matched.sets, "matched.set")) stop("Please pass a matched.set object")
   unit.id <- attr(matched.sets, "id.var")
   time.id <- attr(matched.sets, "t.var")
   lag <- attr(matched.sets, "lag")
   treatment <- attr(matched.sets, "treatment.var")
-  if (!class(data[, unit.id]) %in% c("integer", "numeric")) stop("please convert unit id column to integer or numeric")
-  if (class(data[, time.id]) != "integer") stop("please convert time id to consecutive integers")
+  
+  #if (!class(data[, unit.id]) %in% c("integer", "numeric")) stop("please convert unit id column to integer or numeric")
+  if (!inherits(data[, unit.id], "integer") && !inherits(data[, unit.id], "numeric")) stop("please convert unit id column to integer or numeric")
+  
+  #if (class(data[, time.id]) != "integer") stop("please convert time id to consecutive integers")
+  if (!inherits(data[, time.id], "integer")) stop("please convert time id to consecutive integers")
   
   if(any(table(data[, unit.id]) != max(table(data[, unit.id]))))
   {
@@ -182,7 +189,7 @@ get_covariate_balance <- function(matched.sets,
     plotpoints[[k]] <- var.points
     
   }
-  #browser()
+  
   names(plotpoints) <- paste0("t_", lag:0)
   pointmatrix <- apply((as.matrix(do.call(rbind, plotpoints))), 2, function(x){(as.numeric(x))}, simplify = TRUE)
   rownames(pointmatrix) <- names(plotpoints)
@@ -435,7 +442,7 @@ calculate_set_effects <- function(pm.obj, data.in, lead)
     if ( identical(length(mset), 0L)) return(NA)
     t.val <- as.numeric(sub(".*\\.", "", mset.name))
     id.val <- as.numeric(sub("\\..*", "", mset.name))
-    #browser()
+    
     
     past.lookups <- paste0(mset, ".", (t.val - 1))
     future.lookups <- paste0(mset, ".", (t.val + lead.val))

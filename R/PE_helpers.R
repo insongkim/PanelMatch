@@ -8,7 +8,7 @@ prepareData <- function(data.in, lead, sets.att = NULL,
     if (identical(qoi.in, "ate")) qoi.t <- "att"
     for (j in lead)
     {
-
+      
       dense.wits <- getWits(lead = j, data = data.in, matched_sets = sets.att,
                             continuous.treatment = continuous.treatment)
       data.in = merge(x = data.in, y = dense.wits, all.x = TRUE,
@@ -28,6 +28,7 @@ prepareData <- function(data.in, lead, sets.att = NULL,
 
     for (j in lead)
     {
+      
       dense.wits <- getWits(lead = j, data = data.in, matched_sets = sets.atc,
                             continuous.treatment = continuous.treatment)
       data.in = merge(x = data.in, y = dense.wits, all.x = TRUE,

@@ -65,10 +65,14 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
   
   alphaweight <- NULL #for some reason --as-cran checks need this
   
-  if (class(data) != "data.frame") stop("please convert data to data.frame class")
+  
+  if (!inherits(data, "data.frame")) stop("please convert data to data.frame class")
+  
   if (any(is.na(data[, unit.id]))) stop("Cannot have NA unit ids")
   # if(!class(data[, unit.id]) %in% c("integer", "numeric")) stop("please convert unit id column to integer or numeric")
-  if (class(data[, time.id]) != "integer") stop("please convert time id to consecutive integers")
+  if (!inherits(data[, time.id], "integer")) stop("please convert time id to consecutive integers")
+  #if (class(data[, time.id]) != "integer") stop("please convert time id to consecutive integers")
+  
   if (gradient.weights && is.null(matched.set)) stop("gradient.weights cannot be TRUE without a provided matched set")
   if (!gradient.weights && !show.set.only && !is.null(matched.set)) {
     warning("gradient.weights, show.set.only set to FALSE, but matched set provided. Ignoring matched set")
@@ -150,7 +154,7 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
   
   if (!is.null(matched.set) & 
       length(matched.set) == 1 & 
-      class(matched.set) == "matched.set")
+      inherits(matched.set, "matched.set"))
   {
     
     

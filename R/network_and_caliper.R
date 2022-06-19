@@ -234,7 +234,7 @@ handle_calipers <- function(plain.ordered.data, caliper.formula,
   
   internal.caliper <- function(x, n = 1L, default = NA)
   {
-    if (class(x) == "factor")
+    if ( inherits(x, "factor"))
     {
       x <- as.numeric(as.character(x))
     }
