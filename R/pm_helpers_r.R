@@ -664,8 +664,8 @@ handle_mahalanobis_calculations <- function(mahal.nested.list, msets, max.size, 
       # }
       
       # TESTING ROUNDING
-      dists <- round(dists, 8)
-      scoretobeat <- round(scoretobeat, 8)
+      dists <- round(dists, 5)
+      scoretobeat <- round(scoretobeat, 5)
       if(sum(dists < scoretobeat) < max.set.size) #change this if we want to be more strict about max.set.size enforcements
       {
         new.denom <- sum(dists <= scoretobeat)

@@ -343,7 +343,7 @@ test_that("(ATC) PanelEstimate Runs", {
                     lead = 0:3, forbid.treatment.reversal = FALSE)
   
   pe.results <- PanelEstimate(pm1, data = dem)
-  comp.results <-  c(-0.7402495, -0.1429018, -0.4928990, -0.1453372)
+  comp.results <-  c(-0.7399887, -0.1418777, -0.4914594, -0.1423150)
   expect_equivalent(pe.results$estimates, comp.results, tolerance = .000001)
   
 })
@@ -374,7 +374,7 @@ test_that("(ATE) PanelEstimate Runs", {
                     lead = 0:3, forbid.treatment.reversal = FALSE)
   
   pe.results <- PanelEstimate(pm1, data = dem)
-  comp.results <-  c(-0.73425439, -0.15018329, -0.45414757, -0.06870233 )
+  comp.results <-  c(-0.73400424, -0.14920097, -0.45276678, -0.06580353)
   expect_equivalent(pe.results$estimates, comp.results, tolerance = .0000001)
   
 })
@@ -424,9 +424,9 @@ test_that("(ATC) bootstrap SEs", {
                     lead = 0:3, forbid.treatment.reversal = FALSE)
   
   pe.results <- PanelEstimate(pm1, data = dem)
-  comp.results <-  c(-0.7402495, -0.1429018, -0.4928990, -0.1453372)
+  comp.results <-  c(-0.7399887, -0.1418777, -0.4914594, -0.1423150)
   expect_equivalent(pe.results$estimates, comp.results, tolerance = .0000001)
-  expect_equivalent(pe.results$standard.error, c(0.7072895, 1.3271071, 1.7368929, 2.2046453), tolerance = .0000001)
+  expect_equivalent(pe.results$standard.error, c(0.7073038, 1.3269013, 1.7366997, 2.2044836), tolerance = .0000001)
 })
 
 test_that("(ART) bootstrap SEs", {
@@ -457,9 +457,9 @@ test_that("(ATE) bootstrap SEs", {
                     lead = 0:3, forbid.treatment.reversal = FALSE)
   
   pe.results <- PanelEstimate(pm1, data = dem)
-  comp.results <-  c(-0.73425439, -0.15018329, -0.45414757, -0.06870233)
+  comp.results <-  c(-0.73400424, -0.14920097, -0.45276678, -0.06580353)
   expect_equivalent(pe.results$estimates, comp.results, tolerance = .000001)
-  expect_equivalent(pe.results$standard.error, c(0.7030948, 1.3113659, 1.7145635, 2.1709766), tolerance = .0000001)
+  expect_equivalent(pe.results$standard.error, c(0.7031095, 1.3111547, 1.7143549, 2.1707891), tolerance = .0000001)
 })
 
 
@@ -493,9 +493,9 @@ test_that("(ATC) PanelEstimate Runs: analytical SEs", {
                     lead = 0:3, forbid.treatment.reversal = FALSE)
   
   pe.results <- PanelEstimate(pm1, data = dem, se.method = "conditional")
-  comp.results <-  c(-0.7402495, -0.1429018, -0.4928990, -0.1453372)
+  comp.results <-  c(-0.7399887, -0.1418777, -0.4914594, -0.1423150)
   expect_equivalent(pe.results$estimates, comp.results, tolerance = .000001)
-  comp.results <- c(0.5917384, 1.1138988, 1.4696417, 1.8574598)
+  comp.results <- c(0.5917567, 1.1136940, 1.4693785, 1.8571621)
   names(comp.results) <- paste0("t+", 0:3)
   expect_equal(pe.results$standard.error, comp.results, tolerance = .0000002)
   
@@ -549,9 +549,9 @@ test_that("(ATC) PanelEstimate Runs: unconditional analytical SEs", {
                     lead = 0:3, forbid.treatment.reversal = FALSE)
   
   pe.results <- PanelEstimate(pm1, data = dem, se.method = "unconditional")
-  comp.results <-  c(-0.7402495, -0.1429018, -0.4928990, -0.1453372)
+  comp.results <-  c(-0.7399887, -0.1418777, -0.4914594, -0.1423150)
   expect_equivalent(pe.results$estimates, comp.results, tolerance = .000001)
-  comp.results <- c(0.7086679, 1.3303640, 1.7555211, 2.2183819)
+  comp.results <- c(0.7086883, 1.3301189, 1.7552049, 2.2180256)
   names(comp.results) <- paste0("t+", 0:3)
   expect_equivalent(pe.results$standard.error, comp.results, tolerance = .0000002)
   
@@ -620,7 +620,7 @@ test_that("summary.PanelEstimate (conditional)", {
   pe.results <- PanelEstimate(pm1, data = dem, se.method = "conditional")
   expect_output(summary(pe.results)) 
   expect_true(all(length(summary(pe.results)) == 3))
-  comp.vec <- c(-0.740249517990736,-0.142901827621039,-0.492899004441646,-0.145337181920531,0.59173835463167,1.11389879706651,1.46964165165505,1.85745977237189,-1.9000353813398,-2.32610335229388,-3.37334371186549,-3.7858914385014,0.419536345358327,2.0402996970518,2.3875457029822,3.49521707466034)
+  comp.vec <- c(-0.7399887237467,-0.141877691307886,-0.491459440095836,-0.142314999825745,0.591756652995951,1.11369402788093,1.46937851945315,1.85716210624063,-1.89981045123073,-2.32467787575185,-3.37138841788079,-3.78228584150992,0.419833003737329,2.04092249313608,2.38846953768912,3.49765584185843)
   cmat <- summary(pe.results, verbose = FALSE)
   attributes(cmat) <- NULL #just compare the numbers
   cmat <- unlist(cmat)
@@ -677,7 +677,7 @@ test_that("summary.PanelEstimate (unconditional)", {
   pe.results <- PanelEstimate(pm1, data = dem, se.method = "unconditional")
   expect_output(summary(pe.results)) 
   expect_true(all(length(summary(pe.results)) == 3))
-  comp.vec <- c(-0.740249517990736,-0.142901827621039,-0.492899004441646,-0.145337181920531,0.708667861997432,1.33036400547639,1.75552107989328,2.21838193888437,-2.1292130045067,-2.7503673646832,-3.93365709513333,-4.49328588608802,0.648713968525231,2.46456370944112,2.94785908625004,4.20261152224696)
+  comp.vec <- c(-0.7399887237467,-0.141877691307886,-0.491459440095836,-0.142314999825745,0.708688258862262,1.33011893273585,1.75520486661622,2.21802563150778,-2.12899218738313,-2.74886289462501,-3.93159776415305,-4.4895653543677,0.649014739889732,2.46510751200924,2.94867888396138,4.20493535471621)
   cmat <- summary(pe.results, verbose = FALSE)
   attributes(cmat) <- NULL #just compare the numbers
   cmat <- unlist(cmat)
