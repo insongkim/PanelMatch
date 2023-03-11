@@ -277,14 +277,12 @@ panel_estimate <- function(sets,
   #forbid.treatment.reversal <- attr(t.sets, "forbid.treatment.reversal")
   #add in checks about forbid.treatment.reversal and wfe, etc.
   
-  if (!inherits(data, "data.frame")) stop("please convert data to data.frame class")
-  #if (!"data.frame" %in% class(data)) stop("please convert data to data.frame class")
+  if (any(class(data) != "data.frame")) stop("please convert data to data.frame class")
+  
   
   #if (!class(data[, unit.id]) %in% c("integer", "numeric")) stop("please convert unit id column to integer or numeric")
   if (!inherits(data[, unit.id], "integer") && !inherits(data[, unit.id], "numeric")) stop("please convert unit id column to integer or numeric")
   
-  #if (class(data[, time.id]) != "integer") stop("please convert time id to consecutive integers")
-  if (!inherits(data[, time.id], "integer")) stop("please convert time id to consecutive integers")
   
   if (any(table(data[, unit.id]) != max(table(data[, unit.id]))))
   {
@@ -303,6 +301,8 @@ panel_estimate <- function(sets,
   check_time_data(data, time.id)
   
   data <- data[order(data[,unit.id], data[,time.id]), ]
+  data <- check_time_data(data, time.id)
+  
   if (any(is.na(data[, unit.id]))) stop("Cannot have NA unit ids")
   
   othercols <- colnames(data)[!colnames(data) %in% c(time.id, unit.id, treatment)]

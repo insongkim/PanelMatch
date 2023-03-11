@@ -60,7 +60,7 @@ summary.PanelEstimate <- function(object, verbose = TRUE,
     if (identical(object$se.method, "conditional") || identical(object$se.method, "unconditional"))
     {
       cat("\nStandard errors computed with", 
-          object$se.method, " method\n")
+          object$se.method, "method\n")
     }
     
     if (object$qoi == "att")
@@ -91,12 +91,18 @@ summary.PanelEstimate <- function(object, verbose = TRUE,
                 apply(object$bootstrapped.estimates, 2, sd, na.rm = T), # bootstrap se
                 
                 # Efron & Tibshirani 1993 p170 - 171
-                apply(object$bootstrapped.estimates, 2, quantile, probs = c( (1 - object$confidence.level)/2, object$confidence.level + (1 - object$confidence.level)/2 ), na.rm = T), # percentile confidence.level
+                apply(object$bootstrapped.estimates, 2, quantile, probs = c( (1 - object$confidence.level)/2, 
+                                                                             object$confidence.level + (1 - object$confidence.level)/2 ), 
+                      na.rm = T), # percentile confidence.level
                 # Efron & Tibshirani 1993 p138
                 2*object$estimates - colMeans(object$bootstrapped.estimates, na.rm = T), # bc point estimate
                 
-                apply( (2*matrix(nrow = object$bootstrap.iterations, ncol = length(object$estimates), object$estimates, byrow = TRUE) - object$bootstrapped.estimates), 2, quantile, 
-                       probs = c((1 - object$confidence.level)/2, object$confidence.level + (1 - object$confidence.level)/2), 
+                apply( (2*matrix(nrow = object$bootstrap.iterations, ncol = length(object$estimates), 
+                                 object$estimates, byrow = TRUE) - object$bootstrapped.estimates), 
+                       2, 
+                       quantile, 
+                       probs = c((1 - object$confidence.level)/2, 
+                                 object$confidence.level + (1 - object$confidence.level)/2), 
                        na.rm = T) ) # bc percentile confidence.level)
     rownames(df) <- c("estimate", "std.error", 
                       paste0((1 - object$confidence.level)/2 * 100, "%"),
@@ -114,15 +120,22 @@ summary.PanelEstimate <- function(object, verbose = TRUE,
                   apply(object$bootstrapped.estimates, 2, sd, na.rm = T), # bootstrap se
                   
                   # Efron & Tibshirani 1993 p170 - 171
-                  apply(object$bootstrapped.estimates, 2, quantile, probs = c( (1 - object$confidence.level)/2, object$confidence.level + (1 - object$confidence.level)/2 ), na.rm = T))
+                  apply(object$bootstrapped.estimates, 2, quantile, 
+                        probs = c( (1 - object$confidence.level)/2, 
+                                   object$confidence.level + (1 - object$confidence.level)/2 ), 
+                        na.rm = T))
       rownames(df) <- c("estimate", "std.error", 
                         paste0((1 - object$confidence.level)/2 * 100, "%"),
                         paste0( (object$confidence.level + (1 - object$confidence.level)/2) * 100, "%"))
       tdf <- t(df)
       if (!verbose) return(t(df))
-      return(list("summary" = tdf, "lag" = lag, "iterations" = object$bootstrap.iterations, "qoi" = object$qoi) )   
+      return(list("summary" = tdf, 
+                  "lag" = lag, 
+                  "iterations" = object$bootstrap.iterations, 
+                  "qoi" = object$qoi) )   
     }
-    else if (identical(object$se.method, "conditional") || identical(object$se.method, "unconditional")) 
+    else if (identical(object$se.method, "conditional") || 
+             identical(object$se.method, "unconditional")) 
     {
       
       critical.vals <- rep(qnorm( (1 - object$confidence.level) / 2), 2) * c(1, -1)
@@ -141,7 +154,9 @@ summary.PanelEstimate <- function(object, verbose = TRUE,
                          paste0( (object$confidence.level + (1 - object$confidence.level)/2) * 100, "%"))
       rownames(tdf) <- names(object$estimates)
       if (!verbose) return(tdf)
-      return(list("summary" = tdf, "lag" = lag, "qoi" = object$qoi) )
+      return(list("summary" = tdf, 
+                  "lag" = lag, 
+                  "qoi" = object$qoi) )
     } else {
       stop("se.method not specified correctly")
     }

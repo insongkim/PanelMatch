@@ -20,13 +20,13 @@ Rcpp::LogicalVector get_treated_indices(const Rcpp::NumericMatrix &ordered_df, c
   
   for (int i = 0; i < treated_indices.size(); i++) //iterating throw each treated unit
   {
-    if ( (treated_indices[i] > 0) &
-         ( !Rcpp::internal::Rcpp_IsNA(ordered_df(int(treated_indices[i]) - 1, treat_col_idx)) ) & 
+    if ( (treated_indices[i] > 0) &&
+         ( !Rcpp::internal::Rcpp_IsNA(ordered_df(int(treated_indices[i]) - 1, treat_col_idx)) ) && 
          
          ( ordered_df(int(treated_indices[i]) - 1, treat_col_idx) == 0) ) //is the treatmentvar == 0 at time t -1 ?
     {
-      if ( (!Rcpp::internal::Rcpp_IsNA(ordered_df(treated_indices[i], unit_var_col)) ) &
-           (!Rcpp::internal::Rcpp_IsNA(ordered_df(treated_indices[i] - 1, unit_var_col)) ) & //na checks just to make sure data exists
+      if ( (!Rcpp::internal::Rcpp_IsNA(ordered_df(treated_indices[i], unit_var_col)) ) &&
+           (!Rcpp::internal::Rcpp_IsNA(ordered_df(treated_indices[i] - 1, unit_var_col)) ) && //na checks just to make sure data exists
            (ordered_df(treated_indices[i] -1, unit_var_col) == ordered_df(treated_indices[i], unit_var_col) ) ) //do the unit ids matched at time t and time t - 1, mostly a safeguard against weirdly formed data and edgecases
       {
         treateds[i] = 1; //if treatedvar == 1 at t and == 0 and t -1, the data exists and doesn't have obvious formatting problems, then it should be included in the set of treated units to look at. 
@@ -66,7 +66,7 @@ Rcpp::List get_comparison_histories(const Rcpp::NumericMatrix &compmat,
     
     for (int j = 0; j < compmat.nrow(); j++) //iterate through "long" form of data
     {
-      if( (compmat(j, t_col) == t) & (compmat(j, id_col) == id) ) // if time and unitid of current row matches t, id pair we are currently "investigating"...
+      if( (compmat(j, t_col) == t) && (compmat(j, id_col) == id) ) // if time and unitid of current row matches t, id pair we are currently "investigating"...
       {
         
         Rcpp::NumericVector control_hist(L+1);
@@ -134,7 +134,7 @@ Rcpp:: List get_msets_helper(const Rcpp::List &control_history_list, const Rcpp:
           //tempcomp is the actual history of a unit, cont_hist is what must be matched in order for a unit to be included in a matched set for a given t, id
         }
         
-        if ( (!Rcpp::internal::Rcpp_IsNA(Rcpp::is_true(Rcpp::all(tempcomp == cont_hist)))) & //Do the actual treatment history of a unit match the needed control history? If so...
+        if ( (!Rcpp::internal::Rcpp_IsNA(Rcpp::is_true(Rcpp::all(tempcomp == cont_hist)))) && //Do the actual treatment history of a unit match the needed control history? If so...
              Rcpp::is_true(Rcpp::all(tempcomp == cont_hist)) ) // checking that NOT na might be redundant, but also might prevent bug
         {
           in_matched_set_idx[j] = true; //... then that unit should be included in the matched set.
@@ -226,7 +226,7 @@ Rcpp:: List non_matching_matcher(const Rcpp::List &control_history_list,
           //   }
           //   Rcpp::Rcout << std::endl;
           // }
-          if ( (!Rcpp::internal::Rcpp_IsNA(Rcpp::is_true(Rcpp::all(tempcomp == cont_hist_comp)))) & //Do the actual treatment history of a unit match the needed control history? If so...
+          if ( (!Rcpp::internal::Rcpp_IsNA(Rcpp::is_true(Rcpp::all(tempcomp == cont_hist_comp)))) && //Do the actual treatment history of a unit match the needed control history? If so...
                Rcpp::is_true(Rcpp::all(tempcomp == cont_hist_comp)) ) // checking that NOT na might be redundant, but also might prevent bug
           {
             in_matched_set_idx[j] = true; //... then that unit should be included in the matched set.

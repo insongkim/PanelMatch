@@ -393,7 +393,6 @@ parse_and_prep <- function(formula, data)
 
   lag <- function(y, lwindow)
   {
-
     sapply(lwindow, internal.lag, x = y)
   }
 
@@ -402,13 +401,11 @@ parse_and_prep <- function(formula, data)
   {
     attr(form, ".Environment") <- environment()
     tdf <- model.frame(form, x, na.action = NULL)
-
     cbind(x[, c(1, 2, 3)], model.matrix(form, tdf)[, -1])
   }
 
-  #by(data, as.factor(data[, unit.id]), FUN = tfunc, form = formula)
-  t.data <- do.call(rbind, by(data, as.factor(data[, 1]), FUN = apply_formula, form = formula))
-  #may not be necessary?
+  t.data <- do.call(rbind, by(data, as.factor(data[, 1]), 
+                              FUN = apply_formula, form = formula))
   t.data <- t.data[order(t.data[,1], t.data[,2]), ]
   rownames(t.data) <- NULL
   return(t.data)

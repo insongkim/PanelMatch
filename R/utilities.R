@@ -1,17 +1,37 @@
 check_time_data <- function(data, time.id)
 {
   #if(class(data[, time.id]) != "integer") stop("time data is not integer")
-  if (!inherits(data[, time.id], "integer")) stop("time data is not integer")
+  if (!class(data[, time.id]) %in% c("numeric", "integer"))
+  {
+    stop("Time data not consecutive integer")
+  }
+  is.not.int <- (!inherits(data[, time.id], "integer")) 
   u.times <- unique(data[, time.id])
   increase.by.one <- all(seq(min(u.times), max(u.times), by = 1) %in% u.times)
-  if(increase.by.one)
+  if(is.not.int && !increase.by.one)
   {
-    return(TRUE)
+    warning("Data is not consecutive integer: Attempting automatic conversion, which may cause undefined behavior")
+    # Assuming sorted data here
+    data[, time.id] <- as.integer(as.factor(data[,time.id]))
+    return(data)
   }
-  else
+  
+  if ("numeric" %in% class(data[, time.id]))
   {
-    stop("integer representation of time data has problematic gaps, as it does not increase by one. Perhaps time data for observations is irregular/not uniform across units?")
+    warning("time data is numeric: attempting to convert to integer")
+    data[, time.id] <- as.integer(data[,time.id])
+    return(data)
   }
+  
+  # at this point, if not integer, things are not going to work
+  if(is.not.int)
+  {
+    stop("time data is not integer")
+  } else
+  {
+    return(data)
+  }
+   
 }
 
 #' Calculate covariate balance
@@ -82,8 +102,7 @@ get_covariate_balance <- function(matched.sets,
   #if (!class(data[, unit.id]) %in% c("integer", "numeric")) stop("please convert unit id column to integer or numeric")
   if (!inherits(data[, unit.id], "integer") && !inherits(data[, unit.id], "numeric")) stop("please convert unit id column to integer or numeric")
   
-  #if (class(data[, time.id]) != "integer") stop("please convert time id to consecutive integers")
-  if (!inherits(data[, time.id], "integer")) stop("please convert time id to consecutive integers")
+  
   
   if(any(table(data[, unit.id]) != max(table(data[, unit.id]))))
   {
@@ -99,6 +118,7 @@ get_covariate_balance <- function(matched.sets,
   }
   
   ordered.data <- data[order(data[,unit.id], data[,time.id]), ]
+  ordered.data <- check_time_data(ordered.data, time.id)
   if(calculate.network.proportion.balance || calculate.network.count.balance)
   {
     if(is.null(adjacency.matrix))
@@ -652,4 +672,44 @@ placebo_test <- function(pm.obj,
          bootstrapped.estimates = placebo.results.raw$bootstrapped.estimates)
     return(ret.results)
   }
+}
+
+do_exact_matching <- function(sets, balanced.panel.data, exact.match.vars)
+{
+  L <- attr(sets, "lag")
+  
+  ts <- as.numeric(sub(".*\\.", "", names(sets)))
+  make.years <- function(t, repnum)
+  {
+    q <- rep(c((t - 0):t), repnum)
+    return(q)
+  }
+  lsets <- sapply(sets, length)
+  ts <- mapply(FUN = make.years, t = ts, repnum = lsets, SIMPLIFY = F)
+  iddata <- lapply(sets, as.numeric)
+  names(iddata) <- NULL
+  create.keys <- function(t, id)
+  {
+    return(paste0(id,'.',t))
+  }
+  control.data <- (mapply(create.keys, t = ts, id = iddata, SIMPLIFY = F))
+  treatment.data <- names(sets)
+  rowkeys <- paste0(balanced.panel.data[,1], '.', balanced.panel.data[, 2]) #think we can assume we have unit + time columns first
+  
+  colidx <- which(colnames(balanced.panel.data) %in% exact.match.vars)
+  bpd <- as.matrix(balanced.panel.data[, c(1,2, colidx)])
+  expanded.lists <- do_exact_matching_refinement(bpd, L, rowkeys, control.data,
+                                                 treatment.data, (3:ncol(bpd) - 1))
+  expanded.list <- unlist(expanded.lists, recursive = F)
+  condensed.list <- list()
+  for (i in 1:length(sets)) {
+    tlist <- expanded.list[seq(from = i, to = length(expanded.list), by = length(sets))]
+    matrix.set <- do.call(rbind, tlist)
+    condensed.list[[i]] <- apply(matrix.set, MARGIN = 2, all) #gives us consolidated t/f index for each matched set
+  }
+  for (i in 1:length(sets)) {
+    sets[[i]] <- sets[[i]][condensed.list[[i]]]
+  }
+  
+  return(sets)
 }

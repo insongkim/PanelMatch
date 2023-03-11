@@ -19,7 +19,7 @@
 #' @param treatment A character string indicating the name of the treatment variable in the \code{data}. 
 #' The treatment must be a binary indicator variable (integer with 0 for the control group and 1 for the treatment group).
 #' @param outcome.var A character string identifying the outcome variable.
-#' @param refinement.method A character string specifying the matching or weighting method to be used for refining the matched sets. The user can choose "mahalanobis", "ps.match", "CBPS.match", "ps.weight", "CBPS.weight", "ps.msm.weight", "CBPS.msm.weight", or "none". The first three methods will use the \code{size.match} argument to create sets of at most \code{size.match} closest control units. Choosing "none" will assign equal weights to all control units in each matched set.
+#' @param refinement.method A character string specifying the matching or weighting method to be used for refining the matched sets. The user can choose "mahalanobis", "ps.match", "CBPS.match", "ps.weight", "CBPS.weight", or "none". The first three methods will use the \code{size.match} argument to create sets of at most \code{size.match} closest control units. Choosing "none" will assign equal weights to all control units in each matched set.
 #' @param match.missing Logical variable indicating whether or not units should be matched on the patterns of missingness in their treatment histories. Default is TRUE. When FALSE, neither treated nor control units are allowed to have missing treatment data in the lag window.
 #' @param data A \code{data.frame} object containing time series cross sectional data. 
 #' Time data must be sequential integers that increase by 1. Unit identifiers must be integers. Treatment data must be binary.
@@ -38,14 +38,12 @@
 #' @param verbose option to include more information about the \code{matched.set} object calculations, 
 #' like the distances used to create the refined sets and weights.
 #' @param qoi quantity of interest, provided as a string: \code{att} (average treatment effect on treated units), \code{atc} (average treatment effect of treatment on the control units) \code{art} (average effect of treatment reversal for units that experience treatment reversal), or \code{ate} (average treatment effect). 
-#' Note that the qoi for MSM methods will give the estimated average treatment effect of being treated for a chosen \code{lead} 
-#' time periods. This differs slightly from the non-MSM methods, where treatment reversal is permitted.
 #' @param lead integer sequence specifying the lead window, for which qoi point estimates (and standard errors) will 
 #' ultimately be produced. Default is 0 (which corresponds to contemporaneous treatment effect).
 #' @param matching logical indicating whether or not any matching on treatment history should be performed. 
 #' This is primarily used for diagnostic purposes, and most users will never need to set this to FALSE. Default is TRUE.
 #' @param forbid.treatment.reversal Logical indicating whether or not it is permissible for treatment to reverse in the specified lead window. 
-#' This must be set to TRUE for MSM methods. When set to TRUE, only matched sets for treated units where treatment is 
+#' When set to TRUE, only matched sets for treated units where treatment is 
 #' applied continuously in the lead window are included in the results. Default is FALSE.
 #' @param exact.match.variables character vector giving the names of variables to be exactly matched on. These should be time invariant variables. 
 #' Exact matching for time varying covariates is not currently supported. 
@@ -231,23 +229,17 @@ panel_match <- function(lag, time.id, unit.id, treatment,
     old.lag <- lag
     lag <- 1
   }
-  if (refinement.method == "CBPS.msm.weight" | refinement.method == "ps.msm.weight")
-  {
-    warning("Note that for msm methods, PanelMatch will attempt to find the estimated average treatment effect of being treated for the entire specified 'lead' time periods.")
-  }
   if (listwise.delete & match.missing) stop("set match.missing = FALSE when listwise.delete = TRUE")
   if (lag < 1) stop("please specify a lag value >= 1")
-  # if (class(data) != "data.frame") stop("please convert data to data.frame class")
-  if (!inherits(data, 'data.frame')) stop("please convert data to data.frame class")
-  if (!all(refinement.method %in% c("mahalanobis", "ps.weight", "ps.match", "CBPS.weight", "CBPS.match", "ps.msm.weight", "CBPS.msm.weight", "none"))) stop("please choose a valid refinement method")
+  if (any(class(data) != "data.frame")) stop("please convert data to data.frame class")
+  
+  if (!all(refinement.method %in% c("mahalanobis", "ps.weight", "ps.match", "CBPS.weight", "CBPS.match", "none"))) stop("please choose a valid refinement method")
   if (any(duplicated(data[, c(unit.id, time.id)]))) stop("Time, unit combinations should uniquely identify rows. Please remove duplicates")
   
-  # if (!class(data[, unit.id]) %in% c("integer", "numeric")) stop("please convert unit id column to integer or numeric")
+  
   
   if (!inherits(data[, unit.id], "integer") && !inherits(data[, unit.id], "numeric")) stop("please convert unit id column to integer or numeric")
   
-  #if (class(data[, time.id]) != "integer") stop("please convert time id to consecutive integers")
-  if (!inherits(data[, time.id], "integer")) stop("please convert time id to consecutive integers")
   
   if ( !all(c(time.id, unit.id, treatment, outcome.var)  %in% colnames(data)) ) stop("time id, unit id, outcome, or treatment column name invalid")
   
@@ -302,19 +294,14 @@ panel_match <- function(lag, time.id, unit.id, treatment,
     data <- as.data.frame(data)
     # data <- make.pbalanced(data, balance.type = "fill", index = c(unit.id, time.id))
   }
-  check_time_data(data, time.id)
+  
   if (!all(qoi %in% c("att", "atc", "ate", "art"))) stop("please choose a valid qoi")
   if (!is.null(continuous.treatment.info) && !identical(qoi, "att")) stop('only att is supported for continuous treatment')
   
-  if (!forbid.treatment.reversal & all(refinement.method %in% c("CBPS.msm.weight", "ps.msm.weight")))
-  {
-    stop("please set forbid.treatment.reversal to TRUE for msm methods")
-  }
   
   if(any(is.na(data[, unit.id]))) stop("Cannot have NA unit ids")
   ordered.data <- data[order(data[,unit.id], data[,time.id]), ]
-  
-  
+  ordered.data <- check_time_data(ordered.data, time.id)
   ########################################################################### NETWORK CODE ###########################################################################
   ######################################################################################################################################################
   if(!is.null(network.caliper.info) || 
