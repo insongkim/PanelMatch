@@ -661,15 +661,21 @@ placebo_test <- function(pm.obj,
                                         number.iterations = number.iterations,
                                         df.adjustment = df.adjustment,
                                         placebo.test = TRUE,
-                                        placebo.lead = lag.in)
+                                        placebo.lead = lag.in,
+                                        confidence.level = confidence.level)
 
   if (plot)
   {
     plot(placebo.results.raw, ...)
   } else {
     colnames(placebo.results.raw$bootstrapped.estimates) <- names(placebo.results.raw$estimates)
+    ses <- apply(placebo.results.raw$bootstrapped.estimates, 
+                 2, 
+                 sd, 
+                 na.rm = T)
     ret.results <- list(estimates = placebo.results.raw$estimates,
-         bootstrapped.estimates = placebo.results.raw$bootstrapped.estimates)
+                        bootstrapped.estimates = placebo.results.raw$bootstrapped.estimates,
+                        standard.errors = ses)
     return(ret.results)
   }
 }
