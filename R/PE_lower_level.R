@@ -379,6 +379,7 @@ handle_moderating_variable <- function(ordered.data, att.sets, atc.sets, PM.obje
   moderated.sets.atc <- list()
   subset.list <- list()
   moderating.values <- unique(ordered.data[, moderator])
+  valid.moderating.values <- c()
   for(val in as.vector(na.omit(moderating.values)))
   {
     #make sure we handle empty set situation
@@ -389,6 +390,7 @@ handle_moderating_variable <- function(ordered.data, att.sets, atc.sets, PM.obje
       if(length(t.set) > 0)
       {
         moderated.sets.att[[make.names(val)]] <- t.set
+        valid.moderating.values <- append(valid.moderating.values, val)
       }
       else
       {
@@ -402,6 +404,7 @@ handle_moderating_variable <- function(ordered.data, att.sets, atc.sets, PM.obje
       if(length(t.set) > 0)
       {
         moderated.sets.atc[[make.names(val)]] <- t.set
+        valid.moderating.values <- append(valid.moderating.values, val)
       }
       else
       {
@@ -439,7 +442,8 @@ handle_moderating_variable <- function(ordered.data, att.sets, atc.sets, PM.obje
                       att.set = moderated.sets.att, atc.set = moderated.sets.atc,
                       MoreArgs = list(PM.object_ = PM.object))
   }
-  names(ret.obj) <- as.character(as.vector(na.omit(moderating.values)))
+  
+  names(ret.obj) <- as.character(valid.moderating.values)
   return(ret.obj)
 }
 
