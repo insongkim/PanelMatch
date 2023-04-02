@@ -10,6 +10,8 @@
   xlab = "Time",
   main = "Estimated Effects of Treatment Over Time",
   ylim = NULL,
+  pch = NULL,
+  cex = NULL,
   ...
 )
 }
@@ -23,6 +25,10 @@
 \item{main}{default is "Estimated Effects of Treatment Over Time". This is the same argument as the standard argument for \code{plot}}
 
 \item{ylim}{default is NULL. This is the same argument as the standard argument for \code{plot}}
+
+\item{pch}{default is NULL. This is the same argument as the standard argument for \code{plot}}
+
+\item{cex}{default is NULL. This is the same argument as the standard argument for \code{plot}}
 
 \item{...}{Additional optional arguments to be passed to \code{plot}.}
 }

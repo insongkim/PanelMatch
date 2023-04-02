@@ -181,6 +181,8 @@ summary.PanelEstimate <- function(object, verbose = TRUE,
 #' @param xlab default is "Time". This is the same argument as the standard argument for \code{plot}
 #' @param main default is "Estimated Effects of Treatment Over Time". This is the same argument as the standard argument for \code{plot}
 #' @param ylim default is NULL. This is the same argument as the standard argument for \code{plot}
+#' @param pch default is NULL. This is the same argument as the standard argument for \code{plot}
+#' @param cex default is NULL. This is the same argument as the standard argument for \code{plot}
 #' @param ... Additional optional arguments to be passed to \code{plot}.
 #' @examples
 #' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
@@ -198,7 +200,10 @@ summary.PanelEstimate <- function(object, verbose = TRUE,
 plot.PanelEstimate <- function(x, ylab = "Estimated Effect of Treatment", 
                                xlab = "Time", 
                                main = "Estimated Effects of Treatment Over Time",
-                               ylim = NULL, ...)
+                               ylim = NULL, 
+                               pch = NULL,
+                               cex = NULL,
+                               ...)
 {
   
   pe.object <- x
@@ -209,8 +214,18 @@ plot.PanelEstimate <- function(x, ylab = "Estimated Effect of Treatment",
     ylim <- c(min(plot.data[, 3]) - abs(mean(plot.data[, 3])),
               max(plot.data[, 4]) + abs(mean(max(plot.data[, 4]))))
   }
-  graphics::plot(x = 1:(nrow(plot.data)),y = plot.data[, 1], pch = 16, cex = 1.5,
-                 xaxt = "n", ylab = ylab, xlab = xlab, main = main, ylim = ylim, ...)
+  if (is.null(pch))
+  {
+    pch <- 16
+    
+  }
+  if (is.null(cex))
+  {
+    cex <- 1.5
+  }
+  graphics::plot(x = 1:(nrow(plot.data)),y = plot.data[, 1],
+                 xaxt = "n", ylab = ylab, xlab = xlab, 
+                 main = main, ylim = ylim, pch = pch, cex = cex, ...)
   graphics::axis(side = 1, at = 1:nrow(plot.data), labels = rownames(plot.data))
   graphics::segments(1:(nrow(plot.data)), plot.data[,3], 1:(nrow(plot.data)), plot.data[,4])
   graphics::abline(h = 0, lty = "dashed")

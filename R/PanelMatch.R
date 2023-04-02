@@ -245,11 +245,6 @@ panel_match <- function(lag, time.id, unit.id, treatment,
   }
 
   
-  if (any(c("character", "factor") %in% sapply(data, class)))
-  {
-    warning("non-numeric data exists. Only numeric (including binary) data can be used for refinement and calculations")
-  }
-  
   #######take this out when negative lead is implemented:
   if (any(lead < 0)) stop("Please provide positive lead values. Please see the placebo_test function for more.")
   
