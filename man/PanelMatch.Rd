@@ -38,7 +38,7 @@ variable in the \code{data}. This data currently must be formatted as sequential
 \item{treatment}{A character string indicating the name of the treatment variable in the \code{data}. 
 The treatment must be a binary indicator variable (integer with 0 for the control group and 1 for the treatment group).}
 
-\item{refinement.method}{A character string specifying the matching or weighting method to be used for refining the matched sets. The user can choose "mahalanobis", "ps.match", "CBPS.match", "ps.weight", "CBPS.weight", "ps.msm.weight", "CBPS.msm.weight", or "none". The first three methods will use the \code{size.match} argument to create sets of at most \code{size.match} closest control units. Choosing "none" will assign equal weights to all control units in each matched set.}
+\item{refinement.method}{A character string specifying the matching or weighting method to be used for refining the matched sets. The user can choose "mahalanobis", "ps.match", "CBPS.match", "ps.weight", "CBPS.weight", or "none". The first three methods will use the \code{size.match} argument to create sets of at most \code{size.match} closest control units. Choosing "none" will assign equal weights to all control units in each matched set.}
 
 \item{size.match}{An integer dictating the number of permitted closest control units in a matched set after refinement. 
 This argument only affects results when using a matching method ("mahalanobis" or any of the refinement methods that end in ".match").
@@ -62,9 +62,7 @@ The variables specified in this formula are used to define the similarity/distan
 \item{verbose}{option to include more information about the \code{matched.set} object calculations, 
 like the distances used to create the refined sets and weights.}
 
-\item{qoi}{quantity of interest, provided as a string: \code{att} (average treatment effect on treated units), \code{atc} (average treatment effect of treatment on the control units) \code{art} (average effect of treatment reversal for units that experience treatment reversal), or \code{ate} (average treatment effect). 
-Note that the qoi for MSM methods will give the estimated average treatment effect of being treated for a chosen \code{lead} 
-time periods. This differs slightly from the non-MSM methods, where treatment reversal is permitted.}
+\item{qoi}{quantity of interest, provided as a string: \code{att} (average treatment effect on treated units), \code{atc} (average treatment effect of treatment on the control units) \code{art} (average effect of treatment reversal for units that experience treatment reversal), or \code{ate} (average treatment effect).}
 
 \item{lead}{integer sequence specifying the lead window, for which qoi point estimates (and standard errors) will 
 ultimately be produced. Default is 0 (which corresponds to contemporaneous treatment effect).}
@@ -75,7 +73,7 @@ ultimately be produced. Default is 0 (which corresponds to contemporaneous treat
 Exact matching for time varying covariates is not currently supported.}
 
 \item{forbid.treatment.reversal}{Logical indicating whether or not it is permissible for treatment to reverse in the specified lead window. 
-This must be set to TRUE for MSM methods. When set to TRUE, only matched sets for treated units where treatment is 
+When set to TRUE, only matched sets for treated units where treatment is 
 applied continuously in the lead window are included in the results. Default is FALSE.}
 
 \item{matching}{logical indicating whether or not any matching on treatment history should be performed. 

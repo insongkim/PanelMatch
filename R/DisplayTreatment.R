@@ -63,7 +63,7 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
 
 {
   
-  alphaweight <- NULL #for some reason --as-cran checks need this
+  alphaweight <- NULL #--as-cran checks need this
   
   
   if (any(class(data) != "data.frame")) stop("please convert data to data.frame class")
@@ -84,7 +84,9 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
   # rename variables to match with the object names in the loop below
   colnames(data) <- c("unit.id", "time.id", "treatment")  
   
-  data$trintens <- as.numeric(tapply(data$treatment, data$unit.id, mean, na.rm = TRUE)[as.character(data$unit.id)])
+  data$trintens <- as.numeric(tapply(data$treatment, 
+                                     data$unit.id, mean, 
+                                     na.rm = TRUE)[as.character(data$unit.id)])
   data <- data[order(data$trintens, decreasing = decreasing), ] 
   
   
@@ -98,9 +100,9 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
   {
      #should only be one
     t.id <- as.numeric(unlist(strsplit(names(matched.set), 
-                                     split = "[.]"))[c(T,F)])
+                                     split = "[.]"))[c(TRUE,FALSE)])
     t.t <- as.numeric(unlist(strsplit(names(matched.set),
-                                    split = "[.]"))[c(F,T)])
+                                    split = "[.]"))[c(FALSE,TRUE)])
     lag <- attr(matched.set, "lag")
     t.range <- (t.t - lag):t.t
     control.ids <- unlist(matched.set)
@@ -165,22 +167,24 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
       wts <- attr(matched.set[[1]], "weights")
       max.wt <- max(wts)
       min.wt <- min(wts[wts > 0])
-      #min.wt <- min(wts)
+      
       low.wt <- min.wt * .5
       wts.z <- wts[wts > 0]
       wt <- wts.z[match(data$unit.id, names(wts.z))]
       wt[is.na(wt) | wt == 0] <- low.wt
       data$alphaweight <- wt
       
-      data[!(data$time %in% t.range & data$unit.id %in% wtd.ids), "alphaweight"] <- low.wt
-      data[data$unit.id == t.id & data$time %in% t.range, "alphaweight"] <- max.wt
+      data[!(data$time %in% t.range & data$unit.id %in% wtd.ids), 
+           "alphaweight"] <- low.wt
+      data[data$unit.id == t.id & data$time %in% t.range, 
+           "alphaweight"] <- max.wt
       
-      data$alphaweight <- (data$alphaweight - min(data$alphaweight)) / (max(data$alphaweight) - min(data$alphaweight))
-      data$alphaweight[data$alphaweight == min(data$alphaweight)] <- min(data$alphaweight[data$alphaweight > 0]) * .5
-      
-      
-      
-    } else #if(!gradient.weights) 
+      data$alphaweight <- (data$alphaweight - min(data$alphaweight)) / 
+        (max(data$alphaweight) - min(data$alphaweight))
+      data$alphaweight[data$alphaweight == min(data$alphaweight)] <- 
+        min(data$alphaweight[data$alphaweight > 0]) * .5
+    
+    } else 
     {
       low.wt <- 1 * .5
       max.wt <- 1
@@ -201,7 +205,8 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
     } else
     {
       p <- ggplot(data, aes(y = unit.id, x= time.id)) +
-        geom_raster(aes(fill = treatment, alpha = alphaweight), hjust = 0, vjust = .5)
+        geom_raster(aes(fill = treatment, alpha = alphaweight), 
+                    hjust = 0, vjust = .5)
       
     }
     
@@ -237,7 +242,8 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
   {
     pjp <- p
   } else {
-    pjp <- p + scale_y_discrete(expand = c(0, 0), labels = unique(as.character(data$unit.id))) + 
+    pjp <- p + scale_y_discrete(expand = c(0, 0), 
+                                labels = unique(as.character(data$unit.id))) + 
       ggtitle(title) + xlab(xlab) + ylab(ylab)
   }
 

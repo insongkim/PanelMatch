@@ -34,7 +34,7 @@
 #' \item{covs.formula}{One sided formula indicating which variables should be used for matching and refinement}
 #' \item{match.missing}{Logical variable indicating whether or not units should be matched on the patterns of missingness in their treatment histories}
 #' \item{max.match.size}{Maximum size of the matched sets after refinement. This argument only affects results when using a matching method}
-#' @author Adam Rauh <adamrauh@mit.edu>, In Song Kim <insong@mit.edu>, Erik Wang
+#' @author Adam Rauh <amrauh@umich..edu>, In Song Kim <insong@mit.edu>, Erik Wang
 #' <haixiao@Princeton.edu>, and Kosuke Imai <imai@harvard.edu>
 #' @export
 matched_set <- function(matchedsets, id, t, L, t.var, id.var, treatment.var)
@@ -234,22 +234,4 @@ print.matched.set <- function(x, ..., verbose = FALSE)
   return(temp)
 }
 
-#helper function for get_covariate_balance()
-build_balance_mats <- function(idx, ordered_expanded_data, msets)
-{
 
-  subset.per.matchedset <- function(sub.idx, set)
-  {
-
-    wts <- attr(set, "weights")[which(set == ordered_expanded_data[sub.idx[1:(length(sub.idx) - 1)], attr(msets, "id.var")])]
-    return(cbind(ordered_expanded_data[sub.idx,], data.frame("weights" = c(wts, Inf))))
-  }
-  unnest <- function(mset.idx, mset)
-  {
-    # print(mset.idx)
-    
-    lapply(mset.idx, subset.per.matchedset, set = mset)
-  }
-  result <- mapply(FUN = unnest, mset.idx = idx, mset = msets, SIMPLIFY = FALSE)
-  return(result)
-}

@@ -12,7 +12,6 @@ lwd_refinement <- function(msets, global.data, treated.ts,
                            treated.ids, lag, time.id, unit.id, lead, refinement.method, treatment, size.match,
                            match.missing, covs.formula, verbose, outcome.var, e.sets,use.diag.covmat)
 {
-  #print(refinement.method)
   #extract other attributes about the msets object, attach to individual mset for consistency
   
   terms <- attr(terms(covs.formula),"term.labels")
@@ -40,34 +39,25 @@ lwd_refinement <- function(msets, global.data, treated.ts,
   new.msets <- list()
   for(i in 1:length(msets))
   {
-    #probably some check on non-empty sets or something
+    
     if(length(msets[[i]]) > 0)
     {
       time <- treated.ts[i]
       uid <- treated.ids[i]
-      # if(refinement.method == "ps.msm.weight" | refinement.method == "CBPS.msm.weight")
-      # {
-      #   localdata <- global.data[ global.data[, time.id]  %in% ( (time - lag):(time + max(lead) )), ]
-      #   localdata <- lwd_units(localdata, unit.id)
-      # } else
-      # {
-      #   localdata <- global.data[ global.data[, time.id]  %in% ((time - lag):time), ]
-      #   localdata <- lwd_units(localdata, unit.id)  
-      # }
       localdata <- global.data[ global.data[, time.id]  %in% ( (time - lag):(time + max(lead) )), ]
       localdata <- lwd_units(localdata, unit.id)
       viable.units <- unique(localdata[, unit.id])
       if(uid %in% viable.units)
       {
         mset <- msets[i]
-        #print(mset)
+        
         controls <- mset[[1]]
         controls <- controls[controls %in% viable.units]
         mset[[1]] <- controls
-        #mset <- mset[mset %in% viable.units]
+        
         if(length(mset[[1]]) > 0 ) # do something else if we delete everything because of listwise deletion
         {
-          #print(mset)
+          
           if(refinement.method == "mahalanobis")
           {
             tset <- set_lwd_refinement(mset, localdata, time, uid, lag, refinement.method, lead, 
@@ -78,8 +68,6 @@ lwd_refinement <- function(msets, global.data, treated.ts,
           {
             new.msets[[i]] <- mset
           }
-          
-          #maybe add things/attributes? idk
            
         } else
         {
@@ -167,69 +155,7 @@ set_lwd_refinement <- function(mset, local.data, time, id,
     msets <- handle_mahalanobis_calculations(mahalmats, msets, size.match, verbose, use.diagonal.covmat = use.diag.covmat)
     lag <- old.lag
   }
-  if(refinement.method == "ps.msm.weight" | refinement.method == "CBPS.msm.weight")
-  {
-    
-    store.msm.data <- list()
-    for(i in 1:length(lead))
-    {
-      f <- lead[i]
-      tf <- expand.treated.ts(lag, treated.ts = treated.ts + f)
-      tf.index <- get_yearly_dmats(ordered.data, treated.ids, tf, matched_sets = msets, lag)
-      expanded.sets.tf <- build_ps_data(tf.index, ordered.data, lag)
-      #pre.pooled <- ordered.data[ordered.data[, time.id] %in% (treated.ts + f), ]
-      pre.pooled <- rbindlist(expanded.sets.tf)
-      pooled <- pre.pooled[complete.cases(pre.pooled), ]
-      pooled <- unique(as.data.frame(pooled))
-      #do the column removal thing
-      cols.to.remove <- which(unlist(lapply(pooled, function(x){all(x[1] == x)}))) #checking for columns that only have one value
-      cols.to.remove <- unique(c(cols.to.remove, which(!colnames(pooled) %in% colnames(t(unique(t(pooled))))))) #removing columns that are identical to another column 
-      cols.to.remove <- cols.to.remove[cols.to.remove > 3] #leave the first three columns alone
-      if(length(cols.to.remove) > 0)
-      {
-        class(pooled) <- c("data.frame")
-        pooled <- pooled[, -cols.to.remove]
-        rmv <- function(x, cols.to.remove_)
-        {
-          return(x[, -cols.to.remove_])
-        }
-        expanded.sets.tf <- lapply(expanded.sets.tf, rmv, cols.to.remove_ = cols.to.remove)
-      }
-      if(qr(pooled)$rank != ncol(pooled)) 
-      {
-        # print("Data used to generate propensity scores is not linearly independent. Calculations cannot be completed.
-        #       Would you like to save the problematic matrix to file for manual inspection? File and variable will be saved as 'problematic_matrix.rda'. ")
-        # inkey <- readline("Press 'y' to save and any other key to do nothing: ")
-        # if(inkey == "y")
-        # {
-        #   problematic_matrix <- pooled
-        #   save(problematic_matrix, file = "problematic_matrix.rda")
-        #   stop("PanelMatch terminated")
-        # }
-        # else
-        # {
-        stop("Error: Provided data is not linearly independent so calculations cannot be completed. Please check the data set for any redundant, unnecessary, or problematic information.")
-        #}
-        
-      }
-      if(refinement.method == "CBPS.msm.weight") #obviously update these conditionals
-      {
-        dummy <- capture.output(fit.tf <- (CBPS::CBPS(reformulate(response = treatment, termlabels = colnames(pooled)[-c(1:3)]), 
-                                              family = binomial(link = "logit"), data = pooled)))
-      }
-      if(refinement.method == "ps.msm.weight")
-      {
-        fit.tf <- glm(reformulate(response = treatment, termlabels = colnames(pooled)[-c(1:3)]), 
-                      family = binomial(link = "logit"), data = pooled)
-      }
-      store.msm.data[[i]] <- find_ps(expanded.sets.tf, fit.tf)
-      
-    }
-    
-    msm.sets <- gather_msm_sets(store.msm.data)
-    #can only have weighting in these situations
-    msets <- handle_ps_weighted(msm.sets, msets, refinement.method)
-  }  #not msm
+  #not msm
   if(all(refinement.method %in% c("CBPS.weight", "CBPS.match", "ps.weight", "ps.match")))
   {
     if(!all(refinement.method %in% c("CBPS.weight", "CBPS.match", "ps.weight", "ps.match"))) stop("please choose valid refinement method")
@@ -254,19 +180,7 @@ set_lwd_refinement <- function(mset, local.data, time, id,
     }
     if(qr(pooled)$rank != ncol(pooled)) 
     {
-      # print("Data used to generate propensity scores is not linearly independent. Calculations cannot be completed.
-      #       Would you like to save the problematic matrix to file for manual inspection? File and variable will be saved as 'problematic_matrix.rda'. ")
-      # inkey <- readline("Press 'y' to save and any other key to do nothing: ")
-      # if(inkey == "y")
-      # {
-      #   problematic_matrix <- pooled
-      #   save(problematic_matrix, file = "problematic_matrix.rda")
-      #   stop("PanelMatch terminated")
-      # }
-      # else
-      # {
       stop("Error: Provided data is not linearly independent so calculations cannot be completed. Please check the data set for any redundant, unnecessary, or problematic information.")
-      #}
       
     }
     if(refinement.method == "CBPS.weight" | refinement.method == "CBPS.match")
@@ -293,7 +207,7 @@ set_lwd_refinement <- function(mset, local.data, time, id,
     }
   }
   t.attributes <- attributes(msets)[names(attributes(msets)) != "names"]
-  # msets <- c(msets, e.sets)
+  
   for(idx in names(t.attributes))
   {
     attr(msets, idx) <- t.attributes[[idx]]

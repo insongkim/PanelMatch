@@ -29,6 +29,34 @@ handle_vits <- function(nrow_data, mset_size, num_empty, weights, tidkey, contro
     .Call('_PanelMatch_handle_vits', PACKAGE = 'PanelMatch', nrow_data, mset_size, num_empty, weights, tidkey, control_treatment_tids, ct_set_nums)
 }
 
+get_yearly_dmats <- function(expanded_data, treated_ids, ts_to_fetch, matched_sets, lag) {
+    .Call('_PanelMatch_get_yearly_dmats', PACKAGE = 'PanelMatch', expanded_data, treated_ids, ts_to_fetch, matched_sets, lag)
+}
+
+check_treated_units_for_treatment_reversion <- function(compmat, compmat_row_units, compmat_cols, lead, treated_ids, treated_ts) {
+    .Call('_PanelMatch_check_treated_units_for_treatment_reversion', PACKAGE = 'PanelMatch', compmat, compmat_row_units, compmat_cols, lead, treated_ids, treated_ts)
+}
+
+check_control_units_for_treatment_restriction <- function(compmat, compmat_row_units, compmat_cols, lead, sets, control_start_years) {
+    .Call('_PanelMatch_check_control_units_for_treatment_restriction', PACKAGE = 'PanelMatch', compmat, compmat_row_units, compmat_cols, lead, sets, control_start_years)
+}
+
+do_exact_matching_refinement <- function(balanced_data, lag, row_key, control_data, treatment_data, exact_match_variable_column_index) {
+    .Call('_PanelMatch_do_exact_matching_refinement', PACKAGE = 'PanelMatch', balanced_data, lag, row_key, control_data, treatment_data, exact_match_variable_column_index)
+}
+
+check_missing_data_treated_units <- function(subset_data, sets, tid_pairs, treated_tid_pairs, treated_ids, lead) {
+    .Call('_PanelMatch_check_missing_data_treated_units', PACKAGE = 'PanelMatch', subset_data, sets, tid_pairs, treated_tid_pairs, treated_ids, lead)
+}
+
+check_missing_data_control_units <- function(subset_data, sets, prepared_sets, tid_pairs, lead) {
+    .Call('_PanelMatch_check_missing_data_control_units', PACKAGE = 'PanelMatch', subset_data, sets, prepared_sets, tid_pairs, lead)
+}
+
+enforce_strict_histories <- function(control_histories, strict_period) {
+    .Call('_PanelMatch_enforce_strict_histories', PACKAGE = 'PanelMatch', control_histories, strict_period)
+}
+
 get_treated_indices <- function(ordered_df, treated_indices, treat_col_idx, unit_var_col) {
     .Call('_PanelMatch_get_treated_indices', PACKAGE = 'PanelMatch', ordered_df, treated_indices, treat_col_idx, unit_var_col)
 }
@@ -47,37 +75,5 @@ non_matching_matcher <- function(control_history_list, widemat, t_as_col_nums, i
 
 filter_placebo_results <- function(expanded_data, ordered_outcome_data, treated_ids, treated_ts, sets, lag) {
     .Call('_PanelMatch_filter_placebo_results', PACKAGE = 'PanelMatch', expanded_data, ordered_outcome_data, treated_ids, treated_ts, sets, lag)
-}
-
-get_yearly_dmats <- function(expanded_data, treated_ids, ts_to_fetch, matched_sets, lag) {
-    .Call('_PanelMatch_get_yearly_dmats', PACKAGE = 'PanelMatch', expanded_data, treated_ids, ts_to_fetch, matched_sets, lag)
-}
-
-check_treated_units_for_treatment_reversion <- function(compmat, compmat_row_units, compmat_cols, lead, treated_ids, treated_ts) {
-    .Call('_PanelMatch_check_treated_units_for_treatment_reversion', PACKAGE = 'PanelMatch', compmat, compmat_row_units, compmat_cols, lead, treated_ids, treated_ts)
-}
-
-check_control_units_for_treatment_restriction <- function(compmat, compmat_row_units, compmat_cols, lead, sets, control_start_years) {
-    .Call('_PanelMatch_check_control_units_for_treatment_restriction', PACKAGE = 'PanelMatch', compmat, compmat_row_units, compmat_cols, lead, sets, control_start_years)
-}
-
-multiply_weights_msm <- function(weights, number_of_sets) {
-    .Call('_PanelMatch_multiply_weights_msm', PACKAGE = 'PanelMatch', weights, number_of_sets)
-}
-
-do_exact_matching_refinement <- function(balanced_data, lag, row_key, control_data, treatment_data, exact_match_variable_column_index) {
-    .Call('_PanelMatch_do_exact_matching_refinement', PACKAGE = 'PanelMatch', balanced_data, lag, row_key, control_data, treatment_data, exact_match_variable_column_index)
-}
-
-check_missing_data_treated_units <- function(subset_data, sets, tid_pairs, treated_tid_pairs, treated_ids, lead) {
-    .Call('_PanelMatch_check_missing_data_treated_units', PACKAGE = 'PanelMatch', subset_data, sets, tid_pairs, treated_tid_pairs, treated_ids, lead)
-}
-
-check_missing_data_control_units <- function(subset_data, sets, prepared_sets, tid_pairs, lead) {
-    .Call('_PanelMatch_check_missing_data_control_units', PACKAGE = 'PanelMatch', subset_data, sets, prepared_sets, tid_pairs, lead)
-}
-
-enforce_strict_histories <- function(control_histories, strict_period) {
-    .Call('_PanelMatch_enforce_strict_histories', PACKAGE = 'PanelMatch', control_histories, strict_period)
 }
 

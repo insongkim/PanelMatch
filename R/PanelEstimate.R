@@ -1,18 +1,18 @@
 #' PanelEstimate
 #'
 #' \code{PanelEstimate} estimates a causal quantity of interest, including the average treatment effect for
-#' treated or control units (att and atc, respectively), the average effect of treatment reversal on reversed units, or average treatment effect (ate), as specified in \code{PanelMatch}.
+#' treated or control units (att and atc, respectively), the average effect of treatment reversal on reversed units, or average treatment effect (ate), as specified in \code{PanelMatch()}.
 #' This is done by estimating the counterfactual outcomes for each treated unit using
 #' matched sets. Users will provide matched sets that were obtained by the
 #' \code{PanelMatch} function and obtain point estimates via a
 #' weighted average computation with weighted bootstrap standard errors. Point estimates and standard errors will be
-#' produced for each period in the lead window specified by the \code{lead} argument from \code{PanelMatch}.
+#' produced for each period in the lead window specified by the \code{lead} argument from \code{PanelMatch()}.
 #' Users may run multiple estimations by providing lists of each argument to the function.
 #' However, in this format, every argument must be explicitly specified in each configuration
 #' and must adhere to the same data types/structures outlined below. 
 #'
 #' @param sets A \code{PanelMatch} object attained via the
-#' \code{PanelMatch} function.
+#' \code{PanelMatch()} function.
 #' @param data The same time series cross sectional data set provided to the PanelMatch function used to produce
 #' the matched sets.
 #' @param se.method Method used for calculating standard errors, provided as a character string. Users must choose between "bootstrap", "conditional", and "unconditional" methods. Default is "bootstrap". "bootstrap" uses a block bootstrapping procedure to calculate standard errors. The conditional method calculates the variance of the estimator, assuming independence across units but not across time. The unconditional method also calculates the variance of the estimator analytically, but makes no such assumptions about independence across units. When the quantity of interest is "att", "atc", or "art", all methods are available. Only "bootstrap" is available for the ate. See Section 3.4 of Imai, Kim, and Wang (2021) for more details.
@@ -32,8 +32,8 @@
 #' \item{bootstrapped.estimates}{the bootstrapped point estimate values, when applicable}
 #' \item{bootstrap.iterations}{the number of iterations used in bootstrapping, when applicable}
 #' \item{method}{refinement method used to create the matched sets from which the estimates were calculated}
-#' \item{lag}{See PanelMatch argument \code{lag} for more information.}
-#' \item{lead}{The lead window sequence for which \code{PanelEstimate} is producing point estimates and standard errors.}
+#' \item{lag}{See PanelMatch() argument \code{lag} for more information.}
+#' \item{lead}{The lead window sequence for which \code{PanelEstimate()} is producing point estimates and standard errors.}
 #' \item{confidence.level}{the confidence level}
 #' \item{qoi}{the quantity of interest}
 #' \item{matched.sets}{the refined matched sets used to produce the estimations}
@@ -240,8 +240,6 @@ panel_estimate <- function(sets,
   
   lead <- attr(sets, "lead")
   outcome.variable <- attr(sets, "outcome.var")
-  continuous.treatment <- attr(sets,'continuous.treatment')
-  if (is.null(continuous.treatment)) continuous.treatment <- FALSE
   if (!inherits(sets, "PanelMatch")) stop("sets parameter is not a PanelMatch object")
   qoi <- attr(sets, "qoi")
   
@@ -281,7 +279,8 @@ panel_estimate <- function(sets,
   
   
   #if (!class(data[, unit.id]) %in% c("integer", "numeric")) stop("please convert unit id column to integer or numeric")
-  if (!inherits(data[, unit.id], "integer") && !inherits(data[, unit.id], "numeric")) stop("please convert unit id column to integer or numeric")
+  if (!inherits(data[, unit.id], "integer") && 
+      !inherits(data[, unit.id], "numeric")) stop("please convert unit id column to integer or numeric")
   
   
   if (any(table(data[, unit.id]) != max(table(data[, unit.id]))))
@@ -342,9 +341,8 @@ panel_estimate <- function(sets,
     
   }
   
-  data <- prepareData(data.in = data, lead = lead,
+  data <- prepare_data(data.in = data, lead = lead,
                       sets.att = sets.att, sets.atc = sets.atc,
-                      continuous.treatment = continuous.treatment,
                       qoi.in = qoi,
                       dependent.variable = dependent)
   
@@ -352,7 +350,7 @@ panel_estimate <- function(sets,
   if (placebo.test)
   {
     
-    pe.results <- calculatePlaceboEstimates(qoi.in = qoi,
+    pe.results <- calculate_placebo_estimates(qoi.in = qoi,
                                             data.in = data,
                                             lead = lead,
                                             number.iterations = number.iterations,
@@ -364,12 +362,13 @@ panel_estimate <- function(sets,
                                             att.sets = sets.att,
                                             atc.sets = sets.atc,
                                             lag = lag.in,
-                                            placebo.lead = placebo.lead)
+                                            placebo.lead = placebo.lead,
+                                            se.method = se.method)
   } else {
     
     
     
-    pe.results <- calculateEstimates(qoi.in = qoi,
+    pe.results <- calculate_estimates(qoi.in = qoi,
                                      data.in = data,
                                      lead = lead,
                                      number.iterations = number.iterations,

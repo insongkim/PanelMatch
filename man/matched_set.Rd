@@ -52,6 +52,6 @@ are distinct from \code{PanelMatch} objects. \code{matched.set} objects are ofte
 Users should never need to use this function by itself. See below for more about \code{matched.set} objects.
 }
 \author{
-Adam Rauh <adamrauh@mit.edu>, In Song Kim <insong@mit.edu>, Erik Wang
+Adam Rauh <amrauh@umich..edu>, In Song Kim <insong@mit.edu>, Erik Wang
 <haixiao@Princeton.edu>, and Kosuke Imai <imai@harvard.edu>
 }

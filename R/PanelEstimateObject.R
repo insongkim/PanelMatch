@@ -91,13 +91,16 @@ summary.PanelEstimate <- function(object, verbose = TRUE,
                 apply(object$bootstrapped.estimates, 2, sd, na.rm = T), # bootstrap se
                 
                 # Efron & Tibshirani 1993 p170 - 171
-                apply(object$bootstrapped.estimates, 2, quantile, probs = c( (1 - object$confidence.level)/2, 
-                                                                             object$confidence.level + (1 - object$confidence.level)/2 ), 
+                apply(object$bootstrapped.estimates, 2, 
+                      quantile, 
+                      probs = c( (1 - object$confidence.level)/2, 
+                                 object$confidence.level + (1 - object$confidence.level)/2 ), 
                       na.rm = T), # percentile confidence.level
                 # Efron & Tibshirani 1993 p138
                 2*object$estimates - colMeans(object$bootstrapped.estimates, na.rm = T), # bc point estimate
                 
-                apply( (2*matrix(nrow = object$bootstrap.iterations, ncol = length(object$estimates), 
+                apply( (2*matrix(nrow = object$bootstrap.iterations, 
+                                 ncol = length(object$estimates), 
                                  object$estimates, byrow = TRUE) - object$bootstrapped.estimates), 
                        2, 
                        quantile, 

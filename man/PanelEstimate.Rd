@@ -17,7 +17,7 @@ PanelEstimate(
 }
 \arguments{
 \item{sets}{A \code{PanelMatch} object attained via the
-\code{PanelMatch} function.}
+\code{PanelMatch()} function.}
 
 \item{data}{The same time series cross sectional data set provided to the PanelMatch function used to produce
 the matched sets.}
@@ -45,8 +45,8 @@ estimates for statistical inference. The default is .95.}
 \item{bootstrapped.estimates}{the bootstrapped point estimate values, when applicable}
 \item{bootstrap.iterations}{the number of iterations used in bootstrapping, when applicable}
 \item{method}{refinement method used to create the matched sets from which the estimates were calculated}
-\item{lag}{See PanelMatch argument \code{lag} for more information.}
-\item{lead}{The lead window sequence for which \code{PanelEstimate} is producing point estimates and standard errors.}
+\item{lag}{See PanelMatch() argument \code{lag} for more information.}
+\item{lead}{The lead window sequence for which \code{PanelEstimate()} is producing point estimates and standard errors.}
 \item{confidence.level}{the confidence level}
 \item{qoi}{the quantity of interest}
 \item{matched.sets}{the refined matched sets used to produce the estimations}
@@ -54,12 +54,12 @@ estimates for statistical inference. The default is .95.}
 }
 \description{
 \code{PanelEstimate} estimates a causal quantity of interest, including the average treatment effect for
-treated or control units (att and atc, respectively), the average effect of treatment reversal on reversed units, or average treatment effect (ate), as specified in \code{PanelMatch}.
+treated or control units (att and atc, respectively), the average effect of treatment reversal on reversed units, or average treatment effect (ate), as specified in \code{PanelMatch()}.
 This is done by estimating the counterfactual outcomes for each treated unit using
 matched sets. Users will provide matched sets that were obtained by the
 \code{PanelMatch} function and obtain point estimates via a
 weighted average computation with weighted bootstrap standard errors. Point estimates and standard errors will be
-produced for each period in the lead window specified by the \code{lead} argument from \code{PanelMatch}.
+produced for each period in the lead window specified by the \code{lead} argument from \code{PanelMatch()}.
 Users may run multiple estimations by providing lists of each argument to the function.
 However, in this format, every argument must be explicitly specified in each configuration
 and must adhere to the same data types/structures outlined below.

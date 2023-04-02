@@ -20,54 +20,7 @@ test_that("ensuring data.frame check", {
                     treatment = "dem", data = d2))
   
 })
-# 
-# 
-# test_that("ATC (no refinement) runs", {
-#   PM.object <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
-#                           treatment = "dem", refinement.method = "none",
-#                           data = dem, match.missing = FALSE,
-#                           size.match = 5, qoi = "atc",
-#                           outcome.var = "y",
-#                           lead = 0:4, forbid.treatment.reversal = FALSE)
-#   expect_equal(class(PM.object), "PanelMatch")
-#   expect_equal(class(PM.object$atc), "matched.set")
-#   expect_equal(length(PM.object), 1)
-#   expect_equal(length(PM.object$atc), 3287)
-#   expect_equal(names(PM.object)[1], "atc")
-# })
-# 
-# test_that("ART (no refinement) runs", {
-#   PM.object <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
-#                           treatment = "dem", refinement.method = "none",
-#                           data = dem, match.missing = FALSE,
-#                           size.match = 5, qoi = "art",
-#                           outcome.var = "y",
-#                           lead = 0:4, forbid.treatment.reversal = FALSE)
-#   expect_equal(class(PM.object), "PanelMatch")
-#   expect_equal(class(PM.object$art), "matched.set")
-#   expect_equal(length(PM.object), 1)
-#   expect_equal(length(PM.object$art), 55)
-#   expect_equal(names(PM.object)[1], "art")
-# })
-# 
-# 
-# 
-# test_that("ATE (no refinement) runs", {
-#   PM.object <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
-#                           treatment = "dem", refinement.method = "none",
-#                           data = dem, match.missing = FALSE,
-#                           size.match = 5, qoi = "ate",
-#                           outcome.var = "y",
-#                           lead = 0:4, forbid.treatment.reversal = FALSE)
-#   expect_equal(class(PM.object), "PanelMatch")
-#   expect_equal(class(PM.object$att), "matched.set")
-#   expect_equal(class(PM.object$atc), "matched.set")
-#   expect_equal(length(PM.object), 2)
-#   expect_equal(length(PM.object$att), 105)
-#   expect_equal(length(PM.object$atc), 3287)
-#   expect_equal(names(PM.object)[1], "att")
-#   expect_equal(names(PM.object)[2], "atc")
-# })
+
 
 
 test_that("edge case matching checks", {
@@ -123,57 +76,13 @@ test_that("edge case matching checks", {
   expect_equivalent(pe.results$standard.error, 1.21738691542365, tolerance = .000001)
   
   
-  
-  #atc
-  # PM.object <- PanelMatch(lag = 1, time.id = "year", unit.id = "wbcode2",
-  #                         treatment = "dem", refinement.method = "none",
-  #                         data = dem, match.missing = FALSE,
-  #                         size.match = 5, qoi = "atc",
-  #                         outcome.var = "y",
-  #                         lead = 0, forbid.treatment.reversal = FALSE)
-  # expect_equal(class(PM.object), "PanelMatch")
-  # expect_equal(class(PM.object$atc), "matched.set")
-  # set.seed(1)
-  # pe.results <- PanelEstimate(PM.object, data = dem, se.method = "bootstrap")
-  # expect_equivalent(pe.results$estimates, -0.5462476, tolerance = .000001)
-  # expect_identical(pe.results$se.method, "bootstrap")
-  # expect_equivalent(pe.results$standard.error, 0.6548047, tolerance = .000001)
-  # 
-  # pe.results <- PanelEstimate(PM.object, data = dem, se.method = "conditional")
-  # expect_equivalent(pe.results$estimates,-0.5462476, tolerance = .000001)
-  # expect_identical(pe.results$se.method, "conditional")
-  # expect_equivalent(pe.results$standard.error, 0.5466142, tolerance = .000001)
-  # 
-  # pe.results <- PanelEstimate(PM.object, data = dem, se.method = "unconditional")
-  # expect_equivalent(pe.results$estimates, -0.5462476, tolerance = .000001)
-  # expect_identical(pe.results$se.method, "unconditional")
-  # expect_equivalent(pe.results$standard.error, 0.6513834, tolerance = .000001)
-  # 
-  # #ate
-  # PM.object <- PanelMatch(lag = 1, time.id = "year", unit.id = "wbcode2",
-  #                         treatment = "dem", refinement.method = "none",
-  #                         data = dem, match.missing = FALSE,
-  #                         size.match = 5, qoi = "ate",
-  #                         outcome.var = "y",
-  #                         lead = 0, forbid.treatment.reversal = FALSE)
-  # expect_equal(class(PM.object), "PanelMatch")
-  # expect_equal(class(PM.object$att), "matched.set")
-  # expect_equal(class(PM.object$atc), "matched.set")
-  # set.seed(1)
-  # pe.results <- PanelEstimate(PM.object, data = dem, se.method = "bootstrap")
-  # expect_equivalent(pe.results$estimates, -0.5728, tolerance = .000001)
-  # expect_identical(pe.results$se.method, "bootstrap")
-  # expect_equivalent(pe.results$standard.error, 0.6513728, tolerance = .000001)
-  # expect_error(PanelEstimate(PM.object, data = dem, se.method = "conditional"))
-  # expect_error(PanelEstimate(PM.object, data = dem, se.method = "unconditional"))
-  
 })
 
 
 
 
 
-test_that("ATT: refinement method (excluding MSM) does not affect unrefined matched sets", {
+test_that("ATT: refinement method does not affect unrefined matched sets", {
   pm1 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                           treatment = "dem", refinement.method = "mahalanobis",
                           covs.formula = ~ I(lag(y, 1:4)) + I(lag(tradewb, 1:4)),
@@ -222,7 +131,7 @@ test_that("ATT: refinement method (excluding MSM) does not affect unrefined matc
 })
 
 
-test_that("ATC: refinement method (excluding MSM) does not affect unrefined matched sets", {
+test_that("ATC: refinement method does not affect unrefined matched sets", {
   qoi_ <- "atc"
   pm1 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                     treatment = "dem", refinement.method = "mahalanobis",
@@ -796,4 +705,95 @@ test_that("test time data checker", {
   r1 <- expect_error(PanelMatch:::check_time_data(fail, "time.in"))
 })
 
-
+test_that("test placebo test", {
+  
+  PM.results <- PanelMatch(lag = 4, 
+                           time.id = "year",
+                           unit.id = "wbcode2",
+                           treatment = "dem", 
+                           refinement.method = "mahalanobis",
+                           data = dem,
+                           match.missing = TRUE,
+                           covs.formula = ~ I(lag(tradewb, 1:4)),
+                           size.match = 5, qoi = "art",
+                           outcome.var = "y", lead = 0:4, 
+                           forbid.treatment.reversal = FALSE,
+                           placebo.test = TRUE)
+  set.seed(1)
+  pt.res <- placebo_test(PM.results, 
+               data = dem, 
+               number.iterations = 100, 
+               se.method = "bootstrap",
+               plot = FALSE)
+  
+  est.comps <- c(20.438656,
+                 4.110167,
+                 -21.562320)
+  
+  st.comps <- c(28.54986,
+                23.67567,
+                17.30092)
+  expect_equivalent(pt.res$estimates, est.comps, tolerance = .00001)
+  expect_equivalent(pt.res$standard.errors, st.comps, tolerance = .00001)
+  PM.results <- PanelMatch(lag = 4, 
+                           time.id = "year",
+                           unit.id = "wbcode2",
+                           treatment = "dem", 
+                           refinement.method = "mahalanobis",
+                           data = dem,
+                           match.missing = TRUE,
+                           covs.formula = ~ I(lag(tradewb, 1:4)),
+                           size.match = 5, qoi = "att",
+                           outcome.var = "y", lead = 0:4, 
+                           forbid.treatment.reversal = FALSE,
+                           placebo.test = TRUE)
+  set.seed(1)
+  pt.res <- placebo_test(PM.results, 
+               data = dem, 
+               number.iterations = 100, 
+               se.method = "bootstrap",
+               plot = FALSE)
+  
+  est.comps <- c(20.490151,
+                 8.484286,  
+                 8.649806)
+  
+  st.comps <- c(18.33094, 
+                17.76234,
+                13.37736)
+  
+  expect_equivalent(pt.res$estimates, est.comps, tolerance = .00001)
+  expect_equivalent(pt.res$standard.errors, st.comps, tolerance = .00001)
+  
+  
+  pt.res <- placebo_test(PM.results, 
+                         data = dem, 
+                         se.method = "conditional",
+                         plot = FALSE)
+  
+  est.comps <- c(20.490151,
+                 8.484286,  
+                 8.649806)
+  
+  st.comps <- c(16.30824,
+                15.11819,
+                11.29278)
+  
+  expect_equivalent(pt.res$estimates, est.comps, tolerance = .00001)
+  expect_equivalent(pt.res$standard.errors, st.comps, tolerance = .00001)
+  
+  pt.res <- placebo_test(PM.results, 
+                         data = dem, 
+                         se.method = "unconditional",
+                         plot = FALSE)
+  
+  est.comps <- c(20.490151,
+                 8.484286,  
+                 8.649806)
+  st.comps <- c(19.87698,
+                18.35898,
+                13.72441)
+  expect_equivalent(pt.res$estimates, est.comps, tolerance = .00001)
+  expect_equivalent(pt.res$standard.errors, st.comps, tolerance = .00001)
+  
+})

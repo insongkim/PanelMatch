@@ -188,28 +188,14 @@ Rcpp:: List non_matching_matcher(const Rcpp::List &control_history_list,
         if(Rcpp::all(!Rcpp::is_na(na_tempcomp)))
         {
           Rcpp::NumericVector tempcomp(L + 1);
-          // if(widemat(j, 0) == 4)
-          // {
-          //   Rcpp::Rcout << widemat(j, 0) << std::endl;  
-          // }
+          
           
           for (int k = 0; k < L + 1; k++)
           {
             tempcomp[k] = widemat(j, t - L + k); //retrieving treatment history for the window of interest
-            
-            //for(int s = 0; s < tempcomp.length(); s++)
-            //Rcpp::Rcout << tempcomp[s]; 
-            //tempcomp is the actual history of a unit, cont_hist is what must be matched in order for a unit to be included in a matched set for a given t, id
+        
           }
-          // if(widemat(j, 0) == 4)
-          // {
-          //   for(int s = 0; s < tempcomp.length(); s++)
-          //   {
-          //     Rcpp::Rcout << tempcomp[s];
-          //   }
-          //   Rcpp::Rcout << std::endl;
-          //   
-          // }
+          
           
           Rcpp::NumericVector cont_hist_comp(2);
           
@@ -218,14 +204,6 @@ Rcpp:: List non_matching_matcher(const Rcpp::List &control_history_list,
             cont_hist_comp[k] = cont_hist[cont_hist.length() -2 + k];
           }
           
-          // if(id == 3 && t == 38)
-          // {
-          //   for(int xx = 0; xx < cont_hist_comp.length(); xx++)
-          //   {
-          //     Rcpp::Rcout << cont_hist_comp[xx];
-          //   }
-          //   Rcpp::Rcout << std::endl;
-          // }
           if ( (!Rcpp::internal::Rcpp_IsNA(Rcpp::is_true(Rcpp::all(tempcomp == cont_hist_comp)))) && //Do the actual treatment history of a unit match the needed control history? If so...
                Rcpp::is_true(Rcpp::all(tempcomp == cont_hist_comp)) ) // checking that NOT na might be redundant, but also might prevent bug
           {
@@ -272,7 +250,7 @@ Rcpp::List filter_placebo_results(Rcpp::NumericMatrix expanded_data,
     //check treated unit
     int id_t = treated_ids[i];
     std::string id = std::to_string(id_t);
-    //std::string t = std::to_string(treated_ts[i]);
+    
     int t = treated_ts[i];
     bool check_controls = true;
     for (int j = lag; j > 0; j--)
@@ -280,7 +258,7 @@ Rcpp::List filter_placebo_results(Rcpp::NumericMatrix expanded_data,
       int new_time = t - j;
       std::string xx = std::to_string(new_time);
       std::string key = id + "." + xx;
-//Rcpp::Rcout << indexMap[key] << std::endl;
+
       if(Rcpp::internal::Rcpp_IsNA(ordered_outcome_data[indexMap[key]]))
       {
         check_controls = false;
