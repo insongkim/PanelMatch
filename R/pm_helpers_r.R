@@ -248,6 +248,10 @@ perform_refinement <- function(lag, time.id, unit.id, treatment, refinement.meth
       msets <- handle_ps_match(just.ps.sets, msets, refinement.method, verbose, size.match)
       attr(msets, "max.match.size") <- size.match
     }
+    if(refinement.method == "mahalanobis")
+    {
+      attr(msets, "max.match.size") <- size.match
+    }
   }
   t.attributes <- attributes(msets)[names(attributes(msets)) != "names"]
   msets <- c(msets, e.sets)
