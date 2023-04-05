@@ -11,15 +11,24 @@ This function will return a list of lists. The outer list length is equal to the
 */ 
 // [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::export]]
-List get_yearly_dmats(NumericMatrix expanded_data, NumericVector treated_ids, List ts_to_fetch, CharacterVector row_key, List matched_sets, int lag) 
+List get_yearly_dmats(NumericMatrix expanded_data, NumericVector treated_ids, List ts_to_fetch,
+                      List matched_sets, int lag) 
 {
+  
   std::unordered_map<std::string, int> indexMap;
-  for(int i = 0; i < row_key.size(); i++)
+  for(int i = 0; i < expanded_data.nrow(); i++)
   {
-    std::string key;
-    key = row_key[i];
+    int id_1 = expanded_data(i,0);
+    int t_1 = expanded_data(i,1);
+    
+    std::string id = std::to_string(id_1);
+    std::string t = std::to_string(t_1);
+    
+    std::string key = id + "." + t;
     indexMap[key] = i;
-  } 
+    
+  }
+
   
   List df_list(matched_sets.size());
   for(int i = 0; i < matched_sets.size(); i++)
@@ -28,11 +37,11 @@ List get_yearly_dmats(NumericMatrix expanded_data, NumericVector treated_ids, Li
     
     List temp_list(lag + 1);
     NumericVector tts = ts_to_fetch[i];
-    //NumericVector treated_times_repeated = treated_times[i];
-    for(int k = 0; k < tts.size(); k++) // should be equal to lag + 1, same as treated_unit_repeated.size()
+    
+    for(int k = 0; k < tts.size(); k++) 
     {
-      NumericVector index_vector(matched_set.size() + 1); //!!!???
-      //int t = treated_unit_repeated[k];
+      NumericVector index_vector(matched_set.size() + 1);
+      
       int t = tts[k];
       std::string tstring = std::to_string(t);
       for(int j = 0; j < matched_set.size(); j++)
@@ -81,9 +90,9 @@ Rcpp::LogicalVector check_treated_units_for_treatment_reversion(Rcpp::NumericMat
     int st_year_col = colmap[key];
     key = treated_ids[i];
     int idx = rowmap[key];
-    // Rcpp::LogicalVector v(lead + 1); // to lead + 2
+    
     Rcpp::LogicalVector v(lead + 2); 
-    //for (int k = 0; k <= lead; ++k) // again, thinking init k to 1, iterate to lead + 1, then first check is for t-1
+    
     for (int k = 0; k <= lead; ++k)
     {
       //checking t-1
@@ -149,12 +158,11 @@ Rcpp::List check_control_units_for_treatment_restriction(Rcpp::NumericMatrix com
       int key;
       key = controls[j];
       int idx = rowmap[key];
-      //Rcpp::LogicalVector v(lead + 1); //change this to + 2
-      Rcpp::LogicalVector v(lead + 2); //change this to + 2
-      //for (int k = 0; k <= lead; ++k)
+      
+      Rcpp::LogicalVector v(lead + 2); 
+      
       for (int k = 0; k <= lead; ++k)// init. k to 1, go to lead + 1, and have first check be for t - 1
       {
-        //add in separate check for t - 1, rest of these checks should still apply then.
         if(Rcpp::internal::Rcpp_IsNA(compmat(idx, st_year_col - 1)) || compmat(idx, st_year_col - 1) != 0)
         {
           v[0] = false;
@@ -190,31 +198,6 @@ Rcpp::List check_control_units_for_treatment_restriction(Rcpp::NumericMatrix com
 }
 
 // [[Rcpp::export]]
-Rcpp::List multiply_weights_msm(Rcpp::List weights, int number_of_sets)
-{
-  Rcpp::List final_weights(number_of_sets);
-  for(int i = 0; i < number_of_sets; i++)
-  {
-    Rcpp::NumericVector base_mult = weights[i];
-    Rcpp::NumericVector temp2;
-    for(int j = i; j < weights.size(); j+=number_of_sets)
-    {
-      if(j != i)
-      {
-        Rcpp::NumericVector temp = weights[j];
-        temp2 = base_mult * temp;
-        base_mult = temp2;
-        //base_mult = base_mult * weights[j];
-      }
-
-    }
-    final_weights[i] = base_mult;
-  }
-  return final_weights;
-}
-
-
-// [[Rcpp::export]]
 Rcpp::List do_exact_matching_refinement(Rcpp::NumericMatrix balanced_data, 
                                         int lag, Rcpp::CharacterVector row_key,
                                         Rcpp::List control_data, Rcpp::CharacterVector treatment_data,
@@ -242,10 +225,9 @@ Rcpp::List do_exact_matching_refinement(Rcpp::NumericMatrix balanced_data,
       for(int k = 0; k < lag + 1; k++)
       {
         int idxcheck = endpoint - k;
-        // Rcpp::Rcout << idxcheck << std::endl;
-        // Rcpp::Rcout << idx << std::endl;
+        
         temptreatmentdata[k] = balanced_data(idxcheck, idx);
-        //Rcpp::Rcout << balanced_data[idxcheck, 0] << std::endl <<balanced_data[idxcheck, 1] <<std::endl;
+        
       }
       Rcpp::CharacterVector control_strings = control_data[j];
       Rcpp::LogicalVector keep_control_idx(control_strings.size());
@@ -258,23 +240,14 @@ Rcpp::List do_exact_matching_refinement(Rcpp::NumericMatrix balanced_data,
         for(int a = 0; a < lag + 1; a++)
         {
           int cidxcheck = cendpoint - a;
-          // Rcpp::Rcout << balanced_data[cidxcheck, idx] << std::endl;
+          
           tempcontroldata[a] = balanced_data(cidxcheck, idx);
-          //Rcpp::Rcout << balanced_data(cidxcheck, 0) << std::endl << balanced_data(cidxcheck, 1) << std::endl << balanced_data(cidxcheck, 2) << std::endl;
+          
         }
-        // for(int q = 0; q < tempcontroldata.size(); q++)
-        // {
-        //   Rcpp::Rcout << tempcontroldata[q];
-        // }
-        // Rcpp::Rcout << std::endl;
-        // for(int q = 0; q < tempcontroldata.size(); q++)
-        // {
-        //   Rcpp::Rcout << temptreatmentdata[q];
-        // }
-        //Rcpp::Rcout << std::endl;
+        
         keep_control_idx[z] = Rcpp::is_true(Rcpp::all(tempcontroldata == temptreatmentdata));
       }
-      // Rcpp::Rcout << keep_control_idx.size() << std::endl;
+      
       control_idx[j] = keep_control_idx;
     }
     exact_match_control_lists[i] = control_idx;
@@ -308,15 +281,12 @@ Rcpp::LogicalVector check_missing_data_treated_units(Rcpp::NumericMatrix subset_
     treatment_index[i] = true; //initialize to true
     std::string key;
     key = treated_tid_pairs[i];
-    //Rcpp::Rcout << key << std::endl;
     int treatpoint = indexMap[key];
     int startpoint = treatpoint - 1; // need to visit t-1 
     
-    //Rcpp::Rcout << startpoint << std::endl;
+    
     for (int j = 0; j <= (lead + 1); ++j) //go from t-l when j = 0, to t+max(lead)
     {
-      //Rcpp::Rcout << subset_data(startpoint + j, 0) << std::endl;
-      //Rcpp::Rcout << subset_data(startpoint + j, 1) << std::endl;
       if( (startpoint + j < 0) || (startpoint + j >= subset_data.nrow() ))
       {
         treatment_index[i] = false;
@@ -324,10 +294,6 @@ Rcpp::LogicalVector check_missing_data_treated_units(Rcpp::NumericMatrix subset_
       } 
       else if(subset_data(startpoint + j, 0) != treated_ids[i]) // assume id column is first
       {
-        //Rcpp::Rcout << subset_data(startpoint + j, 0) << std::endl;
-        //Rcpp::Rcout << treated_ids[i] << std::endl;
-        //Rcpp::Rcout << "this got flaggged" << std::endl;
-        
         treatment_index[i] = false;
         break;
       } 
@@ -410,5 +376,27 @@ Rcpp::List check_missing_data_control_units(Rcpp::NumericMatrix subset_data,
   return control_idx;
   
 }
+
+// [[Rcpp::export()]]
+Rcpp::LogicalVector enforce_strict_histories(Rcpp::List control_histories, int strict_period)
+{
+  Rcpp::LogicalVector indx(control_histories.length());
+  
+  for(int i = 0; i < control_histories.length(); i++)
+  {
+    indx[i] = true;
+    NumericVector temp = control_histories[i];
+    for(int j = temp.length() - 1 - strict_period; j < temp.length(); j++)
+    {
+      if ( NumericVector::is_na(temp[j]) || temp[j] != 0)
+      {
+        indx[i] = false;
+      }
+    }
+  }
+  return indx;
+}
+
+
 
 

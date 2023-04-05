@@ -1,7 +1,9 @@
+# performs exact matching on time invariant variables.
+# Eventually will be replaced with caliper functionality
 do_exact_matching <- function(sets, balanced.panel.data, exact.match.vars)
 {
   L <- attr(sets, "lag")
-
+  
   ts <- as.numeric(sub(".*\\.", "", names(sets)))
   make.years <- function(t, repnum)
   {
@@ -9,21 +11,21 @@ do_exact_matching <- function(sets, balanced.panel.data, exact.match.vars)
     return(q)
   }
   lsets <- sapply(sets, length)
-  ts <- mapply(FUN = make.years, t = ts, repnum = lsets, SIMPLIFY = F)
+  ts <- mapply(FUN = make.years, t = ts, repnum = lsets, SIMPLIFY = FALSE)
   iddata <- lapply(sets, as.numeric)
   names(iddata) <- NULL
   create.keys <- function(t, id)
   {
     return(paste0(id,'.',t))
   }
-  control.data <- (mapply(create.keys, t = ts, id = iddata, SIMPLIFY = F))
+  control.data <- (mapply(create.keys, t = ts, id = iddata, SIMPLIFY = FALSE))
   treatment.data <- names(sets)
-  rowkeys <- paste0(balanced.panel.data[,1], '.', balanced.panel.data[, 2]) #think we can assume we have unit + time columns first
+  rowkeys <- paste0(balanced.panel.data[,1], '.', balanced.panel.data[, 2])
   
   colidx <- which(colnames(balanced.panel.data) %in% exact.match.vars)
   bpd <- as.matrix(balanced.panel.data[, c(1,2, colidx)])
   expanded.lists <- do_exact_matching_refinement(bpd, L, rowkeys, control.data,
-                               treatment.data, (3:ncol(bpd) - 1))
+                                                 treatment.data, (3:ncol(bpd) - 1))
   expanded.list <- unlist(expanded.lists, recursive = F)
   condensed.list <- list()
   for (i in 1:length(sets)) {

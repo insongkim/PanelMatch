@@ -11,7 +11,7 @@
 
 \item{...}{Optional additional arguments to be passed to the \code{summary} function}
 
-\item{verbose}{Logical value specifying whether or not a longer, more verbose summary should be calculated and returned. Default is 
+\item{verbose}{Logical value specifying whether or not a longer, more verbose summary should be calculated and returned. Default is
 \code{TRUE}.}
 }
 \value{
@@ -27,9 +27,9 @@ A method for viewing summary data about the sizes of matched sets and metadata a
 accepts all standard \code{summary} arguments.
 }
 \examples{
-PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
-                         treatment = "dem", refinement.method = "mahalanobis", 
-                         data = dem, match.missing = TRUE, 
+PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
+                         treatment = "dem", refinement.method = "mahalanobis",
+                         data = dem, match.missing = TRUE,
                          covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
                          size.match = 5, qoi = "att",
                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)

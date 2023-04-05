@@ -14,17 +14,17 @@ DisplayTreatment(
   title = "Treatment Distribution \\n Across Units and Time",
   xlab = "Time",
   ylab = "Unit",
-  x.size = 10,
-  y.size = 5,
+  x.size = NULL,
+  y.size = NULL,
   legend.position = "none",
-  x.angle = 45,
+  x.angle = NULL,
   y.angle = NULL,
   legend.labels = c("not treated", "treated"),
   decreasing = FALSE,
   matched.set = NULL,
   show.set.only = FALSE,
-  hide.x.axis.label = FALSE,
-  hide.y.axis.label = FALSE,
+  hide.x.tick.label = FALSE,
+  hide.y.tick.label = FALSE,
   gradient.weights = FALSE,
   dense.plot = FALSE
 )
@@ -48,10 +48,10 @@ DisplayTreatment(
 
 \item{ylab}{Character label of the y-axis}
 
-\item{x.size}{Numeric size of the text for xlab or x axis label. Default is 10. Assign x.size = NULL to use built in ggplot2 method of determining label size. 
+\item{x.size}{Numeric size of the text for xlab or x axis tick labels. Assign x.size = NULL to use built in ggplot2 method of determining label size. 
 When the length of the time period is long, consider setting to NULL and adjusting size and ratio of the plot.}
 
-\item{y.size}{Numeric size of the text for ylab or y axis label. Default is 5. Assign y.size = NULL to use built in ggplot2 method of determining label size. 
+\item{y.size}{Numeric size of the text for ylab or y axis tick labels. Assign y.size = NULL to use built in ggplot2 method of determining label size. 
 When the number of units is large, consider setting to NULL and adjusting size and ratio of the plot.}
 
 \item{legend.position}{Position of the legend. Provide this according to ggplot2 standards.}
@@ -70,9 +70,9 @@ labels of the legend to be shown in the plot. ggplot2 standards are used.}
 \item{show.set.only}{logical. If TRUE, only the treated unit and control units contained in the provided \code{matched.set} object will be shown on the plot. 
 Default is FALSE. If no \code{matched.set} is provided, then this argument will have no effect.}
 
-\item{hide.x.axis.label}{logical. If TRUE, x axis labels are not shown. Default is FALSE.}
+\item{hide.x.tick.label}{logical. If TRUE, x axis tick labels are not shown. Default is FALSE.}
 
-\item{hide.y.axis.label}{logical. If TRUE, y axis labels are not shown. Default is FALSE.}
+\item{hide.y.tick.label}{logical. If TRUE, y axis tick labels are not shown. Default is FALSE.}
 
 \item{gradient.weights}{logical. If TRUE, the "darkness"/shade of units in the provided \code{matched.set} object will be displayed according to their weight. Control units with higher weights will appear darker on the resulting plot. Control units with lower weights will appear lighter. This argument has no effect unless a \code{matched.set} is provided.}
 

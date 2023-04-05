@@ -22,7 +22,9 @@ PanelMatch(
   forbid.treatment.reversal = FALSE,
   matching = TRUE,
   listwise.delete = FALSE,
-  use.diagonal.variance.matrix = FALSE
+  use.diagonal.variance.matrix = FALSE,
+  restrict.control.period = NULL,
+  placebo.test = FALSE
 )
 }
 \arguments{
@@ -36,7 +38,7 @@ variable in the \code{data}. This data currently must be formatted as sequential
 \item{treatment}{A character string indicating the name of the treatment variable in the \code{data}. 
 The treatment must be a binary indicator variable (integer with 0 for the control group and 1 for the treatment group).}
 
-\item{refinement.method}{A character string specifying the matching or weighting method to be used for refining the matched sets. The user can choose "mahalanobis", "ps.match", "CBPS.match", "ps.weight", "CBPS.weight", "ps.msm.weight", "CBPS.msm.weight", or "none". The first three methods will use the \code{size.match} argument to create sets of at most \code{size.match} closest control units. Choosing "none" will assign equal weights to all control units in each matched set.}
+\item{refinement.method}{A character string specifying the matching or weighting method to be used for refining the matched sets. The user can choose "mahalanobis", "ps.match", "CBPS.match", "ps.weight", "CBPS.weight", or "none". The first three methods will use the \code{size.match} argument to create sets of at most \code{size.match} closest control units. Choosing "none" will assign equal weights to all control units in each matched set.}
 
 \item{size.match}{An integer dictating the number of permitted closest control units in a matched set after refinement. 
 This argument only affects results when using a matching method ("mahalanobis" or any of the refinement methods that end in ".match").
@@ -60,10 +62,7 @@ The variables specified in this formula are used to define the similarity/distan
 \item{verbose}{option to include more information about the \code{matched.set} object calculations, 
 like the distances used to create the refined sets and weights.}
 
-\item{qoi}{quantity of interest: \code{att} (average treatment effect on treated units), 
-\code{atc} (average treatment effect on control units), \code{ate} (average treatment effect). 
-Note that the qoi for MSM methods will give the estimated average treatment effect of being treated for a chosen \code{lead} 
-time periods. This differs slightly from the non-MSM methods, where treatment reversal is permitted.}
+\item{qoi}{quantity of interest, provided as a string: \code{att} (average treatment effect on treated units), \code{atc} (average treatment effect of treatment on the control units) \code{art} (average effect of treatment reversal for units that experience treatment reversal), or \code{ate} (average treatment effect).}
 
 \item{lead}{integer sequence specifying the lead window, for which qoi point estimates (and standard errors) will 
 ultimately be produced. Default is 0 (which corresponds to contemporaneous treatment effect).}
@@ -74,7 +73,7 @@ ultimately be produced. Default is 0 (which corresponds to contemporaneous treat
 Exact matching for time varying covariates is not currently supported.}
 
 \item{forbid.treatment.reversal}{Logical indicating whether or not it is permissible for treatment to reverse in the specified lead window. 
-This must be set to TRUE for MSM methods. When set to TRUE, only matched sets for treated units where treatment is 
+When set to TRUE, only matched sets for treated units where treatment is 
 applied continuously in the lead window are included in the results. Default is FALSE.}
 
 \item{matching}{logical indicating whether or not any matching on treatment history should be performed. 
@@ -82,19 +81,22 @@ This is primarily used for diagnostic purposes, and most users will never need t
 
 \item{listwise.delete}{TRUE/FALSE indicating whether or not missing data should be handled using listwise deletion or the package's default missing data handling procedures. Default is FALSE.}
 
-\item{use.diagonal.variance.matrix}{TRUE/FALSE indicating whether or not a regular covariance matrix should be used in 
-mahalanobis distance calculations during refinement, 
+\item{use.diagonal.variance.matrix}{TRUE/FALSE indicating whether or not a regular covariance matrix should be used in mahalanobis distance calculations during refinement, 
 or if a diagonal matrix with only covariate variances should be used instead. 
 In many cases, setting this to TRUE can lead to better covariate balance, especially when there is 
 high correlation between variables. Default is FALSE. This argument is only necessary when 
 \code{refinement.method = mahalanobis} and will have no impact otherwise.}
+
+\item{restrict.control.period}{(optional) integer specifying the number of pre-treatment periods that treated units and potentially matched control units should be non-NULL and in the control state. For instance, specifying 4 would mean that the treatment history cannot contain any missing data or treatment from t-4 to t.}
+
+\item{placebo.test}{logical TRUE/FALSE. indicates whether or not you want to be able to run a placebo test. This will add additional requirements on the data -- specifically, it requires that no unit included in the matching/refinement process can having missing outcome data over the lag window. Additionally, you should not use the outcome variable in refinement when \code{placebo.test = TRUE}.}
 }
 \value{
 \code{PanelMatch} returns an object of class "PanelMatch". This is a list that contains a few specific elements: 
-First, a \code{matched.set} object(s) that has the same name as the provided qoi if the qoi is "att" or "atc". 
+First, a \code{matched.set} object(s) that has the same name as the provided qoi if the qoi is "att", "art", or "atc". 
 If qoi = "ate" then two \code{matched.set} objects will be attached, named "att" and "atc." Please consult the documentation for
-\code{matched_set} to read more about the structure and usage of \code{matched.set} objects. Also, see the wiki page for 
-more information about these objects: \url{https://github.com/insongkim/PanelMatch/wiki/Matched-Set-Objects}.
+\code{matched_set} to read more about the structure and usage of \code{matched.set} objects. Also, see the vignette page about matched.set objects for 
+more information about these objects: \code{vignette("matched_set_objects", package = "PanelMatch")}.
 The \code{PanelMatch} object also has some additional attributes:
 \item{qoi}{The qoi specified in the original function call}
 \item{lead}{the lead window specified in the original function call}
@@ -130,31 +132,11 @@ PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                          covs.formula = ~ tradewb, 
                          size.match = 5, qoi = "att",
                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
-# Running multiple configurations at once
-list.of.results = PanelMatch(lag = list(4,3), 
-                                 time.id = list("year", "year"),
-                                 unit.id = list("wbcode2", "wbcode2"),
-                                 treatment = list("dem", "dem"),
-                                 refinement.method = list("mahalanobis", "ps.weight"),
-                                 data = dem,
-                                 match.missing = list(TRUE, TRUE),
-                                 covs.formula = list(~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
-                                 ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4))),
-                                 size.match = list(5,5),
-                                 qoi = list("att", "att"),
-                                 outcome.var = list("y", "y"),
-                                 lead = list(0:4, 0:3),
-                                 forbid.treatment.reversal = list(FALSE, FALSE),
-                                 verbose = list(FALSE, FALSE),
-                                 listwise.delete = list(FALSE,FALSE),
-                                 use.diagonal.variance.matrix = list(TRUE, NULL),
-                                 exact.match.variables = list(NULL, NULL),
-                                 matching = list(TRUE, TRUE))
 
 
 }
 \references{
-Imai, Kosuke, In Song Kim, and Erik Wang (2018)
+Imai, Kosuke, In Song Kim, and Erik Wang (2021)
 }
 \author{
 Adam Rauh <amrauh@umich.edu>, In Song Kim <insong@mit.edu>, Erik Wang

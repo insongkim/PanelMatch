@@ -19,7 +19,7 @@
 #' @param treatment A character string indicating the name of the treatment variable in the \code{data}. 
 #' The treatment must be a binary indicator variable (integer with 0 for the control group and 1 for the treatment group).
 #' @param outcome.var A character string identifying the outcome variable.
-#' @param refinement.method A character string specifying the matching or weighting method to be used for refining the matched sets. The user can choose "mahalanobis", "ps.match", "CBPS.match", "ps.weight", "CBPS.weight", "ps.msm.weight", "CBPS.msm.weight", or "none". The first three methods will use the \code{size.match} argument to create sets of at most \code{size.match} closest control units. Choosing "none" will assign equal weights to all control units in each matched set.
+#' @param refinement.method A character string specifying the matching or weighting method to be used for refining the matched sets. The user can choose "mahalanobis", "ps.match", "CBPS.match", "ps.weight", "CBPS.weight", or "none". The first three methods will use the \code{size.match} argument to create sets of at most \code{size.match} closest control units. Choosing "none" will assign equal weights to all control units in each matched set.
 #' @param match.missing Logical variable indicating whether or not units should be matched on the patterns of missingness in their treatment histories. Default is TRUE. When FALSE, neither treated nor control units are allowed to have missing treatment data in the lag window.
 #' @param data A \code{data.frame} object containing time series cross sectional data. 
 #' Time data must be sequential integers that increase by 1. Unit identifiers must be integers. Treatment data must be binary.
@@ -37,38 +37,36 @@
 #' The variables specified in this formula are used to define the similarity/distances between units.
 #' @param verbose option to include more information about the \code{matched.set} object calculations, 
 #' like the distances used to create the refined sets and weights.
-#' @param qoi quantity of interest: \code{att} (average treatment effect on treated units), 
-#' \code{atc} (average treatment effect on control units), \code{ate} (average treatment effect). 
-#' Note that the qoi for MSM methods will give the estimated average treatment effect of being treated for a chosen \code{lead} 
-#' time periods. This differs slightly from the non-MSM methods, where treatment reversal is permitted.
+#' @param qoi quantity of interest, provided as a string: \code{att} (average treatment effect on treated units), \code{atc} (average treatment effect of treatment on the control units) \code{art} (average effect of treatment reversal for units that experience treatment reversal), or \code{ate} (average treatment effect). 
 #' @param lead integer sequence specifying the lead window, for which qoi point estimates (and standard errors) will 
 #' ultimately be produced. Default is 0 (which corresponds to contemporaneous treatment effect).
 #' @param matching logical indicating whether or not any matching on treatment history should be performed. 
 #' This is primarily used for diagnostic purposes, and most users will never need to set this to FALSE. Default is TRUE.
 #' @param forbid.treatment.reversal Logical indicating whether or not it is permissible for treatment to reverse in the specified lead window. 
-#' This must be set to TRUE for MSM methods. When set to TRUE, only matched sets for treated units where treatment is 
+#' When set to TRUE, only matched sets for treated units where treatment is 
 #' applied continuously in the lead window are included in the results. Default is FALSE.
 #' @param exact.match.variables character vector giving the names of variables to be exactly matched on. These should be time invariant variables. 
 #' Exact matching for time varying covariates is not currently supported. 
 #' @param listwise.delete TRUE/FALSE indicating whether or not missing data should be handled using listwise deletion or the package's default missing data handling procedures. Default is FALSE.
-#' @param use.diagonal.variance.matrix TRUE/FALSE indicating whether or not a regular covariance matrix should be used in 
-#' mahalanobis distance calculations during refinement, 
+#' @param use.diagonal.variance.matrix TRUE/FALSE indicating whether or not a regular covariance matrix should be used in mahalanobis distance calculations during refinement, 
 #' or if a diagonal matrix with only covariate variances should be used instead. 
 #' In many cases, setting this to TRUE can lead to better covariate balance, especially when there is 
 #' high correlation between variables. Default is FALSE. This argument is only necessary when 
 #' \code{refinement.method = mahalanobis} and will have no impact otherwise.
+#' @param restrict.control.period (optional) integer specifying the number of pre-treatment periods that treated units and potentially matched control units should be non-NULL and in the control state. For instance, specifying 4 would mean that the treatment history cannot contain any missing data or treatment from t-4 to t.
+#' @param placebo.test logical TRUE/FALSE. indicates whether or not you want to be able to run a placebo test. This will add additional requirements on the data -- specifically, it requires that no unit included in the matching/refinement process can having missing outcome data over the lag window. Additionally, you should not use the outcome variable in refinement when \code{placebo.test = TRUE}.
 #' @return \code{PanelMatch} returns an object of class "PanelMatch". This is a list that contains a few specific elements: 
-#' First, a \code{matched.set} object(s) that has the same name as the provided qoi if the qoi is "att" or "atc". 
+#' First, a \code{matched.set} object(s) that has the same name as the provided qoi if the qoi is "att", "art", or "atc". 
 #' If qoi = "ate" then two \code{matched.set} objects will be attached, named "att" and "atc." Please consult the documentation for
-#' \code{matched_set} to read more about the structure and usage of \code{matched.set} objects. Also, see the wiki page for 
-#' more information about these objects: \url{https://github.com/insongkim/PanelMatch/wiki/Matched-Set-Objects}.
+#' \code{matched_set} to read more about the structure and usage of \code{matched.set} objects. Also, see the vignette page about matched.set objects for 
+#' more information about these objects: \code{vignette("matched_set_objects", package = "PanelMatch")}.
 #' The \code{PanelMatch} object also has some additional attributes:
 #' \item{qoi}{The qoi specified in the original function call}
 #' \item{lead}{the lead window specified in the original function call}
 #' \item{forbid.treatment.reversal}{logial value matching the forbid.treatment.reversal parameter provided in the function call.}
 #' \item{outcome.var}{character string matching the outcome variable provided in the original function call.}
 #' 
-#' @references Imai, Kosuke, In Song Kim, and Erik Wang (2018)
+#' @references Imai, Kosuke, In Song Kim, and Erik Wang (2021)
 #' @author Adam Rauh <amrauh@umich.edu>, In Song Kim <insong@mit.edu>, Erik Wang
 #' <haixiao@Princeton.edu>, and Kosuke Imai <imai@harvard.edu>
 #'
@@ -86,26 +84,6 @@
 #'                          covs.formula = ~ tradewb, 
 #'                          size.match = 5, qoi = "att",
 #'                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
-#' # Running multiple configurations at once
-#' list.of.results = PanelMatch(lag = list(4,3), 
-#'                                  time.id = list("year", "year"),
-#'                                  unit.id = list("wbcode2", "wbcode2"),
-#'                                  treatment = list("dem", "dem"),
-#'                                  refinement.method = list("mahalanobis", "ps.weight"),
-#'                                  data = dem,
-#'                                  match.missing = list(TRUE, TRUE),
-#'                                  covs.formula = list(~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
-#'                                  ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4))),
-#'                                  size.match = list(5,5),
-#'                                  qoi = list("att", "att"),
-#'                                  outcome.var = list("y", "y"),
-#'                                  lead = list(0:4, 0:3),
-#'                                  forbid.treatment.reversal = list(FALSE, FALSE),
-#'                                  verbose = list(FALSE, FALSE),
-#'                                  listwise.delete = list(FALSE,FALSE),
-#'                                  use.diagonal.variance.matrix = list(TRUE, NULL),
-#'                                  exact.match.variables = list(NULL, NULL),
-#'                                  matching = list(TRUE, TRUE))
 #'
 #'
 #' @export
@@ -123,20 +101,50 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
                        forbid.treatment.reversal = FALSE,
                        matching = TRUE,
                        listwise.delete = FALSE,
-                       use.diagonal.variance.matrix = FALSE
+                       use.diagonal.variance.matrix = FALSE,
+                       restrict.control.period = NULL,
+                       placebo.test = FALSE
                        ) 
 {
-  if(class(lag) == "list" & class(time.id) == "list" & class(unit.id) == "list" & class(treatment) == "list" & 
-     class(refinement.method) == "list" & class(size.match) == "list" & class(match.missing) == "list" & 
-     class(covs.formula) == "list" & class(verbose) == "list" & class(qoi) == "list" & class(lead) == "list" & 
-     class(outcome.var) == "list" & class(exact.match.variables) == "list" & class(forbid.treatment.reversal) == "list" &
-     class(matching) == "list" & class(listwise.delete) == "list" & class(use.diagonal.variance.matrix) == "list") #everything but data must be provided explicitly
+  #since these features are not done yet, force them to be set to defaults
+
+  
+  if (placebo.test) warning("when placebo.test = TRUE, using the dependent variable in refinment is invalid")
+  if(inherits(lag, "list") & 
+     inherits(time.id, "list") & 
+     inherits(unit.id, "list") & 
+     inherits(treatment, "list") & 
+     inherits(refinement.method, "list") & 
+     inherits(size.match, "list") &
+     inherits(match.missing, "list") &
+     inherits(covs.formula, "list") & 
+     inherits(verbose, "list") & 
+     inherits(qoi, "list") & 
+     inherits(lead, "list") & 
+     inherits(outcome.var, "list") & 
+     inherits(forbid.treatment.reversal, "list") &
+     inherits(matching, "list") & 
+     inherits(listwise.delete, "list") & 
+     inherits(use.diagonal.variance.matrix, "list")) #everything but data must be provided explicitly
   {
-    if(length(unique(length(lag) , length(time.id)  , length(unit.id)  , length(treatment)  , 
-                     length(refinement.method)  , length(size.match)  , length(match.missing)  , 
-                     length(covs.formula)  , length(verbose)  , length(qoi)  , length(lead)  , 
-                     length(outcome.var)  , length(exact.match.variables)  , length(forbid.treatment.reversal)  ,
-                     length(matching)  , length(listwise.delete)  , length(use.diagonal.variance.matrix) )) == 1)
+    #stop("looped version of PanelMatch currently unavailable")
+    if(length(unique(length(lag), 
+                     length(time.id), 
+                     length(unit.id), 
+                     length(treatment),
+                     length(refinement.method),
+                     length(size.match),
+                     length(match.missing), 
+                     length(covs.formula),
+                     length(verbose), 
+                     length(qoi),
+                     length(lead), 
+                     length(outcome.var), 
+                     length(exact.match.variables), 
+                     length(forbid.treatment.reversal),
+                     length(matching), 
+                     length(listwise.delete), 
+                     length(use.diagonal.variance.matrix) )) == 1)
     {
       
      list.res <- mapply(FUN = panel_match,
@@ -154,8 +162,10 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
              matching = matching,
              listwise.delete = listwise.delete,
              use.diagonal.variance.matrix = use.diagonal.variance.matrix,
+             restrict.control.period = restrict.control.period,
+             placebo.test = placebo.test,
              MoreArgs = list(data = data)
-             , SIMPLIFY = F)
+             , SIMPLIFY = FALSE)
      return(list.res)
     }
     else {
@@ -178,7 +188,9 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
                 forbid.treatment.reversal,
                 matching,
                 listwise.delete,
-                use.diagonal.variance.matrix)
+                use.diagonal.variance.matrix,
+                restrict.control.period,
+                placebo.test)
   }
   
 }
@@ -197,35 +209,46 @@ panel_match <- function(lag, time.id, unit.id, treatment,
                         forbid.treatment.reversal,
                         matching,
                         listwise.delete,
-                        use.diagonal.variance.matrix)
+                        use.diagonal.variance.matrix,
+                        restrict.control.period,
+                        placebo.test)
 {
-  
-  if(!matching & match.missing)
+  if (!matching & match.missing)
   {
     old.lag <- lag
     lag <- 1
   }
-  if(refinement.method == "CBPS.msm.weight" | refinement.method == "ps.msm.weight")
-  {
-    warning("Note that for msm methods, PanelMatch will attempt to find the estimated average treatment effect of being treated for the entire specified 'lead' time periods.")
-  }
-  if(listwise.delete & match.missing) stop("set match.missing = F when listwise.delete = TRUE")
-  if(lag < 1) stop("please specify a lag value >= 1")
-  if(class(data) != "data.frame") stop("please convert data to data.frame class")
-  if(!all(refinement.method %in% c("mahalanobis", "ps.weight", "ps.match", "CBPS.weight", "CBPS.match", "ps.msm.weight", "CBPS.msm.weight", "none"))) stop("please choose a valid refinement method")
-  if(any(duplicated(data[, c(unit.id, time.id)]))) stop("Time, unit combinations should uniquely identify rows. Please remove duplicates")
-  if(!class(data[, unit.id]) %in% c("integer", "numeric")) stop("please convert unit id column to integer or numeric")
-  if(class(data[, time.id]) != "integer") stop("please convert time id to consecutive integers")
+  if (listwise.delete & match.missing) stop("set match.missing = FALSE when listwise.delete = TRUE")
+  if (lag < 1) stop("please specify a lag value >= 1")
+  if (any(class(data) != "data.frame")) stop("please convert data to data.frame class")
   
-  if (any(c("character", "factor") %in% sapply(data, class)))
+  if (!all(refinement.method %in% c("mahalanobis", "ps.weight", "ps.match", "CBPS.weight", "CBPS.match", "none"))) stop("please choose a valid refinement method")
+  if (any(duplicated(data[, c(unit.id, time.id)]))) stop("Time, unit combinations should uniquely identify rows. Please remove duplicates")
+  
+  
+  
+  if (!inherits(data[, unit.id], "integer") && !inherits(data[, unit.id], "numeric")) stop("please convert unit id column to integer or numeric")
+  
+  
+  if ( !all(c(time.id, unit.id, treatment, outcome.var)  %in% colnames(data)) ) stop("time id, unit id, outcome, or treatment column name invalid")
+  
+  if (forbid.treatment.reversal && !identical(qoi, "att"))
   {
-    warning("non-numeric data exists. Only numeric (including binary) data can be used for refinement and calculations")
+    stop("forbid.treatment.reversal = TRUE only valid for qoi = att")
   }
+  
+  
+  if(!is.null(restrict.control.period))
+  {
+    if(restrict.control.period < 1) stop("restricted control period specification must be >=1")
+    if(restrict.control.period > lag) stop("restricted control period specification cannot be greater than lag")
+  }
+
   
   #######take this out when negative lead is implemented:
-  if(any(lead < 0)) stop("Please provide positive lead values. Negative lead values will be supported in future versions")
+  if (any(lead < 0)) stop("Please provide positive lead values. Please see the placebo_test function for more.")
   
-  if(any(table(data[, unit.id]) != max(table(data[, unit.id]))))
+  if (any(table(data[, unit.id]) != max(table(data[, unit.id]))))
   {
     testmat <- data.table::dcast(data.table::as.data.table(data), formula = paste0(unit.id, "~", time.id),
                                  value.var = treatment)
@@ -233,42 +256,20 @@ panel_match <- function(lag, time.id, unit.id, treatment,
                           variable.factor = FALSE, value.name = treatment)
     d <- data.frame(d)[,c(1,2)]
     class(d[, 2]) <- "integer"
-    data <- merge(data.table(d), data.table(data), all.x = TRUE, by = c(unit.id, time.id))
+    data <- merge(data.table::data.table(d), 
+                  data.table::data.table(data), 
+                  all.x = TRUE, 
+                  by = c(unit.id, time.id))
     data <- as.data.frame(data)
-    # data <- make.pbalanced(data, balance.type = "fill", index = c(unit.id, time.id))
+    
   }
-  check_time_data(data, time.id)
-  if(!all(qoi %in% c("att", "atc", "ate"))) stop("please choose a valid qoi")
   
-  if(!forbid.treatment.reversal & all(refinement.method %in% c("CBPS.msm.weight", "ps.msm.weight")))
-  {
-    stop("please set forbid.treatment.reversal to TRUE for msm methods")
-  }
+  if (!all(qoi %in% c("att", "atc", "ate", "art"))) stop("please choose a valid qoi")
+  
   
   if(any(is.na(data[, unit.id]))) stop("Cannot have NA unit ids")
   ordered.data <- data[order(data[,unit.id], data[,time.id]), ]
-  
-  ordered.data[, paste0(unit.id, ".int")] <- as.integer(as.factor(ordered.data[, unit.id]))
-  if(class(data[, unit.id]) == "character") {
-    unit.index.map <- data.frame(original.id = make.names(as.character(unique(ordered.data[, unit.id]))), 
-                                 new.id = unique(ordered.data[, paste0(unit.id, ".int")]), stringsAsFactors = F)
-  }
-  else if(class(data[, unit.id]) == "integer") {
-    unit.index.map <- data.frame(original.id = (as.character(unique(ordered.data[, unit.id]))),
-                                 new.id = unique(ordered.data[, paste0(unit.id, ".int")]), stringsAsFactors = F)
-  }
-  else if(class(data[, unit.id]) == "numeric") {
-    if(all(unique(ordered.data[, unit.id]) == as.integer(unique(ordered.data[, unit.id])))) #actually integers
-    {
-      unit.index.map <- data.frame(original.id = (as.character(unique(ordered.data[, unit.id]))),
-                                   new.id = unique(ordered.data[, paste0(unit.id, ".int")]), stringsAsFactors = F)
-    }
-  }
-  else {
-    stop("Unit ID Data is not integer, numeric, or character.")
-  }
-  og.unit.id <- unit.id
-  unit.id <- paste0(unit.id, ".int")
+  ordered.data <- check_time_data(ordered.data, time.id)
   
   othercols <- colnames(ordered.data)[!colnames(ordered.data) %in% c(time.id, unit.id, treatment)]
   ordered.data <- ordered.data[, c(unit.id, time.id, treatment, othercols)] #reorder columns 
@@ -280,64 +281,111 @@ panel_match <- function(lag, time.id, unit.id, treatment,
     }  
   }
   
-  if(qoi == "atc")
+  if (identical(qoi,"art"))
   {
-    ordered.data[, treatment] <- ifelse(ordered.data[, treatment] == 1,0,1) #flip the treatment variables 
-    msets <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data, 
-                                match.missing, covs.formula, verbose, lead= lead, outcome.var = outcome.var, 
-                                forbid.treatment.reversal = forbid.treatment.reversal, qoi = qoi, matching = matching,
-                                exact.matching.variables = exact.match.variables, listwise.deletion = listwise.delete,
-                                use.diag.covmat = use.diagonal.variance.matrix)
-    msets <- decode_index(msets, unit.index.map, og.unit.id)
-    if(!matching & match.missing)
+    
+    ordered.data[, treatment] <- ifelse(ordered.data[, treatment] == 1,0,1) #flip the treatment variables   
+    
+    msets <- perform_refinement(lag = lag, time.id = time.id, unit.id = unit.id, 
+                                treatment = treatment, 
+                                refinement.method = refinement.method,
+                                size.match = size.match, ordered.data = ordered.data, 
+                                match.missing = match.missing, covs.formula = covs.formula,
+                                verbose = verbose, lead = lead, outcome.var = outcome.var, 
+                                forbid.treatment.reversal = forbid.treatment.reversal, 
+                                qoi = qoi, matching = matching,
+                                exact.matching.variables = exact.match.variables, 
+                                listwise.deletion = listwise.delete,
+                                restrict.control.period = restrict.control.period,
+                                use.diag.covmat = use.diagonal.variance.matrix, 
+                                placebo.test = placebo.test)
+    #msets <- decode_index(msets, unit.index.map, og.unit.id)
+    if (!matching & match.missing)
     {
       attr(msets, "lag") <- old.lag
     }
-    pm.obj <- list("atc" = msets)
+
+    pm.obj <- list()
+    pm.obj[[qoi]] <- msets
     class(pm.obj) <- "PanelMatch"
     attr(pm.obj, "qoi") <- qoi
     attr(pm.obj, "outcome.var") <- outcome.var
     attr(pm.obj, "lead") <- lead
     attr(pm.obj, "forbid.treatment.reversal") <- forbid.treatment.reversal
     return(pm.obj)
-  } else if(qoi == "att")
+  } else if (identical(qoi,"att") || identical(qoi,"atc"))
   { #note that ordered.data at this point is in column order: unit, time, treatment, everything else
-    msets <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data,
-                                match.missing, covs.formula, verbose, lead = lead, outcome.var = outcome.var, 
-                                forbid.treatment.reversal = forbid.treatment.reversal, qoi = qoi, matching = matching,
-                                exact.matching.variables = exact.match.variables, listwise.deletion = listwise.delete,
-                                use.diag.covmat = use.diagonal.variance.matrix)
-    msets <- decode_index(msets, unit.index.map, og.unit.id)
-    if(!matching & match.missing)
+    
+
+    msets <- perform_refinement(lag = lag, time.id = time.id, unit.id = unit.id, 
+                                treatment = treatment, 
+                                refinement.method = refinement.method,
+                                size.match = size.match, 
+                                ordered.data = ordered.data, 
+                                match.missing = match.missing, 
+                                covs.formula = covs.formula,
+                                verbose = verbose,
+                                lead = lead, 
+                                outcome.var = outcome.var, 
+                                forbid.treatment.reversal = forbid.treatment.reversal, 
+                                qoi = qoi, 
+                                matching = matching,
+                                exact.matching.variables = exact.match.variables, 
+                                listwise.deletion = listwise.delete,
+                                restrict.control.period = restrict.control.period,
+                                use.diag.covmat = use.diagonal.variance.matrix, 
+                                placebo.test = placebo.test)
+    
+    
+    if (!matching & match.missing)
     {
       attr(msets, "lag") <- old.lag
     }
-    pm.obj <- list("att" = msets)
+    
+    pm.obj <- list( msets)
+    names(pm.obj) <- qoi
     class(pm.obj) <- "PanelMatch"
     attr(pm.obj, "qoi") <- qoi
     attr(pm.obj, "outcome.var") <- outcome.var
     attr(pm.obj, "lead") <- lead
     attr(pm.obj, "forbid.treatment.reversal") <- forbid.treatment.reversal
+    attr(pm.obj, "placebo.test") <- placebo.test
     return(pm.obj)
-  } else if(qoi == "ate")
+  } else if (identical(qoi, "ate"))
   {
-    msets <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data, 
-                                match.missing, covs.formula, verbose, lead = lead, outcome.var = outcome.var, 
-                                forbid.treatment.reversal = forbid.treatment.reversal, qoi = qoi, matching = matching,
-                                exact.matching.variables = exact.match.variables, listwise.deletion = listwise.delete,
-                                use.diag.covmat = use.diagonal.variance.matrix)
-    ordered.data[, treatment] <- ifelse(ordered.data[, treatment] == 1,0,1) #flip the treatment variables 
-    msets2 <- perform_refinement(lag, time.id, unit.id, treatment, refinement.method, size.match, ordered.data,
-                                 match.missing, covs.formula, verbose, lead = lead, outcome.var = outcome.var, 
-                                 forbid.treatment.reversal = forbid.treatment.reversal, qoi = qoi, matching = matching,
-                                 exact.matching.variables = exact.match.variables, listwise.deletion = listwise.delete,
-                                 use.diag.covmat = use.diagonal.variance.matrix)
-    msets <- decode_index(msets, unit.index.map, og.unit.id)
+    msets <- perform_refinement(lag = lag, time.id = time.id, unit.id = unit.id, 
+                                treatment = treatment, 
+                                refinement.method = refinement.method,
+                                size.match = size.match, ordered.data = ordered.data, 
+                                match.missing = match.missing, covs.formula = covs.formula,
+                                verbose = verbose, lead = lead, outcome.var = outcome.var, 
+                                forbid.treatment.reversal = forbid.treatment.reversal, 
+                                qoi = "att", matching = matching,
+                                exact.matching.variables = exact.match.variables, 
+                                listwise.deletion = listwise.delete,
+                                restrict.control.period = restrict.control.period,
+                                use.diag.covmat = use.diagonal.variance.matrix, 
+                                placebo.test = placebo.test)
+    
+    msets2 <- perform_refinement(lag = lag, time.id = time.id, unit.id = unit.id, 
+                                 treatment = treatment, 
+                                 refinement.method = refinement.method,
+                                 size.match = size.match, ordered.data = ordered.data, 
+                                 match.missing = match.missing, covs.formula = covs.formula,
+                                 verbose = verbose, lead = lead, outcome.var = outcome.var, 
+                                 forbid.treatment.reversal = forbid.treatment.reversal, 
+                                 qoi = "atc", matching = matching,
+                                 exact.matching.variables = exact.match.variables, 
+                                 listwise.deletion = listwise.delete,
+                                 restrict.control.period = restrict.control.period,
+                                 use.diag.covmat = use.diagonal.variance.matrix, 
+                                 placebo.test = placebo.test)
+    
     if(!matching & match.missing)
     {
       attr(msets, "lag") <- old.lag
     }
-    msets2 <- decode_index(msets2, unit.index.map, og.unit.id)
+    
     if(!matching & match.missing)
     {
       attr(msets2, "lag") <- old.lag
@@ -349,9 +397,10 @@ panel_match <- function(lag, time.id, unit.id, treatment,
     attr(pm.obj, "lead") <- lead
     attr(pm.obj, "forbid.treatment.reversal") <- forbid.treatment.reversal
     return(pm.obj)
-  } else
-  {
-    stop("qoi not specified correctly!")
+    
+    
+  } else {
+    stop("qoi not specified correctly")
   }
   
   

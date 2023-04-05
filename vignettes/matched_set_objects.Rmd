@@ -22,10 +22,10 @@ knitr::opts_chunk$set(echo = TRUE)
 
 This vignette will take a more detailed look at the `matched.set` object, which is the core object within the package that captures all of the information associated with treated units and their matched control units. 
 
-First, we will create a smaller subset of the `dem` data set, which is included in the package. This is just to make our results easier to read. We use the DisplayTreatment function to get a sense of treatment variation within the subset of data. 
+First, we will create a smaller subset of the `dem` data set, which is included in the package. This is just to make some of our results easier to read. We then use the DisplayTreatment function to get a sense of treatment variation within the subset of data. 
+
 ```{r}
 library(PanelMatch)
-
 uid <-unique(dem$wbcode2)[1:10]
 subdem <- dem[dem$wbcode2 %in% uid, ]
 DisplayTreatment(unit.id = "wbcode2", time.id = "year", treatment = 'dem', data = subdem)
@@ -34,7 +34,7 @@ DisplayTreatment(unit.id = "wbcode2", time.id = "year", treatment = 'dem', data 
 
 ### PanelMatch and matched.set objects
 
-We can use the `PanelMatch` function with `refinement.method` set to `none` to obtain a `PanelMatch` object, from which we will extract a `matched.set` object. `PanelMatch` returns an S3 object of the `PanelMatch` class. These objects are just lists with some additional attributes. Here, we will focus on one element contained within `PanelMatch` objects: `matched.set` objects. Within the `PanelMatch` object, this element is always named either `att` or `atc`. When `qoi = ate`, then there are two `matched.set` objects included in the resulting `PanelMatch` call. Specifically, there will be two matched sets named `att` and `atc`, respectively.
+We can use the `PanelMatch` function with `refinement.method` set to `none` to obtain a `PanelMatch` object, from which we will extract a `matched.set` object. `PanelMatch` returns an S3 object of the `PanelMatch` class. These objects are just lists with some additional attributes. Here, we will focus on one element contained within `PanelMatch` objects: `matched.set` objects. Within the `PanelMatch` object, this element is always named either `att`, `art`, or `atc` reflecting the name of the specified qoi. When `qoi = ate`, then there are two `matched.set` objects included in the resulting `PanelMatch` call. Specifically, there will be two matched sets named `att` and `atc`, respectively.
 
 ```{r}
 
@@ -50,7 +50,7 @@ msets <- PM.results$att
 ```
 
 ### What are matched.set objects? 
-In implementation, the `matched.set` is just a named list with some added attributes (lag, names of treatment, unit, and time variables) and a structured name scheme. Each entry in the list is a vector containing the unit ids of control units that are in a matched set. Additionally, each entry corresponds to a time/unit id pair (the unit id of a treated unit and the time at which treatment occurred). This is reflected in the names of each element of the list, as the name scheme `[id varable]`.`[time variable]` is used. 
+In implementation, the `matched.set` is just a named list with some added attributes (e.g. lag window size, names of treatment, unit, and time variables) and a structured name scheme. Each entry in the list is a vector containing the unit ids of control units that are in a matched set. Additionally, each entry corresponds to a time/unit id pair (the unit id of a treated unit and the time at which treatment occurred). This is reflected in the names of each element of the list, as the name scheme `[id varable]`.`[time variable]` is used. 
 
 Matched set objects are implemented as lists, but the default printing behavior resembles that of a data frame. One can toggle a `verbose` option on the `print` method to print as a list and also display a less summarized version of the matched set data.
 
@@ -83,7 +83,7 @@ Note that this returns a vector of weights. The names of each element in the vec
 
 ### Subsetting matched.set objects.
 
-The '[' and '[[' operators are implemented and should work intuitively. 
+The '[' and '[[' operators are implemented for `matched.set` objects and should work intuitively. 
 
 Using '[' returns a subsetted `matched.set` object (list). The additional attributes will be copied and transferred as well with the custom operator. Note how, by default, it prints like the full form of the `matched.set`. Using '[[' will return the unit ids of the control units in the specified matched set.
 
@@ -104,7 +104,7 @@ msets[["4.1992"]] #equivalent to msets[[1]]
 
 ### Plotting with matched.set objects
 
-Calling `plot` on a `matched.set` object will display a histogram of the sizes of the matched sets. By default, the number of empty matched sets (treated unit/time id pairs with no suitable controls for a match) is noted with a vertical bar at x = 0. One can include empty sets in the histogram by setting the `include.empty.sets` argument to `TRUE`
+Calling `plot` on a `matched.set` object will display a histogram of the sizes of the matched sets. By default, the number of empty matched sets (treated unit/time id pairs with no suitable controls for a match) is noted with a vertical bar at x = 0. One can include empty sets in the histogram by setting the `include.empty.sets` argument to `TRUE`. 
 
 ```{r}
 plot(msets, xlim = c(0, 4))

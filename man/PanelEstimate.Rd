@@ -6,67 +6,69 @@
 \usage{
 PanelEstimate(
   sets,
+  data,
   number.iterations = 1000,
   df.adjustment = FALSE,
   confidence.level = 0.95,
   moderator = NULL,
-  data
+  se.method = "bootstrap",
+  pooled = FALSE
 )
 }
 \arguments{
 \item{sets}{A \code{PanelMatch} object attained via the
-\code{PanelMatch} function.}
+\code{PanelMatch()} function.}
 
-\item{number.iterations}{An integer value indicating the number of bootstrap
-iterations. The default is 1000.}
+\item{data}{The same time series cross sectional data set provided to the PanelMatch function used to produce
+the matched sets.}
+
+\item{number.iterations}{If using bootstrapping for calculating standard errors, this is the number of bootstrap iterations. Provide as integer. If se.method is not equal to "bootstrap", this argument has no effect.}
 
 \item{df.adjustment}{A logical value indicating whether or not a
 degree-of-freedom adjustment should be performed for the standard error
-calculation. The default is \code{FALSE}.}
+calculation. The default is \code{FALSE}. This parameter is only available for the bootstrap method of standard error calculation.}
 
 \item{confidence.level}{A numerical value specifying the confidence level and range of interval
 estimates for statistical inference. The default is .95.}
 
-\item{moderator}{The name of a moderating variable, provided as a character string. If a moderating variable is provided
-the returned object will be a list of \code{PanelEstimate} objects. The names of the list will reflect the different values of the 
-moderating variable. More specifically, the moderating variable values will be converted to syntactically proper names using 
-\code{make.names}.}
+\item{moderator}{The name of a moderating variable, provided as a character string. If a moderating variable is provided,the returned object will be a list of \code{PanelEstimate} objects. The names of the list will reflect the different values of the moderating variable. More specifically, the moderating variable values will be converted to syntactically proper names using \code{make.names}.}
 
-\item{data}{The same time series cross sectional data set provided to the PanelMatch function used to produce 
-the matched sets}
+\item{se.method}{Method used for calculating standard errors, provided as a character string. Users must choose between "bootstrap", "conditional", and "unconditional" methods. Default is "bootstrap". "bootstrap" uses a block bootstrapping procedure to calculate standard errors. The conditional method calculates the variance of the estimator, assuming independence across units but not across time. The unconditional method also calculates the variance of the estimator analytically, but makes no such assumptions about independence across units. When the quantity of interest is "att", "atc", or "art", all methods are available. Only "bootstrap" is available for the ate. See Section 3.4 of Imai, Kim, and Wang (2021) for more details.}
+
+\item{pooled}{Logical. If TRUE, estimates and standard errors are returned for treatment effects pooled across the entire lead window. Only available for \code{se.method = ``bootstrap''}}
 }
 \value{
 \code{PanelEstimate} returns a list of class
 `PanelEstimate' containing the following components:
 \item{estimates}{the point estimates of the quantity of interest for the lead periods specified}
-\item{bootstrapped.estimates}{the bootstrapped point estimate values}
-\item{bootstrap.iterations}{the number of iterations used in bootstrapping}
+\item{se.method}{The method used to calculate standard errors. This is the same as the argument provided to the function.}
+\item{bootstrapped.estimates}{the bootstrapped point estimate values, when applicable}
+\item{bootstrap.iterations}{the number of iterations used in bootstrapping, when applicable}
 \item{method}{refinement method used to create the matched sets from which the estimates were calculated}
-\item{lag}{See PanelMatch argument \code{lag} for more information.}
-\item{lead}{The lead window sequence for which \code{PanelEstimate} is producing point estimates and standard errors.}
+\item{lag}{See PanelMatch() argument \code{lag} for more information.}
+\item{lead}{The lead window sequence for which \code{PanelEstimate()} is producing point estimates and standard errors.}
 \item{confidence.level}{the confidence level}
 \item{qoi}{the quantity of interest}
 \item{matched.sets}{the refined matched sets used to produce the estimations}
 \item{standard.error}{the standard error(s) of the point estimates}
 }
 \description{
-\code{PanelEstimate} estimates a causal quantity of interest, including the average treatment effect for 
-treated or control units (att and atc, respectively), or average treatment effect (ate), as specified in \code{PanelMatch}.
+\code{PanelEstimate} estimates a causal quantity of interest, including the average treatment effect for
+treated or control units (att and atc, respectively), the average effect of treatment reversal on reversed units, or average treatment effect (ate), as specified in \code{PanelMatch()}.
 This is done by estimating the counterfactual outcomes for each treated unit using
 matched sets. Users will provide matched sets that were obtained by the
 \code{PanelMatch} function and obtain point estimates via a
-weighted average computation with weighted bootstrap standard errors. Point estimates and standard errors will be 
-produced for each period in the lead window specified by the \code{lead} argument from \code{PanelMatch}. 
-Users may run multiple estimations by providing lists of each argument to the function. 
-However, in this format, every argument must be explicitly specified in each configuration 
-and must adhere to the same data types/structures outlined below. See the included code examples for more about 
-how this functionality works.
+weighted average computation with weighted bootstrap standard errors. Point estimates and standard errors will be
+produced for each period in the lead window specified by the \code{lead} argument from \code{PanelMatch()}.
+Users may run multiple estimations by providing lists of each argument to the function.
+However, in this format, every argument must be explicitly specified in each configuration
+and must adhere to the same data types/structures outlined below.
 }
 \examples{
-PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
-                         treatment = "dem", refinement.method = "mahalanobis", 
-                         data = dem, match.missing = TRUE, 
-                         covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
+PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
+                         treatment = "dem", refinement.method = "mahalanobis",
+                         data = dem, match.missing = TRUE,
+                         covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
                          size.match = 5, qoi = "att",
                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = TRUE)
 PE.results <- PanelEstimate(sets = PM.results, data = dem, number.iterations = 100)
@@ -75,7 +77,7 @@ PE.results <- PanelEstimate(sets = PM.results, data = dem, number.iterations = 1
 
 }
 \references{
-Imai, Kosuke, In Song Kim, and Erik Wang (2018)
+Imai, Kosuke, In Song Kim, and Erik Wang (2021)
 }
 \author{
 In Song Kim <insong@mit.edu>, Erik Wang

@@ -20,13 +20,13 @@ Rcpp::LogicalVector get_treated_indices(const Rcpp::NumericMatrix &ordered_df, c
   
   for (int i = 0; i < treated_indices.size(); i++) //iterating throw each treated unit
   {
-    if ( (treated_indices[i] > 0) &
-         ( !Rcpp::internal::Rcpp_IsNA(ordered_df(int(treated_indices[i]) - 1, treat_col_idx)) ) & 
+    if ( (treated_indices[i] > 0) &&
+         ( !Rcpp::internal::Rcpp_IsNA(ordered_df(int(treated_indices[i]) - 1, treat_col_idx)) ) && 
          
          ( ordered_df(int(treated_indices[i]) - 1, treat_col_idx) == 0) ) //is the treatmentvar == 0 at time t -1 ?
     {
-      if ( (!Rcpp::internal::Rcpp_IsNA(ordered_df(treated_indices[i], unit_var_col)) ) &
-           (!Rcpp::internal::Rcpp_IsNA(ordered_df(treated_indices[i] - 1, unit_var_col)) ) & //na checks just to make sure data exists
+      if ( (!Rcpp::internal::Rcpp_IsNA(ordered_df(treated_indices[i], unit_var_col)) ) &&
+           (!Rcpp::internal::Rcpp_IsNA(ordered_df(treated_indices[i] - 1, unit_var_col)) ) && //na checks just to make sure data exists
            (ordered_df(treated_indices[i] -1, unit_var_col) == ordered_df(treated_indices[i], unit_var_col) ) ) //do the unit ids matched at time t and time t - 1, mostly a safeguard against weirdly formed data and edgecases
       {
         treateds[i] = 1; //if treatedvar == 1 at t and == 0 and t -1, the data exists and doesn't have obvious formatting problems, then it should be included in the set of treated units to look at. 
@@ -51,7 +51,11 @@ Rcpp::LogicalVector get_treated_indices(const Rcpp::NumericMatrix &ordered_df, c
  same length as the 'ts' and 'ids' vectors passed in initially and able to be matched together by index number.
  */
 // [[Rcpp::export()]]
-Rcpp::List get_comparison_histories(const Rcpp::NumericMatrix &compmat, const Rcpp::NumericVector &ts, const Rcpp::NumericVector &ids, int t_col, int id_col, int L, int treat_col)
+Rcpp::List get_comparison_histories(const Rcpp::NumericMatrix &compmat, 
+                                    const Rcpp::NumericVector &ts, 
+                                    const Rcpp::NumericVector &ids, 
+                                    int t_col, int id_col, int L, int treat_col,
+                                    bool atc)
 {
   
   Rcpp::List comp_hists(ts.length()); //length of its and ids should be the same
@@ -62,7 +66,7 @@ Rcpp::List get_comparison_histories(const Rcpp::NumericMatrix &compmat, const Rc
     
     for (int j = 0; j < compmat.nrow(); j++) //iterate through "long" form of data
     {
-      if( (compmat(j, t_col) == t) & (compmat(j, id_col) == id) ) // if time and unitid of current row matches t, id pair we are currently "investigating"...
+      if( (compmat(j, t_col) == t) && (compmat(j, id_col) == id) ) // if time and unitid of current row matches t, id pair we are currently "investigating"...
       {
         
         Rcpp::NumericVector control_hist(L+1);
@@ -70,8 +74,13 @@ Rcpp::List get_comparison_histories(const Rcpp::NumericMatrix &compmat, const Rc
         {
           control_hist[k] = compmat(j - L + k, treat_col); 
         } // ...read the treatment history over the window into a vector...
+        if (!atc)
+        {
+          control_hist[control_hist.length() - 1] = 0; //... and change the last entry to give the needed treatment history of a control unit for this t,id pair. Entry here should always be 1 before we change it here
+        } else { // is atc
+          control_hist[control_hist.length() - 1] = 1;
+        }
         
-        control_hist[control_hist.length() - 1] = 0; //... and change the last entry to give the needed treatment history of a control unit for this t,id pair. Entry here should always be 1 before we change it here
         comp_hists[i] = control_hist;
         break;
       }
@@ -125,7 +134,7 @@ Rcpp:: List get_msets_helper(const Rcpp::List &control_history_list, const Rcpp:
           //tempcomp is the actual history of a unit, cont_hist is what must be matched in order for a unit to be included in a matched set for a given t, id
         }
         
-        if ( (!Rcpp::internal::Rcpp_IsNA(Rcpp::is_true(Rcpp::all(tempcomp == cont_hist)))) & //Do the actual treatment history of a unit match the needed control history? If so...
+        if ( (!Rcpp::internal::Rcpp_IsNA(Rcpp::is_true(Rcpp::all(tempcomp == cont_hist)))) && //Do the actual treatment history of a unit match the needed control history? If so...
              Rcpp::is_true(Rcpp::all(tempcomp == cont_hist)) ) // checking that NOT na might be redundant, but also might prevent bug
         {
           in_matched_set_idx[j] = true; //... then that unit should be included in the matched set.
@@ -179,28 +188,14 @@ Rcpp:: List non_matching_matcher(const Rcpp::List &control_history_list,
         if(Rcpp::all(!Rcpp::is_na(na_tempcomp)))
         {
           Rcpp::NumericVector tempcomp(L + 1);
-          // if(widemat(j, 0) == 4)
-          // {
-          //   Rcpp::Rcout << widemat(j, 0) << std::endl;  
-          // }
+          
           
           for (int k = 0; k < L + 1; k++)
           {
             tempcomp[k] = widemat(j, t - L + k); //retrieving treatment history for the window of interest
-            
-            //for(int s = 0; s < tempcomp.length(); s++)
-            //Rcpp::Rcout << tempcomp[s]; 
-            //tempcomp is the actual history of a unit, cont_hist is what must be matched in order for a unit to be included in a matched set for a given t, id
+        
           }
-          // if(widemat(j, 0) == 4)
-          // {
-          //   for(int s = 0; s < tempcomp.length(); s++)
-          //   {
-          //     Rcpp::Rcout << tempcomp[s];
-          //   }
-          //   Rcpp::Rcout << std::endl;
-          //   
-          // }
+          
           
           Rcpp::NumericVector cont_hist_comp(2);
           
@@ -209,15 +204,7 @@ Rcpp:: List non_matching_matcher(const Rcpp::List &control_history_list,
             cont_hist_comp[k] = cont_hist[cont_hist.length() -2 + k];
           }
           
-          // if(id == 3 && t == 38)
-          // {
-          //   for(int xx = 0; xx < cont_hist_comp.length(); xx++)
-          //   {
-          //     Rcpp::Rcout << cont_hist_comp[xx];
-          //   }
-          //   Rcpp::Rcout << std::endl;
-          // }
-          if ( (!Rcpp::internal::Rcpp_IsNA(Rcpp::is_true(Rcpp::all(tempcomp == cont_hist_comp)))) & //Do the actual treatment history of a unit match the needed control history? If so...
+          if ( (!Rcpp::internal::Rcpp_IsNA(Rcpp::is_true(Rcpp::all(tempcomp == cont_hist_comp)))) && //Do the actual treatment history of a unit match the needed control history? If so...
                Rcpp::is_true(Rcpp::all(tempcomp == cont_hist_comp)) ) // checking that NOT na might be redundant, but also might prevent bug
           {
             in_matched_set_idx[j] = true; //... then that unit should be included in the matched set.
@@ -230,3 +217,85 @@ Rcpp:: List non_matching_matcher(const Rcpp::List &control_history_list,
   return matched_sets;
 }
 
+
+// [[Rcpp::export]]
+Rcpp::List filter_placebo_results(Rcpp::NumericMatrix expanded_data,
+                                  Rcpp::NumericVector ordered_outcome_data,
+                                  Rcpp::NumericVector treated_ids,
+                                  Rcpp::NumericVector treated_ts,
+                                  Rcpp::List sets,
+                                  int lag) {
+  
+  //creating the mapping of key to index for easier lookups without search
+  std::unordered_map<std::string, int> indexMap;
+  Rcpp::List subsets(treated_ids.size());
+  for(int i = 0; i < expanded_data.nrow(); i++)
+  {
+    int id_1 = expanded_data(i,0);
+    int t_1 = expanded_data(i,1);
+    
+    std::string id = std::to_string(id_1);
+    std::string t = std::to_string(t_1);
+    
+    std::string key = id + "." + t;
+    
+    indexMap[key] = i;
+    
+  }
+  
+  for(int i = 0; i < sets.size(); i++) //iterating over the matched sets
+  {
+    
+    
+    //check treated unit
+    int id_t = treated_ids[i];
+    std::string id = std::to_string(id_t);
+    
+    int t = treated_ts[i];
+    bool check_controls = true;
+    for (int j = lag; j > 0; j--)
+    {
+      int new_time = t - j;
+      std::string xx = std::to_string(new_time);
+      std::string key = id + "." + xx;
+
+      if(Rcpp::internal::Rcpp_IsNA(ordered_outcome_data[indexMap[key]]))
+      {
+        check_controls = false;
+      }
+    }
+    //check control units
+    
+    Rcpp::NumericVector control_ids = sets[i];
+    Rcpp::LogicalVector keep(control_ids.size()); //default to false
+    
+    if (check_controls)
+    {
+      for (int y = 0; y < control_ids.size(); y++) //iterating over the controls in a particular matched set
+      {
+        
+        int ctrl = control_ids[y];
+        std::string id = std::to_string(ctrl);
+        keep[y] = true;
+        for (int j = lag; j > 0; j--) //iterating over the window for each control unit
+        {
+          int new_time = t - j;
+          std::string xx = std::to_string(new_time);
+          std::string key = id + "." + xx;
+          
+          if(Rcpp::internal::Rcpp_IsNA(ordered_outcome_data[indexMap[key]]))
+          {
+            keep[y] = false;
+          } 
+        }
+      }
+      subsets[i] = control_ids[keep];
+    } else 
+    {
+      subsets[i] = control_ids[keep];
+    }
+    
+  }
+  return subsets; //then just filter empty sets when they're back.
+  
+}
