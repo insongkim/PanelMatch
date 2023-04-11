@@ -53,12 +53,12 @@
 #' In many cases, setting this to TRUE can lead to better covariate balance, especially when there is 
 #' high correlation between variables. Default is FALSE. This argument is only necessary when 
 #' \code{refinement.method = mahalanobis} and will have no impact otherwise.
-#' @param restrict.control.period (optional) integer specifying the number of pre-treatment periods that treated units and potentially matched control units should be non-NULL and in the control state. For instance, specifying 4 would mean that the treatment history cannot contain any missing data or treatment from t-4 to t.
+#' @param restrict.control.period (optional) integer specifying the number of pre-treatment periods that treated units and potentially matched control units should be non-NULL and in the control state. For instance, specifying 4 would mean that the treatment history cannot contain any missing data or treatment from t-4 to t. 
 #' @param placebo.test logical TRUE/FALSE. indicates whether or not you want to be able to run a placebo test. This will add additional requirements on the data -- specifically, it requires that no unit included in the matching/refinement process can having missing outcome data over the lag window. Additionally, you should not use the outcome variable in refinement when \code{placebo.test = TRUE}.
-#' @return \code{PanelMatch} returns an object of class "PanelMatch". This is a list that contains a few specific elements: 
+#' @return \code{PanelMatch()} returns an object of class "PanelMatch". This is a list that contains a few specific elements: 
 #' First, a \code{matched.set} object(s) that has the same name as the provided qoi if the qoi is "att", "art", or "atc". 
 #' If qoi = "ate" then two \code{matched.set} objects will be attached, named "att" and "atc." Please consult the documentation for
-#' \code{matched_set} to read more about the structure and usage of \code{matched.set} objects. Also, see the vignette page about matched.set objects for 
+#' \code{matched_set()} to read more about the structure and usage of \code{matched.set} objects. Also, see the vignette page about matched.set objects for 
 #' more information about these objects: \code{vignette("matched_set_objects", package = "PanelMatch")}.
 #' The \code{PanelMatch} object also has some additional attributes:
 #' \item{qoi}{The qoi specified in the original function call}
@@ -87,26 +87,23 @@
 #'
 #'
 #' @export
-PanelMatch <- function(lag, time.id, unit.id, treatment,
-                       refinement.method,
+PanelMatch <- function(lag, time.id, unit.id, 
+                       treatment, outcome.var,
+                       refinement.method, data,qoi,
                        size.match = 10,
-                       data,
                        match.missing = TRUE,
                        covs.formula = NULL,
-                       verbose = FALSE,
-                       qoi,
                        lead = 0,
-                       outcome.var,
+                       verbose = FALSE,
                        exact.match.variables = NULL,
                        forbid.treatment.reversal = FALSE,
                        matching = TRUE,
                        listwise.delete = FALSE,
                        use.diagonal.variance.matrix = FALSE,
                        restrict.control.period = NULL,
-                       placebo.test = FALSE
-                       ) 
+                       placebo.test = FALSE) 
 {
-  #since these features are not done yet, force them to be set to defaults
+ 
 
   
   if (placebo.test) warning("when placebo.test = TRUE, using the dependent variable in refinment is invalid")
@@ -127,7 +124,7 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
      inherits(listwise.delete, "list") & 
      inherits(use.diagonal.variance.matrix, "list")) #everything but data must be provided explicitly
   {
-    #stop("looped version of PanelMatch currently unavailable")
+    
     if(length(unique(length(lag), 
                      length(time.id), 
                      length(unit.id), 
@@ -164,8 +161,8 @@ PanelMatch <- function(lag, time.id, unit.id, treatment,
              use.diagonal.variance.matrix = use.diagonal.variance.matrix,
              restrict.control.period = restrict.control.period,
              placebo.test = placebo.test,
-             MoreArgs = list(data = data)
-             , SIMPLIFY = FALSE)
+             MoreArgs = list(data = data),
+             SIMPLIFY = FALSE)
      return(list.res)
     }
     else {
@@ -213,46 +210,45 @@ panel_match <- function(lag, time.id, unit.id, treatment,
                         restrict.control.period,
                         placebo.test)
 {
-  if (!matching & match.missing)
+  if (!matching && match.missing)
   {
     old.lag <- lag
     lag <- 1
   }
+  ##############################error checking
   if (listwise.delete & match.missing) stop("set match.missing = FALSE when listwise.delete = TRUE")
   if (lag < 1) stop("please specify a lag value >= 1")
   if (any(class(data) != "data.frame")) stop("please convert data to data.frame class")
   
   if (!all(refinement.method %in% c("mahalanobis", "ps.weight", "ps.match", "CBPS.weight", "CBPS.match", "none"))) stop("please choose a valid refinement method")
   if (any(duplicated(data[, c(unit.id, time.id)]))) stop("Time, unit combinations should uniquely identify rows. Please remove duplicates")
-  
-  
-  
   if (!inherits(data[, unit.id], "integer") && !inherits(data[, unit.id], "numeric")) stop("please convert unit id column to integer or numeric")
-  
-  
   if ( !all(c(time.id, unit.id, treatment, outcome.var)  %in% colnames(data)) ) stop("time id, unit id, outcome, or treatment column name invalid")
-  
   if (forbid.treatment.reversal && !identical(qoi, "att"))
   {
     stop("forbid.treatment.reversal = TRUE only valid for qoi = att")
   }
-  
   
   if(!is.null(restrict.control.period))
   {
     if(restrict.control.period < 1) stop("restricted control period specification must be >=1")
     if(restrict.control.period > lag) stop("restricted control period specification cannot be greater than lag")
   }
-
-  
-  #######take this out when negative lead is implemented:
   if (any(lead < 0)) stop("Please provide positive lead values. Please see the placebo_test function for more.")
+  if (!all(qoi %in% c("att", "atc", "ate", "art"))) stop("please choose a valid qoi")
+  if(any(is.na(data[, unit.id]))) stop("Cannot have NA unit ids")
+  ##############################error checking
   
+  ## balance the panel 
   if (any(table(data[, unit.id]) != max(table(data[, unit.id]))))
   {
-    testmat <- data.table::dcast(data.table::as.data.table(data), formula = paste0(unit.id, "~", time.id),
+    testmat <- data.table::dcast(data.table::as.data.table(data), 
+                                 formula = paste0(unit.id, "~", time.id),
                                  value.var = treatment)
-    d <- data.table::melt(data.table(testmat), id = unit.id, variable = time.id, value = treatment,
+    d <- data.table::melt(data.table(testmat), 
+                          id = unit.id, 
+                          variable = time.id, 
+                          value = treatment,
                           variable.factor = FALSE, value.name = treatment)
     d <- data.frame(d)[,c(1,2)]
     class(d[, 2]) <- "integer"
@@ -264,10 +260,7 @@ panel_match <- function(lag, time.id, unit.id, treatment,
     
   }
   
-  if (!all(qoi %in% c("att", "atc", "ate", "art"))) stop("please choose a valid qoi")
-  
-  
-  if(any(is.na(data[, unit.id]))) stop("Cannot have NA unit ids")
+
   ordered.data <- data[order(data[,unit.id], data[,time.id]), ]
   ordered.data <- check_time_data(ordered.data, time.id)
   
@@ -299,7 +292,7 @@ panel_match <- function(lag, time.id, unit.id, treatment,
                                 restrict.control.period = restrict.control.period,
                                 use.diag.covmat = use.diagonal.variance.matrix, 
                                 placebo.test = placebo.test)
-    #msets <- decode_index(msets, unit.index.map, og.unit.id)
+    
     if (!matching & match.missing)
     {
       attr(msets, "lag") <- old.lag
@@ -352,7 +345,7 @@ panel_match <- function(lag, time.id, unit.id, treatment,
     attr(pm.obj, "placebo.test") <- placebo.test
     return(pm.obj)
   } else if (identical(qoi, "ate"))
-  {
+  { # for ate, we have to calculate both att and atc
     msets <- perform_refinement(lag = lag, time.id = time.id, unit.id = unit.id, 
                                 treatment = treatment, 
                                 refinement.method = refinement.method,

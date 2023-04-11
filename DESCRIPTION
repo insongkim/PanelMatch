@@ -1,8 +1,8 @@
 Package: PanelMatch
 Type: Package
 Title: Matching Methods for Causal Inference with Time-Series Cross-Sectional Data
-Version: 2.0.1
-Date: 2022-06-21
+Version: 2.0.2
+Date: 2023-04-11
 Authors@R: c(
   person("In Song", "Kim", email = "insong@mit.edu", role = c("aut", "cre")),
   person("Adam", "Rauh", email = "amrauh@umich.edu", role = c("aut")),
@@ -23,11 +23,10 @@ Description: Implements a set of methodological tools
 	     treatment and covariate history. These methods include
 	     standard matching methods based on propensity score and
 	     Mahalanobis distance, as well as weighting methods. Once 
-	     matching is done, both short-term and long-term average 
-	     treatment effects for the treated can be estimated with 
-	     standard errors. The package also offers a visualization 
-	     technique that allows researchers to assess the quality 
-	     of matches by examining the resulting covariate balance.
+	     matching and refinement is done,  
+	     treatment effects can be estimated with 
+	     standard errors. The package also offers diagnostics for researchers to assess the quality 
+	     of their results.
 License: GPL(>= 3)	     
 Imports:
     Rcpp (>= 0.12.5),

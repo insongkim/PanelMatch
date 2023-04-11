@@ -79,12 +79,12 @@ Default is FALSE. If no \code{matched.set} is provided, then this argument will 
 \item{dense.plot}{logical. if TRUE, lines between tiles are removed on resulting plot. This is useful for producing more readable plots in situations where the number of units and/or time periods is very high.}
 }
 \value{
-\code{DisplayTreatment} returns a treatment variation plot (using ggplot2),
+\code{DisplayTreatment} returns a treatment variation plot (using ggplot2 geom_tile() or geom_raster()),
 which visualizes the variation of treatment across unit and time.
 }
 \description{
 \code{DisplayTreatment} visualizes the treatment distribution
-across units and time in a panel dataset
+across units and time in a panel data set
 }
 \examples{
 

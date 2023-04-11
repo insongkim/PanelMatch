@@ -9,7 +9,6 @@ get_covariate_balance(
   data,
   covariates,
   use.equal.weights = FALSE,
-  verbose = TRUE,
   plot = FALSE,
   reference.line = TRUE,
   legend = TRUE,
@@ -25,8 +24,6 @@ get_covariate_balance(
 \item{covariates}{a character vector, specifying the names of the covariates for which the user is interested in calculating balance.}
 
 \item{use.equal.weights}{logical. If set to TRUE, then equal weights will be assigned to control units, rather than using whatever calculated weights have been assigned. This is helpful for assessing the improvement in covariate balance as a result of refining the matched sets.}
-
-\item{verbose}{logical. When TRUE, the function will return more information about the calculations/results. When FALSE, a more compact version of the results/calculations are returned.}
 
 \item{plot}{logical. When TRUE, a plot showing the covariate balance calculation results will be shown. When FALSE, no plot is made, but the results of the calculations are returned. default is FALSE}
 

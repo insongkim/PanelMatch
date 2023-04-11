@@ -9,7 +9,7 @@ get_set_treatment_effects(pm.obj, data, lead)
 \arguments{
 \item{pm.obj}{an object of class \code{PanelMatch}}
 
-\item{data}{data.frame with the original data}
+\item{data}{data.frame with the time series cross sectional data used for matching, refinement, and estimation}
 
 \item{lead}{integer (or integer vector) indicating the time period(s) in the future for which the treatment effect size will be calculated. Calculations will be made for the period t + lead, where t is the time of treatment. If more than one lead value is provided, then calculations will be performed for each value.}
 }

@@ -1,5 +1,5 @@
-# check treatment and control units for treatment reversion in the lead window
-# returns treated/control observations that meet the conditions
+# check treatment and control units for treatment reversion in the lead window. Treated units must stay treated and control units must stay in control (according to the specified qoi)
+# returns matched sets that meet the conditions
 enforce_lead_restrictions <- function(matched_sets, 
                                       ordered.data, 
                                       max.lead, 
@@ -34,8 +34,8 @@ enforce_lead_restrictions <- function(matched_sets,
                                                       compmat_row_units = as.numeric(compmat[, 1]),
                                                       compmat_cols = as.numeric(colnames(compmat)[2:ncol(compmat)]),
                                                       lead = max.lead, sets = matched_sets, control_start_years = ts)
-  #probably should rename this function, but working in a similar context here so seeing if it works
-  idx <- needs_renormalization(ll)
+  # check which units need to be removed
+  idx <- needs_adjustment(ll)
   class(matched_sets) <- c("matched.set", "list")
   if (any(idx))
   {

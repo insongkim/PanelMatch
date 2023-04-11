@@ -1,6 +1,8 @@
 # handles moderating variable calculations: In practice, this just involves 
 # slicing the data up according to the moderator, 
 # calling PanelEstimate() and putting everything back together
+# This function creates the sets of objects on which PanelEstimate() will be called.
+# It identifies the set of valid values the moderating variable can take on.
 handle_moderating_variable <- function(ordered.data, att.sets, 
                                        atc.sets, PM.object,
                                        moderator, unit.id, time.id, qoi.in)
@@ -12,7 +14,7 @@ handle_moderating_variable <- function(ordered.data, att.sets,
     t.pm.object <- list()
     if(!is.null(att.set))
     {
-      #t.pm.object[["att"]] <- att.set
+      
       t.pm.object[[qoi.in]] <- att.set
     }
     if(!is.null(atc.set))

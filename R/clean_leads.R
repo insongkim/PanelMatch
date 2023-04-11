@@ -1,5 +1,6 @@
 # Function to check the lead windows in treated and control units 
 # for missing outcome data. If data is missing, remove those units from viable sets
+# returns the cleaned matched sets
 clean_leads <- function(matched_sets, 
                         ordered.data, 
                         max.lead, 

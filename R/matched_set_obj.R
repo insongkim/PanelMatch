@@ -39,7 +39,9 @@
 #' @export
 matched_set <- function(matchedsets, id, t, L, t.var, id.var, treatment.var)
 {
-  if(length(matchedsets) != length(id) | length(matchedsets) != length(t) | length(id) != length(t))
+  if(length(matchedsets) != length(id) || 
+     length(matchedsets) != length(t) || 
+     length(id) != length(t))
   {
     stop("Number of matched sets, length of t, length of id specifications do not match up")
   }
@@ -122,14 +124,14 @@ summary.matched.set <- function(object, ..., verbose = TRUE)
 #' regular histogram. See the \code{include.empty.sets} argument for more information about this.
 #'
 #' @param x a \code{matched.set} object
-#' @param ... optional arguments to be passed to \code{hist}
-#' @param border default is NA. This is the same argument as the standard argument for \code{hist}
-#' @param col default is "grey". This is the same argument as the standard argument for \code{hist}
-#' @param ylab default is "Frequency of Size". This is the same argument as the standard argument for \code{hist}
-#' @param xlab default is "Matched Set Size". This is the same argument as the standard argument for \code{hist}
-#' @param lwd default is NULL. This is the same argument as the standard argument for \code{hist}
+#' @param ... optional arguments to be passed to \code{hist()}
+#' @param border default is NA. This is the same argument as the standard argument for \code{hist()}
+#' @param col default is "grey". This is the same argument as the standard argument for \code{hist()}
+#' @param ylab default is "Frequency of Size". This is the same argument as the standard argument for \code{hist()}
+#' @param xlab default is "Matched Set Size". This is the same argument as the standard argument for \code{hist()}
+#' @param lwd default is NULL. This is the same argument as the standard argument for \code{hist()}
 #' @param main default is "Distribution of Matched Set Sizes". This is the same argument as the standard argument for \code{hist}
-#' @param freq default is TRUE. See \code{freq} argument in \code{hist} function for more.
+#' @param freq default is TRUE. See \code{freq} argument in \code{hist()} function for more.
 #' @param include.empty.sets logical value indicating whether or not empty sets should be included in the histogram. default is FALSE. If FALSE, then empty sets will be noted as a separate vertical bar at x = 0. If TRUE, empty sets will be included as normal sets.
 #'
 #' @examples
@@ -154,7 +156,10 @@ plot.matched.set <- function(x, ..., border = NA, col = "grey", ylab = "Frequenc
 
     if(include.empty.sets)
     {
-      graphics::hist(x = lvec, freq = freq, border = border, col = col, ylab = ylab, xlab = xlab, main = main, ...)
+      graphics::hist(x = lvec, freq = freq, 
+                     border = border, col = col, 
+                     ylab = ylab, xlab = xlab, 
+                     main = main, ...)
     }
     else
     {
@@ -163,7 +168,8 @@ plot.matched.set <- function(x, ..., border = NA, col = "grey", ylab = "Frequenc
       if(sum(lvec == 0) > 0)
       {
         num.empties <- as.character(sum(lvec == 0))
-        graphics::hist(x = lvec.nonempty, freq = freq, border = border, col = col, ylab = ylab,
+        graphics::hist(x = lvec.nonempty, freq = freq, 
+                       border = border, col = col, ylab = ylab,
                        xlab = xlab, main = main, ...)
         graphics::lines(x = c(0,0),
               y = c(0, num.empties),

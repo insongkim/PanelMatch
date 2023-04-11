@@ -20,11 +20,11 @@ balance_scatter(
 \arguments{
 \item{matched_set_list}{a list of one or more \code{matched.set} objects}
 
-\item{xlim}{xlim of the scatter plot. This is the same as the \code{xlim} argument in \code{plot}}
+\item{xlim}{xlim of the scatter plot. This is the same as the \code{xlim} argument in \code{plot()}}
 
-\item{ylim}{ylim of the scatter plot. This is the same as the \code{ylim} argument in \code{plot}}
+\item{ylim}{ylim of the scatter plot. This is the same as the \code{ylim} argument in \code{plot()}}
 
-\item{main}{title of the scatter plot. This is the same as the \code{main} argument in \code{plot}}
+\item{main}{title of the scatter plot. This is the same as the \code{main} argument in \code{plot()}}
 
 \item{pchs}{one or more pch indicators for the symbols on the scatter plot. You should specify a pch symbol for each matched.set you specify in matched_set_list. See \code{plot()} for more information}
 
@@ -36,7 +36,7 @@ balance_scatter(
 
 \item{y.axis.label}{y axis label}
 
-\item{...}{optional arguments to be passed to \code{plot}}
+\item{...}{optional arguments to be passed to \code{plot()}}
 }
 \description{
 Visualizing the standardized mean differences for covariates via a scatter plot.

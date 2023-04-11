@@ -86,7 +86,7 @@ placebo_test <- function(pm.obj,
       ses <- apply(placebo.results.raw$bootstrapped.estimates, 
                    2, 
                    sd, 
-                   na.rm = T)
+                   na.rm = TRUE)
       ret.results <- list(estimates = placebo.results.raw$estimates,
                           bootstrapped.estimates = placebo.results.raw$bootstrapped.estimates,
                           standard.errors = ses)

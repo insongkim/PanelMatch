@@ -5,7 +5,7 @@
 #'
 #' Calculate the size of treatment effects for each matched set.
 #' @param pm.obj an object of class \code{PanelMatch}
-#' @param data data.frame with the original data
+#' @param data data.frame with the time series cross sectional data used for matching, refinement, and estimation
 #' @param lead integer (or integer vector) indicating the time period(s) in the future for which the treatment effect size will be calculated. Calculations will be made for the period t + lead, where t is the time of treatment. If more than one lead value is provided, then calculations will be performed for each value.
 #' @return a list equal in length to the number of lead periods specified to the \code{lead} argument. Each element in the list is a vector of the matched set level effects.
 #' @examples
@@ -24,7 +24,8 @@
 
 get_set_treatment_effects <- function(pm.obj, data, lead)
 {
-  return(lapply(lead, calculate_set_effects, pm.obj = pm.obj, data.in = data))
+  return(lapply(lead, calculate_set_effects, 
+                pm.obj = pm.obj, data.in = data))
   
 }
 
@@ -59,7 +60,8 @@ calculate_set_effects <- function(pm.obj, data.in, lead)
   }
   
   rownames(data.in) <- paste0(data.in[, id.var], ".", data.in[, t.var])
-  
+  # unlike in PanelEstimate(), we calculate the set level effects using brute force estimator
+  # get_ind_effects implements brute force approach. Point estimates from both methods should match
   get_ind_effects <- function(mset, data_in, 
                               lead.val,
                               mset.name,
@@ -91,8 +93,6 @@ calculate_set_effects <- function(pm.obj, data.in, lead)
     } else {
       ind.effects <- treat.diff - sum(attr(mset, "weights") * control.diffs)
     }
-    
-    
     denom <- attr(mset, "treatment.change")
     if (use.abs.value) denom <- abs(denom)
     if (is.atc) denom <- 1

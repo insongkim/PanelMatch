@@ -1,7 +1,7 @@
+# calculates weights for units for weighting-based
+# refinement methods 
 ########################################################################
-######################## calculates weights for units for weighting-based
-######################## refinement methods ########################
-########################################################################
+# returns weighted matched sets
 handle_ps_weighted <- function(just.ps.sets, msets, refinement.method)
 {
   handle_set <- function(set)

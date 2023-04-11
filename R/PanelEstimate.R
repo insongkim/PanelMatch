@@ -1,7 +1,7 @@
 #' PanelEstimate
 #'
 #' \code{PanelEstimate} estimates a causal quantity of interest, including the average treatment effect for
-#' treated or control units (att and atc, respectively), the average effect of treatment reversal on reversed units, or average treatment effect (ate), as specified in \code{PanelMatch()}.
+#' treated or control units (att and atc, respectively), the average effect of treatment reversal on reversed units (art), or average treatment effect (ate), as specified in \code{PanelMatch()}.
 #' This is done by estimating the counterfactual outcomes for each treated unit using
 #' matched sets. Users will provide matched sets that were obtained by the
 #' \code{PanelMatch} function and obtain point estimates via a
@@ -13,16 +13,16 @@
 #'
 #' @param sets A \code{PanelMatch} object attained via the
 #' \code{PanelMatch()} function.
-#' @param data The same time series cross sectional data set provided to the PanelMatch function used to produce
+#' @param data The same time series cross sectional data set provided to the \code{PanelMatch()} function used to produce
 #' the matched sets.
-#' @param se.method Method used for calculating standard errors, provided as a character string. Users must choose between "bootstrap", "conditional", and "unconditional" methods. Default is "bootstrap". "bootstrap" uses a block bootstrapping procedure to calculate standard errors. The conditional method calculates the variance of the estimator, assuming independence across units but not across time. The unconditional method also calculates the variance of the estimator analytically, but makes no such assumptions about independence across units. When the quantity of interest is "att", "atc", or "art", all methods are available. Only "bootstrap" is available for the ate. See Section 3.4 of Imai, Kim, and Wang (2021) for more details.
-#' @param number.iterations If using bootstrapping for calculating standard errors, this is the number of bootstrap iterations. Provide as integer. If se.method is not equal to "bootstrap", this argument has no effect.
+#' @param se.method Method used for calculating standard errors, provided as a character string. Users must choose between "bootstrap", "conditional", and "unconditional" methods. Default is "bootstrap". "bootstrap" uses a block bootstrapping procedure to calculate standard errors. The conditional method calculates the variance of the estimator, assuming independence across units but not across time. The unconditional method also calculates the variance of the estimator analytically, but makes no such assumptions about independence across units. When the quantity of interest is "att", "atc", or "art", all methods are available. Only "bootstrap" is available for the ate. If \code{pooled} argument is TRUE, then only bootstrap is available. 
+#' @param number.iterations If using bootstrapping for calculating standard errors, this is the number of bootstrap iterations. Provide as integer. If \code{se.method} is not equal to "bootstrap", this argument has no effect.
 #' @param df.adjustment A logical value indicating whether or not a
 #' degree-of-freedom adjustment should be performed for the standard error
 #' calculation. The default is \code{FALSE}. This parameter is only available for the bootstrap method of standard error calculation.
 #' @param confidence.level A numerical value specifying the confidence level and range of interval
 #' estimates for statistical inference. The default is .95.
-#' @param moderator The name of a moderating variable, provided as a character string. If a moderating variable is provided,the returned object will be a list of \code{PanelEstimate} objects. The names of the list will reflect the different values of the moderating variable. More specifically, the moderating variable values will be converted to syntactically proper names using \code{make.names}.
+#' @param moderator The name of a moderating variable, provided as a character string. If a moderating variable is provided,the returned object will be a list of \code{PanelEstimate} objects. The names of the list will reflect the different values of the moderating variable. More specifically, the moderating variable values will be converted to syntactically proper names using \code{make.names()}.
 #' @param pooled Logical. If TRUE, estimates and standard errors are returned for treatment effects pooled across the entire lead window. Only available for \code{se.method = ``bootstrap''}
 #' 
 #' @return \code{PanelEstimate} returns a list of class
@@ -38,6 +38,7 @@
 #' \item{qoi}{the quantity of interest}
 #' \item{matched.sets}{the refined matched sets used to produce the estimations}
 #' \item{standard.error}{the standard error(s) of the point estimates}
+#' \item{pooled}{Logical indicating whether or not estimates were calculated for individual lead periods or pooled.}
 #'
 #' @references Imai, Kosuke, In Song Kim, and Erik Wang (2021)
 #' @author In Song Kim <insong@mit.edu>, Erik Wang
@@ -63,7 +64,7 @@ PanelEstimate <- function(sets, data,
                           se.method = "bootstrap",
                           pooled = FALSE)
 {
-  #se.method <- "bootstrap"
+  
   if (pooled && !identical(se.method, "bootstrap"))
   {
     se.method = "bootstrap"
@@ -75,8 +76,11 @@ PanelEstimate <- function(sets, data,
       inherits(confidence.level, "list")& 
       inherits(sets, "list") == "list")
   {
-    if (length(unique(length(se.method), length(number.iterations), length(df.adjustment),
-                      length(confidence.level), length(sets))) == 1)
+    if (length(unique(length(se.method), 
+                      length(number.iterations), 
+                      length(df.adjustment),
+                      length(confidence.level), 
+                      length(sets))) == 1)
     {
       if(!is.null(moderator))
       {
@@ -85,35 +89,50 @@ PanelEstimate <- function(sets, data,
                                    se.method.in, number.iterations.in, 
                                    df.adjustment.in, confidence.level.in)
         {
-          if(attr(sets.in, "qoi") == "att")
+          
+          if (attr(sets.in, "qoi") == "att")
           {
             s1 = sets.in[["att"]]
             unit.id <- attr(s1, "id.var")
             time.id <- attr(s1, "t.var")
           }
-          if(attr(sets.in, "qoi") == "atc")
+          if (attr(sets.in, "qoi") == "atc")
           {
             s1 = sets.in[["atc"]]
             unit.id <- attr(s1, "id.var")
             time.id <- attr(s1, "t.var")
           }
-          if(attr(sets.in, "qoi") == "ate")
+          if (attr(sets.in, "qoi") == "ate")
           { #can assume they are the same
             s1 <- sets.in[["att"]]
             # sets[["atc"]]
             unit.id <- attr(s1, "id.var")
             time.id <- attr(s1, "t.var")
+          } 
+          if (attr(sets.in, "qoi") == "art")
+          {
+            s1 <- sets.in[["art"]]
+            unit.id <- attr(s1, "id.var")
+            time.id <- attr(s1, "t.var")
+          }
+          
+          if ((attr(sets.in, "qoi") == "art") || 
+              (attr(sets.in, "qoi") == "att"))
+          {
+            att.sets.in <- s1
+          } else {
+            att.sets.in <- NULL
           }
           
           ordered.data <- data[order(data[,unit.id], data[,time.id]), ]
-          
           set.list <- handle_moderating_variable(ordered.data = ordered.data,
-                                                 att.sets = sets.in[["att"]],
-                                                 atc.sets = sets.in[["atc"]],
+                                                 att.sets = att.sets.in,
+                                                 atc.sets = sets[["atc"]],
                                                  moderator = moderating.variable.in,
-                                                 unit.id = unit.id, time.id = time.id,
-                                                 PM.object = sets.in)
-          
+                                                 unit.id = unit.id, 
+                                                 time.id = time.id,
+                                                 PM.object = sets, 
+                                                 qoi.in = attr(sets, "qoi"))
           res <- lapply(set.list, FUN = panel_estimate, 
                         se.method = se.method, 
                         number.iterations = number.iterations.in,
@@ -189,7 +208,7 @@ PanelEstimate <- function(sets, data,
       } else {
         att.sets.in <- NULL
       }
-      #this might be wrong...
+      # again, functionally treating art and att the same for moderating variable functionality. no need to create separate argument for art sets
       ordered.data <- data[order(data[,unit.id], data[,time.id]), ]
       set.list <- handle_moderating_variable(ordered.data = ordered.data,
                                              att.sets = att.sets.in,
@@ -243,8 +262,7 @@ panel_estimate <- function(sets,
   if (!inherits(sets, "PanelMatch")) stop("sets parameter is not a PanelMatch object")
   qoi <- attr(sets, "qoi")
   
-  
-  #this is just for meta data extraction
+  #this is just for metadata extraction
   if (qoi == "ate")
   {
     t.sets <- sets[["att"]]
@@ -252,13 +270,12 @@ panel_estimate <- function(sets,
     sets.x <- t.sets[sapply(t.sets, length) > 0]
     sets.y <- t.sets.2[sapply(t.sets.2, length) > 0]
     if (length(sets.x) == 0 && length(sets.y) == 0) stop("do not have adequate data to proceed")
-    ##stop("qoi = ate no longer supported")
   }
   else
   {
     t.sets <- sets[[qoi]]
   }
-  # sets <- sets[sapply(sets, length) > 0] REPLACE THIS BELOW!!!!
+  
   if (length(t.sets) == 0)
   {
     return(NA)
@@ -269,18 +286,15 @@ panel_estimate <- function(sets,
   treatment <- attr(t.sets, "treatment.var")
   unit.id <- attr(t.sets, "id.var")
   time.id <- attr(t.sets, "t.var")
-  #method = inference
-  #method <- attr(t.sets, "refinement.method")
   
-  #forbid.treatment.reversal <- attr(t.sets, "forbid.treatment.reversal")
-  #add in checks about forbid.treatment.reversal and wfe, etc.
+  if (any(class(data) != "data.frame")){
+    stop("please convert data to data.frame class")
+  } 
   
-  if (any(class(data) != "data.frame")) stop("please convert data to data.frame class")
-  
-  
-  #if (!class(data[, unit.id]) %in% c("integer", "numeric")) stop("please convert unit id column to integer or numeric")
   if (!inherits(data[, unit.id], "integer") && 
-      !inherits(data[, unit.id], "numeric")) stop("please convert unit id column to integer or numeric")
+      !inherits(data[, unit.id], "numeric")){
+    stop("please convert unit id column to integer or numeric")
+  } 
   
   
   if (any(table(data[, unit.id]) != max(table(data[, unit.id]))))
@@ -293,11 +307,12 @@ panel_estimate <- function(sets,
                           variable.factor = FALSE, value.name = treatment)
     d <- data.frame(d)[,c(1,2)]
     class(d[, 2]) <- "integer"
-    data <- merge(data.table::data.table(d), data.table::data.table(data), all.x = TRUE, by = c(unit.id, time.id))
+    data <- merge(data.table::data.table(d), 
+                  data.table::data.table(data), 
+                  all.x = TRUE, by = c(unit.id, time.id))
     data <- as.data.frame(data)
     
   }
-  check_time_data(data, time.id)
   
   data <- data[order(data[,unit.id], data[,time.id]), ]
   data <- check_time_data(data, time.id)
@@ -323,17 +338,20 @@ panel_estimate <- function(sets,
   }
   if (identical(qoi, "att") || identical(qoi, "art"))
   {
-    sets.att <- sets[[qoi]] #art = att from here on out
+    sets.att <- sets[[qoi]] #art is functionally equivalent to att from here on out
     sets.atc <- NULL
     sets.att <- sets.att[sapply(sets.att, length) > 0]
   }
   
-  if (qoi == "att" || qoi == "art" || qoi == "ate")
+  if (qoi == "att" || 
+      qoi == "art" || 
+      qoi == "ate")
   {
     treated.unit.ids.att <- as.numeric(sub("\\..*", "", names(sets.att)))
     if (identical(qoi, "att") || identical(qoi, "art")) treated.unit.ids.atc <- NULL
   }
-  if (qoi == "atc" || qoi == "ate")
+  if (qoi == "atc" || 
+      qoi == "ate")
   {
     treated.unit.ids.atc <- as.numeric(sub("\\..*", "", names(sets.atc)))
     if (identical(qoi, "att")) treated.unit.ids.att <- NULL

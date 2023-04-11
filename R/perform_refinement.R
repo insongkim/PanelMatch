@@ -1,6 +1,7 @@
 # Performs refinement on matched sets
 # The function mostly calls lower level functions that apply the specified 
 # refinement processes
+# Returns refined matched sets
 perform_refinement <- function(lag, time.id, unit.id, treatment, 
                                refinement.method, size.match,
                                ordered.data, match.missing, covs.formula, 
@@ -14,7 +15,6 @@ perform_refinement <- function(lag, time.id, unit.id, treatment,
                                restrict.control.period = NULL)
 {
 
-  if ( !is.null(mset.object) ) stop('This should never run!')
   if (inherits(ordered.data[, unit.id], "numeric"))
   {
     warning("converting unit id variable data to integer")
@@ -197,7 +197,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment,
 
     old.lag <- lag
     lag <- 0
-    tlist <- expand.treated.ts(lag, treated.ts = treated.ts)
+    tlist <- expand.treated.ts(lag, treated.ts)
 
     idxlist <- get_yearly_dmats(ordered.data, 
                                 treated.ids,
@@ -233,7 +233,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment,
     expanded.sets.t0 <- build_ps_data(idxlist, ordered.data, lag)
     pre.pooled <- data.table::rbindlist(expanded.sets.t0)
     pooled <- unique(pre.pooled[complete.cases(pre.pooled), ])
-
+    # Do what we can to minimize computational errors
     cols.to.remove <- which(unlist(lapply(pooled, 
                                           function(x){all(x[1] == x)}))) 
     #checking for columns that only have one value
@@ -254,11 +254,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment,
     }
     if(qr(pooled)$rank != ncol(pooled))
     {
-
-
       stop("Error: Provided data is not linearly independent so calculations cannot be completed. Please check the data set for any redundant, unnecessary, or problematic information.")
-
-
     }
     if(refinement.method == "CBPS.weight" || 
        refinement.method == "CBPS.match")

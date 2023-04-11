@@ -1,16 +1,20 @@
-lwd_units <- function(full.local.data, unit.id)
-{
-  ld <- full.local.data[, c(1, 4:ncol(full.local.data)), drop = F]
-  idx <- unlist(by(ld, as.factor(ld[, unit.id]), FUN = function(x) any(!complete.cases(x))))
-  units.to.remove <- as.numeric(names(idx)[idx])
-  sub.data <- subset(full.local.data, !full.local.data[, unit.id] %in% units.to.remove)
-  return(as.matrix(sub.data))
-}
+####################################################################################
+####################################################################################
+####### Performing listwise deletion requires specialized refinement procedures.
+####### This file contains helper functions for carrying out those procedures.
+####### They are largely modified/adapted versions of other refinement code
+####################################################################################
+####################################################################################
 
+####################################################################################
+# master function that performs refinement with listwise deletion = TRUE
+####################################################################################
 #global.data needs to be fully prepped/parsed data set that is internally balanced, full of NAs likely
 lwd_refinement <- function(msets, global.data, treated.ts, 
-                           treated.ids, lag, time.id, unit.id, lead, refinement.method, treatment, size.match,
-                           match.missing, covs.formula, verbose, outcome.var, e.sets,use.diag.covmat)
+                           treated.ids, lag, time.id, unit.id, 
+                           lead, refinement.method, treatment, size.match,
+                           match.missing, covs.formula, verbose, 
+                           outcome.var, e.sets,use.diag.covmat)
 {
   #extract other attributes about the msets object, attach to individual mset for consistency
   
@@ -18,23 +22,22 @@ lwd_refinement <- function(msets, global.data, treated.ts,
   terms <- gsub(" ", "", terms) #remove whitespace
   lag.calls <- terms[grepl("lag(*)", terms)] #regex to get calls to lag function
   if(any(grepl("=", lag.calls))) stop("fix lag calls to use only unnamed arguments in the correct positions")
-  lag.calls <- gsub(pattern = "\"", replacement = "", lag.calls, fixed = T)
-  lag.calls <- gsub(pattern = "\'", replacement = "", lag.calls, fixed = T)
-  lag.calls <- gsub(pattern = "lag(", replacement = "", lag.calls, fixed = T)
-  lag.vars <- unlist(strsplit(lag.calls, split = ","))[c(T,F)]
+  lag.calls <- gsub(pattern = "\"", replacement = "", lag.calls, fixed = TRUE)
+  lag.calls <- gsub(pattern = "\'", replacement = "", lag.calls, fixed = TRUE)
+  lag.calls <- gsub(pattern = "lag(", replacement = "", lag.calls, fixed = TRUE)
+  lag.vars <- unlist(strsplit(lag.calls, split = ","))[c(TRUE,FALSE)]
   if(length(lag.calls) > 0)
   {
-    lag.nums <- unlist(strsplit(lag.calls, split = ","))[c(F,T)]
-    lag.nums <- as.numeric(gsub(")", "", unlist(strsplit(lag.nums, split = ":"))[c(F,T)]))
+    lag.nums <- unlist(strsplit(lag.calls, split = ","))[c(FALSE,TRUE)]
+    lag.nums <- as.numeric(gsub(")", "", unlist(strsplit(lag.nums, split = ":"))[c(FALSE,TRUE)]))
     max.lag <- max(lag.nums)
     stm <- max.lag + 1
-    global.data <- do.call(rbind, by(global.data, as.factor(global.data[, unit.id]), function(x) x[stm:nrow(x), ] ))
+    global.data <- do.call(rbind, 
+                           by(global.data, as.factor(global.data[, unit.id]), 
+                              function(x) x[stm:nrow(x), ] ))
     rownames(global.data) <- NULL
     global.data <- as.matrix(global.data[order(global.data[,unit.id], global.data[, time.id]), ] )
   }  
-
-  
-  
   if(length(msets) == 0) stop("There are no matched sets!")
   new.msets <- list()
   for(i in 1:length(msets))
@@ -50,18 +53,18 @@ lwd_refinement <- function(msets, global.data, treated.ts,
       if(uid %in% viable.units)
       {
         mset <- msets[i]
-        
         controls <- mset[[1]]
         controls <- controls[controls %in% viable.units]
         mset[[1]] <- controls
         
         if(length(mset[[1]]) > 0 ) # do something else if we delete everything because of listwise deletion
         {
-          
           if(refinement.method == "mahalanobis")
           {
-            tset <- set_lwd_refinement(mset, localdata, time, uid, lag, refinement.method, lead, 
-                                       verbose, size.match, unit.id, time.id, covs.formula, match.missing, treatment,
+            tset <- set_lwd_refinement(mset, localdata, time, uid, lag, 
+                                       refinement.method, lead, 
+                                       verbose, size.match, unit.id, time.id, 
+                                       covs.formula, match.missing, treatment,
                                        use.diag.covmat = use.diag.covmat)  
             new.msets[[i]] <- tset
           } else
@@ -80,8 +83,7 @@ lwd_refinement <- function(msets, global.data, treated.ts,
     }
     
   }
-  
-  t.newsets <- unlist(new.msets, recursive = F)
+  t.newsets <- unlist(new.msets, recursive = FALSE)
   idx <- sapply(t.newsets, function(x) !any(is.na(x)))
   t.newsets <- t.newsets[idx]
   if(length(t.newsets) == 0) stop("There are no matched sets!")
@@ -89,14 +91,16 @@ lwd_refinement <- function(msets, global.data, treated.ts,
   treated.ids <- as.numeric(sub("\\..*", "", names(t.newsets)))
   if(refinement.method != "mahalanobis")
   {
-    
-    t.newsets <- set_lwd_refinement(t.newsets, global.data, treated.ts, treated.ids, lag, refinement.method, lead, 
-                                              verbose, size.match, unit.id, time.id, covs.formula, match.missing, treatment,
+    t.newsets <- set_lwd_refinement(t.newsets, global.data, 
+                                    treated.ts, treated.ids, 
+                                    lag, refinement.method, lead, 
+                                    verbose, size.match, unit.id, 
+                                    time.id, covs.formula, 
+                                    match.missing, treatment,
                                     use.diag.covmat = use.diag.covmat)
   }
   
   class(e.sets) <- 'list'
-  
   treated.ts <- as.numeric(sub(".*\\.", "", names(e.sets)))
   treated.ids <- as.numeric(sub("\\..*", "", names(e.sets)))
   
@@ -117,11 +121,8 @@ lwd_refinement <- function(msets, global.data, treated.ts,
       {
         esetlist[i] <- TRUE
       }
-      
     }
-    
     e.sets <- e.sets[esetlist]
-    
     t.newsets <- c(t.newsets, e.sets)
   }
   
@@ -136,9 +137,14 @@ lwd_refinement <- function(msets, global.data, treated.ts,
   attr(t.newsets, "match.missing") <- match.missing
   return(t.newsets)
 }
-
+####################################################################################
+###### refinement must be performed at the individual set level
+###### This function handles individual set refinement
+####################################################################################
 set_lwd_refinement <- function(mset, local.data, time, id, 
-                               lag, refinement.method, lead, verbose, size.match, unit.id, time.id, covs.formula, match.missing,
+                               lag, refinement.method, lead, verbose, 
+                               size.match, unit.id, time.id, 
+                               covs.formula, match.missing,
                                treatment, use.diag.covmat)
 {
   treated.ts <- time
@@ -149,24 +155,39 @@ set_lwd_refinement <- function(mset, local.data, time, id,
   {
     old.lag <- lag
     lag <- 0
-    tlist <- expand.treated.ts(lag, treated.ts = treated.ts)
-    idxlist <- get_yearly_dmats(ordered.data, treated.ids, tlist, matched_sets = msets, lag)
-    mahalmats <- build_maha_mats(ordered_expanded_data = ordered.data, idx =  idxlist)
-    msets <- handle_mahalanobis_calculations(mahalmats, msets, size.match, verbose, use.diagonal.covmat = use.diag.covmat)
+    tlist <- expand.treated.ts(lag, treated.ts)
+    idxlist <- get_yearly_dmats(ordered.data, 
+                                treated.ids, 
+                                tlist, 
+                                msets, 
+                                lag)
+    mahalmats <- build_maha_mats(ordered_expanded_data = ordered.data, 
+                                 idx = idxlist)
+    msets <- handle_mahalanobis_calculations(mahalmats, 
+                                             msets, 
+                                             size.match, 
+                                             verbose, 
+                                             use.diag.covmat)
     lag <- old.lag
   }
-  #not msm
+  
   if(all(refinement.method %in% c("CBPS.weight", "CBPS.match", "ps.weight", "ps.match")))
   {
     if(!all(refinement.method %in% c("CBPS.weight", "CBPS.match", "ps.weight", "ps.match"))) stop("please choose valid refinement method")
-    tlist <- expand.treated.ts(lag, treated.ts = treated.ts)
-    idxlist <- get_yearly_dmats(ordered.data, treated.ids, tlist, matched_sets = msets, lag)
+    tlist <- expand.treated.ts(lag, treated.ts)
+    idxlist <- get_yearly_dmats(ordered.data, 
+                                treated.ids, 
+                                tlist, 
+                                msets, 
+                                lag)
     expanded.sets.t0 <- build_ps_data(idxlist, ordered.data, lag)
-    pre.pooled <- rbindlist(expanded.sets.t0)
+    pre.pooled <- data.table::rbindlist(expanded.sets.t0)
     pooled <- unique(pre.pooled[complete.cases(pre.pooled), ])
     
-    cols.to.remove <- which(unlist(lapply(pooled, function(x){all(x[1] == x)}))) #checking for columns that only have one value
-    cols.to.remove <- unique(c(cols.to.remove, which(!colnames(pooled) %in% colnames(t(unique(t(pooled))))))) #removing columns that are identical to another column 
+    cols.to.remove <- which(unlist(lapply(pooled, 
+                                          function(x){all(x[1] == x)}))) #checking for columns that only have one value
+    cols.to.remove <- unique(c(cols.to.remove, 
+                               which(!colnames(pooled) %in% colnames(t(unique(t(pooled))))))) #removing columns that are identical to another column 
     cols.to.remove <- cols.to.remove[cols.to.remove > 3] #leave the first three columns alone
     if(length(cols.to.remove) > 0)
     {
@@ -183,24 +204,26 @@ set_lwd_refinement <- function(mset, local.data, time, id,
       stop("Error: Provided data is not linearly independent so calculations cannot be completed. Please check the data set for any redundant, unnecessary, or problematic information.")
       
     }
-    if(refinement.method == "CBPS.weight" | refinement.method == "CBPS.match")
+    if(refinement.method == "CBPS.weight" || refinement.method == "CBPS.match")
     {
-      dummy <-capture.output(fit0 <- (CBPS::CBPS(reformulate(response = treatment, termlabels = colnames(pooled)[-c(1:3)]), 
+      dummy <-capture.output(fit0 <- (CBPS::CBPS(reformulate(response = treatment, 
+                                                             termlabels = colnames(pooled)[-c(1:3)]), 
                                           family = binomial(link = "logit"), data = pooled)))
     }
-    if(refinement.method == "ps.weight" | refinement.method == "ps.match")
+    if(refinement.method == "ps.weight" || refinement.method == "ps.match")
     {
-      fit0 <- glm(reformulate(response = treatment, termlabels = colnames(pooled)[-c(1:3)]), 
+      fit0 <- glm(reformulate(response = treatment, 
+                              termlabels = colnames(pooled)[-c(1:3)]), 
                   family = binomial(link = "logit"), data = pooled)
     }
     
     just.ps.sets <- find_ps(expanded.sets.t0, fit0)
     
-    if(refinement.method == "CBPS.weight" | refinement.method == "ps.weight")
+    if(refinement.method == "CBPS.weight" || refinement.method == "ps.weight")
     {
       msets <- handle_ps_weighted(just.ps.sets, msets, refinement.method)
     }
-    if(refinement.method == "CBPS.match" | refinement.method == "ps.match")
+    if(refinement.method == "CBPS.match" || refinement.method == "ps.match")
     {
       msets <- handle_ps_match(just.ps.sets, msets, refinement.method, verbose, size.match)
       attr(msets, "max.match.size") <- size.match
@@ -215,4 +238,18 @@ set_lwd_refinement <- function(mset, local.data, time, id,
   attr(msets, "covs.formula") <- covs.formula
   attr(msets, "match.missing") <- match.missing
   return(msets)
+}
+
+# helper function that actually subsets sets down to contain units with complete data
+lwd_units <- function(full.local.data, unit.id)
+{
+  # can assume the structure of the data such that columns 4 and higher are relevant covariate data
+  ld <- full.local.data[, c(1, 4:ncol(full.local.data)), drop = FALSE]
+  idx <- unlist(by(ld, 
+                   as.factor(ld[, unit.id]), 
+                   FUN = function(x) any(!complete.cases(x))))
+  units.to.remove <- as.numeric(names(idx)[idx])
+  sub.data <- subset(full.local.data, 
+                     !full.local.data[, unit.id] %in% units.to.remove)
+  return(as.matrix(sub.data))
 }

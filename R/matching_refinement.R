@@ -1,3 +1,7 @@
+####################################
+#### Functions for handling matching-based refinement: After refinement, each matched set will have an equal number of control units with identical, non-zero weights. Other control units in the matched set will have weights of 0. These refinement procedures can be completed based on mahalanobis distance, or (covariate balanced) propensity scores.
+################################################################
+####################################################################
 #builds the matrices that we will then use to calculate the mahalanobis distances for each matched set
 build_maha_mats <- function(idx, ordered_expanded_data)
 {
@@ -13,8 +17,9 @@ build_maha_mats <- function(idx, ordered_expanded_data)
   return(result)
 }
 
-# Each of the following similarly named functions carry out the refinement procedures -- using either propensity scores or mahalanobis distances according to the paper. Each of these functions
-# will return a matched.set object with the appropriate weights for control units assigned and new, additional attributes (such as refinement method).
+# Each of the following similarly named functions
+# will return a matched.set object with the appropriate 
+# weights for control units assigned and new, additional attributes (such as refinement method).
 handle_mahalanobis_calculations <- function(mahal.nested.list, 
                                             msets,
                                             max.size, 
@@ -27,7 +32,8 @@ handle_mahalanobis_calculations <- function(mahal.nested.list,
     {
       return(1)
     }
-    cov.data <- year.df[1:(nrow(year.df) - 1), 4:ncol(year.df), drop = FALSE]
+    cov.data <- year.df[1:(nrow(year.df) - 1), 
+                        4:ncol(year.df), drop = FALSE]
     if(use.diagonal.covmat)
     {
       cov.matrix <- diag(apply(cov.data, 2, var), ncol(cov.data), ncol(cov.data))
@@ -35,12 +41,14 @@ handle_mahalanobis_calculations <- function(mahal.nested.list,
     {
       cov.matrix <- cov(cov.data)
     }
-    
+    #### try to preemptively address some simple computational problems
     center.data <- year.df[nrow(year.df), 4:ncol(year.df), drop = FALSE]
-    if(isTRUE(all.equal(det(cov.matrix), 0, tolerance = .00001))) #might not be the conditions we want precisely
+    if(isTRUE(all.equal(det(cov.matrix), 0, tolerance = .00001))) #setting tolerance here seemed to reduce some computational/instability issues.
     {
-      cols.to.remove <- which(apply(cov.data, 2, function(x) isTRUE(length(unique(x)) == 1))) #checking for columns that only have one value
-      cols.to.remove <- unique(c(cols.to.remove, which(!colnames(cov.data) %in% colnames(t(unique(t(cov.data))))))) #removing columns that are identical to another column
+      cols.to.remove <- which(apply(cov.data, 2, 
+                                    function(x) isTRUE(length(unique(x)) == 1))) #checking for columns that only have one value
+      cols.to.remove <- unique(c(cols.to.remove, 
+                                 which(!colnames(cov.data) %in% colnames(t(unique(t(cov.data))))))) #removing columns that are identical to another column
       if(length(cols.to.remove) > 0 & length(cols.to.remove) < ncol(cov.data))
       {
         cov.data <- cov.data[, -cols.to.remove, drop = FALSE]
@@ -91,14 +99,15 @@ handle_mahalanobis_calculations <- function(mahal.nested.list,
     else
     {
       ordered.dists <- sort(n.dists)
-      scoretobeat <- max(utils::head(ordered.dists, n = max.set.size + 1))
+      scoretobeat <- max(utils::head(ordered.dists, 
+                                     n = max.set.size + 1))
       # might have situation where the Mth largest distance is the same as the Mth - 1 distance. This means that we either choose to leave out both and have a matched set smaller than the max,
       # or include both of them and relax the size of our maximum set size
       
       # rounding distances to avoid computational bugs/inconsistencies that popped up
       dists <- round(dists, 5)
       scoretobeat <- round(scoretobeat, 5)
-      if(sum(dists < scoretobeat) < max.set.size) #change this if we want to be more strict about max.set.size enforcements
+      if(sum(dists < scoretobeat) < max.set.size) 
       {
         new.denom <- sum(dists <= scoretobeat)
         newdists <- ifelse(dists <= scoretobeat, 1 / new.denom, 0)
@@ -132,7 +141,9 @@ handle_mahalanobis_calculations <- function(mahal.nested.list,
       return(dists)
     }
     
-    full.scores <- mapply(FUN = handle_set_verbose, sub.list = mahal.nested.list, SIMPLIFY = FALSE)
+    full.scores <- mapply(FUN = handle_set_verbose, 
+                          sub.list = mahal.nested.list,
+                          SIMPLIFY = FALSE)
     
     for(i in 1:length(msets))
     {
@@ -178,8 +189,6 @@ handle_ps_match <- function(just.ps.sets, msets,
       {
         wts <- ifelse(dists < dist.to.beat & dists > 0, (1 / max.size), 0)
       }
-      
-      
     }
     return(wts)
   }

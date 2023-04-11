@@ -1,7 +1,8 @@
 #### helper functions for applying the formula supplied to the covs.formula argument
 
 # accepts formula and data, creates the data used for refinement
-# data has unit, time, treatment, everything else column order at this point
+# data has unit, time, treatment columns in that order, followed by everything else 
+# function returns the data in that format as well.
 parse_and_prep <- function(formula, data)
 {
   internal.lag <- function (x, n = 1L, default = NA)
@@ -24,6 +25,7 @@ parse_and_prep <- function(formula, data)
   {
     attr(form, ".Environment") <- environment()
     tdf <- model.frame(form, x, na.action = NULL)
+    # unit, time, treatment columns are safely in these positions
     cbind(x[, c(1, 2, 3)], model.matrix(form, tdf)[, -1])
   }
   
@@ -44,12 +46,11 @@ merge_formula <- function(form1, form2)
   # create the merged rhs and lhs in character string form
   rhs <- c(rhs1, rhs2)
   
-  # put the two sides together with the amazing
+  # put the two sides together with 
   # reformulate function
   out <- reformulate(rhs)
   
-  # set the environment of the formula (i.e. where should
-  # R look for variables when data aren't specified?)
+  # set the environment of the formula
   environment(out) <- environment(form1)
   
   return(out)

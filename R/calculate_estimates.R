@@ -1,5 +1,6 @@
 # calculates estimates and standard errors within PanelEstimate()
-# creates PanelEstimate objects
+# calls the appropriate helper functions for each step
+# creates and returns a PanelEstimate object
 calculate_estimates <- function(qoi.in, data.in, lead,
                                number.iterations,
                                att.treated.unit.ids,
@@ -55,7 +56,8 @@ calculate_estimates <- function(qoi.in, data.in, lead,
                 "lead" = lead, "confidence.level" = confidence.level, 
                 "qoi" = "ate", "matched.sets" = list(att = att.sets, 
                                                      atc = atc.sets),
-                "se.method" = se.method)
+                "se.method" = se.method,
+                "pooled" = pooled)
     } else {
       z <- list(
         "estimates" = pt.estimates,
@@ -67,7 +69,8 @@ calculate_estimates <- function(qoi.in, data.in, lead,
         "confidence.level" = confidence.level,
         "qoi" = qoi.in,
         "matched.sets" = sets,
-        "se.method" = se.method
+        "se.method" = se.method,
+        "pooled" = pooled
       )
     }
     
@@ -98,7 +101,8 @@ calculate_estimates <- function(qoi.in, data.in, lead,
               "confidence.level" = confidence.level,
               "qoi" = qoi.in,
               "matched.sets" = sets,
-              "se.method" = se.method)
+              "se.method" = se.method,
+              "pooled" = pooled)
     class(z) <- "PanelEstimate"
     return(z)
     
@@ -124,7 +128,8 @@ calculate_estimates <- function(qoi.in, data.in, lead,
               "confidence.level" = confidence.level,
               "qoi" = qoi.in,
               "matched.sets" = sets,
-              "se.method" = se.method)
+              "se.method" = se.method,
+              "pooled" = pooled)
     class(z) <- "PanelEstimate"
     return(z)
     

@@ -8,15 +8,15 @@
 #' refers to balance after refinement. Users can utilize parameters powered by \code{plot()}
 #' in base R to further customize the figure.
 #' @param matched_set_list a list of one or more \code{matched.set} objects
-#' @param xlim xlim of the scatter plot. This is the same as the \code{xlim} argument in \code{plot}
-#' @param ylim ylim of the scatter plot. This is the same as the \code{ylim} argument in \code{plot}
-#' @param main title of the scatter plot. This is the same as the \code{main} argument in \code{plot}
+#' @param xlim xlim of the scatter plot. This is the same as the \code{xlim} argument in \code{plot()}
+#' @param ylim ylim of the scatter plot. This is the same as the \code{ylim} argument in \code{plot()}
+#' @param main title of the scatter plot. This is the same as the \code{main} argument in \code{plot()}
 #' @param x.axis.label x axis label
 #' @param y.axis.label y axis label
 #' @param pchs one or more pch indicators for the symbols on the scatter plot. You should specify a pch symbol for each matched.set you specify in matched_set_list. See \code{plot()} for more information
 #' @param covariates variables for which balance is displayed
 #' @param data the same time series cross sectional data set used to create the matched sets.
-#' @param ... optional arguments to be passed to \code{plot}
+#' @param ... optional arguments to be passed to \code{plot()}
 #' @author In Song Kim <insong@mit.edu>, Erik Wang
 #' <haixiao@Princeton.edu>, Adam Rauh <amrauh@umich.edu>, and Kosuke Imai <imai@harvard.edu>
 #'
@@ -97,18 +97,19 @@ balance_scatter <- function(matched_set_list,
   # extract values for x-axis from the non-refined sets
   benchmark <- as.vector(non_refined_balance)
   
-  
   compared <- sapply(refined_balance, 
                      function(x) x <- x[1:(nrow(x)),])
-  
+  ## create the plot
   graphics::plot(abs(as.numeric(benchmark)),
-                 abs(as.numeric(compared[,1])), pch = 1,
+                 abs(as.numeric(compared[,1])), 
+                 pch = 1,
                  xlab = x.axis.label,
                  ylab = y.axis.label,
                  xlim = xlim,
                  ylim = ylim,
                  main = main,
-                 font.main = 1, ...)
+                 font.main = 1, 
+                 ...)
   
   if (length(refined_balance) > 1) {
     for (j in 2:length(refined_balance)) {

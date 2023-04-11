@@ -1,9 +1,9 @@
 # performs exact matching on time invariant variables.
 # Eventually will be replaced with caliper functionality
+# returns matched sets with exact matching applied as a filter
 do_exact_matching <- function(sets, balanced.panel.data, exact.match.vars)
 {
   L <- attr(sets, "lag")
-  
   ts <- as.numeric(sub(".*\\.", "", names(sets)))
   make.years <- function(t, repnum)
   {

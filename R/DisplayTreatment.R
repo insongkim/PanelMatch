@@ -1,7 +1,7 @@
 #' DisplayTreatment
 #' 
 #' \code{DisplayTreatment} visualizes the treatment distribution
-#' across units and time in a panel dataset
+#' across units and time in a panel data set
 #'
 #' @param unit.id Name of the unit identifier variable as a character string
 #' @param time.id Name of the time identifier variable as a character string
@@ -29,7 +29,7 @@
 #' @param hide.x.tick.label logical. If TRUE, x axis tick labels are not shown. Default is FALSE. 
 #' @param hide.y.tick.label logical. If TRUE, y axis tick labels are not shown. Default is FALSE.
 #' @param dense.plot logical. if TRUE, lines between tiles are removed on resulting plot. This is useful for producing more readable plots in situations where the number of units and/or time periods is very high.
-#' @return \code{DisplayTreatment} returns a treatment variation plot (using ggplot2),
+#' @return \code{DisplayTreatment} returns a treatment variation plot (using ggplot2 geom_tile() or geom_raster()),
 #' which visualizes the variation of treatment across unit and time.
 #' @author In Song Kim <insong@mit.edu>, Erik Wang
 #' <haixiao@Princeton.edu>, Adam Rauh <amrauh@umich.edu>, and Kosuke Imai <imai@harvard.edu>
@@ -242,8 +242,9 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
   {
     pjp <- p
   } else {
-    pjp <- p + scale_y_discrete(expand = c(0, 0), 
-                                labels = unique(as.character(data$unit.id))) + 
+    pjp <- p + 
+      scale_y_discrete(expand = c(0, 0), 
+                       labels = unique(as.character(data$unit.id))) + 
       ggtitle(title) + xlab(xlab) + ylab(ylab)
   }
 

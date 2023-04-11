@@ -49,14 +49,14 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// needs_renormalization
-Rcpp::LogicalVector needs_renormalization(Rcpp::List set_index_list);
-RcppExport SEXP _PanelMatch_needs_renormalization(SEXP set_index_listSEXP) {
+// needs_adjustment
+Rcpp::LogicalVector needs_adjustment(Rcpp::List set_index_list);
+RcppExport SEXP _PanelMatch_needs_adjustment(SEXP set_index_listSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Rcpp::List >::type set_index_list(set_index_listSEXP);
-    rcpp_result_gen = Rcpp::wrap(needs_renormalization(set_index_list));
+    rcpp_result_gen = Rcpp::wrap(needs_adjustment(set_index_list));
     return rcpp_result_gen;
 END_RCPP
 }

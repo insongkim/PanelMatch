@@ -13,8 +13,8 @@ prep_lead_years <- function(ts, lead_window) {
     .Call('_PanelMatch_prep_lead_years', PACKAGE = 'PanelMatch', ts, lead_window)
 }
 
-needs_renormalization <- function(set_index_list) {
-    .Call('_PanelMatch_needs_renormalization', PACKAGE = 'PanelMatch', set_index_list)
+needs_adjustment <- function(set_index_list) {
+    .Call('_PanelMatch_needs_adjustment', PACKAGE = 'PanelMatch', set_index_list)
 }
 
 equality_four_cpp <- function(Wit_vals, y, z) {

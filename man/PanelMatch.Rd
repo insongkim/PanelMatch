@@ -9,15 +9,15 @@ PanelMatch(
   time.id,
   unit.id,
   treatment,
+  outcome.var,
   refinement.method,
-  size.match = 10,
   data,
+  qoi,
+  size.match = 10,
   match.missing = TRUE,
   covs.formula = NULL,
-  verbose = FALSE,
-  qoi,
   lead = 0,
-  outcome.var,
+  verbose = FALSE,
   exact.match.variables = NULL,
   forbid.treatment.reversal = FALSE,
   matching = TRUE,
@@ -38,14 +38,18 @@ variable in the \code{data}. This data currently must be formatted as sequential
 \item{treatment}{A character string indicating the name of the treatment variable in the \code{data}. 
 The treatment must be a binary indicator variable (integer with 0 for the control group and 1 for the treatment group).}
 
+\item{outcome.var}{A character string identifying the outcome variable.}
+
 \item{refinement.method}{A character string specifying the matching or weighting method to be used for refining the matched sets. The user can choose "mahalanobis", "ps.match", "CBPS.match", "ps.weight", "CBPS.weight", or "none". The first three methods will use the \code{size.match} argument to create sets of at most \code{size.match} closest control units. Choosing "none" will assign equal weights to all control units in each matched set.}
+
+\item{data}{A \code{data.frame} object containing time series cross sectional data. 
+Time data must be sequential integers that increase by 1. Unit identifiers must be integers. Treatment data must be binary.}
+
+\item{qoi}{quantity of interest, provided as a string: \code{att} (average treatment effect on treated units), \code{atc} (average treatment effect of treatment on the control units) \code{art} (average effect of treatment reversal for units that experience treatment reversal), or \code{ate} (average treatment effect).}
 
 \item{size.match}{An integer dictating the number of permitted closest control units in a matched set after refinement. 
 This argument only affects results when using a matching method ("mahalanobis" or any of the refinement methods that end in ".match").
 This argument is not needed and will have no impact if included when a weighting method is specified (any \code{refinement.method} that includes "weight" in the name).}
-
-\item{data}{A \code{data.frame} object containing time series cross sectional data. 
-Time data must be sequential integers that increase by 1. Unit identifiers must be integers. Treatment data must be binary.}
 
 \item{match.missing}{Logical variable indicating whether or not units should be matched on the patterns of missingness in their treatment histories. Default is TRUE. When FALSE, neither treated nor control units are allowed to have missing treatment data in the lag window.}
 
@@ -59,15 +63,11 @@ and use them for defining/measuring similarity between units.
 Other transformations using the I() function, such as I(x^2) are also permitted.
 The variables specified in this formula are used to define the similarity/distances between units.}
 
-\item{verbose}{option to include more information about the \code{matched.set} object calculations, 
-like the distances used to create the refined sets and weights.}
-
-\item{qoi}{quantity of interest, provided as a string: \code{att} (average treatment effect on treated units), \code{atc} (average treatment effect of treatment on the control units) \code{art} (average effect of treatment reversal for units that experience treatment reversal), or \code{ate} (average treatment effect).}
-
 \item{lead}{integer sequence specifying the lead window, for which qoi point estimates (and standard errors) will 
 ultimately be produced. Default is 0 (which corresponds to contemporaneous treatment effect).}
 
-\item{outcome.var}{A character string identifying the outcome variable.}
+\item{verbose}{option to include more information about the \code{matched.set} object calculations, 
+like the distances used to create the refined sets and weights.}
 
 \item{exact.match.variables}{character vector giving the names of variables to be exactly matched on. These should be time invariant variables. 
 Exact matching for time varying covariates is not currently supported.}
@@ -92,10 +92,10 @@ high correlation between variables. Default is FALSE. This argument is only nece
 \item{placebo.test}{logical TRUE/FALSE. indicates whether or not you want to be able to run a placebo test. This will add additional requirements on the data -- specifically, it requires that no unit included in the matching/refinement process can having missing outcome data over the lag window. Additionally, you should not use the outcome variable in refinement when \code{placebo.test = TRUE}.}
 }
 \value{
-\code{PanelMatch} returns an object of class "PanelMatch". This is a list that contains a few specific elements: 
+\code{PanelMatch()} returns an object of class "PanelMatch". This is a list that contains a few specific elements: 
 First, a \code{matched.set} object(s) that has the same name as the provided qoi if the qoi is "att", "art", or "atc". 
 If qoi = "ate" then two \code{matched.set} objects will be attached, named "att" and "atc." Please consult the documentation for
-\code{matched_set} to read more about the structure and usage of \code{matched.set} objects. Also, see the vignette page about matched.set objects for 
+\code{matched_set()} to read more about the structure and usage of \code{matched.set} objects. Also, see the vignette page about matched.set objects for 
 more information about these objects: \code{vignette("matched_set_objects", package = "PanelMatch")}.
 The \code{PanelMatch} object also has some additional attributes:
 \item{qoi}{The qoi specified in the original function call}

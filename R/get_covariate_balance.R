@@ -7,7 +7,6 @@
 #' Balance is calculated for each period in the specified lag window.
 #' @param matched.sets A \code{matched.set} object
 #' @param data The time series cross sectional data set (as a \code{data.frame} object) used to produce the \code{matched.set} object. This data set should be identical to the one passed to \code{PanelMatch()} and \code{PanelEstimate()} to ensure consistent results.
-#' @param verbose logical. When TRUE, the function will return more information about the calculations/results. When FALSE, a more compact version of the results/calculations are returned.
 #' @param plot logical. When TRUE, a plot showing the covariate balance calculation results will be shown. When FALSE, no plot is made, but the results of the calculations are returned. default is FALSE
 #' @param covariates a character vector, specifying the names of the covariates for which the user is interested in calculating balance.
 #' @param reference.line logical indicating whether or not a horizontal line should be present on the plot at y = 0. Default is TRUE.
@@ -33,7 +32,6 @@ get_covariate_balance <- function(matched.sets,
                                   data, 
                                   covariates,
                                   use.equal.weights = FALSE,
-                                  verbose = TRUE,
                                   plot = FALSE,
                                   reference.line = TRUE,
                                   legend = TRUE, 
@@ -120,11 +118,11 @@ get_covariate_balance <- function(matched.sets,
   }
   treated.ts <- as.integer(sub(".*\\.", "", names(matched.sets)))
   treated.ids <- as.integer(sub("\\..*", "", names(matched.sets)))
-  tlist <- expand.treated.ts(lag, treated.ts = treated.ts)
+  tlist <- expand.treated.ts(lag, treated.ts)
   
   
   idxlist <- get_yearly_dmats(as.matrix(ordered.data), treated.ids, tlist, 
-                              matched_sets = matched.sets, lag)
+                              matched.sets, lag)
   
   
   balance_mats <- build_balance_mats(ordered_expanded_data = ordered.data, 
@@ -238,17 +236,19 @@ get_covariate_balance <- function(matched.sets,
 #helper function 
 build_balance_mats <- function(idx, ordered_expanded_data, msets)
 {
-  
   subset.per.matchedset <- function(sub.idx, set)
   {
     
-    wts <- attr(set, "weights")[which(set == ordered_expanded_data[sub.idx[1:(length(sub.idx) - 1)], attr(msets, "id.var")])]
-    return(cbind(ordered_expanded_data[sub.idx,], data.frame("weights" = c(wts, Inf))))
+    wts <- attr(set, "weights")[which(set == ordered_expanded_data[sub.idx[1:(length(sub.idx) - 1)], 
+                                                                   attr(msets, "id.var")])]
+    return(cbind(ordered_expanded_data[sub.idx,], 
+                 data.frame("weights" = c(wts, Inf))))
   }
   unnest <- function(mset.idx, mset)
   {
     lapply(mset.idx, subset.per.matchedset, set = mset)
   }
-  result <- mapply(FUN = unnest, mset.idx = idx, mset = msets, SIMPLIFY = FALSE)
+  result <- mapply(FUN = unnest, mset.idx = idx, 
+                   mset = msets, SIMPLIFY = FALSE)
   return(result)
 }

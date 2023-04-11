@@ -3,6 +3,8 @@
 # indicator variables.
 # This function prepares the data within PanelEstimate() such that the estimates
 # can be calculated easily.
+
+# returns a data.frame object
 prepare_data <- function(data.in, lead, sets.att = NULL,
                         sets.atc = NULL,
                         qoi.in, dependent.variable)

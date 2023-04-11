@@ -42,11 +42,13 @@ summary.PanelEstimate <- function(object, verbose = TRUE,
     {
       cat("Weighted Difference-in-Differences with Mahalanobis Distance\n")
     } 
-    if (refinement.method == "ps.weight" | refinement.method == "ps.match") 
+    if (refinement.method == "ps.weight" || 
+        refinement.method == "ps.match") 
     {
       cat("Weighted Difference-in-Differences with Propensity Score\n")
     } 
-    if (refinement.method == "CBPS.weight" | refinement.method == "CBPS.match") 
+    if (refinement.method == "CBPS.weight" || 
+        refinement.method == "CBPS.match") 
     {
       cat("Weighted Difference-in-Differences with Covariate Balancing Propensity Score\n")
     }
@@ -57,7 +59,8 @@ summary.PanelEstimate <- function(object, verbose = TRUE,
           object$bootstrap.iterations, "Weighted bootstrap samples\n")  
     }
     
-    if (identical(object$se.method, "conditional") || identical(object$se.method, "unconditional"))
+    if (identical(object$se.method, "conditional") || 
+        identical(object$se.method, "unconditional"))
     {
       cat("\nStandard errors computed with", 
           object$se.method, "method\n")
@@ -86,27 +89,30 @@ summary.PanelEstimate <- function(object, verbose = TRUE,
   if (bias.corrected && identical(object$se.method, "bootstrap"))
   {
     if (!identical(object$se.method, "bootstrap")) stop("bias corrected estimates only available for bootstrap method currently")
-    df <- rbind(t(as.data.frame(object$estimates)), # point estimate
-                
-                apply(object$bootstrapped.estimates, 2, sd, na.rm = T), # bootstrap se
-                
+    a1 <- t(as.data.frame(object$estimates))
+    a2 <- apply(object$bootstrapped.estimates, 2, sd, na.rm = TRUE)
+    a3 <- apply(object$bootstrapped.estimates, 2, 
+          quantile, 
+          probs = c( (1 - object$confidence.level)/2, 
+                     object$confidence.level + (1 - object$confidence.level)/2 ), 
+          na.rm = TRUE)
+    a4 <- 2*object$estimates - colMeans(object$bootstrapped.estimates, na.rm = TRUE)
+    a5 <- apply( (2*matrix(nrow = object$bootstrap.iterations, 
+                     ncol = length(object$estimates), 
+                     object$estimates, byrow = TRUE) - object$bootstrapped.estimates), 
+           2, 
+           quantile, 
+           probs = c((1 - object$confidence.level)/2, 
+                     object$confidence.level + (1 - object$confidence.level)/2), 
+           na.rm = TRUE)
+    df <- rbind(a1, # point estimate
+                a2, # bootstrap se
                 # Efron & Tibshirani 1993 p170 - 171
-                apply(object$bootstrapped.estimates, 2, 
-                      quantile, 
-                      probs = c( (1 - object$confidence.level)/2, 
-                                 object$confidence.level + (1 - object$confidence.level)/2 ), 
-                      na.rm = T), # percentile confidence.level
+                a3, # percentile confidence.level
                 # Efron & Tibshirani 1993 p138
-                2*object$estimates - colMeans(object$bootstrapped.estimates, na.rm = T), # bc point estimate
-                
-                apply( (2*matrix(nrow = object$bootstrap.iterations, 
-                                 ncol = length(object$estimates), 
-                                 object$estimates, byrow = TRUE) - object$bootstrapped.estimates), 
-                       2, 
-                       quantile, 
-                       probs = c((1 - object$confidence.level)/2, 
-                                 object$confidence.level + (1 - object$confidence.level)/2), 
-                       na.rm = T) ) # bc percentile confidence.level)
+                a4, # bc point estimate
+                a5) # bc percentile confidence.level)
+    
     rownames(df) <- c("estimate", "std.error", 
                       paste0((1 - object$confidence.level)/2 * 100, "%"),
                       paste0( (object$confidence.level + (1 - object$confidence.level)/2) * 100, "%"),
@@ -118,15 +124,16 @@ summary.PanelEstimate <- function(object, verbose = TRUE,
   {
     if ( identical(object$se.method, "bootstrap") )
     {
-      df <- rbind(t(as.data.frame(object$estimates)), # point estimate
-                  
-                  apply(object$bootstrapped.estimates, 2, sd, na.rm = T), # bootstrap se
-                  
-                  # Efron & Tibshirani 1993 p170 - 171
-                  apply(object$bootstrapped.estimates, 2, quantile, 
-                        probs = c( (1 - object$confidence.level)/2, 
-                                   object$confidence.level + (1 - object$confidence.level)/2 ), 
-                        na.rm = T))
+      a1 <- t(as.data.frame(object$estimates))
+      a2 <- apply(object$bootstrapped.estimates, 2, sd, na.rm = TRUE)
+      a3 <- apply(object$bootstrapped.estimates, 2, quantile, 
+            probs = c( (1 - object$confidence.level)/2, 
+                       object$confidence.level + (1 - object$confidence.level)/2 ), 
+            na.rm = TRUE)
+      df <- rbind(a1, # point estimate
+                  a2, # bootstrap se
+                  a3) # Efron & Tibshirani 1993 p170 - 171
+      
       rownames(df) <- c("estimate", "std.error", 
                         paste0((1 - object$confidence.level)/2 * 100, "%"),
                         paste0( (object$confidence.level + (1 - object$confidence.level)/2) * 100, "%"))
@@ -177,13 +184,13 @@ summary.PanelEstimate <- function(object, verbose = TRUE,
 #' The only mandatory argument is an object of the \code{PanelEstimate} class.
 #'
 #' @param x a \code{PanelEstimate} object
-#' @param ylab default is "Estimated Effect of Treatment. This is the same argument as the standard argument for \code{plot}
-#' @param xlab default is "Time". This is the same argument as the standard argument for \code{plot}
+#' @param ylab default is "Estimated Effect of Treatment." This is the same argument as the standard argument for \code{plot()}
+#' @param xlab default is "Time". This is the same argument as the standard argument for \code{plot()}
 #' @param main default is "Estimated Effects of Treatment Over Time". This is the same argument as the standard argument for \code{plot}
-#' @param ylim default is NULL. This is the same argument as the standard argument for \code{plot}
-#' @param pch default is NULL. This is the same argument as the standard argument for \code{plot}
-#' @param cex default is NULL. This is the same argument as the standard argument for \code{plot}
-#' @param ... Additional optional arguments to be passed to \code{plot}.
+#' @param ylim default is NULL. This is the same argument as the standard argument for \code{plot()}
+#' @param pch default is NULL. This is the same argument as the standard argument for \code{plot()}
+#' @param cex default is NULL. This is the same argument as the standard argument for \code{plot()}
+#' @param ... Additional optional arguments to be passed to \code{plot()}.
 #' @examples
 #' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
 #'                          treatment = "dem", refinement.method = "mahalanobis", 
@@ -197,7 +204,8 @@ summary.PanelEstimate <- function(object, verbose = TRUE,
 #'
 #' @method plot PanelEstimate
 #' @export
-plot.PanelEstimate <- function(x, ylab = "Estimated Effect of Treatment", 
+plot.PanelEstimate <- function(x, 
+                               ylab = "Estimated Effect of Treatment", 
                                xlab = "Time", 
                                main = "Estimated Effects of Treatment Over Time",
                                ylim = NULL, 
@@ -226,7 +234,12 @@ plot.PanelEstimate <- function(x, ylab = "Estimated Effect of Treatment",
   graphics::plot(x = 1:(nrow(plot.data)),y = plot.data[, 1],
                  xaxt = "n", ylab = ylab, xlab = xlab, 
                  main = main, ylim = ylim, pch = pch, cex = cex, ...)
-  graphics::axis(side = 1, at = 1:nrow(plot.data), labels = rownames(plot.data))
-  graphics::segments(1:(nrow(plot.data)), plot.data[,3], 1:(nrow(plot.data)), plot.data[,4])
+  graphics::axis(side = 1, 
+                 at = 1:nrow(plot.data), 
+                 labels = rownames(plot.data))
+  graphics::segments(1:(nrow(plot.data)), 
+                     plot.data[,3], 
+                     1:(nrow(plot.data)), 
+                     plot.data[,4])
   graphics::abline(h = 0, lty = "dashed")
 }

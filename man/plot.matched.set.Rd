@@ -20,21 +20,21 @@
 \arguments{
 \item{x}{a \code{matched.set} object}
 
-\item{...}{optional arguments to be passed to \code{hist}}
+\item{...}{optional arguments to be passed to \code{hist()}}
 
-\item{border}{default is NA. This is the same argument as the standard argument for \code{hist}}
+\item{border}{default is NA. This is the same argument as the standard argument for \code{hist()}}
 
-\item{col}{default is "grey". This is the same argument as the standard argument for \code{hist}}
+\item{col}{default is "grey". This is the same argument as the standard argument for \code{hist()}}
 
-\item{ylab}{default is "Frequency of Size". This is the same argument as the standard argument for \code{hist}}
+\item{ylab}{default is "Frequency of Size". This is the same argument as the standard argument for \code{hist()}}
 
-\item{xlab}{default is "Matched Set Size". This is the same argument as the standard argument for \code{hist}}
+\item{xlab}{default is "Matched Set Size". This is the same argument as the standard argument for \code{hist()}}
 
-\item{lwd}{default is NULL. This is the same argument as the standard argument for \code{hist}}
+\item{lwd}{default is NULL. This is the same argument as the standard argument for \code{hist()}}
 
 \item{main}{default is "Distribution of Matched Set Sizes". This is the same argument as the standard argument for \code{hist}}
 
-\item{freq}{default is TRUE. See \code{freq} argument in \code{hist} function for more.}
+\item{freq}{default is TRUE. See \code{freq} argument in \code{hist()} function for more.}
 
 \item{include.empty.sets}{logical value indicating whether or not empty sets should be included in the histogram. default is FALSE. If FALSE, then empty sets will be noted as a separate vertical bar at x = 0. If TRUE, empty sets will be included as normal sets.}
 }

@@ -18,19 +18,19 @@
 \arguments{
 \item{x}{a \code{PanelEstimate} object}
 
-\item{ylab}{default is "Estimated Effect of Treatment. This is the same argument as the standard argument for \code{plot}}
+\item{ylab}{default is "Estimated Effect of Treatment." This is the same argument as the standard argument for \code{plot()}}
 
-\item{xlab}{default is "Time". This is the same argument as the standard argument for \code{plot}}
+\item{xlab}{default is "Time". This is the same argument as the standard argument for \code{plot()}}
 
 \item{main}{default is "Estimated Effects of Treatment Over Time". This is the same argument as the standard argument for \code{plot}}
 
-\item{ylim}{default is NULL. This is the same argument as the standard argument for \code{plot}}
+\item{ylim}{default is NULL. This is the same argument as the standard argument for \code{plot()}}
 
-\item{pch}{default is NULL. This is the same argument as the standard argument for \code{plot}}
+\item{pch}{default is NULL. This is the same argument as the standard argument for \code{plot()}}
 
-\item{cex}{default is NULL. This is the same argument as the standard argument for \code{plot}}
+\item{cex}{default is NULL. This is the same argument as the standard argument for \code{plot()}}
 
-\item{...}{Additional optional arguments to be passed to \code{plot}.}
+\item{...}{Additional optional arguments to be passed to \code{plot()}.}
 }
 \description{
 The \code{plot.PanelEstimate} method takes an object returned by the \code{PanelEstimate} function and plots the calculated 

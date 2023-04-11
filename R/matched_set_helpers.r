@@ -107,7 +107,7 @@ get.matchedsets <- function(t, id, data, L, t.column, id.column, treatedvar,
                             restrict.control.period = NULL)
 {
 
-  if (length(t) == 0 | length(id) == 0)
+  if (length(t) == 0 || length(id) == 0)
   {
     stop("time and/or unit information missing")
   }
@@ -125,19 +125,15 @@ get.matchedsets <- function(t, id, data, L, t.column, id.column, treatedvar,
   if (classes[id.column] != "integer")
   {
     stop("unit id variable data provided not integer")
-    #data[, id.column] <- as.integer(data[, id.column])
   }
 
   d <- data[, c(id.column, t.column, treatedvar)]
   d <- as.matrix(d)
   if (!is.numeric(d)) stop('data in treated, time, or id columns is not numeric')
 
-  
-  
-
   compmat <- data.table::dcast(data.table::as.data.table(d), 
                                formula = paste0(id.column, "~", t.column),
-                               value.var = treatedvar) #reshape the data so each row corresponds to a unit, columns specify treatment ove time
+                               value.var = treatedvar) #reshape the data so each row corresponds to a unit, columns specify treatment over time
   
   
   if (match.on.missingness)
@@ -206,6 +202,10 @@ get.matchedsets <- function(t, id, data, L, t.column, id.column, treatedvar,
    
 }
 
+############################################################
+#### This function calculates the differences from t-1 to 1 for treated and control units in the treatment variable
+#### While functionality is somewhat trivial for current implementation of package, it will be needed for multicategorical treatment version.
+############################################################
 extract.differences <- function(indexed.data, matched.set, 
                                 treatment.variable,
                                 qoi)
@@ -267,7 +267,8 @@ expand.treated.ts <- function(lag, treated.ts)
 {
   helper <- function(treated.t)
   {
-    return(seq(from =  (treated.t - lag), to = treated.t, by = 1))
+    return(seq(from =  (treated.t - lag), 
+               to = treated.t, by = 1))
   }
   lapply(treated.ts, helper)
 }

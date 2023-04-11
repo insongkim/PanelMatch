@@ -1,4 +1,5 @@
 # calculates point estimates for PanelEstimate()
+# returns a vector of point estimates
 calculate_point_estimates <- function(qoi.in, data.in, lead,
                                       outcome.variable,
                                       pooled = FALSE)
@@ -45,15 +46,13 @@ calculate_point_estimates <- function(qoi.in, data.in, lead,
       names(o.coefs) <- NULL
     }
   } else if (identical(qoi.in, "ate")) {
-    o.coefs_att <-  sapply(data.in[, sapply(lead, function(x) paste0("Wit_att", 
-                                                                     x)),
+    o.coefs_att <-  sapply(data.in[, sapply(lead, function(x) paste0("Wit_att", x)),
                                    drop = FALSE],
                            equality_four,
                            y = data.in[c(outcome.variable)][,1],
                            z = data.in$dits_att)
     
-    o.coefs_atc <-  -sapply(data.in[, sapply(lead, function(x) paste0("Wit_atc",
-                                                                      x)),
+    o.coefs_atc <-  -sapply(data.in[, sapply(lead, function(x) paste0("Wit_atc",x)),
                                     drop = FALSE],
                             equality_four,
                             y = data.in[c(outcome.variable)][,1],

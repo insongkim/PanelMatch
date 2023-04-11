@@ -90,11 +90,10 @@ Rcpp::NumericVector sumwits(int nrow, std::vector<double> &vit_vect)
 
 /*
  * 
- * this function provides us an index of which matched sets need to have their weights updated. It just iterates over the more detailed index found in earlier functions so that we aren't
- * pointlessly iterating over matched sets that don't need to be adjusted.
+ * this function provides us an index of which matched sets need to be adjusted because they have missing data
  */
 // [[Rcpp::export]]
-Rcpp::LogicalVector needs_renormalization(Rcpp::List set_index_list)
+Rcpp::LogicalVector needs_adjustment(Rcpp::List set_index_list)
 {
 	
 	Rcpp::LogicalVector rewt(set_index_list.size());
