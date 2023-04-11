@@ -289,6 +289,10 @@ perform_refinement <- function(lag, time.id, unit.id, treatment,
       attr(msets, "max.match.size") <- size.match
     }
   }
+  if(refinement.method == "mahalanobis")
+  {
+    attr(msets, "max.match.size") <- size.match
+  }
   t.attributes <- attributes(msets)[names(attributes(msets)) != "names"]
   msets <- c(msets, e.sets)
   for(idx in names(t.attributes))
