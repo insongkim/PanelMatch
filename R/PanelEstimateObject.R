@@ -190,6 +190,7 @@ summary.PanelEstimate <- function(object, verbose = TRUE,
 #' @param ylim default is NULL. This is the same argument as the standard argument for \code{plot()}
 #' @param pch default is NULL. This is the same argument as the standard argument for \code{plot()}
 #' @param cex default is NULL. This is the same argument as the standard argument for \code{plot()}
+#' @param include.placebo Logical. If TRUE, then the results of the placebo test are included on the plot. Note that, by definition, the results for t-1 will be 0. This requires that \code{PanelEstimate()} was run with the placebo test option set to \code{TRUE}. If FALSE, the results are not included. Default is FALSE. Please see \code{placebo_test()} and \code{PanelEstimate()} for more information. 
 #' @param ... Additional optional arguments to be passed to \code{plot()}.
 #' @examples
 #' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
@@ -211,12 +212,32 @@ plot.PanelEstimate <- function(x,
                                ylim = NULL, 
                                pch = NULL,
                                cex = NULL,
+                               include.placebo = FALSE,
                                ...)
 {
   
+  
+  if (include.placebo)
+  {
+    if (is.null(x[["placebo.test"]]))
+    {
+      stop("placebo test data is missing! Please re-run PanelEstimate() with include.placebo.test = TRUE.")
+    }
+    pt.data <- summarize_placebo_data(x[["placebo.test"]], 
+                                      x[["confidence.level"]], 
+                                      x[["se.method"]])
+    pt.data <- rbind(pt.data, 0)
+    rownames(pt.data)[nrow(pt.data)] <- "t-1"
+  }
   pe.object <- x
   plot.data <- summary(pe.object, 
                        verbose = FALSE, bias.corrected = FALSE)
+  
+  if (include.placebo)
+  {
+    plot.data <- rbind(pt.data, plot.data)
+  }
+  
   if (is.null(ylim))
   {
     ylim <- c(min(plot.data[, 3]) - abs(mean(plot.data[, 3])),

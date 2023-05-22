@@ -24,6 +24,7 @@
 #' estimates for statistical inference. The default is .95.
 #' @param moderator The name of a moderating variable, provided as a character string. If a moderating variable is provided,the returned object will be a list of \code{PanelEstimate} objects. The names of the list will reflect the different values of the moderating variable. More specifically, the moderating variable values will be converted to syntactically proper names using \code{make.names()}.
 #' @param pooled Logical. If TRUE, estimates and standard errors are returned for treatment effects pooled across the entire lead window. Only available for \code{se.method = ``bootstrap''}
+#' @param include.placebo.test Logical. If TRUE, a placebo test is run and returned in the results. The placebo test uses the same specifications for calculating standard errors as the main results. That is, standard errors are calculated according to the user provided \code{se.method} and \code{confidence.level} arguments. If these are invalid for some reason, an error will be thrown. 
 #' 
 #' @return \code{PanelEstimate} returns a list of class
 #' `PanelEstimate' containing the following components:
@@ -39,7 +40,7 @@
 #' \item{matched.sets}{the refined matched sets used to produce the estimations}
 #' \item{standard.error}{the standard error(s) of the point estimates}
 #' \item{pooled}{Logical indicating whether or not estimates were calculated for individual lead periods or pooled.}
-#'
+#' \item{placebo.test}{if \code{include.placebo.test = TRUE}, a placebo test is conducted using \code{placebo_test()} and returned as a list. See documentation for \code{placebo_test()} for more about each individual item.}
 #' @references Imai, Kosuke, In Song Kim, and Erik Wang (2021)
 #' @author In Song Kim <insong@mit.edu>, Erik Wang
 #' <haixiao@Princeton.edu>, Adam Rauh <amrauh@umich.edu>, and Kosuke Imai <imai@harvard.edu>
@@ -53,8 +54,6 @@
 #'                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = TRUE)
 #' PE.results <- PanelEstimate(sets = PM.results, data = dem, number.iterations = 100)
 #'
-#'
-#'
 #' @export
 PanelEstimate <- function(sets, data,
                           number.iterations = 1000,
@@ -62,7 +61,8 @@ PanelEstimate <- function(sets, data,
                           confidence.level = .95,
                           moderator = NULL,
                           se.method = "bootstrap",
-                          pooled = FALSE)
+                          pooled = FALSE,
+                          include.placebo.test = FALSE)
 {
   
   if (pooled && !identical(se.method, "bootstrap"))
@@ -139,7 +139,8 @@ PanelEstimate <- function(sets, data,
                         df.adjustment = df.adjustment.in, 
                         confidence.level = confidence.level.in, 
                         data = data,
-                        pooled = pooled)
+                        pooled = pooled, 
+                        include.placebo.test = include.placebo.test)
           return(res)
         }
         res <- mapply(FUN = handle.nesting, 
@@ -162,7 +163,8 @@ PanelEstimate <- function(sets, data,
                      sets = sets,
                      MoreArgs = list(data = data, 
                                      se.method = se.method,
-                                     pooled = pooled),
+                                     pooled = pooled,
+                                     include.placebo.test = include.placebo.test),
                      SIMPLIFY = FALSE)
       }
       
@@ -227,7 +229,8 @@ PanelEstimate <- function(sets, data,
                     df.adjustment = df.adjustment, 
                     confidence.level = confidence.level, 
                     data = data,
-                    pooled = pooled)
+                    pooled = pooled, 
+                    include.placebo.test = include.placebo.test)
       
     }
     else
@@ -238,7 +241,8 @@ PanelEstimate <- function(sets, data,
                            confidence.level = confidence.level, 
                            sets = sets, 
                            data = data,
-                           pooled = pooled)
+                           pooled = pooled, 
+                           include.placebo.test = include.placebo.test)
     }
     
   }
@@ -254,11 +258,15 @@ panel_estimate <- function(sets,
                            confidence.level = .95,
                            placebo.test = FALSE,
                            placebo.lead = NULL,
-                           pooled = FALSE)
+                           pooled = FALSE, 
+                           include.placebo.test = FALSE)
 {
-  
   lead <- attr(sets, "lead")
   outcome.variable <- attr(sets, "outcome.var")
+  if (include.placebo.test == TRUE)
+  {
+    old.data <- data
+  }
   if (!inherits(sets, "PanelMatch")) stop("sets parameter is not a PanelMatch object")
   qoi <- attr(sets, "qoi")
   
@@ -367,7 +375,6 @@ panel_estimate <- function(sets,
   
   if (placebo.test)
   {
-    
     pe.results <- calculate_placebo_estimates(qoi.in = qoi,
                                             data.in = data,
                                             lead = lead,
@@ -383,8 +390,6 @@ panel_estimate <- function(sets,
                                             placebo.lead = placebo.lead,
                                             se.method = se.method)
   } else {
-    
-    
     
     pe.results <- calculate_estimates(qoi.in = qoi,
                                      data.in = data,
@@ -404,9 +409,20 @@ panel_estimate <- function(sets,
    
     
   }
+  
+  if (include.placebo.test == TRUE)
+  {
+    pt.results <- placebo_test(sets,
+                               old.data,
+                               number.iterations = number.iterations,
+                               confidence.level = confidence.level,
+                               plot = FALSE,
+                               se.method = se.method)
+    pe.results[["placebo.test"]] <- pt.results
+  }
+  
+  
+  
   return(pe.results)
-  
-  
-  
   
 }

@@ -12,7 +12,8 @@ PanelEstimate(
   confidence.level = 0.95,
   moderator = NULL,
   se.method = "bootstrap",
-  pooled = FALSE
+  pooled = FALSE,
+  include.placebo.test = FALSE
 )
 }
 \arguments{
@@ -36,6 +37,8 @@ estimates for statistical inference. The default is .95.}
 \item{se.method}{Method used for calculating standard errors, provided as a character string. Users must choose between "bootstrap", "conditional", and "unconditional" methods. Default is "bootstrap". "bootstrap" uses a block bootstrapping procedure to calculate standard errors. The conditional method calculates the variance of the estimator, assuming independence across units but not across time. The unconditional method also calculates the variance of the estimator analytically, but makes no such assumptions about independence across units. When the quantity of interest is "att", "atc", or "art", all methods are available. Only "bootstrap" is available for the ate. If \code{pooled} argument is TRUE, then only bootstrap is available.}
 
 \item{pooled}{Logical. If TRUE, estimates and standard errors are returned for treatment effects pooled across the entire lead window. Only available for \code{se.method = ``bootstrap''}}
+
+\item{include.placebo.test}{Logical. If TRUE, a placebo test is run and returned in the results. The placebo test uses the same specifications for calculating standard errors as the main results. That is, standard errors are calculated according to the user provided \code{se.method} and \code{confidence.level} arguments. If these are invalid for some reason, an error will be thrown.}
 }
 \value{
 \code{PanelEstimate} returns a list of class
@@ -52,6 +55,7 @@ estimates for statistical inference. The default is .95.}
 \item{matched.sets}{the refined matched sets used to produce the estimations}
 \item{standard.error}{the standard error(s) of the point estimates}
 \item{pooled}{Logical indicating whether or not estimates were calculated for individual lead periods or pooled.}
+\item{placebo.test}{if \code{include.placebo.test = TRUE}, a placebo test is conducted using \code{placebo_test()} and returned as a list. See documentation for \code{placebo_test()} for more about each individual item.}
 }
 \description{
 \code{PanelEstimate} estimates a causal quantity of interest, including the average treatment effect for
@@ -73,8 +77,6 @@ PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                          size.match = 5, qoi = "att",
                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = TRUE)
 PE.results <- PanelEstimate(sets = PM.results, data = dem, number.iterations = 100)
-
-
 
 }
 \references{

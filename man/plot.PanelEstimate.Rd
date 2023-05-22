@@ -12,6 +12,7 @@
   ylim = NULL,
   pch = NULL,
   cex = NULL,
+  include.placebo = FALSE,
   ...
 )
 }
@@ -29,6 +30,8 @@
 \item{pch}{default is NULL. This is the same argument as the standard argument for \code{plot()}}
 
 \item{cex}{default is NULL. This is the same argument as the standard argument for \code{plot()}}
+
+\item{include.placebo}{Logical. If TRUE, then the results of the placebo test are included on the plot. Note that, by definition, the results for t-1 will be 0. This requires that \code{PanelEstimate()} was run with the placebo test option set to \code{TRUE}. If FALSE, the results are not included. Default is FALSE. Please see \code{placebo_test()} and \code{PanelEstimate()} for more information.}
 
 \item{...}{Additional optional arguments to be passed to \code{plot()}.}
 }

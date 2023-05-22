@@ -20,7 +20,7 @@ placebo_test(
 
 \item{data}{data.frame with the original data}
 
-\item{lag.in}{integer indicating earliest the time period(s) in the future for which the placebo test change in outcome will be calculated. Calculations will be made over the period t - max(lag) to t-2, where t is the time of treatment. The results are similar to those returned by PanelEstimate(), except t-1 is used as the period of comparison, rather than the lead window.}
+\item{lag.in}{integer indicating earliest the time period(s) in the future for which the placebo test change in outcome will be calculated. Calculations will be made over the period t - max(lag) to t-2, where t is the time of treatment. The results are similar to those returned by PanelEstimate(), except t-1 is used as the period of comparison, rather than the lead window. If not specified, the placebo test is conducted for periods from t - max(lag) to t-2.}
 
 \item{number.iterations}{integer specifying the number of bootstrap iterations}
 

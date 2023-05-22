@@ -237,6 +237,7 @@ panel_match <- function(lag, time.id, unit.id, treatment,
   if (any(lead < 0)) stop("Please provide positive lead values. Please see the placebo_test function for more.")
   if (!all(qoi %in% c("att", "atc", "ate", "art"))) stop("please choose a valid qoi")
   if(any(is.na(data[, unit.id]))) stop("Cannot have NA unit ids")
+  
   ##############################error checking
   
   ## balance the panel 

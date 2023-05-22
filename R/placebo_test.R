@@ -6,7 +6,7 @@
 #' Calculate the results of a placebo test, looking at the change in outcome at time = t-1, compared to other pre-treatment periods in the lag window.
 #' @param pm.obj an object of class \code{PanelMatch}
 #' @param data data.frame with the original data
-#' @param lag.in integer indicating earliest the time period(s) in the future for which the placebo test change in outcome will be calculated. Calculations will be made over the period t - max(lag) to t-2, where t is the time of treatment. The results are similar to those returned by PanelEstimate(), except t-1 is used as the period of comparison, rather than the lead window.
+#' @param lag.in integer indicating earliest the time period(s) in the future for which the placebo test change in outcome will be calculated. Calculations will be made over the period t - max(lag) to t-2, where t is the time of treatment. The results are similar to those returned by PanelEstimate(), except t-1 is used as the period of comparison, rather than the lead window. If not specified, the placebo test is conducted for periods from t - max(lag) to t-2.
 #' @param number.iterations integer specifying the number of bootstrap iterations
 #' @param confidence.level confidence level for the calculated standard error intervals
 #' @param plot logical indicating whether or not a plot should be generated, or just return the raw data from the calculations
@@ -38,6 +38,12 @@ placebo_test <- function(pm.obj,
                          se.method = "bootstrap",
                          ...)
 {
+  
+  if (attr(pm.obj, "placebo.test") == FALSE)
+  {
+    stop("Placebo test cannot be executed. Please ensure placebo.test = TRUE in PanelMatch()")
+  }
+  
   df.adjustment <- FALSE
   qoi.in <- attr(pm.obj, "qoi")
   if (is.null(lag.in))
@@ -98,4 +104,52 @@ placebo_test <- function(pm.obj,
     
     return(ret.results)
   }
+}
+
+summarize_placebo_data <- function(pt.data, 
+                                   confidence.level, 
+                                   se.method)
+{
+ 
+  if ( identical(se.method, "bootstrap") )
+  {
+    a1 <- t(as.data.frame(pt.data$estimates))
+    a2 <- apply(pt.data$bootstrapped.estimates, 2, sd, na.rm = TRUE)
+    a3 <- apply(pt.data$bootstrapped.estimates, 2, quantile, 
+                probs = c( (1 - confidence.level)/2, 
+                           confidence.level + (1 - confidence.level)/2 ), 
+                na.rm = TRUE)
+    df <- rbind(a1, # point estimate
+                a2, # bootstrap se
+                a3) # Efron & Tibshirani 1993 p170 - 171
+    
+    rownames(df) <- c("estimate", "std.error", 
+                      paste0((1 - confidence.level)/2 * 100, "%"),
+                      paste0( (confidence.level + (1 - confidence.level)/2) * 100, "%"))
+    tdf <- t(df)
+    rt.dt <- t(df)
+  }
+  else if (identical(se.method, "conditional") || 
+           identical(se.method, "unconditional")) 
+  {
+    
+    critical.vals <- rep(qnorm( (1 - confidence.level) / 2), 2) * c(1, -1)
+    
+    quants <- mapply(FUN = function(x, y) x + critical.vals * y,
+                     x = pt.data$estimates, 
+                     y = pt.data$standard.error,
+                     SIMPLIFY = FALSE)
+    qts <- do.call(rbind, quants)
+    df <- data.frame(estimate = pt.data$estimates,
+                     std.error = pt.data$standard.error)
+    
+    tdf <- cbind(df, qts)
+    colnames(tdf) <- c("estimate", "std.error", 
+                       paste0((1 - confidence.level)/2 * 100, "%"),
+                       paste0( (confidence.level + (1 - confidence.level)/2) * 100, "%"))
+    rownames(tdf) <- names(pt.data$estimates)
+    rt.dt <- tdf
+    
+  }
+  return(rt.dt)
 }
