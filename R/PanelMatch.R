@@ -400,5 +400,3 @@ panel_match <- function(lag, time.id, unit.id, treatment,
   }
   
 }
-  
-  

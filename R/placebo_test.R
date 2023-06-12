@@ -57,13 +57,18 @@ placebo_test <- function(pm.obj,
       matchedsets <- pm.obj[[qoi.in]]
       lag.in <- attr(matchedsets, "lag")
     }
+  } else
+  {
+    if (identical(qoi.in, "ate"))
+    {
+      #just pick one
+      matchedsets <- pm.obj[["att"]]
+      
+    } else {
+      matchedsets <- pm.obj[[qoi.in]]
+    }
   }
   
-  if (identical(qoi.in, "ate"))
-  {
-    #just pick one for boundary check
-    matchedsets <- pm.obj[["att"]]
-  }
   
   if (lag.in == 1) stop("placebo test cannot be conducted for lag = 1")
   if (length(lag.in) >1) stop("lag.in should be a single integer")
