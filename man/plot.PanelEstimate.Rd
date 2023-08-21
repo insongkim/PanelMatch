@@ -50,5 +50,19 @@ PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
 PE.results <- PanelEstimate(sets = PM.results, data = dem)
 plot(PE.results)
 
+PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
+                         treatment = "dem", refinement.method = "mahalanobis",
+                         data = dem,
+                         covs.formula = ~ I(lag(tradewb, 1:4)),
+                         size.match = 5, qoi = "att",
+                         outcome.var = "y", lead = 0:4, forbid.treatment.reversal = TRUE, 
+                         placebo.test = TRUE)
+
+PE.results <- PanelEstimate(sets = PM.results, 
+                            data = dem, 
+                            number.iterations = 100,
+                            include.placebo.test = TRUE)
+
+plot(PE.results, include.placebo = TRUE)
 
 }
