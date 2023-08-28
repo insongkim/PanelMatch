@@ -45,13 +45,11 @@ Balance is calculated for each period in the specified lag window.
 #add some additional data to data set for demonstration purposes
 dem$rdata <- runif(runif(nrow(dem)))
 pm.obj <- PanelMatch(lead = 0:3, lag = 4, time.id = "year", unit.id = "wbcode2", treatment = "dem",
-                    outcome.var ="y", refinement.method = "mahalanobis",
+                    outcome.var ="y", refinement.method = "ps.match",
                     data = dem, match.missing = TRUE,
                     covs.formula = ~ tradewb + rdata + I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
                     size.match = 5, qoi = "att")
 get_covariate_balance(pm.obj$att, dem, covariates = c("tradewb", "rdata"),
                          ylim = c(-2,2))
-get_covariate_balance(pm.obj$att, dem, covariates = c("tradewb", "rdata"),
-                         plot = TRUE, ylim = c(-2,2))
 
 }

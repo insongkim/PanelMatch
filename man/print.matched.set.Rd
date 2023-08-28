@@ -19,7 +19,7 @@ Print \code{matched.set} objects.
 }
 \examples{
 PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
-                         treatment = "dem", refinement.method = "mahalanobis",
+                         treatment = "dem", refinement.method = "ps.match",
                          data = dem, match.missing = TRUE,
                          covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
                          size.match = 5, qoi = "att",

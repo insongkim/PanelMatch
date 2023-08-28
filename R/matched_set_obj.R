@@ -75,7 +75,7 @@ matched_set <- function(matchedsets, id, t, L, t.var, id.var, treatment.var)
 #'
 #' @examples
 #' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
-#'                          treatment = "dem", refinement.method = "mahalanobis",
+#'                          treatment = "dem", refinement.method = "ps.match",
 #'                          data = dem, match.missing = TRUE,
 #'                          covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
 #'                          size.match = 5, qoi = "att",
@@ -136,7 +136,7 @@ summary.matched.set <- function(object, ..., verbose = TRUE)
 #'
 #' @examples
 #' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
-#'                          treatment = "dem", refinement.method = "mahalanobis",
+#'                          treatment = "dem", refinement.method = "ps.match",
 #'                          data = dem, match.missing = TRUE,
 #'                          covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
 #'                          size.match = 5, qoi = "att",
@@ -194,7 +194,7 @@ plot.matched.set <- function(x, ..., border = NA, col = "grey", ylab = "Frequenc
 #'
 #' @examples
 #' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
-#'                          treatment = "dem", refinement.method = "mahalanobis",
+#'                          treatment = "dem", refinement.method = "ps.match",
 #'                          data = dem, match.missing = TRUE,
 #'                          covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
 #'                          size.match = 5, qoi = "att",

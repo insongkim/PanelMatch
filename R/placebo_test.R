@@ -23,7 +23,7 @@
 #'                          size.match = 5, qoi = "att",
 #'                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE,
 #'                          placebo.test = TRUE)
-#' placebo_test(PM.results, data = dem, number.iterations = 100, plot = FALSE)
+#' placebo_test(PM.results, data = dem, se.method = "unconditional", plot = FALSE)
 #' 
 #' 
 #' @export

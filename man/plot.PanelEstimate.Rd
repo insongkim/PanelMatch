@@ -47,7 +47,7 @@ PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                          covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
                          size.match = 5, qoi = "att",
                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
-PE.results <- PanelEstimate(sets = PM.results, data = dem)
+PE.results <- PanelEstimate(sets = PM.results, data = dem, se.method = "unconditional")
 plot(PE.results)
 
 PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",

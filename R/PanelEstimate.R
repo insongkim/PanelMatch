@@ -52,7 +52,7 @@
 #'                          covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
 #'                          size.match = 5, qoi = "att",
 #'                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = TRUE)
-#' PE.results <- PanelEstimate(sets = PM.results, data = dem, number.iterations = 100)
+#' PE.results <- PanelEstimate(sets = PM.results, data = dem, se.method = "unconditional")
 #'
 #' @export
 PanelEstimate <- function(sets, data,

@@ -30,17 +30,17 @@
 #'                     outcome.var = "y",
 #'                     lead = 0:4, forbid.treatment.reversal = FALSE)
 #'
-#' # get a matched set with refinement using CBPS.match, setting the
+#' # get a matched set with refinement using propensity score matching, setting the
 #' # size of matched set to 5
 #' sets1 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
-#'                     treatment = "dem", refinement.method = "mahalanobis",
+#'                     treatment = "dem", refinement.method = "ps.match",
 #'                     data = dem, match.missing = FALSE,
 #'                     covs.formula = ~ I(lag(y, 1:4)) + I(lag(tradewb, 1:4)),
 #'                     size.match = 5, qoi = "att",
 #'                     outcome.var = "y",
 #'                     lead = 0:4, forbid.treatment.reversal = FALSE)
 #'
-#' # get another matched set with refinement using CBPS.weight
+#' # get another matched set with refinement using propensity score weighting
 #' sets2 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
 #'                     treatment = "dem", refinement.method = "ps.weight",
 #'                     data = dem, match.missing = FALSE,
