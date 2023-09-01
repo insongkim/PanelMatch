@@ -46,12 +46,11 @@
 #' <haixiao@Princeton.edu>, Adam Rauh <amrauh@umich.edu>, and Kosuke Imai <imai@harvard.edu>
 #'
 #' @examples
-#' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
-#'                          treatment = "dem", refinement.method = "mahalanobis",
-#'                          data = dem, match.missing = TRUE,
-#'                          covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
-#'                          size.match = 5, qoi = "att",
-#'                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = TRUE)
+#' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
+#'                         treatment = "dem", refinement.method = "ps.match", 
+#'                          data = dem, match.missing = TRUE, covs.formula = ~ tradewb, 
+#'                          size.match = 5, qoi = "att", outcome.var = "y", 
+#'                          lead = 0:4, forbid.treatment.reversal = TRUE)
 #' PE.results <- PanelEstimate(sets = PM.results, data = dem, se.method = "unconditional")
 #'
 #' @export
@@ -367,14 +366,13 @@ panel_estimate <- function(sets,
     
   }
   
-  data <- prepare_data(data.in = data, lead = lead,
-                      sets.att = sets.att, sets.atc = sets.atc,
-                      qoi.in = qoi,
-                      dependent.variable = dependent)
-  
-  
   if (placebo.test)
   {
+    data <- prepare_data(data.in = data, lead = max(placebo.lead):0,
+                         sets.att = sets.att, sets.atc = sets.atc,
+                         qoi.in = qoi,
+                         dependent.variable = dependent)
+    
     pe.results <- calculate_placebo_estimates(qoi.in = qoi,
                                             data.in = data,
                                             lead = lead,
@@ -390,6 +388,11 @@ panel_estimate <- function(sets,
                                             placebo.lead = placebo.lead,
                                             se.method = se.method)
   } else {
+    
+    data <- prepare_data(data.in = data, lead = lead,
+                         sets.att = sets.att, sets.atc = sets.atc,
+                         qoi.in = qoi,
+                         dependent.variable = dependent)
     
     pe.results <- calculate_estimates(qoi.in = qoi,
                                      data.in = data,
