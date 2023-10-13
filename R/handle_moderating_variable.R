@@ -44,7 +44,9 @@ handle_moderating_variable <- function(ordered.data, att.sets,
     {
       indx.set <- moderator.vector[names(att.sets)] == val
       t.set <- att.sets[indx.set]
-      if(length(t.set) > 0)
+      t.sum <- summary(t.set)
+      if(length(t.set) > 0 && 
+         (t.sum$num.units.empty.set < nrow(t.sum$overview)) )
       {
         moderated.sets.att[[make.names(val)]] <- t.set
         valid.moderating.values <- append(valid.moderating.values, val)
@@ -58,7 +60,9 @@ handle_moderating_variable <- function(ordered.data, att.sets,
     {
       indx.set <- moderator.vector[names(atc.sets)] == val
       t.set <- atc.sets[indx.set]
-      if(length(t.set) > 0)
+      t.sum <- summary(t.set)
+      if(length(t.set) > 0 && 
+         (t.sum$num.units.empty.set < nrow(t.sum$overview)) )
       {
         moderated.sets.atc[[make.names(val)]] <- t.set
         valid.moderating.values <- append(valid.moderating.values, val)

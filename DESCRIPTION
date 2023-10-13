@@ -2,7 +2,7 @@ Package: PanelMatch
 Type: Package
 Title: Matching Methods for Causal Inference with Time-Series Cross-Sectional Data
 Version: 2.1.0
-Date: 2023-08-27
+Date: 2023-10-04
 Authors@R: c(
   person("In Song", "Kim", email = "insong@mit.edu", role = c("aut", "cre")),
   person("Adam", "Rauh", email = "amrauh@umich.edu", role = c("aut")),
@@ -38,11 +38,9 @@ Imports:
     grDevices,
     MASS,
     Matrix,
-    igraph,
     methods
 Depends:
     R (>= 2.14.0)
-SystemRequirements: C++11
 LinkingTo: RcppArmadillo, Rcpp, RcppEigen
 Encoding: UTF-8
 LazyData: true

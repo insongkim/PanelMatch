@@ -52,7 +52,7 @@ in base R to further customize the figure.
 # get a matched set without refinement
 sets0 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                     treatment = "dem", refinement.method = "none",
-                    data = dem, match.missing = FALSE,
+                    data = dem_small, match.missing = FALSE,
                     covs.formula = ~ I(lag(y, 1:4)) + I(lag(tradewb, 1:4)),
                     size.match = 5, qoi = "att",
                     outcome.var = "y",
@@ -62,7 +62,7 @@ sets0 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
 # size of matched set to 5
 sets1 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                     treatment = "dem", refinement.method = "ps.match",
-                    data = dem, match.missing = FALSE,
+                    data = dem_small, match.missing = FALSE,
                     covs.formula = ~ I(lag(y, 1:4)) + I(lag(tradewb, 1:4)),
                     size.match = 5, qoi = "att",
                     outcome.var = "y",
@@ -71,7 +71,7 @@ sets1 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
 # get another matched set with refinement using propensity score weighting
 sets2 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                     treatment = "dem", refinement.method = "ps.weight",
-                    data = dem, match.missing = FALSE,
+                    data = dem_small, match.missing = FALSE,
                     covs.formula = ~ I(lag(y, 1:4)) + I(lag(tradewb, 1:4)),
                     size.match = 10, qoi = "att",
                     outcome.var = "y",
@@ -79,9 +79,8 @@ sets2 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
 
 
 # use the function to produce the scatter plot
-balance_scatter(non_refined_set = sets0$att,
-              matched_set_list = list(sets1$att, sets2$att),
-              data = dem,
+balance_scatter(matched_set_list = list(sets0$att, sets1$att, sets2$att),
+              data = dem_small,
               covariates = c("y", "tradewb"))
 # add legend
 legend(x = 0, y = 0.8,

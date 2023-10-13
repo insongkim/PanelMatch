@@ -39,7 +39,7 @@
 #' DisplayTreatment(unit.id = "wbcode2",
 #'                  time.id = "year", legend.position = "none",
 #'                  xlab = "year", ylab = "Country Code",
-#'                  treatment = "dem", data = dem)
+#'                  treatment = "dem", data = dem_small)
 #' 
 #'
 #' @export

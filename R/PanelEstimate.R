@@ -48,10 +48,10 @@
 #' @examples
 #' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
 #'                         treatment = "dem", refinement.method = "ps.match", 
-#'                          data = dem, match.missing = TRUE, covs.formula = ~ tradewb, 
+#'                          data = dem_small, match.missing = TRUE, covs.formula = ~ tradewb, 
 #'                          size.match = 5, qoi = "att", outcome.var = "y", 
 #'                          lead = 0:4, forbid.treatment.reversal = TRUE)
-#' PE.results <- PanelEstimate(sets = PM.results, data = dem, se.method = "unconditional")
+#' PE.results <- PanelEstimate(sets = PM.results, data = dem_small, se.method = "unconditional")
 #'
 #' @export
 PanelEstimate <- function(sets, data,
