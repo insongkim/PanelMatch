@@ -1,0 +1,104 @@
+---
+title: "Calipers in PanelMatch"
+author: "In Song Kim, Adam Rauh, Erik Wang, Kosuke Imai"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    df_print: paged
+  pdf_document:
+    number_sections: no
+  fig_width: 6
+  fig_height: 4
+vignette: |
+  %\VignetteIndexEntry{Calipers in PanelMatch}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Calipers in PanelMatch
+
+The package supports the ability to apply calipers, which are applied after units are matched on treatment history, but before the refinement stage. Users specify calipers in a formula object, passed to the `caliper.formula` argument using a function that takes a number of unnamed, positional arguments, as shown in the following simple example:
+
+
+```{r}
+library(PanelMatch)
+input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+input.data[input.data$id %in% c(2,4,6) & input.data$time > 5, 'treatment'] <- 1
+input.data$cal.data <- input.data$id
+input.data$outcome <- rnorm(nrow(input.data))
+
+
+PM.results.baseline <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
+                           treatment = "treatment", refinement.method = "none", 
+                           data = input.data, match.missing = TRUE, 
+                           size.match = 5, qoi = "att" , outcome.var = "outcome",
+                           lead = 0:4, forbid.treatment.reversal = FALSE)
+  
+PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
+                           treatment = "treatment", refinement.method = "none", 
+                           data = input.data, match.missing = TRUE, 
+                           size.match = 5, qoi = "att" , outcome.var = "outcome",
+                           lead = 0:4, forbid.treatment.reversal = FALSE,
+                           caliper.formula = ~ I(caliper(cal.data,"max", 1, "numeric", "raw")) )
+#use the cal.data variable
+#check each period individually
+#units cannot be more than 1 unit away
+#data is numeric
+#use the original units
+```
+
+The first argument should be the name of the variable to which you will apply the caliper. The second argument is the type of caliper that will be applied and must be specified as "max" or "average". When set to "max", the package will check each period in the lag window of each control unit against the corresponding period in the matched treated unit. If the absolute value of the distance between these values exceeds the threshold specified in the third argument, units are removed (with one caveat, to follow). When the second argument is set to "average", then the average distance between a given control unit and matched treated unit over the lag window is calculated (using the specified variable) and used in the threshold comparison. The fourth argument specifies the type of data of the caliper variable -- it must be specified as "numeric" or "categorical". When this argument is set to "numeric" the distance calculations are performed as described above. However, when this argument is set to "categorical", rather than calculate the absolute value of distances, the package calculates the percentage of exact matches between treatment and control units over the lag window. The provided threshold then provides a minimum for the percentage of exact matches that is acceptable. (For example, setting this argument to .5 would mean that only controls that match the treated unit at least half the time over the lag window are accepted). The final argument -- "raw" or "sd", indicates whether the threshold is specified in the same units as the original data, or as standard deviations. 
+
+Note that the caliper is always applied over the entire lag window, from t-L to t. 
+
+
+The first example uses the "max" method for calculating calipers. The following example uses the "average" method.
+```{r}
+input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+input.data[input.data$id %in% c(2,4,6) & input.data$time > 5, 'treatment'] <- 1
+input.data$cal.data <- input.data$id
+input.data[input.data$id %in% c(1), 'cal.data'] <- c(rep(1, 5), rep(0, 5))
+input.data[input.data$id %in% c(3), 'cal.data'] <- c(rep(3, 5), rep(2, 5))
+input.data$outcome <- rnorm(nrow(input.data))
+  
+  
+PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
+                           treatment = "treatment", refinement.method = "none", 
+                           data = input.data, match.missing = TRUE, 
+                           size.match = 5, qoi = "att" , outcome.var = "outcome",
+                           lead = 0:4, forbid.treatment.reversal = FALSE,
+                           caliper.formula = ~ I(caliper(cal.data,"average", 1, "numeric", "raw")) )
+```
+
+And finally, an example that uses the "categorical" method:
+```{r}
+input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+input.data[input.data$id %in% c(2,4,6) & input.data$time > 5, 'treatment'] <- 1 
+input.data$cal.data <- input.data$id
+input.data[input.data$id %in% c(1,3), 'cal.data'] <- 2
+input.data[input.data$id %in% c(5), 'cal.data'] <- 4
+input.data[input.data$id %in% c(7,8,9,10), 'cal.data'] <- 6
+input.data$outcome <- rnorm(nrow(input.data))
+  
+  
+  
+PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
+                           treatment = "treatment", refinement.method = "none", 
+                           data = input.data, match.missing = TRUE, 
+                           size.match = 5, qoi = "att" , outcome.var = "outcome",
+                           lead = 0:4, forbid.treatment.reversal = FALSE,
+                           caliper.formula = ~ I(caliper(cal.data,"max", 1, "categorical", "raw")) )
+```
+
+
+

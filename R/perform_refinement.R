@@ -12,7 +12,8 @@ perform_refinement <- function(lag, time.id, unit.id, treatment,
                                listwise.deletion,
                                use.diag.covmat = FALSE, 
                                placebo.test = FALSE,
-                               restrict.control.period = NULL)
+                               restrict.control.period = NULL,
+                               caliper.formula = NULL)
 {
 
   if (inherits(ordered.data[, unit.id], "numeric"))
@@ -136,7 +137,17 @@ perform_refinement <- function(lag, time.id, unit.id, treatment,
     e.sets <- identifyDirectionalChanges(e.sets, ordered.data,
                                          unit.id, time.id, treatment, qoi)
   }
-
+  
+  
+  ####apply calipers here
+  if(!is.null(caliper.formula))
+  {
+    msets <- handle_calipers(plain.ordered.data = ordered.data, caliper.formula,
+                             matched.sets = msets, lag.window = 0:lag)
+    
+  }
+  
+  
   if(refinement.method == "none")
   {
     for(i in 1:length(msets))
@@ -154,7 +165,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment,
     }
     attr(msets, "covs.formula") <- covs.formula
     attr(msets, "match.missing") <- match.missing
-
+    attr(msets, "caliper.formula") <- caliper.formula
     return(msets)
   }
 
@@ -183,6 +194,9 @@ perform_refinement <- function(lag, time.id, unit.id, treatment,
                             match.missing, covs.formula,
                             verbose, outcome.var, e.sets,
                             use.diag.covmat = use.diag.covmat)
+    attr(msets, "covs.formula") <- covs.formula
+    attr(msets, "match.missing") <- match.missing
+    attr(msets, "caliper.formula") <- caliper.formula
     return(msets)
   }
   ################################################################################################
@@ -300,6 +314,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment,
     attr(msets, idx) <- t.attributes[[idx]]
   }
   attr(msets, "covs.formula") <- covs.formula
+  attr(msets, "caliper.formula") <- caliper.formula
   attr(msets, "match.missing") <- match.missing
   return(msets)
 }

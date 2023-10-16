@@ -24,7 +24,8 @@ PanelMatch(
   listwise.delete = FALSE,
   use.diagonal.variance.matrix = FALSE,
   restrict.control.period = NULL,
-  placebo.test = FALSE
+  placebo.test = FALSE,
+  caliper.formula = NULL
 )
 }
 \arguments{
@@ -90,6 +91,14 @@ high correlation between variables. Default is FALSE. This argument is only nece
 \item{restrict.control.period}{(optional) integer specifying the number of pre-treatment periods that treated units and potentially matched control units should be non-NULL and in the control state. For instance, specifying 4 would mean that the treatment history cannot contain any missing data or treatment from t-4 to t.}
 
 \item{placebo.test}{logical TRUE/FALSE. indicates whether or not you want to be able to run a placebo test. This will add additional requirements on the data -- specifically, it requires that no unit included in the matching/refinement process can having missing outcome data over the lag window. Additionally, you should not use the outcome variable in refinement when \code{placebo.test = TRUE}.}
+
+\item{caliper.formula}{a formula object that specifies the caliper to be applied to the data. The caliper is applied after units are matched on treatment history, but before the refinement process. Each caliper is specified in a format
+similar to the format of the \code{lag} function in the \code{covs.formula} argument. Specifically, it takes the form of a custom function with five positional arguments. 
+One must specify the name of the variable to use, the caliper method ("average", or "max"), the threshold value, whether the data is categorical or numeric ("categorical" or "numeric"), and whether the threshold should be applied 
+on a standardized scale (ie. use standard deviations as units) or the original units ("sd" or "raw"). The caliper method parameter specifies whether the threshold should be applied to the distance between
+a treated unit and each possible control unit over each period in the lag window or to the average distance over the entire lag window (as specified by L). For instance, 
+\code{caliper.formula = ~ I(caliper(cal.data,"average", .5, "categorical", "raw")) would filter matched sets such that they only contain control units that are <= .5 units of the cal.data variable
+of the treated unit, on average. In contrast, ~ I(caliper(cal.data,"max", .5, "categorical", "raw"))} would include only control units that are <= .5 units of the cal.data at every period in the lag window. Please see the vignette for more.}
 }
 \value{
 \code{PanelMatch()} returns an object of class "PanelMatch". This is a list that contains a few specific elements: 

@@ -55,6 +55,13 @@
 #' \code{refinement.method = mahalanobis} and will have no impact otherwise.
 #' @param restrict.control.period (optional) integer specifying the number of pre-treatment periods that treated units and potentially matched control units should be non-NULL and in the control state. For instance, specifying 4 would mean that the treatment history cannot contain any missing data or treatment from t-4 to t. 
 #' @param placebo.test logical TRUE/FALSE. indicates whether or not you want to be able to run a placebo test. This will add additional requirements on the data -- specifically, it requires that no unit included in the matching/refinement process can having missing outcome data over the lag window. Additionally, you should not use the outcome variable in refinement when \code{placebo.test = TRUE}.
+#' @param caliper.formula a formula object that specifies the caliper to be applied to the data. The caliper is applied after units are matched on treatment history, but before the refinement process. Each caliper is specified in a format
+#' similar to the format of the \code{lag} function in the \code{covs.formula} argument. Specifically, it takes the form of a custom function with five positional arguments. 
+#' One must specify the name of the variable to use, the caliper method ("average", or "max"), the threshold value, whether the data is categorical or numeric ("categorical" or "numeric"), and whether the threshold should be applied 
+#' on a standardized scale (ie. use standard deviations as units) or the original units ("sd" or "raw"). The caliper method parameter specifies whether the threshold should be applied to the distance between
+#' a treated unit and each possible control unit over each period in the lag window or to the average distance over the entire lag window (as specified by L). For instance, 
+#' \code{caliper.formula = ~ I(caliper(cal.data,"average", .5, "categorical", "raw")) would filter matched sets such that they only contain control units that are <= .5 units of the cal.data variable
+#' of the treated unit, on average. In contrast, ~ I(caliper(cal.data,"max", .5, "categorical", "raw"))} would include only control units that are <= .5 units of the cal.data at every period in the lag window. Please see the vignette for more.
 #' @return \code{PanelMatch()} returns an object of class "PanelMatch". This is a list that contains a few specific elements: 
 #' First, a \code{matched.set} object(s) that has the same name as the provided qoi if the qoi is "att", "art", or "atc". 
 #' If qoi = "ate" then two \code{matched.set} objects will be attached, named "att" and "atc." Please consult the documentation for
@@ -94,121 +101,17 @@ PanelMatch <- function(lag, time.id, unit.id,
                        listwise.delete = FALSE,
                        use.diagonal.variance.matrix = FALSE,
                        restrict.control.period = NULL,
-                       placebo.test = FALSE) 
+                       placebo.test = FALSE,
+                       caliper.formula = NULL) 
 {
  
-
-  
   if (placebo.test) warning("when placebo.test = TRUE, using the dependent variable in refinment is invalid")
-  if(inherits(lag, "list") & 
-     inherits(time.id, "list") & 
-     inherits(unit.id, "list") & 
-     inherits(treatment, "list") & 
-     inherits(refinement.method, "list") & 
-     inherits(size.match, "list") &
-     inherits(match.missing, "list") &
-     inherits(covs.formula, "list") & 
-     inherits(verbose, "list") & 
-     inherits(qoi, "list") & 
-     inherits(lead, "list") & 
-     inherits(outcome.var, "list") & 
-     inherits(forbid.treatment.reversal, "list") &
-     inherits(matching, "list") & 
-     inherits(listwise.delete, "list") & 
-     inherits(use.diagonal.variance.matrix, "list")) #everything but data must be provided explicitly
-  {
-    
-    if(length(unique(length(lag), 
-                     length(time.id), 
-                     length(unit.id), 
-                     length(treatment),
-                     length(refinement.method),
-                     length(size.match),
-                     length(match.missing), 
-                     length(covs.formula),
-                     length(verbose), 
-                     length(qoi),
-                     length(lead), 
-                     length(outcome.var), 
-                     length(exact.match.variables), 
-                     length(forbid.treatment.reversal),
-                     length(matching), 
-                     length(listwise.delete), 
-                     length(use.diagonal.variance.matrix) )) == 1)
-    {
-      
-     list.res <- mapply(FUN = panel_match,
-             lag = lag, time.id = time.id, unit.id = unit.id, treatment = treatment,
-             refinement.method = refinement.method,
-             size.match = size.match,
-             match.missing = match.missing,
-             covs.formula = covs.formula,
-             verbose = verbose,
-             qoi = qoi,
-             lead = lead,
-             outcome.var  = outcome.var,
-             exact.match.variables = exact.match.variables,
-             forbid.treatment.reversal = forbid.treatment.reversal,
-             matching = matching,
-             listwise.delete = listwise.delete,
-             use.diagonal.variance.matrix = use.diagonal.variance.matrix,
-             restrict.control.period = restrict.control.period,
-             placebo.test = placebo.test,
-             MoreArgs = list(data = data),
-             SIMPLIFY = FALSE)
-     return(list.res)
-    }
-    else {
-      stop("arguments are not provided in equal length lists")
-    }
-  }
-  else
-  {
-    panel_match(lag, time.id, unit.id, treatment,
-                refinement.method,
-                size.match,
-                data,
-                match.missing,
-                covs.formula,
-                verbose,
-                qoi,
-                lead,
-                outcome.var,
-                exact.match.variables,
-                forbid.treatment.reversal,
-                matching,
-                listwise.delete,
-                use.diagonal.variance.matrix,
-                restrict.control.period,
-                placebo.test)
-  }
-  
-}
-
-panel_match <- function(lag, time.id, unit.id, treatment,
-                        refinement.method,
-                        size.match,
-                        data,
-                        match.missing,
-                        covs.formula,
-                        verbose,
-                        qoi,
-                        lead,
-                        outcome.var,
-                        exact.match.variables,
-                        forbid.treatment.reversal,
-                        matching,
-                        listwise.delete,
-                        use.diagonal.variance.matrix,
-                        restrict.control.period,
-                        placebo.test)
-{
   if (!matching && match.missing)
   {
     old.lag <- lag
     lag <- 1
   }
-  ##############################error checking
+  ##############################error checking##############################
   if (listwise.delete & match.missing) stop("set match.missing = FALSE when listwise.delete = TRUE")
   if (lag < 1) stop("please specify a lag value >= 1")
   if (any(class(data) != "data.frame")) stop("please convert data to data.frame class")
@@ -231,9 +134,9 @@ panel_match <- function(lag, time.id, unit.id, treatment,
   if (!all(qoi %in% c("att", "atc", "ate", "art"))) stop("please choose a valid qoi")
   if(any(is.na(data[, unit.id]))) stop("Cannot have NA unit ids")
   
-  ##############################error checking
+  ##############################error checking##############################
   
-  ## balance the panel 
+  ##############################balance the panel############################## 
   if (any(table(data[, unit.id]) != max(table(data[, unit.id]))))
   {
     testmat <- data.table::dcast(data.table::as.data.table(data), 
@@ -253,13 +156,15 @@ panel_match <- function(lag, time.id, unit.id, treatment,
     data <- as.data.frame(data)
     
   }
+  ##############################balance the panel##############################
   
-
   ordered.data <- data[order(data[,unit.id], data[,time.id]), ]
   ordered.data <- check_time_data(ordered.data, time.id)
   
   othercols <- colnames(ordered.data)[!colnames(ordered.data) %in% c(time.id, unit.id, treatment)]
   ordered.data <- ordered.data[, c(unit.id, time.id, treatment, othercols)] #reorder columns 
+  
+  # remove this when caliper functionality is implemented
   if(!is.null(exact.match.variables))
   {
     for(variable in exact.match.variables)
@@ -267,6 +172,7 @@ panel_match <- function(lag, time.id, unit.id, treatment,
       ordered.data[, variable] <- as.numeric(as.factor(ordered.data[, variable]))
     }  
   }
+  
   
   if (identical(qoi,"art"))
   {
@@ -285,13 +191,14 @@ panel_match <- function(lag, time.id, unit.id, treatment,
                                 listwise.deletion = listwise.delete,
                                 restrict.control.period = restrict.control.period,
                                 use.diag.covmat = use.diagonal.variance.matrix, 
-                                placebo.test = placebo.test)
+                                placebo.test = placebo.test,
+                                caliper.formula = caliper.formula)
     
     if (!matching & match.missing)
     {
       attr(msets, "lag") <- old.lag
     }
-
+    
     pm.obj <- list()
     pm.obj[[qoi]] <- msets
     class(pm.obj) <- "PanelMatch"
@@ -304,7 +211,7 @@ panel_match <- function(lag, time.id, unit.id, treatment,
   } else if (identical(qoi,"att") || identical(qoi,"atc"))
   { #note that ordered.data at this point is in column order: unit, time, treatment, everything else
     
-
+    
     msets <- perform_refinement(lag = lag, time.id = time.id, unit.id = unit.id, 
                                 treatment = treatment, 
                                 refinement.method = refinement.method,
@@ -322,7 +229,8 @@ panel_match <- function(lag, time.id, unit.id, treatment,
                                 listwise.deletion = listwise.delete,
                                 restrict.control.period = restrict.control.period,
                                 use.diag.covmat = use.diagonal.variance.matrix, 
-                                placebo.test = placebo.test)
+                                placebo.test = placebo.test,
+                                caliper.formula = caliper.formula)
     
     
     if (!matching & match.missing)
@@ -353,7 +261,8 @@ panel_match <- function(lag, time.id, unit.id, treatment,
                                 listwise.deletion = listwise.delete,
                                 restrict.control.period = restrict.control.period,
                                 use.diag.covmat = use.diagonal.variance.matrix, 
-                                placebo.test = placebo.test)
+                                placebo.test = placebo.test,
+                                caliper.formula = caliper.formula)
     
     msets2 <- perform_refinement(lag = lag, time.id = time.id, unit.id = unit.id, 
                                  treatment = treatment, 
@@ -367,7 +276,8 @@ panel_match <- function(lag, time.id, unit.id, treatment,
                                  listwise.deletion = listwise.delete,
                                  restrict.control.period = restrict.control.period,
                                  use.diag.covmat = use.diagonal.variance.matrix, 
-                                 placebo.test = placebo.test)
+                                 placebo.test = placebo.test,
+                                 caliper.formula = caliper.formula)
     
     if(!matching & match.missing)
     {
@@ -393,3 +303,6 @@ panel_match <- function(lag, time.id, unit.id, treatment,
   }
   
 }
+
+
+  
