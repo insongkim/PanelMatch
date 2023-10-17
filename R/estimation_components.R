@@ -8,7 +8,8 @@
 # about the weight of that unit at particular times, so we use the hashtable to look up where to put this data so that we can easily assign the appropriate weights in the original data frame containing the problem data.
 # pcs does this for all control units in a matched set
 # ("Prepare Control unitS")
-pcs <- function(sets, lead.in)
+pcs <- function(sets, lead.in,
+                continuous.treatment = FALSE)
 {
   
   L <- attr(sets, "lag")
@@ -25,8 +26,19 @@ pcs <- function(sets, lead.in)
                       repnum = lsets, SIMPLIFY = FALSE))
   ids <- rep(unlist(sets), rep((2), length(unlist(sets)) ) )
   names(ids) <- NULL
-  wts <- unlist(sapply(sets, 
-                       function(s){return(attr(s, "weights"))}))
+  
+  if (continuous.treatment)
+  {
+    wts <- unlist(sapply(sets, 
+                         function(s){return(attr(s, "weights") / attr(s, 'treatment.change'))}))
+  } else {
+    wts <- unlist(sapply(sets, 
+                         function(s){return(attr(s, "weights"))}))
+  }
+  
+  
+  
+  
   names(wts) <- NULL
   wts <- rep(wts, rep((2), length(unlist(sets)))) * c(1,-1)
   num.empty <- sum(!sapply(sets, length) > 0)
@@ -35,7 +47,8 @@ pcs <- function(sets, lead.in)
   return(dtf)
 }
 # refer to the description above -- pts works on treated units ("Prepare Treated unitS")
-pts <- function(sets, lead.in)
+pts <- function(sets, lead.in,
+                continuous.treatment = FALSE)
 {
   include <- sapply(sets, length) > 0
   num.empty <- sum(!include)
@@ -54,6 +67,18 @@ pts <- function(sets, lead.in)
   set.nums <- rep(0:(length(sets) - num.empty - 1 ), 
                   rep(2, length(sets) - num.empty ))
   ldf = data.frame(t = ts, id = tids, weight = wts, set.number = set.nums)
+  
+  if (continuous.treatment)
+  {
+    existing.sets <- sets[sapply(sets, length) > 0]
+    treatment.changes <- unlist(lapply(existing.sets, 
+                                       function(x) return(attr(x, "treatment.change"))))
+    x.std <- unlist(sapply(treatment.changes, 
+                           function(x) rep(x, 2), simplify = FALSE))
+    names(x.std) <- NULL
+    ldf$weight <- ldf$weight / x.std
+  } 
+  
   return(ldf)
   
   
@@ -62,7 +87,7 @@ pts <- function(sets, lead.in)
 # lead. So, for instance if our lead window is 0,1,2,3,4, these function must be called for each of those -- so for 0, then for 1, etc.
 # returns a data.table object
 getWits <- function(matched_sets, lead, data, 
-                    estimation.method = "bootstrap")
+                    continuous.treatment = FALSE)
 {
   
   #sort the data
@@ -71,8 +96,10 @@ getWits <- function(matched_sets, lead, data,
   data <- data[order(data[,id.var], data[,t.var]), ]
   
   #prep control sets, prep treatment sets for search/summation vector
-  p.df <- pcs(matched_sets, lead)
-  t.df <- pts(matched_sets, lead)
+  p.df <- pcs(matched_sets, lead, 
+              continuous.treatment = continuous.treatment)
+  t.df <- pts(matched_sets, lead,
+              continuous.treatment = continuous.treatment)
   
   ##to solve cran check note about unbound variables
   . <- weight <- id <- NULL

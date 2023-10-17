@@ -13,7 +13,8 @@ perform_refinement <- function(lag, time.id, unit.id, treatment,
                                use.diag.covmat = FALSE, 
                                placebo.test = FALSE,
                                restrict.control.period = NULL,
-                               caliper.formula = NULL)
+                               caliper.formula = NULL,
+                               continuous.treatment.info = NULL)
 {
 
   if (inherits(ordered.data[, unit.id], "numeric"))
@@ -21,12 +22,33 @@ perform_refinement <- function(lag, time.id, unit.id, treatment,
     warning("converting unit id variable data to integer")
     class(ordered.data[, unit.id]) <- "integer"
   }
-  
-  temp.treateds <- findBinaryTreated(ordered.data, qoi.in = qoi,
+  if (is.null(continuous.treatment.info))
+  {
+    temp.treateds <- findBinaryTreated(ordered.data, qoi.in = qoi,
                                        treatedvar = treatment, 
                                        time.var = time.id,
                                        unit.var = unit.id, 
                                        hasbeensorted = TRUE)
+  } else #continuous
+  {
+    temp.treateds <- findContinuousTreated(dmat = ordered.data, 
+                                           treatedvar = treatment, 
+                                           time.var = time.id,
+                                           unit.var = unit.id, qoi = qoi,
+                                           continuous.treatment.info = continuous.treatment.info)
+    
+    if(!is.null(continuous.treatment.info[["minimum.treatment.value"]]))
+    {
+      indx <- temp.treateds[, treatment] >= continuous.treatment.info[["minimum.treatment.value"]]
+      temp.treateds <- temp.treateds[indx,]
+    }
+    if(!is.null(continuous.treatment.info[["maximum.treatment.value"]]))
+    {
+      indx <- temp.treateds[, treatment] <= continuous.treatment.info[["maximum.treatment.value"]]
+      temp.treateds <- temp.treateds[indx,]
+    }
+  }
+  
 
   idx <- !((temp.treateds[, time.id] - lag) < min(ordered.data[, time.id]))
   temp.treateds <- temp.treateds[idx, ]
@@ -46,8 +68,8 @@ perform_refinement <- function(lag, time.id, unit.id, treatment,
                            match.on.missingness = match.missing, 
                            matching = TRUE,
                            qoi.in = qoi,
-                           restrict.control.period = restrict.control.period)
-  
+                           restrict.control.period = restrict.control.period, 
+                           continuous.treatment.info = continuous.treatment.info)
   e.sets <- msets[sapply(msets, length) == 0]
   msets <- msets[sapply(msets, length) > 0 ]
   if (length(msets) == 0)
@@ -60,7 +82,6 @@ perform_refinement <- function(lag, time.id, unit.id, treatment,
     }
     attr(msets, "covs.formula") <- covs.formula
     attr(msets, "match.missing") <- match.missing
-    return(msets)
     return(msets)
   }
 
@@ -147,6 +168,12 @@ perform_refinement <- function(lag, time.id, unit.id, treatment,
     
   }
   
+  if (!is.null(continuous.treatment.info))
+  {
+    setlist <- filterContinuousTreated(msets, e.sets, qoi)
+    msets <- setlist[["sets"]]
+    e.sets <- setlist[["empty.sets"]]
+  }
   
   if(refinement.method == "none")
   {
@@ -175,6 +202,16 @@ perform_refinement <- function(lag, time.id, unit.id, treatment,
 
   ordered.data <- parse_and_prep(formula = covs.formula, 
                                  data = ordered.data)
+  
+  
+  if (!is.null(continuous.treatment.info))
+  { #make the treatment variable binary in case PS based method is used
+    
+    idx <- paste0(ordered.data[, unit.id], ".", 
+                  ordered.data[, time.id]) %in% paste0(treated.ids, ".", treated.ts)
+    ordered.data[, treatment] <- ifelse(idx, 1, 0)
+  }
+  
   if (any(c("character", "factor") %in% sapply(ordered.data, class)))
   {
     stop("please convert covs.formula variables to numerical data")

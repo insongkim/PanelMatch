@@ -62,6 +62,13 @@
 #' a treated unit and each possible control unit over each period in the lag window or to the average distance over the entire lag window (as specified by L). For instance, 
 #' \code{caliper.formula = ~ I(caliper(cal.data,"average", .5, "categorical", "raw")) would filter matched sets such that they only contain control units that are <= .5 units of the cal.data variable
 #' of the treated unit, on average. In contrast, ~ I(caliper(cal.data,"max", .5, "categorical", "raw"))} would include only control units that are <= .5 units of the cal.data at every period in the lag window. Please see the vignette for more.
+#' @param continuous.treatment.info a named list with elements \code{treatment.threshold}, \code{type}, \code{units},, \code{matching.threshold}, \code{control.treshold}, and optionally \code{minimum.treatment.threshold} and/or \code{maximum.treatment.threshold}.
+#' The treatment threshold corresponds to the minimum of the magnitude of the change in the treatment variable from time \code{t-1} to time \code{t}. It must be a positive number. When the qoi is set to be "att", then treatment will be defined as a positive change (ie. an increase) in the treatment variable. When the qoi is set to be "art", treatment is defined as a negative change
+#' The type is either "raw" or "sd" (specified as a character string) and corresponds to the units of the treatment and matching threshold. If "raw", then thresholds will be applied to the raw treatment data in the original units.
+#' If "sd", then the thresholds are interpreted to be provided in standard deviations, and the treatment variable data will be standardized. 
+#' The \code{matching.threshold} parameter corresponds to the maximum permissible absolute value of the difference in the treatment variable 
+#' between treated units and control units. This is similar to the threshold provided for numerical data in the caliper formula. \code{control.threshold} is a number that specifies the maximum permissable deviation from t-1 to t to still be considered a treated unit.
+#' When specified, the minimum (maximum) treatment threshold specifies the minimum (maximum) acceptable value for a treated unit at time t to be considered a viable treatment unit.
 #' @return \code{PanelMatch()} returns an object of class "PanelMatch". This is a list that contains a few specific elements: 
 #' First, a \code{matched.set} object(s) that has the same name as the provided qoi if the qoi is "att", "art", or "atc". 
 #' If qoi = "ate" then two \code{matched.set} objects will be attached, named "att" and "atc." Please consult the documentation for
@@ -102,7 +109,8 @@ PanelMatch <- function(lag, time.id, unit.id,
                        use.diagonal.variance.matrix = FALSE,
                        restrict.control.period = NULL,
                        placebo.test = FALSE,
-                       caliper.formula = NULL) 
+                       caliper.formula = NULL,
+                       continuous.treatment.info = NULL) 
 {
  
   if (placebo.test) warning("when placebo.test = TRUE, using the dependent variable in refinment is invalid")
@@ -134,6 +142,29 @@ PanelMatch <- function(lag, time.id, unit.id,
   if (!all(qoi %in% c("att", "atc", "ate", "art"))) stop("please choose a valid qoi")
   if(any(is.na(data[, unit.id]))) stop("Cannot have NA unit ids")
   
+  
+  if (!is.null(continuous.treatment.info))
+  {
+    if (!(all(c("treatment.threshold",
+                "units", 
+                "matching.threshold",
+                "control.threshold") %in% names(continuous.treatment.info))))
+    {
+      
+      stop("Missing parameter in continuous matching specification.
+           Please include all of the treatment.threshold, 
+           units, matching.threshold, control.threshold parameters")
+    }
+    if (continuous.treatment.info[["treatment.threshold"]] == 0)
+    {
+      stop("treatment.threshold must be > 0")
+    }
+  }
+  if (!is.null(continuous.treatment.info) && 
+      !(qoi %in% c("att", "art")))
+  {
+    stop("Only ATT and ART are valid for continuous treatment.")
+  }
   ##############################error checking##############################
   
   ##############################balance the panel############################## 
@@ -192,7 +223,8 @@ PanelMatch <- function(lag, time.id, unit.id,
                                 restrict.control.period = restrict.control.period,
                                 use.diag.covmat = use.diagonal.variance.matrix, 
                                 placebo.test = placebo.test,
-                                caliper.formula = caliper.formula)
+                                caliper.formula = caliper.formula,
+                                continuous.treatment.info = continuous.treatment.info)
     
     if (!matching & match.missing)
     {
@@ -207,6 +239,14 @@ PanelMatch <- function(lag, time.id, unit.id,
     attr(pm.obj, "lead") <- lead
     attr(pm.obj, "forbid.treatment.reversal") <- forbid.treatment.reversal
     attr(pm.obj, "placebo.test") <- placebo.test
+    if (!is.null(continuous.treatment.info))
+    {
+      attr(pm.obj, "continuous.treatment") <- TRUE
+      
+    } else {
+      attr(pm.obj, "continuous.treatment") <- FALSE
+    }
+    
     return(pm.obj)
   } else if (identical(qoi,"att") || identical(qoi,"atc"))
   { #note that ordered.data at this point is in column order: unit, time, treatment, everything else
@@ -230,7 +270,8 @@ PanelMatch <- function(lag, time.id, unit.id,
                                 restrict.control.period = restrict.control.period,
                                 use.diag.covmat = use.diagonal.variance.matrix, 
                                 placebo.test = placebo.test,
-                                caliper.formula = caliper.formula)
+                                caliper.formula = caliper.formula,
+                                continuous.treatment.info = continuous.treatment.info)
     
     
     if (!matching & match.missing)
@@ -246,6 +287,14 @@ PanelMatch <- function(lag, time.id, unit.id,
     attr(pm.obj, "lead") <- lead
     attr(pm.obj, "forbid.treatment.reversal") <- forbid.treatment.reversal
     attr(pm.obj, "placebo.test") <- placebo.test
+    if (!is.null(continuous.treatment.info))
+    {
+      attr(pm.obj, "continuous.treatment") <- TRUE
+      
+    } else {
+      attr(pm.obj, "continuous.treatment") <- FALSE
+    }
+    
     return(pm.obj)
   } else if (identical(qoi, "ate"))
   { # for ate, we have to calculate both att and atc
@@ -262,7 +311,8 @@ PanelMatch <- function(lag, time.id, unit.id,
                                 restrict.control.period = restrict.control.period,
                                 use.diag.covmat = use.diagonal.variance.matrix, 
                                 placebo.test = placebo.test,
-                                caliper.formula = caliper.formula)
+                                caliper.formula = caliper.formula,
+                                continuous.treatment.info = continuous.treatment.info)
     
     msets2 <- perform_refinement(lag = lag, time.id = time.id, unit.id = unit.id, 
                                  treatment = treatment, 
@@ -277,7 +327,8 @@ PanelMatch <- function(lag, time.id, unit.id,
                                  restrict.control.period = restrict.control.period,
                                  use.diag.covmat = use.diagonal.variance.matrix, 
                                  placebo.test = placebo.test,
-                                 caliper.formula = caliper.formula)
+                                 caliper.formula = caliper.formula,
+                                 continuous.treatment.info = continuous.treatment.info)
     
     if(!matching & match.missing)
     {
@@ -295,14 +346,18 @@ PanelMatch <- function(lag, time.id, unit.id,
     attr(pm.obj, "lead") <- lead
     attr(pm.obj, "forbid.treatment.reversal") <- forbid.treatment.reversal
     attr(pm.obj, "placebo.test") <- placebo.test
-    return(pm.obj)
+    if (!is.null(continuous.treatment.info))
+    {
+      attr(pm.obj, "continuous.treatment") <- TRUE
+      
+    } else {
+      attr(pm.obj, "continuous.treatment") <- FALSE
+    }
     
+    return(pm.obj)
     
   } else {
     stop("qoi not specified correctly")
   }
   
 }
-
-
-  

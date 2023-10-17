@@ -7,7 +7,8 @@
 # returns a data.frame object
 prepare_data <- function(data.in, lead, sets.att = NULL,
                         sets.atc = NULL,
-                        qoi.in, dependent.variable)
+                        qoi.in, dependent.variable,
+                        continuous.treatment = FALSE)
 {
   if ( identical(qoi.in, "att") || 
        identical(qoi.in, "art") || 
@@ -18,7 +19,10 @@ prepare_data <- function(data.in, lead, sets.att = NULL,
     for (j in lead)
     {
       
-      dense.wits <- getWits(lead = j, data = data.in, matched_sets = sets.att)
+      dense.wits <- getWits(lead = j, 
+                            data = data.in, 
+                            matched_sets = sets.att,
+                            continuous.treatment = continuous.treatment)
       data.in = merge(x = data.in, y = dense.wits, all.x = TRUE,
                    by.x = colnames(data.in)[1:2], by.y = c("id", "t"))
       colnames(data.in)[length(data.in)] <- paste0("Wit_", qoi.t, j)
@@ -38,7 +42,10 @@ prepare_data <- function(data.in, lead, sets.att = NULL,
     for (j in lead)
     {
       
-      dense.wits <- getWits(lead = j, data = data.in, matched_sets = sets.atc)
+      dense.wits <- getWits(lead = j, 
+                            data = data.in, 
+                            matched_sets = sets.atc,
+                            continuous.treatment = continuous.treatment)
       data.in = merge(x = data.in, y = dense.wits, all.x = TRUE,
                    by.x = colnames(data.in)[1:2], by.y = c("id", "t"))
       colnames(data.in)[length(data.in)] <- paste0("Wit_atc", j)
@@ -58,5 +65,3 @@ prepare_data <- function(data.in, lead, sets.att = NULL,
   return(data.in)
 
 }
-
-

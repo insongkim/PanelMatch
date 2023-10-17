@@ -104,9 +104,10 @@ get.matchedsets <- function(t, id, data, L, t.column, id.column, treatedvar,
                             hasbeensorted = FALSE, match.on.missingness = TRUE,
                             matching = TRUE, 
                             qoi.in,
-                            restrict.control.period = NULL)
+                            restrict.control.period = NULL,
+                            continuous.treatment.info = NULL)
 {
-
+  continuous <- !is.null(continuous.treatment.info)
   if (length(t) == 0 || length(id) == 0)
   {
     stop("time and/or unit information missing")
@@ -130,75 +131,104 @@ get.matchedsets <- function(t, id, data, L, t.column, id.column, treatedvar,
   d <- data[, c(id.column, t.column, treatedvar)]
   d <- as.matrix(d)
   if (!is.numeric(d)) stop('data in treated, time, or id columns is not numeric')
-
-  compmat <- data.table::dcast(data.table::as.data.table(d), 
-                               formula = paste0(id.column, "~", t.column),
-                               value.var = treatedvar) #reshape the data so each row corresponds to a unit, columns specify treatment over time
   
-  
-  if (match.on.missingness)
+  if (!continuous)
   {
-    d[is.na(d[,treatedvar]), treatedvar] <- -1
-    compmat[is.na(compmat)] <- -1
-  }
-  
-  control.histories <- get_comparison_histories(d, t, id, which(colnames(d) == t.column) - 1 ,
-                                                which(colnames(d) == id.column) - 1, L,
-                                                which(colnames(d) == treatedvar) - 1,
-                                                identical(qoi.in, "atc")) #control histories should be a list
-  
-  if (!is.null(restrict.control.period))
-  {
-    indx <- enforce_strict_histories(control.histories, 
-                                     restrict.control.period)
-    control.histories <- control.histories[indx]
-    t <- t[indx]
-    id <- id[indx]
-  }
-  
-  if (!matching & !match.on.missingness)
-  {
-    tidx <- !unlist(lapply(control.histories, 
-                           function(x)return(any(is.na(x)))))
-    control.histories <- control.histories[tidx]
-    t2 <- t[!tidx]
-    id2 <- id[!tidx]
-    t <- t[tidx]
-    id <- id[tidx]
-    t.map <- match(t, unique(d[, t.column]))
-    sets <- non_matching_matcher(control.histories, as.matrix(compmat), t.map, 
-                                 id, L = 1, missing_window = L)
-    if (any(!tidx))
+    compmat <- data.table::dcast(data.table::as.data.table(d), 
+                                 formula = paste0(id.column, "~", t.column),
+                                 value.var = treatedvar) #reshape the data so each row corresponds to a unit, columns specify treatment over time
+    
+    
+    if (match.on.missingness)
     {
-      l2 <- replicate(sum(!tidx), numeric())
-      named.sets <- matched_set(matchedsets = c(sets, l2), 
-                                id = c(id, id2), 
-                                t = c(t, t2), L = L,
+      d[is.na(d[,treatedvar]), treatedvar] <- -1
+      compmat[is.na(compmat)] <- -1
+    }
+    
+    control.histories <- get_comparison_histories(d, t, id, which(colnames(d) == t.column) - 1 ,
+                                                  which(colnames(d) == id.column) - 1, L,
+                                                  which(colnames(d) == treatedvar) - 1,
+                                                  identical(qoi.in, "atc")) #control histories should be a list
+    
+    if (!is.null(restrict.control.period))
+    {
+      indx <- enforce_strict_histories(control.histories, 
+                                       restrict.control.period)
+      control.histories <- control.histories[indx]
+      t <- t[indx]
+      id <- id[indx]
+    }
+    
+    if (!matching & !match.on.missingness)
+    {
+      tidx <- !unlist(lapply(control.histories, 
+                             function(x)return(any(is.na(x)))))
+      control.histories <- control.histories[tidx]
+      t2 <- t[!tidx]
+      id2 <- id[!tidx]
+      t <- t[tidx]
+      id <- id[tidx]
+      t.map <- match(t, unique(d[, t.column]))
+      sets <- non_matching_matcher(control.histories, as.matrix(compmat), t.map, 
+                                   id, L = 1, missing_window = L)
+      if (any(!tidx))
+      {
+        l2 <- replicate(sum(!tidx), numeric())
+        named.sets <- matched_set(matchedsets = c(sets, l2), 
+                                  id = c(id, id2), 
+                                  t = c(t, t2), L = L,
+                                  t.var = t.column, 
+                                  id.var = id.column, 
+                                  treatment.var = treatedvar)
+      } else
+      {
+        named.sets <- matched_set(matchedsets = sets, 
+                                  id = id, t = t, L = L,
+                                  t.var = t.column, id.var = id.column, 
+                                  treatment.var = treatedvar)
+      }
+    }
+    else
+    {
+      t.map <- match(t, unique(d[, t.column]))
+      sets <- get_msets_helper(control.histories, 
+                               as.matrix(compmat), 
+                               t.map, id, L)
+      named.sets <- matched_set(matchedsets = sets, 
+                                id = id, t = t, L = L,
                                 t.var = t.column, 
                                 id.var = id.column, 
                                 treatment.var = treatedvar)
-    } else
-    {
-      named.sets <- matched_set(matchedsets = sets, 
-                                id = id, t = t, L = L,
-                                t.var = t.column, id.var = id.column, 
-                                treatment.var = treatedvar)
     }
-  }
-  else
+    attr(named.sets, "restrict.control.period") <- restrict.control.period
+    return(named.sets)
+  } else #continuous
   {
-    t.map <- match(t, unique(d[, t.column]))
-    sets <- get_msets_helper(control.histories, 
-                             as.matrix(compmat), 
-                             t.map, id, L)
-    named.sets <- matched_set(matchedsets = sets, 
-                              id = id, t = t, L = L,
-                              t.var = t.column, 
-                              id.var = id.column, 
-                              treatment.var = treatedvar)
+    
+    continuous.treatment.formula <- as.formula(paste0("~ I(caliper(", treatedvar,",", "'", "max", "'",
+                                                      ",", continuous.treatment.info[["matching.threshold"]],
+                                                      ",", "'","numeric","'",
+                                                      ",", "'", continuous.treatment.info[["units"]],"'" ,"))"))
+    
+    attr(continuous.treatment.formula, ".Environment") <- environment()
+    matched.sets <- vector("list", length(id))
+    attr(matched.sets, "")
+    names(matched.sets) <- paste0(id, ".", t)
+    
+    attr(matched.sets, "lag") <- L
+    attr(matched.sets, "t.var") <- t.column
+    attr(matched.sets, "id.var" ) <- id.column
+    attr(matched.sets, "treatment.var") <- treatedvar
+    
+    continuous.matched.sets <- handle_calipers(plain.ordered.data = d, 
+                                               caliper.formula = continuous.treatment.formula,
+                                               matched.sets = matched.sets, 
+                                               lag.window = 1:L, 
+                                               is.continuous.matching = TRUE,
+                                               control.threshold = continuous.treatment.info[["control.threshold"]])
+    return(continuous.matched.sets) 
   }
-  attr(named.sets, "restrict.control.period") <- restrict.control.period
-  return(named.sets)
+  
    
 }
 
@@ -273,3 +303,104 @@ expand.treated.ts <- function(lag, treated.ts)
   lapply(treated.ts, helper)
 }
 
+#' findContinuousTreated
+#'
+#' \code{findContinuousTreated} is used to identify t,id pairs of units for which a matched set might exist.
+#'
+#'
+#' @param dmat Sorted data frame or matrix containing data used to identify potential treated units. Must be specified in such a way that a combination of time and id variables will correspond to a unique row. Must also contain at least a continuous treatment variable column as well.
+#' @param treatedvar Character string that identifies the name of the column in \code{dmat} that provides information about the continuous treatment variable
+#' @param time.var Character string that identifies the name of the column in \code{dmat} that contains data about the time variable. This data must be integer that increases by one.
+#' @param unit.var Character string that identifies the name of the column in \code{dmat} that contains data about the variable used as a unit id. This data must be integer
+#'
+#' @return \code{findContinuousTreated} returns a subset of the data in the \code{dmat} data frame, containing only treated units for which a matched set might exist
+#'
+#' @keywords internal
+#'
+findContinuousTreated <- function(dmat, treatedvar, time.var, unit.var,
+                                  qoi, continuous.treatment.info)
+{
+  identifyContinuousIndex <- function(x, treatedvar.in,
+                                      qoi, threshold)
+  {
+    if (identical(qoi, "att"))
+    {
+      unitIndex <- which( diff(x[, treatedvar]) >= threshold) + 1 ## need to add one since it does not pad with NA values
+    } else if (identical(qoi, "art"))
+    {
+      unitIndex <- which( diff(x[, treatedvar]) <= threshold) + 1 ## need to add one since it does not pad with NA values
+    } else {
+      warning("Undefined qoi for continuous matching!")
+    }
+    
+    return(x[unitIndex, ])
+  }
+  
+  
+  
+  treatment.threshold <- continuous.treatment.info[["treatment.threshold"]] #(continuous.treatment.formula)
+  treatedUnits <- by(dmat, INDICES = dmat[, unit.var], FUN = identifyContinuousIndex,
+                     treatedvar.in = treatedvar, qoi = qoi, threshold = treatment.threshold, simplify = FALSE)
+  
+  treatedDF <- do.call(rbind, treatedUnits)
+  if (nrow(treatedDF) == 0) stop("No viable treated units for continuous matching specification")
+  rownames(treatedDF) <- NULL
+  return(treatedDF)
+}
+
+
+prepContinuousControlUnits <- function(ordered.data,
+                                       idvar, time.var,
+                                       all.treated.ids,
+                                       all.treated.ts,
+                                       treated.ids,
+                                       treated.ts,
+                                       control.threshold
+)
+{
+  full.controls <- unique(ordered.data[, idvar])
+  
+  not.valid.ids <- all.treated.ids[all.treated.ts %in% treated.ts] #cant include other treated units from the same time
+  matched.set <- full.controls[!full.controls %in% not.valid.ids] # start with everything, then remove any units that are treated
+  # during the same period as the current t/id pair under consideration
+  rownames(ordered.data) <- paste0(ordered.data[, idvar], ".", ordered.data[, time.var])
+  controls.to.check.t <- paste0(matched.set, ".", treated.ts)
+  controls.to.check.t1 <- paste0(matched.set, ".", treated.ts - 1)
+  # assuming third column is treated column
+  diffs <- as.numeric(ordered.data[controls.to.check.t, 3]) - as.numeric(ordered.data[controls.to.check.t1, 3])
+  matched.set <- matched.set[abs(diffs) <= control.threshold]
+  matched.set <- matched.set[!is.na(matched.set)] #final cleanup, remove the NAs 
+  return(matched.set)
+}
+
+
+filterContinuousTreated <- function(msets, e.sets, qoi)
+{
+  
+  
+  if (identical(qoi, "att"))
+  {
+    idx <- sapply(msets, function(x) attr(x, "treatment.change")) >= 0
+    msets <- msets[idx]
+    if (length(e.sets) > 0) 
+    {
+      idx <- sapply(e.sets, function(x) attr(x, "treatment.change")) >= 0
+      e.sets <- e.sets[idx]  
+    }
+    
+  } else if (identical(qoi, "art"))
+  {
+    idx <- sapply(msets, function(x) attr(x, "treatment.change")) <= 0
+    msets <- msets[idx]
+    if (length(e.sets) > 0) 
+    {
+      idx <- sapply(e.sets, function(x) attr(x, "treatment.change")) <= 0
+      e.sets <- e.sets[idx]  
+    }
+  } else 
+  {
+    stop("Invalid QOI for continuous treatment!")
+  }  
+  return(list("sets" = msets, 
+              "empty.sets" = e.sets))
+}

@@ -25,7 +25,8 @@ PanelMatch(
   use.diagonal.variance.matrix = FALSE,
   restrict.control.period = NULL,
   placebo.test = FALSE,
-  caliper.formula = NULL
+  caliper.formula = NULL,
+  continuous.treatment.info = NULL
 )
 }
 \arguments{
@@ -99,6 +100,14 @@ on a standardized scale (ie. use standard deviations as units) or the original u
 a treated unit and each possible control unit over each period in the lag window or to the average distance over the entire lag window (as specified by L). For instance, 
 \code{caliper.formula = ~ I(caliper(cal.data,"average", .5, "categorical", "raw")) would filter matched sets such that they only contain control units that are <= .5 units of the cal.data variable
 of the treated unit, on average. In contrast, ~ I(caliper(cal.data,"max", .5, "categorical", "raw"))} would include only control units that are <= .5 units of the cal.data at every period in the lag window. Please see the vignette for more.}
+
+\item{continuous.treatment.info}{a named list with elements \code{treatment.threshold}, \code{type}, \code{units},, \code{matching.threshold}, \code{control.treshold}, and optionally \code{minimum.treatment.threshold} and/or \code{maximum.treatment.threshold}.
+The treatment threshold corresponds to the minimum of the magnitude of the change in the treatment variable from time \code{t-1} to time \code{t}. It must be a positive number. When the qoi is set to be "att", then treatment will be defined as a positive change (ie. an increase) in the treatment variable. When the qoi is set to be "art", treatment is defined as a negative change
+The type is either "raw" or "sd" (specified as a character string) and corresponds to the units of the treatment and matching threshold. If "raw", then thresholds will be applied to the raw treatment data in the original units.
+If "sd", then the thresholds are interpreted to be provided in standard deviations, and the treatment variable data will be standardized. 
+The \code{matching.threshold} parameter corresponds to the maximum permissible absolute value of the difference in the treatment variable 
+between treated units and control units. This is similar to the threshold provided for numerical data in the caliper formula. \code{control.threshold} is a number that specifies the maximum permissable deviation from t-1 to t to still be considered a treated unit.
+When specified, the minimum (maximum) treatment threshold specifies the minimum (maximum) acceptable value for a treated unit at time t to be considered a viable treatment unit.}
 }
 \value{
 \code{PanelMatch()} returns an object of class "PanelMatch". This is a list that contains a few specific elements: 

@@ -229,8 +229,9 @@ do_calcs <- function(time.df,
                    FUN  =  do.maths, 
                    treated.unit.data = cov.data[nrow(cov.data), ], 
                    sd.vals_ = sd.vals__, 
-                   is_factor = is_factor_in)
-  
+                   is_factor = is_factor_in,
+                   simplify = FALSE)
+  results <- do.call(cbind, results)
   return(results)
   
 }
@@ -245,6 +246,7 @@ handle_set <- function(sub.list,
   tmat <- do_calcs(sub.list[[1]], 
                    sd.vals__ = standard.deviations, 
                    is_factor_in = is.factor)
+  
   colnames(tmat) <- NULL
   unit.index <- apply(tmat, 2, FUN= meets_caliper, 
                       cal = cal.value, 
@@ -360,8 +362,15 @@ unnest <- function(matched.set, treated.unit.info,
   all.treated.ts <- as.integer(sub(".*\\.", "", all.treated.info))
   all.treated.ids <- as.integer(sub("\\..*", "", all.treated.info))
   
+  if (is.continuous.matching)
+  {
+    
+    matched.set <- prepContinuousControlUnits(ordered_expanded_data_, idvar, 
+                                              time.var, all.treated.ids,
+                                              all.treated.ts, treated.ids, 
+                                              treated.ts, control.threshold)
+  }
   tlist <- expand.treated.ts(lag.in_, treated.ts = treated.ts)
-  
   idxlist <- get_yearly_dmats(ordered_expanded_data_, treated.ids, tlist,
                               matched_sets = list(matched.set), lag.in_)
   rr <- lapply(unlist(idxlist, recursive = FALSE), function(x) {ordered_expanded_data_[x, ]})
@@ -372,3 +381,5 @@ unnest <- function(matched.set, treated.unit.info,
                                              id.var, time.var, names(matched.sets)) 
   return(tset)
 }
+
+
