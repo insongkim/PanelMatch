@@ -13,6 +13,8 @@ get_covariate_balance(
   reference.line = TRUE,
   legend = TRUE,
   ylab = "SD",
+  include.treatment.period = TRUE,
+  legend.position = "topleft",
   ...
 )
 }
@@ -32,6 +34,10 @@ get_covariate_balance(
 \item{legend}{logical indicating whether or not a legend identifying the variables should be included on the plot. Default is TRUE.}
 
 \item{ylab}{Label for y axis. Default is "SD". This is the same as the ylab argument to \code{plot()}.}
+
+\item{include.treatment.period}{logical. Default is TRUE. When TRUE, covariate balance measures for the period during which treatment occurs is included. These calculations are not included when FALSE. Users may wish to leave this period off in some circumstances. For instance, one would expect covariate balance to be poor during this period when treatment is continuous and a lagged outcome is included in the refinement formula.}
+
+\item{legend.position}{position of legend. See documentation for graphics::legend. Default is "topleft"}
 
 \item{...}{Additional graphical parameters to be passed to the \code{plot} function in base R.}
 }
