@@ -13,6 +13,8 @@
 #' @param legend logical indicating whether or not a legend identifying the variables should be included on the plot. Default is TRUE.
 #' @param ylab Label for y axis. Default is "SD". This is the same as the ylab argument to \code{plot()}.
 #' @param use.equal.weights logical. If set to TRUE, then equal weights will be assigned to control units, rather than using whatever calculated weights have been assigned. This is helpful for assessing the improvement in covariate balance as a result of refining the matched sets.
+#' @param include.treatment.period logical. Default is TRUE. When TRUE, covariate balance measures for the period during which treatment occurs is included. These calculations are not included when FALSE. Users may wish to leave this period off in some circumstances. For instance, one would expect covariate balance to be poor during this period when treatment is continuous and a lagged outcome is included in the refinement formula.
+#' @param legend.position position of legend. See documentation for graphics::legend. Default is "topleft"
 #' @param ... Additional graphical parameters to be passed to the \code{plot} function in base R.
 #' @examples
 #' #add some additional data to data set for demonstration purposes
@@ -34,6 +36,8 @@ get_covariate_balance <- function(matched.sets,
                                   reference.line = TRUE,
                                   legend = TRUE, 
                                   ylab = "SD",
+                                  include.treatment.period = TRUE,
+                                  legend.position = "topleft",
                                   ...)
 {
   
@@ -184,8 +188,16 @@ get_covariate_balance <- function(matched.sets,
     warning(paste0("Some variables were removed due to low variation, inadequate data needed for calculation: ", removed.vars))
   }
 
+  if (!include.treatment.period)
+  {
+    pointmatrix <- pointmatrix[-nrow(pointmatrix), ,drop = FALSE]
+    stop.val <- 1
+    start.val <- nrow(pointmatrix)
+  } else {
+    stop.val <- 0
+    start.val <- nrow(pointmatrix) - 1
+  }
   
-  pointmatrix <- pointmatrix[-nrow(pointmatrix), ,drop = FALSE]
   
   if (!plot) return(pointmatrix)
   
@@ -197,31 +209,36 @@ get_covariate_balance <- function(matched.sets,
     {
       treated.data <- pointmatrix[,which(colnames(pointmatrix) == treatment)] # treated data
       pointmatrix <- pointmatrix[,-which(colnames(pointmatrix) == treatment)] #all non-treatment variable data
-      graphics::matplot(pointmatrix, type = "l", col = 1:ncol(pointmatrix), 
+      graphics::matplot(pointmatrix, pch = 19,
+                        type = "b", 
+                        col = 1:ncol(pointmatrix), 
                         lty = 1, ylab = ylab, xaxt = "n", ...)
       graphics::lines(x = 1:nrow(pointmatrix), 
                       y = as.numeric(treated.data), 
-                      type = "l",
+                      type = "b",
                       lty = 2, lwd = 3)
-      graphics::axis(side = 1, labels = paste0("t-", (nrow(pointmatrix)):1), 
+      graphics::axis(side = 1, labels = paste0("t-", start.val:stop.val), 
                      at = 1:nrow(pointmatrix))  
     } else
     {
-      graphics::matplot(pointmatrix, type = "l", col = 1:ncol(pointmatrix), 
+      
+      graphics::matplot(pointmatrix, type = "b",
+                        pch = 19,
+                        col = 1:ncol(pointmatrix), 
                         lty = 1, ylab = ylab, xaxt = "n", ...)
-      graphics::axis(side = 1, labels = paste0("t-", (nrow(pointmatrix)):1), 
+      graphics::axis(side = 1, labels = paste0("t-", start.val:stop.val), 
                      at = 1:nrow(pointmatrix))  
     }
     
     if (legend) {
       if (treated.included)
       {
-        legend("topleft", 
+        legend(legend.position, 
                legend = c(colnames(pointmatrix), treatment), 
                col = c(1:ncol(pointmatrix), "black"), 
                lty = c(rep(1, ncol(pointmatrix)), 2))  
       } else {
-        legend("topleft", 
+        legend(legend.position, 
                legend = colnames(pointmatrix), 
                col = 1:ncol(pointmatrix), lty = 1)
       }
