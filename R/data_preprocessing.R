@@ -10,7 +10,7 @@ check_time_data <- function(data, time.id)
   is.not.int <- (!inherits(data[, time.id], "integer")) 
   u.times <- unique(data[, time.id])
   increase.by.one <- all(seq(min(u.times), max(u.times), by = 1) %in% u.times)
-  if(is.not.int && !increase.by.one) 
+  if(is.not.int || !increase.by.one) 
   { # if we can reasonably perform some kind of conversion (e.g. numeric data), do so
     warning("Data is not consecutive integer: Attempting automatic conversion, which may cause undefined behavior")
     # Assuming sorted data here
