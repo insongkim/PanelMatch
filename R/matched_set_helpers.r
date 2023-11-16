@@ -342,10 +342,22 @@ findContinuousTreated <- function(dmat, treatedvar, time.var, unit.var,
   treatedUnits <- by(dmat, INDICES = dmat[, unit.var], FUN = identifyContinuousIndex,
                      treatedvar.in = treatedvar, qoi = qoi, threshold = treatment.threshold, simplify = FALSE)
   
-  treatedDF <- do.call(rbind, treatedUnits)
-  if (nrow(treatedDF) == 0) stop("No viable treated units for continuous matching specification")
-  rownames(treatedDF) <- NULL
-  return(treatedDF)
+  temp.treateds <- do.call(rbind, treatedUnits)
+  if (nrow(temp.treateds) == 0) stop("No viable treated units for continuous matching specification")
+  
+  
+  if(!is.null(continuous.treatment.info[["minimum.treatment.value"]]))
+  {
+    indx <- temp.treateds[, treatedvar] >= continuous.treatment.info[["minimum.treatment.value"]]
+    temp.treateds <- temp.treateds[indx,]
+  }
+  if(!is.null(continuous.treatment.info[["maximum.treatment.value"]]))
+  {
+    indx <- temp.treateds[, treatedvar] <= continuous.treatment.info[["maximum.treatment.value"]]
+    temp.treateds <- temp.treateds[indx,]
+  }
+  rownames(temp.treateds) <- NULL
+  return(temp.treateds)
 }
 
 

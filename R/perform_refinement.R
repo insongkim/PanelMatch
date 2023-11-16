@@ -37,16 +37,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment,
                                            unit.var = unit.id, qoi = qoi,
                                            continuous.treatment.info = continuous.treatment.info)
     
-    if(!is.null(continuous.treatment.info[["minimum.treatment.value"]]))
-    {
-      indx <- temp.treateds[, treatment] >= continuous.treatment.info[["minimum.treatment.value"]]
-      temp.treateds <- temp.treateds[indx,]
-    }
-    if(!is.null(continuous.treatment.info[["maximum.treatment.value"]]))
-    {
-      indx <- temp.treateds[, treatment] <= continuous.treatment.info[["maximum.treatment.value"]]
-      temp.treateds <- temp.treateds[indx,]
-    }
+    
   }
   
 
