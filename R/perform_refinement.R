@@ -139,15 +139,27 @@ perform_refinement <- function(lag, time.id, unit.id, treatment,
   }
 
 
+  
   if (length(msets) > 0)
   {
     msets <- identifyDirectionalChanges(msets, ordered.data,
                                         unit.id, time.id, treatment, qoi)
+    # add attribute to track treatment levels in treated observations at time t-1.
+    msets <- extract.baseline.treatment(matched.sets = msets,
+                                                          data.in = ordered.data,
+                                                          id.variable = unit.id,
+                                                          time.variable = time.id,
+                                                          treatment.variable = treatment)
   }
   if (length(e.sets) > 0)
   {
     e.sets <- identifyDirectionalChanges(e.sets, ordered.data,
                                          unit.id, time.id, treatment, qoi)
+    e.sets <- extract.baseline.treatment(matched.sets = e.sets,
+                                        data.in = ordered.data,
+                                        id.variable = unit.id,
+                                        time.variable = time.id,
+                                        treatment.variable = treatment)
   }
   
   

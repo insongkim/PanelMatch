@@ -226,10 +226,37 @@ get.matchedsets <- function(t, id, data, L, t.column, id.column, treatedvar,
                                                lag.window = 1:L, 
                                                is.continuous.matching = TRUE,
                                                control.threshold = continuous.treatment.info[["control.threshold"]])
+    
     return(continuous.matched.sets) 
   }
   
    
+}
+
+
+extract.baseline.treatment <- function(matched.sets,
+                                       data.in,
+                                       id.variable,
+                                       time.variable,
+                                       treatment.variable)
+{
+  treated.t <- as.integer(sub(".*\\.", "", names(matched.sets)))
+  treated.id <- as.integer(sub("\\..*", "", names(matched.sets)))
+  treated.tm1 <- treated.t - 1
+  
+  rownames(data.in) <- paste0(data.in[,id.variable],
+                              ".",
+                              data.in[,time.variable])
+  
+  idx <- paste0(treated.id, ".", treated.tm1)
+  
+  t.starting <- data.in[idx, treatment.variable]
+  names(t.starting) <- NULL
+  for (i in 1:length(matched.sets)) {
+    attr(matched.sets[[i]], "treatment.baseline") <- t.starting[i]
+  }
+  
+  return(matched.sets)
 }
 
 ############################################################
@@ -328,7 +355,8 @@ findContinuousTreated <- function(dmat, treatedvar, time.var, unit.var,
       unitIndex <- which( diff(x[, treatedvar]) >= threshold) + 1 ## need to add one since it does not pad with NA values
     } else if (identical(qoi, "art"))
     {
-      unitIndex <- which( diff(x[, treatedvar]) <= threshold) + 1 ## need to add one since it does not pad with NA values
+      # assuming that for ART, the matching threshold parameter provided is always positive.
+      unitIndex <- which( diff(x[, treatedvar]) <= -1 * threshold) + 1 ## need to add one since it does not pad with NA values
     } else {
       warning("Undefined qoi for continuous matching!")
     }

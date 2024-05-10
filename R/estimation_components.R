@@ -36,9 +36,6 @@ pcs <- function(sets, lead.in,
                          function(s){return(attr(s, "weights"))}))
   }
   
-  
-  
-  
   names(wts) <- NULL
   wts <- rep(wts, rep((2), length(unlist(sets)))) * c(1,-1)
   num.empty <- sum(!sapply(sets, length) > 0)
@@ -125,7 +122,3 @@ getDits <- function(matched_sets, data)
   dit.vect <- get_dits(refnames, nms)
   return(dit.vect)
 }
-
-
-
-

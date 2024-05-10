@@ -207,8 +207,12 @@ PanelMatch <- function(lag, time.id, unit.id,
   
   if (identical(qoi,"art"))
   {
+    # flip the treatment variables only in the case of the binary ART
+    if (is.null(continuous.treatment.info))
+    {
+      ordered.data[, treatment] <- ifelse(ordered.data[, treatment] == 1,0,1) #flip the treatment variables     
+    }
     
-    ordered.data[, treatment] <- ifelse(ordered.data[, treatment] == 1,0,1) #flip the treatment variables   
     
     msets <- perform_refinement(lag = lag, time.id = time.id, unit.id = unit.id, 
                                 treatment = treatment, 

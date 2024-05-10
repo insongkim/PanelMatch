@@ -22,15 +22,20 @@
 #'
 #' @export
 
-get_set_treatment_effects <- function(pm.obj, data, lead)
+get_set_treatment_effects <- function(pm.obj, data, lead, linear = TRUE)
 {
   return(lapply(lead, calculate_set_effects, 
-                pm.obj = pm.obj, data.in = data))
+                pm.obj = pm.obj, 
+                data.in = data, 
+                assume.linear = linear))
   
 }
 
 # Helper functions for calculating set level effects
-calculate_set_effects <- function(pm.obj, data.in, lead)
+calculate_set_effects <- function(pm.obj, 
+                                  data.in, 
+                                  lead, 
+                                  assume.linear = TRUE)
 {
   if (identical(attr(pm.obj, "qoi"), "att"))
   {
@@ -67,9 +72,9 @@ calculate_set_effects <- function(pm.obj, data.in, lead)
                               mset.name,
                               outcome, 
                               use.abs.value = FALSE,
-                              is.atc = FALSE)
+                              is.atc = FALSE, 
+                              linearize = TRUE)
   {
-    
     if ( identical(length(mset), 0L)) return(NA)
     t.val <- as.numeric(sub(".*\\.", "", mset.name))
     id.val <- as.numeric(sub("\\..*", "", mset.name))
@@ -93,10 +98,14 @@ calculate_set_effects <- function(pm.obj, data.in, lead)
     } else {
       ind.effects <- treat.diff - sum(attr(mset, "weights") * control.diffs)
     }
-    denom <- attr(mset, "treatment.change")
-    if (use.abs.value) denom <- abs(denom)
-    if (is.atc) denom <- 1
-    ind.effects <- ind.effects / denom
+    
+    if (linearize)
+    {
+      denom <- attr(mset, "treatment.change")
+      if (use.abs.value) denom <- abs(denom)
+      if (is.atc) denom <- 1
+      ind.effects <- ind.effects / denom  
+    } 
     return(ind.effects)
     
   }
@@ -109,7 +118,8 @@ calculate_set_effects <- function(pm.obj, data.in, lead)
                       mset.name = names(msets),
                       MoreArgs = list(lead.val = lead,
                                       data_in = data.in,
-                                      outcome = attributes(pm.obj)[["outcome.var"]]),
+                                      outcome = attributes(pm.obj)[["outcome.var"]],
+                                      linearize = assume.linear),
                       SIMPLIFY = TRUE)
     
     return(effects)
@@ -121,9 +131,10 @@ calculate_set_effects <- function(pm.obj, data.in, lead)
                       MoreArgs = list(lead.val = lead,
                                       data_in = data.in,
                                       outcome = attributes(pm.obj)[["outcome.var"]],
-                                      is.atc = TRUE),
+                                      is.atc = TRUE,
+                                      linearize = assume.linear),
                       SIMPLIFY = TRUE)
-    
+    names(effects) <- names(msets)
     return(effects)
   } else if (identical(attr(pm.obj, "qoi"), "ate"))
   {
@@ -132,19 +143,21 @@ calculate_set_effects <- function(pm.obj, data.in, lead)
                       mset.name = names(msets),
                       MoreArgs = list(lead.val = lead,
                                       data_in = data.in,
-                                      outcome = attributes(pm.obj)[["outcome.var"]]),
+                                      outcome = attributes(pm.obj)[["outcome.var"]],
+                                      linearize = assume.linear),
                       SIMPLIFY = TRUE)
     
-    
+    names(effects) <- names(msets)
     effects.atc <- mapply(FUN = get_ind_effects,
                           mset = msets.atc,
                           mset.name = names(msets.atc),
                           MoreArgs = list(lead.val = lead,
                                           data_in = data.in,
-                                          outcome = attributes(pm.obj)[["outcome.var"]]),
+                                          outcome = attributes(pm.obj)[["outcome.var"]],
+                                          linearize = assume.linear),
                           SIMPLIFY = TRUE)
     
-    
+    names(effects.atc) <- names(msets.atc)
     return(list(att = effects,
                 atc = effects.atc))
     
@@ -156,8 +169,10 @@ calculate_set_effects <- function(pm.obj, data.in, lead)
                       MoreArgs = list(lead.val = lead,
                                       data_in = data.in,
                                       outcome = attributes(pm.obj)[["outcome.var"]],
-                                      use.abs.value = TRUE),
+                                      use.abs.value = TRUE,
+                                      linearize = assume.linear),
                       SIMPLIFY = TRUE)
+    names(effects) <- names(msets)
     return(effects)
   } else
   {
