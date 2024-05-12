@@ -27,10 +27,17 @@ of matches by examining the resulting covariate balance.
 \references{
 Imai, Kosuke, In Song Kim and Erik Wang. (2021)
 }
+\seealso{
+Useful links:
+\itemize{
+  \item Report bugs at \url{https://github.com/insongkim/PanelMatch/issues}
+}
+
+}
 \author{
 In Song Kim <insong@mit.edu>, Erik Wang
 <haixiao@Princeton.edu>, Adam Rauh <amrauh@umich.edu>, and Kosuke Imai <imai@harvard.edu>
 
 Maintainer: In Song Kim \email{insong@mit.edu}
 }
-\keyword{package}
+\keyword{internal}
