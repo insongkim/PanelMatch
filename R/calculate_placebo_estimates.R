@@ -170,7 +170,8 @@ calculate_placebo_estimates <- function(qoi.in, data.in, lead,
                                           outcome.variable = outcome.variable,
                                           unit.id.variable = unit.id.variable,
                                           confidence.level = confidence.level,
-                                          lag = lag)
+                                          lag = lag,
+                                          num.cores = num.cores)
       } else {
         coefs <- handle_bootstrap_placebo(qoi.in = qoi.in,
                                           data.in = data.in,

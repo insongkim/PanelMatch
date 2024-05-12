@@ -40,7 +40,7 @@ estimates for statistical inference. The default is .95.}
 
 \item{pooled}{Logical. If TRUE, estimates and standard errors are returned for treatment effects pooled across the entire lead window. Only available for \code{se.method = ``bootstrap''}}
 
-\item{include.placebo.test}{Logical. If TRUE, a placebo test is run and returned in the results. The placebo test uses the same specifications for calculating standard errors as the main results. That is, standard errors are calculated according to the user provided \code{se.method} and \code{confidence.level} arguments. If these are invalid for some reason, an error will be thrown.}
+\item{include.placebo.test}{Logical. If TRUE, a placebo test is run and returned in the results. The placebo test uses the same specifications for calculating standard errors as the main results. That is, standard errors are calculated according to the user provided \code{se.method} and \code{confidence.level} arguments (and, if applicable, parallelization specifications). If these are invalid for some reason, an error will be thrown.}
 
 \item{parallel}{Logical. If TRUE and \code{se.method = ``bootstrap''}, bootstrap procedure will be parallelized. Default is FALSE. If \code{se.method} is not set to \code{bootstrap}, this option does nothing.}
 
