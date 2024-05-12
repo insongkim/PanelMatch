@@ -218,6 +218,8 @@ handle_bootstrap_placebo_parallel <- function(qoi.in,
     stop("invalid qoi")
     
   }
+  rownames(coefs) <- NULL
+  colnames(coefs) <- NULL
   return(coefs)
   
 }
