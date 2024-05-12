@@ -12,6 +12,8 @@ placebo_test(
   confidence.level = 0.95,
   plot = FALSE,
   se.method = "bootstrap",
+  parallel = FALSE,
+  num.cores = 1,
   ...
 )
 }
@@ -29,6 +31,10 @@ placebo_test(
 \item{plot}{logical indicating whether or not a plot should be generated, or just return the raw data from the calculations}
 
 \item{se.method}{character string describing the type of standard error to be used. Valid inputs include "bootstrap", "conditional" and "unconditional". When the QOI is ATE, only bootstrap can be used.}
+
+\item{parallel}{Logical. If TRUE and \code{se.method = ``bootstrap''}, bootstrap procedure will be parallelized. Default is FALSE. If \code{se.method} is not set to \code{bootstrap}, this option does nothing.}
+
+\item{num.cores}{Integer. Specifies the number of cores to use for parallelization. If \code{se.method = ``bootstrap''} and \code{parallel = TRUE}, then this option will take effect. Otherwise, it will do nothing.}
 
 \item{...}{extra arguments to be passed to plot()}
 }

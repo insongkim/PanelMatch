@@ -11,6 +11,8 @@
 #' @param confidence.level confidence level for the calculated standard error intervals
 #' @param plot logical indicating whether or not a plot should be generated, or just return the raw data from the calculations
 #' @param se.method character string describing the type of standard error to be used. Valid inputs include "bootstrap", "conditional" and "unconditional". When the QOI is ATE, only bootstrap can be used.
+#' @param parallel Logical. If TRUE and \code{se.method = ``bootstrap''}, bootstrap procedure will be parallelized. Default is FALSE. If \code{se.method} is not set to \code{bootstrap}, this option does nothing.
+#' @param num.cores Integer. Specifies the number of cores to use for parallelization. If \code{se.method = ``bootstrap''} and \code{parallel = TRUE}, then this option will take effect. Otherwise, it will do nothing. 
 #' @param ... extra arguments to be passed to plot()
 #'
 #' @return list with 2 or 3 elements: "estimates", which contains the point estimates for the test, "standard.errors" which has the standard errors for each period and optionally "bootstrapped.estimates", containing the bootstrapped point estimates for the test for each specified lag window period.
@@ -36,6 +38,8 @@ placebo_test <- function(pm.obj,
                          confidence.level = .95,
                          plot = FALSE,
                          se.method = "bootstrap",
+                         parallel = FALSE,
+                         num.cores = 1,
                          ...)
 {
   
@@ -84,7 +88,9 @@ placebo_test <- function(pm.obj,
                                         placebo.test = TRUE,
                                         placebo.lead = lag.in,
                                         confidence.level = confidence.level,
-                                        se.method = se.method)
+                                        se.method = se.method,
+                                        parallel = parallel,
+                                        num.cores = num.cores)
   
   if (plot)
   {

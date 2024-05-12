@@ -96,75 +96,9 @@ PanelMatch <- function(lag, time.id, unit.id,
                        restrict.control.period = NULL,
                        placebo.test = FALSE) 
 {
- 
 
   
-  
-  if(inherits(lag, "list") & 
-     inherits(time.id, "list") & 
-     inherits(unit.id, "list") & 
-     inherits(treatment, "list") & 
-     inherits(refinement.method, "list") & 
-     inherits(size.match, "list") &
-     inherits(match.missing, "list") &
-     inherits(covs.formula, "list") & 
-     inherits(verbose, "list") & 
-     inherits(qoi, "list") & 
-     inherits(lead, "list") & 
-     inherits(outcome.var, "list") & 
-     inherits(forbid.treatment.reversal, "list") &
-     inherits(matching, "list") & 
-     inherits(listwise.delete, "list") & 
-     inherits(use.diagonal.variance.matrix, "list")) #everything but data must be provided explicitly
-  {
-    
-    if(length(unique(length(lag), 
-                     length(time.id), 
-                     length(unit.id), 
-                     length(treatment),
-                     length(refinement.method),
-                     length(size.match),
-                     length(match.missing), 
-                     length(covs.formula),
-                     length(verbose), 
-                     length(qoi),
-                     length(lead), 
-                     length(outcome.var), 
-                     length(exact.match.variables), 
-                     length(forbid.treatment.reversal),
-                     length(matching), 
-                     length(listwise.delete), 
-                     length(use.diagonal.variance.matrix) )) == 1)
-    {
-      
-     list.res <- mapply(FUN = panel_match,
-             lag = lag, time.id = time.id, unit.id = unit.id, treatment = treatment,
-             refinement.method = refinement.method,
-             size.match = size.match,
-             match.missing = match.missing,
-             covs.formula = covs.formula,
-             verbose = verbose,
-             qoi = qoi,
-             lead = lead,
-             outcome.var  = outcome.var,
-             exact.match.variables = exact.match.variables,
-             forbid.treatment.reversal = forbid.treatment.reversal,
-             matching = matching,
-             listwise.delete = listwise.delete,
-             use.diagonal.variance.matrix = use.diagonal.variance.matrix,
-             restrict.control.period = restrict.control.period,
-             placebo.test = placebo.test,
-             MoreArgs = list(data = data),
-             SIMPLIFY = FALSE)
-     return(list.res)
-    }
-    else {
-      stop("arguments are not provided in equal length lists")
-    }
-  }
-  else
-  {
-    panel_match(lag, time.id, unit.id, treatment,
+  res <- panel_match(lag, time.id, unit.id, treatment,
                 refinement.method,
                 size.match,
                 data,
@@ -181,8 +115,8 @@ PanelMatch <- function(lag, time.id, unit.id,
                 use.diagonal.variance.matrix,
                 restrict.control.period,
                 placebo.test)
-  }
   
+  return(res)
 }
 
 panel_match <- function(lag, time.id, unit.id, treatment,

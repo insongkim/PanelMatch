@@ -74,183 +74,80 @@ PanelEstimate <- function(sets, data,
     warning("Pooled results only available with bootstrap SEs")
   }
   if (se.method == "wfe") stop("wfe is no longer supported. Please specify se.method = 'bootstrap', 'conditional', or 'unconditional'")
-  if (inherits(number.iterations, "list") & 
-      inherits(df.adjustment, "list") &
-      inherits(confidence.level, "list")& 
-      inherits(sets, "list") == "list")
+
+  if (!is.null(moderator))
   {
-    if (length(unique(length(se.method), 
-                      length(number.iterations), 
-                      length(df.adjustment),
-                      length(confidence.level), 
-                      length(sets))) == 1)
+    if (attr(sets, "qoi") == "att")
     {
-      if(!is.null(moderator))
-      {
-        
-        handle.nesting <- function(data, sets.in, moderating.variable.in,
-                                   se.method.in, number.iterations.in, 
-                                   df.adjustment.in, confidence.level.in)
-        {
-          
-          if (attr(sets.in, "qoi") == "att")
-          {
-            s1 = sets.in[["att"]]
-            unit.id <- attr(s1, "id.var")
-            time.id <- attr(s1, "t.var")
-          }
-          if (attr(sets.in, "qoi") == "atc")
-          {
-            s1 = sets.in[["atc"]]
-            unit.id <- attr(s1, "id.var")
-            time.id <- attr(s1, "t.var")
-          }
-          if (attr(sets.in, "qoi") == "ate")
-          { #can assume they are the same
-            s1 <- sets.in[["att"]]
-            # sets[["atc"]]
-            unit.id <- attr(s1, "id.var")
-            time.id <- attr(s1, "t.var")
-          } 
-          if (attr(sets.in, "qoi") == "art")
-          {
-            s1 <- sets.in[["art"]]
-            unit.id <- attr(s1, "id.var")
-            time.id <- attr(s1, "t.var")
-          }
-          
-          if ((attr(sets.in, "qoi") == "art") || 
-              (attr(sets.in, "qoi") == "att"))
-          {
-            att.sets.in <- s1
-          } else {
-            att.sets.in <- NULL
-          }
-          
-          ordered.data <- data[order(data[,unit.id], data[,time.id]), ]
-          set.list <- handle_moderating_variable(ordered.data = ordered.data,
-                                                 att.sets = att.sets.in,
-                                                 atc.sets = sets[["atc"]],
-                                                 moderator = moderating.variable.in,
-                                                 unit.id = unit.id, 
-                                                 time.id = time.id,
-                                                 PM.object = sets, 
-                                                 qoi.in = attr(sets, "qoi"))
-          res <- lapply(set.list, FUN = panel_estimate, 
-                        se.method = se.method, 
-                        number.iterations = number.iterations.in,
-                        df.adjustment = df.adjustment.in, 
-                        confidence.level = confidence.level.in, 
-                        data = data,
-                        pooled = pooled, 
-                        include.placebo.test = include.placebo.test)
-          return(res)
-        }
-        res <- mapply(FUN = handle.nesting, 
-                      number.iterations.in = number.iterations,
-                      df.adjustment.in = df.adjustment,
-                      confidence.level.in = confidence.level, 
-                      sets.in = sets,
-                      MoreArgs = list(data = data, 
-                                      se.method = se.method, 
-                                      moderating.variable.in = moderator,
-                                      pooled = pooled),
-                      SIMPLIFY = FALSE)
-      }
-      else
-      {
-        res = mapply(FUN = panel_estimate, 
-                     number.iterations = number.iterations,
-                     df.adjustment = df.adjustment,
-                     confidence.level = confidence.level, 
-                     sets = sets,
-                     MoreArgs = list(data = data, 
-                                     se.method = se.method,
-                                     pooled = pooled,
-                                     include.placebo.test = include.placebo.test),
-                     SIMPLIFY = FALSE)
-      }
-      
+      s1 = sets[["att"]]
+      unit.id <- attr(s1, "id.var")
+      time.id <- attr(s1, "t.var")
     }
-    else {
-      stop("arguments are not provided in equal length lists")
+    if (attr(sets, "qoi") == "atc")
+    {
+      s1 = sets[["atc"]]
+      unit.id <- attr(s1, "id.var")
+      time.id <- attr(s1, "t.var")
     }
+    if (attr(sets, "qoi") == "ate")
+    { #can assume they are the same
+      s1 <- sets[["att"]]
+      # sets[["atc"]]
+      unit.id <- attr(s1, "id.var")
+      time.id <- attr(s1, "t.var")
+    } 
+    if (attr(sets, "qoi") == "art")
+    {
+      s1 <- sets[["art"]]
+      unit.id <- attr(s1, "id.var")
+      time.id <- attr(s1, "t.var")
+    }
+    
+    if ((attr(sets, "qoi") == "art") || 
+        (attr(sets, "qoi") == "att"))
+    {
+      att.sets.in <- s1
+    } else {
+      att.sets.in <- NULL
+    }
+    # again, functionally treating art and att the same for moderating variable functionality. n need to create separate argument for art sets
+    ordered.data <- data[order(data[,unit.id], data[,time.id]), ]
+    set.list <- handle_moderating_variable(ordered.data = ordered.data,
+                                           att.sets = att.sets.in,
+                                           atc.sets = sets[["atc"]],
+                                           moderator = moderator,
+                                           unit.id = unit.id, 
+                                           time.id = time.id,
+                                           PM.object = sets, 
+                                           qoi.in = attr(sets, "qoi"))
+    
+    
+    res <- lapply(set.list, 
+                  FUN = panel_estimate, 
+                  se.method = se.method, 
+                  number.iterations = number.iterations,
+                  df.adjustment = df.adjustment, 
+                  confidence.level = confidence.level, 
+                  data = data,
+                  pooled = pooled, 
+                  include.placebo.test = include.placebo.test)
+    
   }
   else
   {
-    if (!is.null(moderator))
-    {
-      if (attr(sets, "qoi") == "att")
-      {
-        s1 = sets[["att"]]
-        unit.id <- attr(s1, "id.var")
-        time.id <- attr(s1, "t.var")
-      }
-      if (attr(sets, "qoi") == "atc")
-      {
-        s1 = sets[["atc"]]
-        unit.id <- attr(s1, "id.var")
-        time.id <- attr(s1, "t.var")
-      }
-      if (attr(sets, "qoi") == "ate")
-      { #can assume they are the same
-        s1 <- sets[["att"]]
-        # sets[["atc"]]
-        unit.id <- attr(s1, "id.var")
-        time.id <- attr(s1, "t.var")
-      } 
-      if (attr(sets, "qoi") == "art")
-      {
-        s1 <- sets[["art"]]
-        unit.id <- attr(s1, "id.var")
-        time.id <- attr(s1, "t.var")
-      }
-      
-      if ((attr(sets, "qoi") == "art") || 
-          (attr(sets, "qoi") == "att"))
-      {
-        att.sets.in <- s1
-      } else {
-        att.sets.in <- NULL
-      }
-      # again, functionally treating art and att the same for moderating variable functionality. no need to create separate argument for art sets
-      ordered.data <- data[order(data[,unit.id], data[,time.id]), ]
-      set.list <- handle_moderating_variable(ordered.data = ordered.data,
-                                             att.sets = att.sets.in,
-                                             atc.sets = sets[["atc"]],
-                                             moderator = moderator,
-                                             unit.id = unit.id, 
-                                             time.id = time.id,
-                                             PM.object = sets, 
-                                             qoi.in = attr(sets, "qoi"))
-      
-      
-      res <- lapply(set.list, 
-                    FUN = panel_estimate, 
-                    se.method = se.method, 
-                    number.iterations = number.iterations,
-                    df.adjustment = df.adjustment, 
-                    confidence.level = confidence.level, 
-                    data = data,
-                    pooled = pooled, 
-                    include.placebo.test = include.placebo.test)
-      
-    }
-    else
-    {
-      res = panel_estimate(se.method = se.method, 
-                           number.iterations = number.iterations,
-                           df.adjustment = df.adjustment, 
-                           confidence.level = confidence.level, 
-                           sets = sets, 
-                           data = data,
-                           pooled = pooled, 
-                           include.placebo.test = include.placebo.test,
-                           parallel = parallel,
-                           num.cores = num.cores)
-    }
-    
+    res = panel_estimate(se.method = se.method, 
+                         number.iterations = number.iterations,
+                         df.adjustment = df.adjustment, 
+                         confidence.level = confidence.level, 
+                         sets = sets, 
+                         data = data,
+                         pooled = pooled, 
+                         include.placebo.test = include.placebo.test,
+                         parallel = parallel,
+                         num.cores = num.cores)
   }
+    
+  
   return(res)
 }
 
@@ -394,7 +291,9 @@ panel_estimate <- function(sets,
                                             atc.sets = sets.atc,
                                             lag = lag.in,
                                             placebo.lead = placebo.lead,
-                                            se.method = se.method)
+                                            se.method = se.method, 
+                                            parallel = parallel,
+                                            num.cores = num.cores)
   } else {
     
     data <- prepare_data(data.in = data, lead = lead,
@@ -430,7 +329,9 @@ panel_estimate <- function(sets,
                                number.iterations = number.iterations,
                                confidence.level = confidence.level,
                                plot = FALSE,
-                               se.method = se.method)
+                               se.method = se.method, 
+                               parallel = parallel,
+                               num.cores = num.cores)
     pe.results[["placebo.test"]] <- pt.results
   }
   

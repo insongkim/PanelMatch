@@ -15,7 +15,9 @@ calculate_placebo_estimates <- function(qoi.in, data.in, lead,
                                       placebo.test = FALSE,
                                       lag,
                                       placebo.lead,
-                                      se.method = "bootstrap")
+                                      se.method = "bootstrap", 
+                                      parallel = FALSE, 
+                                      num.cores = 1)
 {
   
   if (se.method == "bootstrap")
@@ -51,17 +53,31 @@ calculate_placebo_estimates <- function(qoi.in, data.in, lead,
       #do coefficient flip for atc
       if (identical(qoi.in, "atc")) o.coefs <- -o.coefs
       
+      if (isTRUE(parallel)) {
+        coefs <- handle_bootstrap_placebo_parallel(qoi.in = qoi.in,
+                                          data.in = data.in,
+                                          placebo.lead = placebo.lead,
+                                          number.iterations = number.iterations,
+                                          att.treated.unit.ids = att.treated.unit.ids,
+                                          atc.treated.unit.ids = atc.treated.unit.ids,
+                                          outcome.variable = outcome.variable,
+                                          unit.id.variable = unit.id.variable,
+                                          confidence.level = confidence.level,
+                                          lag = lag, 
+                                          num.cores = num.cores)
+      } else {
+        coefs <- handle_bootstrap_placebo(qoi.in = qoi.in,
+                                          data.in = data.in,
+                                          placebo.lead = placebo.lead,
+                                          number.iterations = number.iterations,
+                                          att.treated.unit.ids = att.treated.unit.ids,
+                                          atc.treated.unit.ids = atc.treated.unit.ids,
+                                          outcome.variable = outcome.variable,
+                                          unit.id.variable = unit.id.variable,
+                                          confidence.level = confidence.level,
+                                          lag = lag)
+      }
       
-      coefs <- handle_bootstrap_placebo(qoi.in = qoi.in,
-                                        data.in = data.in,
-                                        placebo.lead = placebo.lead,
-                                        number.iterations = number.iterations,
-                                        att.treated.unit.ids = att.treated.unit.ids,
-                                        atc.treated.unit.ids = atc.treated.unit.ids,
-                                        outcome.variable = outcome.variable,
-                                        unit.id.variable = unit.id.variable,
-                                        confidence.level = confidence.level,
-                                        lag = lag)
       
       if (identical(qoi.in, "att") || identical(qoi.in, "art"))
       {
@@ -144,17 +160,31 @@ calculate_placebo_estimates <- function(qoi.in, data.in, lead,
         (sum(data.in$dits_att) + sum(data.in$dits_atc))
       
       
+      if (isTRUE(parallel)) {
+        coefs <- handle_bootstrap_placebo_parallel(qoi.in = qoi.in,
+                                          data.in = data.in,
+                                          placebo.lead = placebo.lead,
+                                          number.iterations = number.iterations,
+                                          att.treated.unit.ids = att.treated.unit.ids,
+                                          atc.treated.unit.ids = atc.treated.unit.ids,
+                                          outcome.variable = outcome.variable,
+                                          unit.id.variable = unit.id.variable,
+                                          confidence.level = confidence.level,
+                                          lag = lag)
+      } else {
+        coefs <- handle_bootstrap_placebo(qoi.in = qoi.in,
+                                          data.in = data.in,
+                                          placebo.lead = placebo.lead,
+                                          number.iterations = number.iterations,
+                                          att.treated.unit.ids = att.treated.unit.ids,
+                                          atc.treated.unit.ids = atc.treated.unit.ids,
+                                          outcome.variable = outcome.variable,
+                                          unit.id.variable = unit.id.variable,
+                                          confidence.level = confidence.level,
+                                          lag = lag)
+      }
       
-      coefs <- handle_bootstrap_placebo(qoi.in = qoi.in,
-                                        data.in = data.in,
-                                        placebo.lead = placebo.lead,
-                                        number.iterations = number.iterations,
-                                        att.treated.unit.ids = att.treated.unit.ids,
-                                        atc.treated.unit.ids = atc.treated.unit.ids,
-                                        outcome.variable = outcome.variable,
-                                        unit.id.variable = unit.id.variable,
-                                        confidence.level = confidence.level,
-                                        lag = lag)
+      
       
     
       names(o.coefs_ate) <- paste0("t-", placebo.lead)

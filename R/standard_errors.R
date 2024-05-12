@@ -66,7 +66,7 @@ handle_bootstrap_parallel <- function(qoi.in,
       warning("Only 1 core specified for paralleization. Did you mean to specify more?")
     }
     doParallel::registerDoParallel(num.cores)
-    
+    k <- NA
     coefs <- foreach::foreach(k = 1:number.iterations, .combine = rbind) %dopar% {
       # make new data
       clusters <- unique(data.in[, unit.id.variable])
@@ -158,7 +158,9 @@ handle_bootstrap_parallel <- function(qoi.in,
     tdf.atc$Dit <- as.numeric(unlist(per.unit.dit.sums))
     
     
-    for (k in 1:number.iterations) {
+    doParallel::registerDoParallel(num.cores)
+    k <- NA
+    coefs <- foreach::foreach(k = 1:number.iterations, .combine = rbind) %dopar% {
       # make new data
       clusters <- unique(data.in[, unit.id.variable])
       units <- sample(clusters, size = length(clusters), replace=TRUE)
@@ -195,6 +197,8 @@ handle_bootstrap_parallel <- function(qoi.in,
       
       
     }
+    rownames(coefs) <- NULL
+    colnames(coefs) <- NULL
     
     if (pooled)
     {
