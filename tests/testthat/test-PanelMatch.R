@@ -217,11 +217,11 @@ test_that("balance checking functions are sensible", {
   balmat <- get_covariate_balance(pm.obj$att, dem, covariates = c("tradewb", "rdata"), 
                             plot = FALSE, ylim = c(-2,2))
   compmat <- matrix(data = c(0.0601621099966881,-0.00601042376056592,
-                             0.00212772294115459,0.104946475743932,
+                             0.00212772294115459,0.104946475743932, 0.133482367739366,
                              0.0252020903167403,0.051861118295163,-0.125475177405918,
-                             0.0268787670968836), 
-                    ncol = 2, nrow = 4)
-  expect_equal(nrow(balmat), 4)
+                             0.0268787670968836,-0.0117184403355875), 
+                    ncol = 2, nrow = 5)
+  expect_equal(nrow(balmat), 5)
   expect_equal(ncol(balmat), 2)
   expect_equivalent(balmat, compmat)
   
@@ -797,3 +797,20 @@ test_that("test placebo test", {
   expect_equivalent(pt.res$standard.errors, st.comps, tolerance = .00001)
   
 })
+
+
+# test_that("ensure parallel bootstrap runs", {
+#   
+#   PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
+#                            treatment = "dem", refinement.method = "ps.match",
+#                            data = dem, match.missing = TRUE, covs.formula = ~ tradewb,
+#                            size.match = 5, qoi = "att", outcome.var = "y",
+#                            lead = 0:4, forbid.treatment.reversal = TRUE)
+#   
+#   PE.results.parallel <- PanelEstimate(sets = PM.results, 
+#                                        number.iterations = 5000,
+#                                        data = dem, 
+#                                        se.method = "bootstrap",
+#                                        parallel = TRUE,
+#                                        num.cores = 4)
+# })

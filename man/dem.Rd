@@ -3,7 +3,7 @@
 \docType{data}
 \name{dem}
 \alias{dem}
-\title{County-level Democracy indicator}
+\title{Country-level Democracy indicator}
 \format{
 A data.frame containing 9384 rows and 3 variables
 }

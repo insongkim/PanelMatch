@@ -30,7 +30,7 @@
 #' Maintainer: In Song Kim \email{insong@mit.edu}
 #' @references Imai, Kosuke, In Song Kim and Erik Wang. (2021)
 #' @keywords package
-#' @import ggplot2 stats MASS data.table
+#' @import ggplot2 stats MASS data.table foreach
 #' @importFrom Rcpp sourceCpp
 #' @importFrom CBPS CBPS
 #' @importFrom utils capture.output

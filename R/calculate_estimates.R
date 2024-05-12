@@ -13,7 +13,9 @@ calculate_estimates <- function(qoi.in, data.in, lead,
                                placebo.test = FALSE,
                                lag,
                                se.method,
-                               pooled = FALSE)
+                               pooled = FALSE,
+                               parallel = FALSE,
+                               num.cores = 1)
 {
   
   pt.estimates  <- calculate_point_estimates(qoi.in, data.in, 
@@ -21,18 +23,35 @@ calculate_estimates <- function(qoi.in, data.in, lead,
   if (identical(se.method, "bootstrap"))
   {
     
-    coefs <- handle_bootstrap(qoi.in, 
-                              data.in, 
-                              lead,
-                              number.iterations,
-                              att.treated.unit.ids,
-                              atc.treated.unit.ids,
-                              outcome.variable,
-                              unit.id.variable,
-                              confidence.level,
-                              lag,
-                              se.method,
-                              pooled) 
+    if (parallel) {
+      coefs <- handle_bootstrap_parallel(qoi.in, 
+                                         data.in, 
+                                         lead,
+                                         number.iterations,
+                                         att.treated.unit.ids,
+                                         atc.treated.unit.ids,
+                                         outcome.variable,
+                                         unit.id.variable,
+                                         confidence.level,
+                                         lag,
+                                         se.method,
+                                         pooled,
+                                         num.cores = num.cores)
+    } else {
+      coefs <- handle_bootstrap(qoi.in, 
+                                data.in, 
+                                lead,
+                                number.iterations,
+                                att.treated.unit.ids,
+                                atc.treated.unit.ids,
+                                outcome.variable,
+                                unit.id.variable,
+                                confidence.level,
+                                lag,
+                                se.method,
+                                pooled) 
+    }
+    
     
     if (identical(qoi.in, "att") ||
         identical(qoi.in, "art"))

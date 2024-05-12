@@ -43,11 +43,11 @@ The only mandatory argument is an object of the \code{PanelEstimate} class.
 \examples{
 PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
                          treatment = "dem", refinement.method = "mahalanobis", 
-                         data = dem_small, match.missing = TRUE, 
+                         data = dem, match.missing = TRUE, 
                          covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
                          size.match = 5, qoi = "att",
                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
-PE.results <- PanelEstimate(sets = PM.results, data = dem_small, se.method = "unconditional")
+PE.results <- PanelEstimate(sets = PM.results, data = dem, se.method = "unconditional")
 plot(PE.results)
 
 }

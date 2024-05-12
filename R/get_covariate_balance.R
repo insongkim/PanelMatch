@@ -18,13 +18,13 @@
 #' @param ... Additional graphical parameters to be passed to the \code{plot} function in base R.
 #' @examples
 #' #add some additional data to data set for demonstration purposes
-#' dem_small$rdata <- runif(runif(nrow(dem_small)))
+#' dem$rdata <- runif(runif(nrow(dem)))
 #' pm.obj <- PanelMatch(lead = 0:3, lag = 4, time.id = "year", unit.id = "wbcode2", treatment = "dem",
 #'                     outcome.var ="y", refinement.method = "ps.match",
-#'                     data = dem_small, match.missing = TRUE,
+#'                     data = dem, match.missing = TRUE,
 #'                     covs.formula = ~ tradewb + rdata + I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
 #'                     size.match = 5, qoi = "att")
-#' get_covariate_balance(pm.obj$att, dem_small, covariates = c("tradewb", "rdata"),
+#' get_covariate_balance(pm.obj$att, dem, covariates = c("tradewb", "rdata"),
 #'                          ylim = c(-2,2))
 #'
 #' @export
