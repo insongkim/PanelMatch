@@ -72,7 +72,7 @@ like the distances used to create the refined sets and weights.}
 \item{exact.match.variables}{character vector giving the names of variables to be exactly matched on. These should be time invariant variables. 
 Exact matching for time varying covariates is not currently supported.}
 
-\item{forbid.treatment.reversal}{Logical indicating whether or not it is permissible for treatment to reverse in the specified lead window. 
+\item{forbid.treatment.reversal}{Logical. For the ATT, it indicates whether or not it is permissible for treatment to reverse in the specified lead window. This is defined analogously for the ART. It is not valid for the ATC or ATE. 
 When set to TRUE, only matched sets for treated units where treatment is 
 applied continuously in the lead window are included in the results. Default is FALSE.}
 
