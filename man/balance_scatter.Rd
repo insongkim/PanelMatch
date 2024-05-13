@@ -49,11 +49,12 @@ refers to balance after refinement. Users can utilize parameters powered by \cod
 in base R to further customize the figure.
 }
 \examples{
+dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
+# create subset of data for simplicity
 # get a matched set without refinement
 sets0 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                     treatment = "dem", refinement.method = "none",
-                    data = dem, match.missing = FALSE,
-                    covs.formula = ~ I(lag(y, 1:4)) + I(lag(tradewb, 1:4)),
+                    data = dem.sub, match.missing = FALSE,
                     size.match = 5, qoi = "att",
                     outcome.var = "y",
                     lead = 0:4, forbid.treatment.reversal = FALSE)
@@ -62,8 +63,8 @@ sets0 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
 # size of matched set to 5
 sets1 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                     treatment = "dem", refinement.method = "ps.match",
-                    data = dem, match.missing = FALSE,
-                    covs.formula = ~ I(lag(y, 1:4)) + I(lag(tradewb, 1:4)),
+                    data = dem.sub, match.missing = FALSE,
+                    covs.formula = ~ tradewb,
                     size.match = 5, qoi = "att",
                     outcome.var = "y",
                     lead = 0:4, forbid.treatment.reversal = FALSE)
@@ -71,8 +72,8 @@ sets1 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
 # get another matched set with refinement using propensity score weighting
 sets2 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                     treatment = "dem", refinement.method = "ps.weight",
-                    data = dem, match.missing = FALSE,
-                    covs.formula = ~ I(lag(y, 1:4)) + I(lag(tradewb, 1:4)),
+                    data = dem.sub, match.missing = FALSE,
+                    covs.formula = ~ tradewb,
                     size.match = 10, qoi = "att",
                     outcome.var = "y",
                     lead = 0:4, forbid.treatment.reversal = FALSE)
@@ -80,7 +81,7 @@ sets2 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
 
 # use the function to produce the scatter plot
 balance_scatter(matched_set_list = list(sets0$att, sets1$att, sets2$att),
-              data = dem,
+              data = dem.sub,
               covariates = c("y", "tradewb"))
 # add legend
 legend(x = 0, y = 0.8,

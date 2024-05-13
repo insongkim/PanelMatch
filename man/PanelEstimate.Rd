@@ -76,12 +76,14 @@ However, in this format, every argument must be explicitly specified in each con
 and must adhere to the same data types/structures outlined below.
 }
 \examples{
+dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
+# create subset of data for simplicity
 PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
                         treatment = "dem", refinement.method = "ps.match", 
-                         data = dem, match.missing = TRUE, covs.formula = ~ tradewb, 
+                         data = dem.sub, match.missing = TRUE, covs.formula = ~ tradewb, 
                          size.match = 5, qoi = "att", outcome.var = "y", 
                          lead = 0:4, forbid.treatment.reversal = TRUE)
-PE.results <- PanelEstimate(sets = PM.results, data = dem, se.method = "unconditional")
+PE.results <- PanelEstimate(sets = PM.results, data = dem.sub, se.method = "unconditional")
 
 }
 \references{

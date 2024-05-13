@@ -18,14 +18,16 @@
 #' @return list with 2 or 3 elements: "estimates", which contains the point estimates for the test, "standard.errors" which has the standard errors for each period and optionally "bootstrapped.estimates", containing the bootstrapped point estimates for the test for each specified lag window period.
 #'
 #' @examples
+#' dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
+#' # create subset of data for simplicity
 #' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
 #'                          treatment = "dem", refinement.method = "mahalanobis",
-#'                          data = dem, match.missing = TRUE,
-#'                          covs.formula = ~ I(lag(tradewb, 1:4)),
+#'                          data = dem.sub, match.missing = TRUE,
+#'                          covs.formula = ~ tradewb,
 #'                          size.match = 5, qoi = "att",
 #'                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE,
 #'                          placebo.test = TRUE)
-#' placebo_test(PM.results, data = dem, se.method = "unconditional", plot = FALSE)
+#' placebo_test(PM.results, data = dem.sub, se.method = "unconditional", plot = FALSE)
 #' 
 #' 
 #' @export

@@ -46,6 +46,8 @@ matched with any control units) are noted as a vertical bar at x = 0 and not inc
 regular histogram. See the \code{include.empty.sets} argument for more information about this.
 }
 \examples{
+dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
+# create subset of data for simplicity
 PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                          treatment = "dem", refinement.method = "ps.match",
                          data = dem, match.missing = TRUE,

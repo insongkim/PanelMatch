@@ -18,6 +18,8 @@ The verbose form is not recommended unless the data set is small. Default is FAL
 Print \code{matched.set} objects.
 }
 \examples{
+dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
+# create subset of data for simplicity
 PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                          treatment = "dem", refinement.method = "ps.match",
                          data = dem, match.missing = TRUE,

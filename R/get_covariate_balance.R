@@ -17,14 +17,16 @@
 #' @param legend.position position of legend. See documentation for graphics::legend. Default is "topleft"
 #' @param ... Additional graphical parameters to be passed to the \code{plot} function in base R.
 #' @examples
+#' dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
+#' # create subset of data for simplicity
 #' #add some additional data to data set for demonstration purposes
-#' dem$rdata <- runif(runif(nrow(dem)))
+#' dem.sub$rdata <- runif(runif(nrow(dem.sub)))
 #' pm.obj <- PanelMatch(lead = 0:3, lag = 4, time.id = "year", unit.id = "wbcode2", treatment = "dem",
 #'                     outcome.var ="y", refinement.method = "ps.match",
-#'                     data = dem, match.missing = TRUE,
+#'                     data = dem.sub, match.missing = TRUE,
 #'                     covs.formula = ~ tradewb + rdata + I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
 #'                     size.match = 5, qoi = "att")
-#' get_covariate_balance(pm.obj$att, dem, covariates = c("tradewb", "rdata"),
+#' get_covariate_balance(pm.obj$att, dem.sub, covariates = c("tradewb", "rdata"),
 #'                          ylim = c(-2,2))
 #'
 #' @export

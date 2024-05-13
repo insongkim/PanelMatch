@@ -9,15 +9,16 @@
 #' @param lead integer (or integer vector) indicating the time period(s) in the future for which the treatment effect size will be calculated. Calculations will be made for the period t + lead, where t is the time of treatment. If more than one lead value is provided, then calculations will be performed for each value.
 #' @return a list equal in length to the number of lead periods specified to the \code{lead} argument. Each element in the list is a vector of the matched set level effects.
 #' @examples
-#' 
+#' dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
+#' # create subset of data for simplicity
 #' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
 #'                          treatment = "dem", refinement.method = "ps.match",
-#'                          data = dem, match.missing = TRUE,
+#'                          data = dem.sub, match.missing = TRUE,
 #'                          covs.formula = ~ I(lag(tradewb, 1:4)),
 #'                          size.match = 5, qoi = "att",
 #'                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE,
 #'                          placebo.test = FALSE)
-#' set.effects <- get_set_treatment_effects(pm.obj = PM.results, data = dem, lead = 0)
+#' set.effects <- get_set_treatment_effects(pm.obj = PM.results, data = dem.sub, lead = 0)
 #'
 #'
 #' @export

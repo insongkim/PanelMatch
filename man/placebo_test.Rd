@@ -48,14 +48,16 @@ Calculates results for a placebo test
 Calculate the results of a placebo test, looking at the change in outcome at time = t-1, compared to other pre-treatment periods in the lag window.
 }
 \examples{
+dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
+# create subset of data for simplicity
 PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                          treatment = "dem", refinement.method = "mahalanobis",
-                         data = dem, match.missing = TRUE,
-                         covs.formula = ~ I(lag(tradewb, 1:4)),
+                         data = dem.sub, match.missing = TRUE,
+                         covs.formula = ~ tradewb,
                          size.match = 5, qoi = "att",
                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE,
                          placebo.test = TRUE)
-placebo_test(PM.results, data = dem, se.method = "unconditional", plot = FALSE)
+placebo_test(PM.results, data = dem.sub, se.method = "unconditional", plot = FALSE)
 
 
 }

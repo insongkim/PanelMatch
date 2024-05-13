@@ -10,13 +10,15 @@
 #' @param bias.corrected logical indicating whether or not bias corrected estimates should be provided. Default is FALSE. This argument only applies for standard errors calculated with the bootstrap. 
 #' @param ... optional additional arguments. Currently, no additional arguments are supported. 
 #' @examples
+#' dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
+#' # create subset of data for simplicity
 #' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
-#'                          treatment = "dem", refinement.method = "none", 
-#'                          data = dem, match.missing = TRUE, 
-#'                          covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
+#'                          treatment = "dem", refinement.method = "ps.weight", 
+#'                          data = dem.sub, match.missing = TRUE, 
+#'                          covs.formula = ~ tradewb,
 #'                          size.match = 5, qoi = "att",
 #'                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
-#' PE.results <- PanelEstimate(sets = PM.results, data = dem, se.method = "unconditional")
+#' PE.results <- PanelEstimate(sets = PM.results, data = dem.sub, se.method = "unconditional")
 #' summary(PE.results)
 #' 
 #'
@@ -193,13 +195,15 @@ summary.PanelEstimate <- function(object, verbose = TRUE,
 #' @param include.placebo Logical. If TRUE, then the results of the placebo test are included on the plot. Note that, by definition, the results for t-1 will be 0. This requires that \code{PanelEstimate()} was run with the placebo test option set to \code{TRUE}. If FALSE, the results are not included. Default is FALSE. Please see \code{placebo_test()} and \code{PanelEstimate()} for more information. 
 #' @param ... Additional optional arguments to be passed to \code{plot()}.
 #' @examples
+#' dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
+#' # create subset of data for simplicity
 #' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
 #'                          treatment = "dem", refinement.method = "mahalanobis", 
-#'                          data = dem, match.missing = TRUE, 
-#'                          covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
+#'                          data = dem.sub, match.missing = TRUE, 
+#'                          covs.formula = ~ tradewb,
 #'                          size.match = 5, qoi = "att",
 #'                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
-#' PE.results <- PanelEstimate(sets = PM.results, data = dem, se.method = "unconditional")
+#' PE.results <- PanelEstimate(sets = PM.results, data = dem.sub, se.method = "unconditional")
 #' plot(PE.results)
 #'
 #' @method plot PanelEstimate

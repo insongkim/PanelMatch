@@ -119,10 +119,12 @@ similar control units and a method for defining similarity/distance between unit
 via the \code{covs.formula} and \code{refinement.method} arguments, respectively, which are explained in more detail below.
 }
 \examples{
+dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
+# create subset of data for simplicity
 PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
                          treatment = "dem", refinement.method = "ps.match", 
-                         data = dem, match.missing = TRUE, 
-                         covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
+                         data = dem.sub, match.missing = TRUE, 
+                         covs.formula = ~ tradewb,
                          size.match = 5, qoi = "att",
                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
 

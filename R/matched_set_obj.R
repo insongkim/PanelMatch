@@ -74,9 +74,11 @@ matched_set <- function(matchedsets, id, t, L, t.var, id.var, treatment.var)
 #' \item{lag}{The size of the lag window used for matching on treatment history. This affects which treated and control units are matched.}
 #'
 #' @examples
+#' dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
+#' # create subset of data for simplicity
 #' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
 #'                          treatment = "dem", refinement.method = "ps.match",
-#'                          data = dem, match.missing = TRUE,
+#'                          data = dem.sub, match.missing = TRUE,
 #'                          covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
 #'                          size.match = 5, qoi = "att",
 #'                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
@@ -135,6 +137,8 @@ summary.matched.set <- function(object, ..., verbose = TRUE)
 #' @param include.empty.sets logical value indicating whether or not empty sets should be included in the histogram. default is FALSE. If FALSE, then empty sets will be noted as a separate vertical bar at x = 0. If TRUE, empty sets will be included as normal sets.
 #'
 #' @examples
+#' dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
+#' # create subset of data for simplicity
 #' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
 #'                          treatment = "dem", refinement.method = "ps.match",
 #'                          data = dem, match.missing = TRUE,
@@ -193,6 +197,8 @@ plot.matched.set <- function(x, ..., border = NA, col = "grey", ylab = "Frequenc
 #' @param ... additional arguments to be passed to \code{print}
 #'
 #' @examples
+#' dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
+#' # create subset of data for simplicity
 #' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
 #'                          treatment = "dem", refinement.method = "ps.match",
 #'                          data = dem, match.missing = TRUE,

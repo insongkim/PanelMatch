@@ -27,9 +27,11 @@ A method for viewing summary data about the sizes of matched sets and metadata a
 accepts all standard \code{summary} arguments.
 }
 \examples{
+dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
+# create subset of data for simplicity
 PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                          treatment = "dem", refinement.method = "ps.match",
-                         data = dem, match.missing = TRUE,
+                         data = dem.sub, match.missing = TRUE,
                          covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
                          size.match = 5, qoi = "att",
                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
