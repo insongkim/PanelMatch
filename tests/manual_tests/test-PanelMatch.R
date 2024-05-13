@@ -799,18 +799,87 @@ test_that("test placebo test", {
 })
 
 
-# test_that("ensure parallel bootstrap runs", {
-#   
-#   PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
-#                            treatment = "dem", refinement.method = "ps.match",
-#                            data = dem, match.missing = TRUE, covs.formula = ~ tradewb,
-#                            size.match = 5, qoi = "att", outcome.var = "y",
-#                            lead = 0:4, forbid.treatment.reversal = TRUE)
-#   
-#   PE.results.parallel <- PanelEstimate(sets = PM.results, 
-#                                        number.iterations = 5000,
-#                                        data = dem, 
-#                                        se.method = "bootstrap",
-#                                        parallel = TRUE,
-#                                        num.cores = 4)
-# })
+test_that("ensure parallel bootstrap runs without warning, error", {
+
+  PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
+                           treatment = "dem", refinement.method = "ps.match",
+                           data = dem, match.missing = TRUE, covs.formula = ~ tradewb,
+                           size.match = 5, qoi = "att", outcome.var = "y",
+                           lead = 0:4, forbid.treatment.reversal = FALSE)
+
+  
+  expect_no_error(PanelEstimate(sets = PM.results,
+                                number.iterations = 1000,
+                                data = dem,
+                                se.method = "bootstrap",
+                                parallel = TRUE,
+                                num.cores = 4))
+  
+  expect_no_warning(PanelEstimate(sets = PM.results,
+                                number.iterations = 1000,
+                                data = dem,
+                                se.method = "bootstrap",
+                                parallel = TRUE,
+                                num.cores = 4))
+  
+  PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
+                           treatment = "dem", refinement.method = "ps.match",
+                           data = dem, match.missing = TRUE, covs.formula = ~ tradewb,
+                           size.match = 5, qoi = "art", outcome.var = "y",
+                           lead = 0:4, forbid.treatment.reversal = FALSE)
+  
+  expect_no_error(PanelEstimate(sets = PM.results,
+                                number.iterations = 1000,
+                                data = dem,
+                                se.method = "bootstrap",
+                                parallel = TRUE,
+                                num.cores = 4))
+  
+  expect_no_warning(PanelEstimate(sets = PM.results,
+                                  number.iterations = 1000,
+                                  data = dem,
+                                  se.method = "bootstrap",
+                                  parallel = TRUE,
+                                  num.cores = 4))
+  
+  
+  PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
+                           treatment = "dem", refinement.method = "ps.match",
+                           data = dem, match.missing = TRUE, covs.formula = ~ tradewb,
+                           size.match = 5, qoi = "atc", outcome.var = "y",
+                           lead = 0:4, forbid.treatment.reversal = FALSE)
+  
+  expect_no_error(PanelEstimate(sets = PM.results,
+                                number.iterations = 1000,
+                                data = dem,
+                                se.method = "bootstrap",
+                                parallel = TRUE,
+                                num.cores = 4))
+  
+  expect_no_warning(PanelEstimate(sets = PM.results,
+                                  number.iterations = 1000,
+                                  data = dem,
+                                  se.method = "bootstrap",
+                                  parallel = TRUE,
+                                  num.cores = 4))
+  
+  PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
+                           treatment = "dem", refinement.method = "ps.match",
+                           data = dem, match.missing = TRUE, covs.formula = ~ tradewb,
+                           size.match = 5, qoi = "ate", outcome.var = "y",
+                           lead = 0:4, forbid.treatment.reversal = FALSE)
+  
+  expect_no_error(PanelEstimate(sets = PM.results,
+                                number.iterations = 1000,
+                                data = dem,
+                                se.method = "bootstrap",
+                                parallel = TRUE,
+                                num.cores = 4))
+  
+  expect_no_warning(PanelEstimate(sets = PM.results,
+                                  number.iterations = 1000,
+                                  data = dem,
+                                  se.method = "bootstrap",
+                                  parallel = TRUE,
+                                  num.cores = 4))
+})
