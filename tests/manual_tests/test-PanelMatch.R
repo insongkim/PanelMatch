@@ -883,3 +883,38 @@ test_that("ensure parallel bootstrap runs without warning, error", {
                                   parallel = TRUE,
                                   num.cores = 4))
 })
+
+
+test_that("forbid treatment reversal restrictions are triggered correctly", {
+  
+  
+  expect_no_error(PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
+                               treatment = "dem", refinement.method = "mahalanobis",
+                               data = dem, match.missing = FALSE, covs.formula = ~ I(lag(y, 1:4)) + I(lag(tradewb, 1:4)),
+                               size.match = 5, qoi = "att",
+                               outcome.var = "y",
+                               lead = 0:3, forbid.treatment.reversal = TRUE))
+  
+  expect_no_error(PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
+                             treatment = "dem", refinement.method = "mahalanobis",
+                             data = dem, match.missing = FALSE, covs.formula = ~ I(lag(y, 1:4)) + I(lag(tradewb, 1:4)),
+                             size.match = 5, qoi = "art",
+                             outcome.var = "y",
+                             lead = 0:3, forbid.treatment.reversal = TRUE))
+  
+  expect_error(PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
+                               treatment = "dem", refinement.method = "mahalanobis",
+                               data = dem, match.missing = FALSE, covs.formula = ~ I(lag(y, 1:4)) + I(lag(tradewb, 1:4)),
+                               size.match = 5, qoi = "atc",
+                               outcome.var = "y",
+                               lead = 0:3, forbid.treatment.reversal = TRUE))
+  
+  expect_error(PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
+                             treatment = "dem", refinement.method = "mahalanobis",
+                             data = dem, match.missing = FALSE, covs.formula = ~ I(lag(y, 1:4)) + I(lag(tradewb, 1:4)),
+                             size.match = 5, qoi = "ate",
+                             outcome.var = "y",
+                             lead = 0:3, forbid.treatment.reversal = TRUE))
+  
+})
+
