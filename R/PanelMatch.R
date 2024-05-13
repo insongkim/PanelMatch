@@ -42,7 +42,7 @@
 #' ultimately be produced. Default is 0 (which corresponds to contemporaneous treatment effect).
 #' @param matching logical indicating whether or not any matching on treatment history should be performed. 
 #' This is primarily used for diagnostic purposes, and most users will never need to set this to FALSE. Default is TRUE.
-#' @param forbid.treatment.reversal Logical indicating whether or not it is permissible for treatment to reverse in the specified lead window. 
+#' @param forbid.treatment.reversal Logical. For the ATT, it indicates whether or not it is permissible for treatment to reverse in the specified lead window. This is defined analogously for the ART. It is not valid for the ATC or ATE. 
 #' When set to TRUE, only matched sets for treated units where treatment is 
 #' applied continuously in the lead window are included in the results. Default is FALSE.
 #' @param exact.match.variables character vector giving the names of variables to be exactly matched on. These should be time invariant variables. 
@@ -153,9 +153,10 @@ panel_match <- function(lag, time.id, unit.id, treatment,
   if (any(duplicated(data[, c(unit.id, time.id)]))) stop("Time, unit combinations should uniquely identify rows. Please remove duplicates")
   if (!inherits(data[, unit.id], "integer") && !inherits(data[, unit.id], "numeric")) stop("please convert unit id column to integer or numeric")
   if ( !all(c(time.id, unit.id, treatment, outcome.var)  %in% colnames(data)) ) stop("time id, unit id, outcome, or treatment column name invalid")
-  if (forbid.treatment.reversal && !identical(qoi, "att"))
+  if (forbid.treatment.reversal)
   {
-    stop("forbid.treatment.reversal = TRUE only valid for qoi = att")
+    if (isFALSE(qoi %in% c("att", "art")))
+    stop("forbid.treatment.reversal = TRUE only valid for qoi = att or qoi = art")
   }
   
   if(!is.null(restrict.control.period))
