@@ -1,6 +1,13 @@
-# Function to check the lead windows in treated and control units 
-# for missing outcome data. If data is missing, remove those units from viable sets
-# returns the cleaned matched sets
+#' clean_leads
+#' Function to check the lead windows in treated and control units for missing outcome data. If data is missing, remove those units from matched sets.
+#' @param matched_sets matched.set object contained pre-filtered matched sets
+#' @param ordered.data data.frame object to be checked for missing data. This should have been passed through data preparation functions already.
+#' @param max.lead Integer specifying the biggest value of the lead window.
+#' @param t.var string specifying the time id variable
+#' @param id.var string specifying the unit id variable
+#' @param outcome.var string specifying the outcome variable.
+#' @return a cleaned/filtered matched.set object
+#' @keywords internal
 clean_leads <- function(matched_sets, 
                         ordered.data, 
                         max.lead, 

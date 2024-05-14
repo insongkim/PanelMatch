@@ -1,6 +1,11 @@
-# This function enforces the requirements for time data, with some reasonable default
-# behavior. Time data should be consecutive integers: When it is not, try to convert it as best we can or throw an error.
-# If does not fail, returns the data as data frame object, either processed or not as appropriately
+#' check_time_data
+#'
+#' enforces the requirements for time data, with some reasonable defaults
+#' @description Time data should be consecutive integers: When it is not, try to convert it as best we can or throw an error. If function does not fail, returns the data as data frame object, either processed or not as appropriately
+#' @param data data.frame object.
+#' @param time.id string specifying the time id variable.
+#' @return data.frame object with the data. If function throws error, nothing is returned.
+#' @keywords internal
 check_time_data <- function(data, time.id)
 {
   if (!class(data[, time.id]) %in% c("numeric", "integer"))
@@ -36,14 +41,15 @@ check_time_data <- function(data, time.id)
   
 }
 
-#use col.index to determine which columns we want to "scan" for missing data
-# Note that in earlier points in the code, we rearrange the columns and prepare the data frame such that cols 1-4 are bookkeeping (unit id, time id, treated variable, unlagged outcome variable)
-# and all remaining columns are used in the calculations after going through parse_and_prep function, so col.index should usually be 5:ncol(data)
-# In practice, this function just looks over the data in the specified columns in the "data" data frame for missing data. Then it creates columns with indicator variables about the missingness of those variables
-# 1 for missing data, 0 for present
-#############
-# returns data frame object with processed data
-handle.missing.data <- function(data, col.index)
+#' handle_missing_data
+#'
+#' Tags missing data
+#' @description use col.index to determine which columns we want to "scan" for missing data. Note that in earlier points in the code, we rearrange the columns and prepare the data frame such that cols 1-4 are bookkeeping (unit id, time id, treated variable, unlagged outcome variable) and all remaining columns are used in the calculations after going through parse_and_prep function, so col.index should usually be 5:ncol(data). In practice, this function just looks over the data in the specified columns in the "data" data frame for missing data. Then it creates columns with indicator variables about the missingness of those variables: 1 for missing data, 0 for present
+#' @param data data.frame object.
+#' @param col.index numeric vector specifying which columns to inspect
+#' @return data.frame object with the data and the missingness indicators described above.
+#' @keywords internal
+handle_missing_data <- function(data, col.index)
 {
   
   new.names <- paste0(colnames(data)[col.index], "_NA")

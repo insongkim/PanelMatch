@@ -202,11 +202,17 @@ get.matchedsets <- function(t, id, data, L, t.column, id.column, treatedvar,
    
 }
 
-############################################################
-#### This function calculates the differences from t-1 to 1 for treated and control units in the treatment variable
-#### While functionality is somewhat trivial for current implementation of package, it will be needed for multicategorical treatment version.
-############################################################
-extract.differences <- function(indexed.data, matched.set, 
+
+#' extract_differences
+#' This function calculates the differences from t-1 to 1 for treated and control units in the treatment variable. While functionality is somewhat trivial for current implementation of package, it will be needed for continuous treatment version of the package.
+#' @param indexed.data data that has been indexed. Rows have been named with a unique identifier.
+#' @param matched.set matched.set object
+#' @param treatment.variable string specifying treatment variable
+#' @param qoi string specifying QOI
+#'
+#' @return matched.set object, with differences extracted as described previously for each matched set.
+#' @keywords internal
+extract_differences <- function(indexed.data, matched.set, 
                                 treatment.variable,
                                 qoi)
 {
@@ -244,6 +250,17 @@ extract.differences <- function(indexed.data, matched.set,
   
 }
 
+#' identifyDirectionalChanges
+#' Identifies changes in treatment variable for treated and control observations
+#' @param msets 
+#' @param ordered.data 
+#' @param id.var 
+#' @param time.var 
+#' @param treatment.var 
+#' @param qoi 
+#'
+#' @return matched.set object with changes in the treatment variable for treated and control observations identified.
+#' @keywords internal
 identifyDirectionalChanges <- function(msets, ordered.data, id.var, time.var,
                                        treatment.var, qoi)
 {
@@ -253,7 +270,7 @@ identifyDirectionalChanges <- function(msets, ordered.data, id.var, time.var,
   
   for (i in 1:length(msets)) {
       
-    msets[[i]] <- extract.differences(ordered.data, msets[i], 
+    msets[[i]] <- extract_differences(ordered.data, msets[i], 
                                       treatment.var, qoi)
       
   }
@@ -261,10 +278,15 @@ identifyDirectionalChanges <- function(msets, ordered.data, id.var, time.var,
   
 }
 
-# builds a list that contains all times in a lag window that correspond to a particular treated unit. This is structured as a list of vectors. Each vector is lag + 1 units long. The overall list will
-# be the same length as the number of matched sets
-expand.treated.ts <- function(lag, treated.ts)
+#' expand_treated_ts
+#' Builds a list that contains all times in a lag window that correspond to a particular treated unit. This is structured as a list of vectors. Each vector is lag + 1 units long. The overall list will be the same length as the number of matched sets
+#' @param lag lag value
+#' @param treated.ts times of treated observations
+#' @return list. Contains all times in a lag window that correspond to a particular treated unit
+#' @keywords internal
+expand_treated_ts <- function(lag, treated.ts)
 {
+
   helper <- function(treated.t)
   {
     return(seq(from =  (treated.t - lag), 

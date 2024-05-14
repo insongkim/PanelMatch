@@ -1,7 +1,18 @@
-# calculates standard errors for each period in the placebo lead window using
-# the bootstrap
-
-# returns a matrix of bootstrapped coefficients
+#' handle_bootstrap_placebo
+#'
+#' Helper function for calculating bootstrapped estimates for the placebo test. This version is not parallelized.
+#' @param qoi.in String specifying qoi
+#' @param data.in data.frame object with the data
+#' @param number.iterations integer. specifies number of bootstrap iterations
+#' @param att.treated.unit.ids Integer vector specifying the treated units for the att or art
+#' @param atc.treated.unit.ids Integer vector specifying the "treated" units under the atc definition
+#' @param outcome.variable string specifying the name of the outcome variable
+#' @param unit.id.variable string specifying the name of the unit id variable
+#' @param confidence.level double. specifies confidence level for confidence interval
+#' @param lag integer vector specifying size of the lag.
+#' @return Returns a matrix of bootstrapped QOI estimate values.
+#'
+#' @keywords internal
 handle_bootstrap_placebo <- function(qoi.in, 
                              data.in, 
                              placebo.lead,
@@ -108,7 +119,22 @@ handle_bootstrap_placebo <- function(qoi.in,
 }
 
 
-# returns a matrix of bootstrapped coefficients, parallelized
+#' handle_bootstrap_placebo_parallel
+#'
+#' Helper function for calculating bootstrapped estimates for the placebo test. This version is parallelized.
+#' @param qoi.in String specifying qoi
+#' @param data.in data.frame object with the data
+#' @param number.iterations integer. Specifies number of bootstrap iterations
+#' @param att.treated.unit.ids Integer vector specifying the treated units for the att or art
+#' @param atc.treated.unit.ids Integer vector specifying the "treated" units under the atc definition
+#' @param outcome.variable string specifying the name of the outcome variable
+#' @param unit.id.variable string specifying the name of the unit id variable
+#' @param confidence.level double. specifies confidence level for confidence interval
+#' @param lag integer vector specifying size of the lag.
+#' @param num.cores number of cores to be used for parallelization
+#' @return Returns a matrix of bootstrapped QOI estimate values.
+#'
+#' @keywords internal
 handle_bootstrap_placebo_parallel <- function(qoi.in, 
                                      data.in, 
                                      placebo.lead,

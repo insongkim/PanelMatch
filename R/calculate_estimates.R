@@ -1,6 +1,24 @@
-# calculates estimates and standard errors within PanelEstimate()
-# calls the appropriate helper functions for each step
-# creates and returns a PanelEstimate object
+#' calculate_estimates
+#'
+#' Mid-level function that helps with estimation process. Calls lower level helper functions
+#' @param qoi.in String specifying qoi
+#' @param data.in data.frame object with the data
+#' @param lead integer specifying lead window
+#' @param number.iterations integer. specifies number of bootstrap iterations
+#' @param att.treated.unit.ids Integer vector specifying the treated units for the att or art
+#' @param atc.treated.unit.ids Integer vector specifying the "treated" units under the atc definition
+#' @param outcome.variable string specifying the name of the outcome variable
+#' @param unit.id.variable string specifying the name of the unit id variable
+#' @param confidence.level double. specifies confidence level for confidence interval
+#' @param att.sets matched.set object specifying the att or art sets
+#' @param atc.sets matched.set object specifying the atc sets
+#' @param lag integer vector specifying size of the lag.
+#' @param se.method string specifying which method should be used for standard error calculation
+#' @param pooled bool. specifies whether or not estimates should be calculated for each lead period, or pooled across all lead periods
+#' @param parallel bool. Specifies whether or not parallelization should be used
+#' @param num.cores Integer. specifies how many cores to use for parallelization
+#' @return Returns PanelEstimate object.
+#' @keywords internal
 calculate_estimates <- function(qoi.in, data.in, lead,
                                number.iterations,
                                att.treated.unit.ids,
@@ -24,32 +42,30 @@ calculate_estimates <- function(qoi.in, data.in, lead,
   {
     
     if (parallel) {
-      coefs <- handle_bootstrap_parallel(qoi.in, 
-                                         data.in, 
-                                         lead,
-                                         number.iterations,
-                                         att.treated.unit.ids,
-                                         atc.treated.unit.ids,
-                                         outcome.variable,
-                                         unit.id.variable,
-                                         confidence.level,
-                                         lag,
-                                         se.method,
-                                         pooled,
+      coefs <- handle_bootstrap_parallel(qoi.in = qoi.in, 
+                                         data.in = data.in, 
+                                         lead = lead,
+                                         number.iterations = number.iterations,
+                                         att.treated.unit.ids = att.treated.unit.ids,
+                                         atc.treated.unit.ids = atc.treated.unit.ids,
+                                         outcome.variable = outcome.variable,
+                                         unit.id.variable = unit.id.variable,
+                                         confidence.level = confidence.level,
+                                         lag = lag,
+                                         pooled = pooled,
                                          num.cores = num.cores)
     } else {
-      coefs <- handle_bootstrap(qoi.in, 
-                                data.in, 
-                                lead,
-                                number.iterations,
-                                att.treated.unit.ids,
-                                atc.treated.unit.ids,
-                                outcome.variable,
-                                unit.id.variable,
-                                confidence.level,
-                                lag,
-                                se.method,
-                                pooled) 
+      coefs <- handle_bootstrap(qoi.in = qoi.in, 
+                                data.in = data.in, 
+                                lead = lead,
+                                number.iterations = number.iterations,
+                                att.treated.unit.ids = att.treated.unit.ids,
+                                atc.treated.unit.ids = atc.treated.unit.ids,
+                                outcome.variable = outcome.variable,
+                                unit.id.variable = unit.id.variable,
+                                confidence.level = confidence.level,
+                                lag = lag,
+                                pooled = pooled) 
     }
     
     

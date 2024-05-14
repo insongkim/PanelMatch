@@ -122,7 +122,7 @@ get_covariate_balance <- function(matched.sets,
   }
   treated.ts <- as.integer(sub(".*\\.", "", names(matched.sets)))
   treated.ids <- as.integer(sub("\\..*", "", names(matched.sets)))
-  tlist <- expand.treated.ts(lag, treated.ts)
+  tlist <- expand_treated_ts(lag, treated.ts)
   
   
   idxlist <- get_yearly_dmats(as.matrix(ordered.data), treated.ids, tlist, 

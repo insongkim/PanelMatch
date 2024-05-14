@@ -1,9 +1,16 @@
-# calculates weights for units for weighting-based
-# refinement methods 
-########################################################################
-# returns weighted matched sets
-handle_ps_weighted <- function(just.ps.sets, msets, refinement.method)
+#' handle_ps_weighted
+#'
+#' @param just.ps.sets results of find_ps()
+#' @param msets list of matched sets of treated and control observations
+#' @param refinement.method string specifying the refinement method
+#'
+#' @return matched.set object with treated and matched control observations, with weights as determined by the specification
+#' @keywords internal
+handle_ps_weighted <- function(just.ps.sets, 
+                               msets, 
+                               refinement.method)
 {
+  
   handle_set <- function(set)
   {
     control.ps.set <- set[1:(nrow(set) - 1), ncol(set)]

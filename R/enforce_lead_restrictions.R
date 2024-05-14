@@ -1,5 +1,14 @@
-# check treatment and control units for treatment reversion in the lead window. Treated units must stay treated and control units must stay in control (according to the specified qoi)
-# returns matched sets that meet the conditions
+#' enforce_lead_restrictions
+#' check treatment and control units for treatment reversion in the lead window. Treated units must stay treated and control units must stay in control (according to the specified qoi)
+#' 
+#' @param matched_sets matched.set object
+#' @param ordered.data parsed data as data.frame object
+#' @param max.lead The largest lead value (e.g. the biggest F)
+#' @param t.var string specifying the time variable
+#' @param id.var string specifying the unit id variable
+#' @param treatment.var string specifying the treatment variable.
+#'
+#' @return matched.set object with the matched sets that meet the conditions
 enforce_lead_restrictions <- function(matched_sets, 
                                       ordered.data, 
                                       max.lead, 
@@ -23,7 +32,8 @@ enforce_lead_restrictions <- function(matched_sets,
   if (all(!idx)) stop("estimation not possible: All treated units are missing data necessary for the calculations to proceed")
   if (any(!idx))
   {
-    class(matched_sets) <- c("matched.set", "list") #to get the matched.set subsetting with attributes
+    class(matched_sets) <- c("matched.set", "list") 
+    #to get the matched.set subsetting with attributes
     matched_sets <- matched_sets[idx]
     ts <- ts[idx]
     

@@ -1,12 +1,33 @@
-# Performs refinement on matched sets
-# The function mostly calls lower level functions that apply the specified 
-# refinement processes
-# Returns refined matched sets
+#' perform_refinement
+#' Performs refinement of matched sets, ultimately returning sets of treated observations and controls with weights. This function mostly acts as an intermediary between PanelMatch and lower level functions that do the dirty work of refinement. The function takes a lot of the same arguments as PanelMatch()
+#' @param lag See PanelMatch() documentation. 
+#' @param time.id See PanelMatch() documentation. 
+#' @param unit.id See PanelMatch() documentation. 
+#' @param treatment See PanelMatch() documentation. 
+#' @param refinement.method See PanelMatch() documentation. 
+#' @param size.match See PanelMatch() documentation. 
+#' @param ordered.data data.frame that has been balanced and ordered by time-unit.
+#' @param match.missing See PanelMatch() documentation. 
+#' @param covs.formula See PanelMatch() documentation. 
+#' @param verbose See PanelMatch() documentation. 
+#' @param lead See PanelMatch() documentation. 
+#' @param outcome.var See PanelMatch() documentation. 
+#' @param forbid.treatment.reversal See PanelMatch() documentation. 
+#' @param qoi See PanelMatch() documentation. 
+#' @param matching See PanelMatch() documentation. 
+#' @param exact.matching.variables 
+#' @param listwise.deletion See PanelMatch() documentation. 
+#' @param use.diag.covmat See PanelMatch() documentation for use.diagonal.covariance.matrix argument.
+#' @param placebo.test See PanelMatch() documentation. 
+#' @param restrict.control.period See PanelMatch() documentation. 
+#'
+#' @return returns a matched.set object containing the refined matched sets
+#' @keywords internal
 perform_refinement <- function(lag, time.id, unit.id, treatment, 
                                refinement.method, size.match,
                                ordered.data, match.missing, covs.formula, 
                                verbose,
-                               mset.object = NULL, lead, outcome.var = NULL,
+                               lead, outcome.var = NULL,
                                forbid.treatment.reversal = FALSE, qoi = "",
                                matching = TRUE, exact.matching.variables = NULL,
                                listwise.deletion,
@@ -14,7 +35,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment,
                                placebo.test = FALSE,
                                restrict.control.period = NULL)
 {
-
+  
   if (inherits(ordered.data[, unit.id], "numeric"))
   {
     warning("converting unit id variable data to integer")
@@ -188,7 +209,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment,
   ################################################################################################
   if(!listwise.deletion)
   {
-    ordered.data <- as.matrix(handle.missing.data(ordered.data, 
+    ordered.data <- as.matrix(handle_missing_data(ordered.data, 
                                                   4:ncol(ordered.data)))
   }
 
@@ -197,7 +218,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment,
 
     old.lag <- lag
     lag <- 0
-    tlist <- expand.treated.ts(lag, treated.ts)
+    tlist <- expand_treated_ts(lag, treated.ts)
 
     idxlist <- get_yearly_dmats(ordered.data, 
                                 treated.ids,
@@ -225,7 +246,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment,
     }
       
       
-    tlist <- expand.treated.ts(lag, treated.ts)
+    tlist <- expand_treated_ts(lag, treated.ts)
     idxlist <- get_yearly_dmats(ordered.data, 
                                 treated.ids, 
                                 tlist, 

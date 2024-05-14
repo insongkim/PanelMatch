@@ -1,12 +1,21 @@
-# handles moderating variable calculations: In practice, this just involves 
-# slicing the data up according to the moderator, 
-# calling PanelEstimate() and putting everything back together
-# This function creates the sets of objects on which PanelEstimate() will be called.
-# It identifies the set of valid values the moderating variable can take on.
+
+#' handle_moderating_variable
+#' handles moderating variable calculations: In practice, this just involves slicing the data up according to the moderator, calling PanelEstimate() and putting everything back together This function creates the sets of objects on which PanelEstimate() will be called. It identifies the set of valid values the moderating variable can take on.
+#' @param ordered.data data.frame
+#' @param att.sets matched.set object for the ATT or ART
+#' @param atc.sets matched.set object for the ATC
+#' @param PM.object PanelMatch object
+#' @param moderator string specifying the name of the moderating variable
+#' @param unit.id string specifying the unit id variable
+#' @param time.id string specifying the time id variable
+#' @param qoi.in string specifying the QOI
+#'
+#' @return Character vector of valid moderating variable values
 handle_moderating_variable <- function(ordered.data, att.sets, 
                                        atc.sets, PM.object,
                                        moderator, unit.id, time.id, qoi.in)
 {
+  
   .reconstruct_pm_objects <- function(att.set = NULL, 
                                       atc.set = NULL, 
                                       PM.object_)

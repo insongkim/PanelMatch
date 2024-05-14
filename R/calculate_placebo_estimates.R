@@ -1,8 +1,8 @@
-# Handles the procedures for calculating point estimates and standard errors for the placebo test. 
-# Code is structured very similarly to the calculate_estimates() code, but with appropriate modifications for the placebo test
-# bootstrap SEs are available for any specification
-# conditional, unconditional standard errors only available for att, art, atc.
-# returns a PanelEstimate object
+#' calculate_placebo_estimates
+#'
+#' @description Handles the procedures for calculating point estimates and standard errors for the placebo test. Code is structured very similarly to the calculate_estimates() code, but with appropriate modifications for the placebo test. See that function for description of arguments. Bootstrap SEs are available for any specification. Conditional, unconditional standard errors only available for att, art, atc. 
+#' @return Returns a PanelEstimate object
+#' @keywords internal
 calculate_placebo_estimates <- function(qoi.in, data.in, lead,
                                       number.iterations,
                                       att.treated.unit.ids,
@@ -298,6 +298,10 @@ calculate_placebo_estimates <- function(qoi.in, data.in, lead,
   
 }
 
+#' equality_four_placebo
+#' @description Small helper function implementing estimation function from Imai, Kim, and Wang (2021)
+#' @return Returns numeric vector of results.
+#' @keywords internal
 equality_four_placebo <- function(x, y, z){
   
   y[is.na(y)] <- 0

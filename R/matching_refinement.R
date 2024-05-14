@@ -1,10 +1,13 @@
-####################################
-#### Functions for handling matching-based refinement: After refinement, each matched set will have an equal number of control units with identical, non-zero weights. Other control units in the matched set will have weights of 0. These refinement procedures can be completed based on mahalanobis distance, or (covariate balanced) propensity scores.
-################################################################
-####################################################################
-#builds the matrices that we will then use to calculate the mahalanobis distances for each matched set
+#' build_maha_mats
+#' Builds the matrices that we will then use to calculate the mahalanobis distances for each matched set
+#' @param idx List of vectors specifying which observations should be extracted
+#' @param ordered_expanded_data data.frame of prepared/parsed input data
+#'
+#' @returns List of parsed distance matrices, with elements corresponding to each matched set
+#' @keywords internal
 build_maha_mats <- function(idx, ordered_expanded_data)
 {
+  
   subset.per.matchedset <- function(sub.idx)
   {
     ordered_expanded_data[sub.idx,]
@@ -17,9 +20,17 @@ build_maha_mats <- function(idx, ordered_expanded_data)
   return(result)
 }
 
-# Each of the following similarly named functions
-# will return a matched.set object with the appropriate 
-# weights for control units assigned and new, additional attributes (such as refinement method).
+#' handle_mahalanobis_calculations
+#' Returns a matched.set object with weights for control units, along with some other metadata
+#'
+#' @param mahal.nested.list Output from build_maha_mats function 
+#' @param msets matched.set object -- list containing the treated observations and matched controls
+#' @param max.size maximum number of control units that will receive non-zero weights within a matched set
+#' @param verbose Logical. See PanelMatch() documentation
+#' @param use.diagonal.covmat Logical. See PanelMatch() documentation
+#'
+#' @return matched.set object with weights for control units, along with some other metadata
+#' @keywords internal
 handle_mahalanobis_calculations <- function(mahal.nested.list, 
                                             msets,
                                             max.size, 
@@ -157,6 +168,16 @@ handle_mahalanobis_calculations <- function(mahal.nested.list,
 }
 
 
+#' handle_ps_match
+#' Returns a matched.set object with weights for control units, along with some other metadata
+#'
+#' @param just.ps.sets Output from find_ps() function 
+#' @param msets matched.set object -- list containing the treated observations and matched controls
+#' @param max.set.size maximum number of control units that will receive non-zero weights within a matched set
+#' @param verbose Logical. See PanelMatch() documentation
+#'
+#' @return matched.set object with weights for control units, along with some other metadata
+#' @keywords internal
 handle_ps_match <- function(just.ps.sets, msets,
                             refinement.method,
                             verbose, max.set.size)
@@ -222,4 +243,3 @@ handle_ps_match <- function(just.ps.sets, msets,
   attr(msets, "refinement.method") <- refinement.method
   return(msets)
 }
-

@@ -6,10 +6,29 @@
 ####################################################################################
 ####################################################################################
 
-####################################################################################
-# master function that performs refinement with listwise deletion = TRUE
-####################################################################################
-#global.data needs to be fully prepped/parsed data set that is internally balanced, full of NAs likely
+#' lwd_refinement
+#' master function that performs refinement with listwise deletion = TRUE
+#'
+#' @param msets 
+#' @param global.data data.frame. needs to be fully prepped/parsed data set that is internally balanced, full of NAs likely
+#' @param treated.ts vector of the times of treatment for treated observations
+#' @param treated.ids vector of unit identifiers of treated observations
+#' @param lag 
+#' @param time.id string specifying
+#' @param unit.id 
+#' @param lead vector of lead values
+#' @param refinement.method string specifying refinement method
+#' @param treatment string specifying treatment variable
+#' @param size.match maximum number of units to give non-zero weight to when using matching refinement method
+#' @param match.missing logical. indicates whether or not to allow the package to match units on missingness in treatment history
+#' @param covs.formula see PanelMatch documentation for descriptions
+#' @param verbose see PanelMatch documentation for descriptions
+#' @param outcome.var string specifying outcome variable
+#' @param e.sets empty sets (treated observations with no matched controls)
+#' @param use.diag.covmat see PanelMatch documentation for descriptions
+#'
+#' @return matched.set object with refined matched sets.
+#' @keywords internal
 lwd_refinement <- function(msets, global.data, treated.ts, 
                            treated.ids, lag, time.id, unit.id, 
                            lead, refinement.method, treatment, size.match,
@@ -137,16 +156,22 @@ lwd_refinement <- function(msets, global.data, treated.ts,
   attr(t.newsets, "match.missing") <- match.missing
   return(t.newsets)
 }
-####################################################################################
-###### refinement must be performed at the individual set level
-###### This function handles individual set refinement
-####################################################################################
+
+#' set_lwd_refinement
+#' Performs the set-level operations for refinement with listwise deletion. See documentation for lwd_refinement for descriptions of most parameters.
+#' @param mset individual matched set
+#' @param local.data data.frame containing the data relevant for set level refinement
+#' @param time time of treated observation
+#' @param id id of treated observation
+#' @return an individual matched set
+#' @keywords internal
 set_lwd_refinement <- function(mset, local.data, time, id, 
                                lag, refinement.method, lead, verbose, 
                                size.match, unit.id, time.id, 
                                covs.formula, match.missing,
                                treatment, use.diag.covmat)
 {
+  
   treated.ts <- time
   treated.ids <- id
   ordered.data <- as.matrix(local.data)
@@ -155,7 +180,7 @@ set_lwd_refinement <- function(mset, local.data, time, id,
   {
     old.lag <- lag
     lag <- 0
-    tlist <- expand.treated.ts(lag, treated.ts)
+    tlist <- expand_treated_ts(lag, treated.ts)
     idxlist <- get_yearly_dmats(ordered.data, 
                                 treated.ids, 
                                 tlist, 
@@ -171,10 +196,12 @@ set_lwd_refinement <- function(mset, local.data, time, id,
     lag <- old.lag
   }
   
-  if(all(refinement.method %in% c("CBPS.weight", "CBPS.match", "ps.weight", "ps.match")))
+  if(all(refinement.method %in% c("CBPS.weight", "CBPS.match", 
+                                  "ps.weight", "ps.match")))
   {
-    if(!all(refinement.method %in% c("CBPS.weight", "CBPS.match", "ps.weight", "ps.match"))) stop("please choose valid refinement method")
-    tlist <- expand.treated.ts(lag, treated.ts)
+    if(!all(refinement.method %in% c("CBPS.weight", "CBPS.match", 
+                                     "ps.weight", "ps.match"))) stop("please choose valid refinement method")
+    tlist <- expand_treated_ts(lag, treated.ts)
     idxlist <- get_yearly_dmats(ordered.data, 
                                 treated.ids, 
                                 tlist, 
@@ -197,7 +224,8 @@ set_lwd_refinement <- function(mset, local.data, time, id,
       {
         return(x[, -cols.to.remove_])
       }
-      expanded.sets.t0 <- lapply(expanded.sets.t0, rmv, cols.to.remove_ = cols.to.remove)
+      expanded.sets.t0 <- lapply(expanded.sets.t0, rmv, 
+                                 cols.to.remove_ = cols.to.remove)
     }
     if(qr(pooled)$rank != ncol(pooled)) 
     {
@@ -225,7 +253,8 @@ set_lwd_refinement <- function(mset, local.data, time, id,
     }
     if(refinement.method == "CBPS.match" || refinement.method == "ps.match")
     {
-      msets <- handle_ps_match(just.ps.sets, msets, refinement.method, verbose, size.match)
+      msets <- handle_ps_match(just.ps.sets, msets, 
+                               refinement.method, verbose, size.match)
       attr(msets, "max.match.size") <- size.match
     }
   }
@@ -240,7 +269,12 @@ set_lwd_refinement <- function(mset, local.data, time, id,
   return(msets)
 }
 
-# helper function that actually subsets sets down to contain units with complete data
+#' lwd_units
+#' helper function that actually subsets sets down to contain units with complete data
+#' @param full.local.data data.frame containing the data to be used in set-level refinement, but containing missing data
+#' @param unit.id 
+#' @return data.frame with the missing data removed to be used for set-level refinement.
+#' @keywords internal
 lwd_units <- function(full.local.data, unit.id)
 {
   # can assume the structure of the data such that columns 4 and higher are relevant covariate data

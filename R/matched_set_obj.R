@@ -245,5 +245,3 @@ print.matched.set <- function(x, ..., verbose = FALSE)
 
   return(temp)
 }
-
-

@@ -1,6 +1,11 @@
-################################################################################################
-# Functions for calculating standard errors and associated helper functions########################
-################################################################################################
+#' perunitSum
+#' This is a low level function that is used to calculate a value associated with each unit. This value is a weighted summation of the dependent variable, based on the Wit values discussed in Imai et al. (2021)
+#' @param udf data.frame
+#' @param lead.in integer. A particular lead value
+#' @param dependent.in string specifying the dependent variable name
+#' @param qoi_in string specifying the QOI
+#'
+#' @return Named vector containing the per-unit sums. 
 perunitSum <- function(udf,
                        lead.in,
                        dependent.in,
@@ -16,13 +21,36 @@ perunitSum <- function(udf,
 }
 
 
+#' perunitSum_Dit
+#' Similar to perunitSum, this is a low level helper function for calculating specific values defined in Imai et al. (2021). This focuses on Dit rather than Wit
+#' @param udf data.frame
+#' @param qoi_in string specifying the QOI
+#'
+#' @return Named vector containing the per-unit sums.
 perunitSum_Dit <- function(udf, qoi_in) {
+  
   d.it <- udf[, paste0("dits_",qoi_in)] #should always return a vector
   d.it[is.na(d.it)] <- 0
   return(sum(d.it))
 }
 
-
+#' handle_bootstrap_parallel
+#'
+#' Helper function for calculating bootstrapped estimates for the QOI. This version is parallelized.
+#' @param qoi.in String specifying qoi
+#' @param data.in data.frame object with the data
+#' @param number.iterations integer. Specifies number of bootstrap iterations
+#' @param att.treated.unit.ids Integer vector specifying the treated units for the att or art
+#' @param atc.treated.unit.ids Integer vector specifying the "treated" units under the atc definition
+#' @param outcome.variable string specifying the name of the outcome variable
+#' @param unit.id.variable string specifying the name of the unit id variable
+#' @param confidence.level double. specifies confidence level for confidence interval
+#' @param lag integer vector specifying size of the lag.
+#' @param pooled logical. Specifies whether or not to calculate point estimates for each specified lead value, or a single pooled estimate.
+#' @param num.cores number of cores to be used for parallelization
+#' @return Returns a matrix of bootstrapped QOI estimate values.
+#'
+#' @keywords internal
 handle_bootstrap_parallel <- function(qoi.in, 
                              data.in, 
                              lead,
@@ -33,7 +61,6 @@ handle_bootstrap_parallel <- function(qoi.in,
                              unit.id.variable,
                              confidence.level,
                              lag,
-                             se.method,
                              pooled,
                              num.cores = 1) 
 {
@@ -215,7 +242,22 @@ handle_bootstrap_parallel <- function(qoi.in,
 }
 
 
-
+#' handle_bootstrap
+#'
+#' Helper function for calculating bootstrapped estimates for the QOI. This version is not parallelized.
+#' @param qoi.in String specifying qoi
+#' @param data.in data.frame object with the data
+#' @param number.iterations integer. Specifies number of bootstrap iterations
+#' @param att.treated.unit.ids Integer vector specifying the treated units for the att or art
+#' @param atc.treated.unit.ids Integer vector specifying the "treated" units under the atc definition
+#' @param outcome.variable string specifying the name of the outcome variable
+#' @param unit.id.variable string specifying the name of the unit id variable
+#' @param confidence.level double. specifies confidence level for confidence interval
+#' @param lag integer vector specifying size of the lag.
+#' @param pooled logical. Specifies whether or not to calculate point estimates for each specified lead value, or a single pooled estimate.
+#' @return Returns a matrix of bootstrapped QOI estimate values.
+#'
+#' @keywords internal
 handle_bootstrap <- function(qoi.in, 
                             data.in, 
                             lead,
@@ -226,7 +268,6 @@ handle_bootstrap <- function(qoi.in,
                             unit.id.variable,
                             confidence.level,
                             lag,
-                            se.method,
                             pooled) 
 {
   coefs <- matrix(NA, nrow = number.iterations, ncol = length(lead))
@@ -397,10 +438,21 @@ handle_bootstrap <- function(qoi.in,
   
 }
 
+#' handle_conditional_se
+#' Calculates conditional standard errors analytically, as defined in Imai et al. (2021). See PanelEstimate() for a more complete description of the standard error types. 
+#' @param qoi.in string specifying the QOI
+#' @param data.in data.frame specifying the data
+#' @param lead See PanelMatch() documentation
+#' @param outcome.variable string specifying the name of the outcome variable
+#' @param unit.id.variable string specifying the name of the unit id variable.
+#'
+#' @return Named vector with standard error estimates
+#' @keywords internal
 handle_conditional_se <- function(qoi.in, data.in, lead,
                                   outcome.variable,
                                   unit.id.variable)
 {
+  
   if (identical(qoi.in, "ate")) stop("analytical standard errors not available for ATE")
   per.unit.sums <- by(data.in, as.factor(data.in[, unit.id.variable]),
                       FUN = perunitSum,
@@ -436,10 +488,21 @@ handle_conditional_se <- function(qoi.in, data.in, lead,
   
 }
 
+#' handle_conditional_se
+#' Calculates conditional standard errors analytically, as defined in Imai et al. (2021). See PanelEstimate() for a more complete description of the standard error types. 
+#' @param qoi.in string specifying the QOI
+#' @param data.in data.frame specifying the data
+#' @param lead See PanelMatch() documentation
+#' @param outcome.variable string specifying the name of the outcome variable
+#' @param unit.id.variable string specifying the name of the unit id variable.
+#'
+#' @return Named vector with standard error estimates
+#' @keywords internal
 handle_unconditional_se <- function(qoi.in, data.in, lead,
                                  outcome.variable,
                                  unit.id.variable) 
 {
+  
   Ais <- by(data.in, as.factor(data.in[, unit.id.variable]),
             FUN = perunitSum,
             lead.in = lead,
@@ -476,4 +539,3 @@ handle_unconditional_se <- function(qoi.in, data.in, lead,
   names(estimator.var) <- paste0("t+",lead)
   return(sqrt(estimator.var))
 }
-

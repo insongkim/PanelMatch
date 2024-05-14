@@ -1,5 +1,5 @@
 # performs exact matching on time invariant variables.
-# Eventually will be replaced with caliper functionality
+# Eventually will soon be replaced with caliper functionality
 # returns matched sets with exact matching applied as a filter
 do_exact_matching <- function(sets, balanced.panel.data, exact.match.vars)
 {
@@ -11,16 +11,19 @@ do_exact_matching <- function(sets, balanced.panel.data, exact.match.vars)
     return(q)
   }
   lsets <- sapply(sets, length)
-  ts <- mapply(FUN = make.years, t = ts, repnum = lsets, SIMPLIFY = FALSE)
+  ts <- mapply(FUN = make.years, t = ts, 
+               repnum = lsets, SIMPLIFY = FALSE)
   iddata <- lapply(sets, as.numeric)
   names(iddata) <- NULL
   create.keys <- function(t, id)
   {
     return(paste0(id,'.',t))
   }
-  control.data <- (mapply(create.keys, t = ts, id = iddata, SIMPLIFY = FALSE))
+  control.data <- (mapply(create.keys, t = ts, 
+                          id = iddata, SIMPLIFY = FALSE))
   treatment.data <- names(sets)
-  rowkeys <- paste0(balanced.panel.data[,1], '.', balanced.panel.data[, 2])
+  rowkeys <- paste0(balanced.panel.data[,1], '.', 
+                    balanced.panel.data[, 2])
   
   colidx <- which(colnames(balanced.panel.data) %in% exact.match.vars)
   bpd <- as.matrix(balanced.panel.data[, c(1,2, colidx)])
@@ -29,9 +32,12 @@ do_exact_matching <- function(sets, balanced.panel.data, exact.match.vars)
   expanded.list <- unlist(expanded.lists, recursive = F)
   condensed.list <- list()
   for (i in 1:length(sets)) {
-    tlist <- expanded.list[seq(from = i, to = length(expanded.list), by = length(sets))]
+    tlist <- expanded.list[seq(from = i, 
+                               to = length(expanded.list), 
+                               by = length(sets))]
     matrix.set <- do.call(rbind, tlist)
-    condensed.list[[i]] <- apply(matrix.set, MARGIN = 2, all) #gives us consolidated t/f index for each matched set
+    condensed.list[[i]] <- apply(matrix.set, MARGIN = 2, all) 
+    #gives us consolidated t/f index for each matched set
   }
   for (i in 1:length(sets)) {
     sets[[i]] <- sets[[i]][condensed.list[[i]]]

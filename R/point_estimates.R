@@ -1,5 +1,14 @@
-# calculates point estimates for PanelEstimate()
-# returns a vector of point estimates
+#' calculate_point_estimates
+#' Helper function that calculates the point estimates for the specified QOI
+#'
+#' @param qoi.in string specifying the QOI
+#' @param data.in data.frame providing the processed/parsed data to be used for calculations
+#' @param lead see PanelMatch() documentation
+#' @param outcome.variable string specifying the outcome variable
+#' @param pooled Logical. See PanelEstimate() documentation.
+#'
+#' @return A named vector of point estimates
+#' @keywords internal
 calculate_point_estimates <- function(qoi.in, data.in, lead,
                                       outcome.variable,
                                       pooled = FALSE)
@@ -89,8 +98,12 @@ calculate_point_estimates <- function(qoi.in, data.in, lead,
   return(o.coefs)
 }
 
+
+#' equality_four
+#' Small helper function implementing estimation function from Imai, Kim, and Wang (2021)
+#' @return Returns numeric vector of results.
+#' @keywords internal
 equality_four <- function(x, y, z){
   
   return(sum(x*y)/sum(z))
 }
-

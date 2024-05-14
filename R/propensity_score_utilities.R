@@ -1,10 +1,14 @@
-# prepares the data for calculating propensity scores. 
-##############################################################################
-# Will return a list of length equal to the number of matched sets. Each item 
-# is a data frame and each data frame contains information at time = t + 0
-# for each treated unit and their corresponding controls.
+#' build_ps_data
+#' 
+#' @param idxlist 
+#' @param data data.frame object with the data
+#' @param lag see PanelMatch() documentation
+#'
+#' @return Returns a list of length equal to the number of matched sets. Each item is a data frame and each data frame contains information at time = t + 0 for each treated unit and their corresponding controls.
+#' @keywords internal
 build_ps_data <- function(idxlist, data, lag)
 {
+  
   obtain.t.rows <- function(idx)
   {
     return(idx[length(idx)])
@@ -18,10 +22,14 @@ build_ps_data <- function(idxlist, data, lag)
   return(results)
 }
 
-# returns a list of data frames with propensity score weights 
-# for each unit in a matched set. Each element in the list is a data frame 
-# which corresponds to a matched set of 1 treatment and all
-# matched control units
+
+#' find_ps
+#'
+#' @param sets matched sets
+#' @param fitted.model Result of a fitted (CB) PS model call
+#'
+#' @return Returns a list of data frames with propensity score weights for each unit in a matched set. Each element in the list is a data frame which corresponds to a matched set of 1 treatment and all matched control units
+#' @keywords internal
 find_ps <- function(sets, fitted.model)
 {
   
