@@ -1,5 +1,5 @@
 #' prepare_data
-#' The calculation of point estimates and standard errors first requires the calculation of a variety of different weights, parameters, and indicator variables. This function prepares the data within PanelEstimate() such that the estimates can be calculated easily. In practical terms, the function calls the lower level helpers to calculate W_its and D_its as described in Imai et al. (2021) and merges those results together with the original data to facilitate calculations.
+#' The calculation of point estimates and standard errors first requires the calculation of a variety of different weights, parameters, and indicator variables. This function prepares the data within PanelEstimate() such that the estimates can be calculated easily. In practical terms, the function calls the lower level helpers to calculate W_its and D_its as described in Imai et al. (2023) and merges those results together with the original data to facilitate calculations.
 #' @param data.in data.frame: the data to be used in the analysis
 #' @param lead See PanelMatch() documentation
 #' @param sets.att matched.set object containing ATT or ART matched sets.

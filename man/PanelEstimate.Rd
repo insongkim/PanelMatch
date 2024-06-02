@@ -87,7 +87,7 @@ PE.results <- PanelEstimate(sets = PM.results, data = dem.sub, se.method = "unco
 
 }
 \references{
-Imai, Kosuke, In Song Kim, and Erik Wang (2021)
+Imai, Kosuke, In Song Kim, and Erik Wang (2023)
 }
 \author{
 In Song Kim <insong@mit.edu>, Erik Wang

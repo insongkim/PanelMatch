@@ -43,7 +43,7 @@
 #' \item{standard.error}{the standard error(s) of the point estimates}
 #' \item{pooled}{Logical indicating whether or not estimates were calculated for individual lead periods or pooled.}
 #' \item{placebo.test}{if \code{include.placebo.test = TRUE}, a placebo test is conducted using \code{placebo_test()} and returned as a list. See documentation for \code{placebo_test()} for more about each individual item.}
-#' @references Imai, Kosuke, In Song Kim, and Erik Wang (2021)
+#' @references Imai, Kosuke, In Song Kim, and Erik Wang (2023)
 #' @author In Song Kim <insong@mit.edu>, Erik Wang
 #' <haixiao@Princeton.edu>, Adam Rauh <amrauh@umich.edu>, and Kosuke Imai <imai@harvard.edu>
 #'

@@ -100,7 +100,7 @@ calculate_point_estimates <- function(qoi.in, data.in, lead,
 
 
 #' equality_four
-#' Small helper function implementing estimation function from Imai, Kim, and Wang (2021)
+#' Small helper function implementing estimation function from Imai, Kim, and Wang (2023)
 #' @return Returns numeric vector of results.
 #' @keywords internal
 equality_four <- function(x, y, z){

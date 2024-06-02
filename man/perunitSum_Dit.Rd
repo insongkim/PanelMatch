@@ -3,7 +3,7 @@
 \name{perunitSum_Dit}
 \alias{perunitSum_Dit}
 \title{perunitSum_Dit
-Similar to perunitSum, this is a low level helper function for calculating specific values defined in Imai et al. (2021). This focuses on Dit rather than Wit}
+Similar to perunitSum, this is a low level helper function for calculating specific values defined in Imai et al. (2023). This focuses on Dit rather than Wit}
 \usage{
 perunitSum_Dit(udf, qoi_in)
 }
@@ -17,5 +17,5 @@ Named vector containing the per-unit sums.
 }
 \description{
 perunitSum_Dit
-Similar to perunitSum, this is a low level helper function for calculating specific values defined in Imai et al. (2021). This focuses on Dit rather than Wit
+Similar to perunitSum, this is a low level helper function for calculating specific values defined in Imai et al. (2023). This focuses on Dit rather than Wit
 }

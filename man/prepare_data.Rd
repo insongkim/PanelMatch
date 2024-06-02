@@ -3,7 +3,7 @@
 \name{prepare_data}
 \alias{prepare_data}
 \title{prepare_data
-The calculation of point estimates and standard errors first requires the calculation of a variety of different weights, parameters, and indicator variables. This function prepares the data within PanelEstimate() such that the estimates can be calculated easily. In practical terms, the function calls the lower level helpers to calculate W_its and D_its as described in Imai et al. (2021) and merges those results together with the original data to facilitate calculations.}
+The calculation of point estimates and standard errors first requires the calculation of a variety of different weights, parameters, and indicator variables. This function prepares the data within PanelEstimate() such that the estimates can be calculated easily. In practical terms, the function calls the lower level helpers to calculate W_its and D_its as described in Imai et al. (2023) and merges those results together with the original data to facilitate calculations.}
 \usage{
 prepare_data(
   data.in,
@@ -32,6 +32,6 @@ data.frame with the results of the lower level calculations
 }
 \description{
 prepare_data
-The calculation of point estimates and standard errors first requires the calculation of a variety of different weights, parameters, and indicator variables. This function prepares the data within PanelEstimate() such that the estimates can be calculated easily. In practical terms, the function calls the lower level helpers to calculate W_its and D_its as described in Imai et al. (2021) and merges those results together with the original data to facilitate calculations.
+The calculation of point estimates and standard errors first requires the calculation of a variety of different weights, parameters, and indicator variables. This function prepares the data within PanelEstimate() such that the estimates can be calculated easily. In practical terms, the function calls the lower level helpers to calculate W_its and D_its as described in Imai et al. (2023) and merges those results together with the original data to facilitate calculations.
 }
 \keyword{internal}

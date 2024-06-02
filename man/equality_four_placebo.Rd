@@ -10,6 +10,6 @@ equality_four_placebo(x, y, z)
 Returns numeric vector of results.
 }
 \description{
-Small helper function implementing estimation function from Imai, Kim, and Wang (2021)
+Small helper function implementing estimation function from Imai, Kim, and Wang (2023)
 }
 \keyword{internal}

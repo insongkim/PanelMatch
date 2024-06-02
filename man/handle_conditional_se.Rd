@@ -3,7 +3,7 @@
 \name{handle_conditional_se}
 \alias{handle_conditional_se}
 \title{handle_conditional_se
-Calculates conditional standard errors analytically, as defined in Imai et al. (2021). See PanelEstimate() for a more complete description of the standard error types.}
+Calculates conditional standard errors analytically, as defined in Imai et al. (2023). See PanelEstimate() for a more complete description of the standard error types.}
 \usage{
 handle_conditional_se(
   qoi.in,
@@ -29,6 +29,6 @@ Named vector with standard error estimates
 }
 \description{
 handle_conditional_se
-Calculates conditional standard errors analytically, as defined in Imai et al. (2021). See PanelEstimate() for a more complete description of the standard error types.
+Calculates conditional standard errors analytically, as defined in Imai et al. (2023). See PanelEstimate() for a more complete description of the standard error types.
 }
 \keyword{internal}

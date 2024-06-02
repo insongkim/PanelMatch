@@ -8,7 +8,7 @@
 Implements a set of methodological tools
 that enable researchers to apply matching methods to
 time-series cross-sectional data. Imai, Kim, and Wang
-(2021) proposes a nonparametric generalization of the
+(2023) proposes a nonparametric generalization of the
 difference-in-differences estimator, which does not rely
 on the linearity assumption as often done in
 practice. Researchers first select a method of matching
@@ -25,7 +25,7 @@ technique that allows researchers to assess the quality
 of matches by examining the resulting covariate balance.
 }
 \references{
-Imai, Kosuke, In Song Kim and Erik Wang. (2021)
+Imai, Kosuke, In Song Kim and Erik Wang. (2023)
 }
 \seealso{
 Useful links:

@@ -3,7 +3,7 @@
 \name{perunitSum}
 \alias{perunitSum}
 \title{perunitSum
-This is a low level function that is used to calculate a value associated with each unit. This value is a weighted summation of the dependent variable, based on the Wit values discussed in Imai et al. (2021)}
+This is a low level function that is used to calculate a value associated with each unit. This value is a weighted summation of the dependent variable, based on the Wit values discussed in Imai et al. (2023)}
 \usage{
 perunitSum(udf, lead.in, dependent.in, qoi_in)
 }
@@ -21,5 +21,5 @@ Named vector containing the per-unit sums.
 }
 \description{
 perunitSum
-This is a low level function that is used to calculate a value associated with each unit. This value is a weighted summation of the dependent variable, based on the Wit values discussed in Imai et al. (2021)
+This is a low level function that is used to calculate a value associated with each unit. This value is a weighted summation of the dependent variable, based on the Wit values discussed in Imai et al. (2023)
 }

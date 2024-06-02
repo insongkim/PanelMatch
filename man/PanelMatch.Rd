@@ -131,7 +131,7 @@ PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
 
 }
 \references{
-Imai, Kosuke, In Song Kim, and Erik Wang (2021)
+Imai, Kosuke, In Song Kim, and Erik Wang (2023)
 }
 \author{
 Adam Rauh <amrauh@umich.edu>, In Song Kim <insong@mit.edu>, Erik Wang

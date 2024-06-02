@@ -3,7 +3,7 @@
 #' Implements a set of methodological tools
 #' that enable researchers to apply matching methods to
 #' time-series cross-sectional data. Imai, Kim, and Wang
-#' (2021) proposes a nonparametric generalization of the
+#' (2023) proposes a nonparametric generalization of the
 #' difference-in-differences estimator, which does not rely
 #' on the linearity assumption as often done in
 #' practice. Researchers first select a method of matching
@@ -28,7 +28,7 @@
 #' <haixiao@Princeton.edu>, Adam Rauh <amrauh@umich.edu>, and Kosuke Imai <imai@harvard.edu>
 #' 
 #' Maintainer: In Song Kim \email{insong@mit.edu}
-#' @references Imai, Kosuke, In Song Kim and Erik Wang. (2021)
+#' @references Imai, Kosuke, In Song Kim and Erik Wang. (2023)
 #' @keywords internal
 "_PACKAGE"
 #' @import ggplot2 stats MASS data.table foreach

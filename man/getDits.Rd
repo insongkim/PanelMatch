@@ -13,7 +13,7 @@ getDits(matched_sets, data)
 \item{data}{data.frame object}
 }
 \value{
-vector of Dits, as described in Imai et al. (2021)
+vector of Dits, as described in Imai et al. (2023)
 }
 \description{
 getDits

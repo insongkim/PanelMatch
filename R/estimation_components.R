@@ -1,6 +1,6 @@
 ################################################################################
 # Point estimates and standard errors first require the computation of a number of
-# weights, parameters, indicator variables, as specified in Imai et al. (2021)
+# weights, parameters, indicator variables, as specified in Imai et al. (2023)
 # This file has a variety of helper functions for calculating these
 # Specifically, v,w,d in the paper
 ################################################################################
@@ -105,7 +105,7 @@ getWits <- function(matched_sets, lead, data,
 #' @param matched_sets matched.set object
 #' @param data data.frame object
 #'
-#' @return vector of Dits, as described in Imai et al. (2021)
+#' @return vector of Dits, as described in Imai et al. (2023)
 #' @keywords internal
 getDits <- function(matched_sets, data)
 {

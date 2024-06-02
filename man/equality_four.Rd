@@ -3,7 +3,7 @@
 \name{equality_four}
 \alias{equality_four}
 \title{equality_four
-Small helper function implementing estimation function from Imai, Kim, and Wang (2021)}
+Small helper function implementing estimation function from Imai, Kim, and Wang (2023)}
 \usage{
 equality_four(x, y, z)
 }
@@ -12,6 +12,6 @@ Returns numeric vector of results.
 }
 \description{
 equality_four
-Small helper function implementing estimation function from Imai, Kim, and Wang (2021)
+Small helper function implementing estimation function from Imai, Kim, and Wang (2023)
 }
 \keyword{internal}

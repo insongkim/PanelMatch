@@ -299,7 +299,7 @@ calculate_placebo_estimates <- function(qoi.in, data.in, lead,
 }
 
 #' equality_four_placebo
-#' @description Small helper function implementing estimation function from Imai, Kim, and Wang (2021)
+#' @description Small helper function implementing estimation function from Imai, Kim, and Wang (2023)
 #' @return Returns numeric vector of results.
 #' @keywords internal
 equality_four_placebo <- function(x, y, z){

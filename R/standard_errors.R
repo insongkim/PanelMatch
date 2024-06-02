@@ -1,5 +1,5 @@
 #' perunitSum
-#' This is a low level function that is used to calculate a value associated with each unit. This value is a weighted summation of the dependent variable, based on the Wit values discussed in Imai et al. (2021)
+#' This is a low level function that is used to calculate a value associated with each unit. This value is a weighted summation of the dependent variable, based on the Wit values discussed in Imai et al. (2023)
 #' @param udf data.frame
 #' @param lead.in integer. A particular lead value
 #' @param dependent.in string specifying the dependent variable name
@@ -22,7 +22,7 @@ perunitSum <- function(udf,
 
 
 #' perunitSum_Dit
-#' Similar to perunitSum, this is a low level helper function for calculating specific values defined in Imai et al. (2021). This focuses on Dit rather than Wit
+#' Similar to perunitSum, this is a low level helper function for calculating specific values defined in Imai et al. (2023). This focuses on Dit rather than Wit
 #' @param udf data.frame
 #' @param qoi_in string specifying the QOI
 #'
@@ -439,7 +439,7 @@ handle_bootstrap <- function(qoi.in,
 }
 
 #' handle_conditional_se
-#' Calculates conditional standard errors analytically, as defined in Imai et al. (2021). See PanelEstimate() for a more complete description of the standard error types. 
+#' Calculates conditional standard errors analytically, as defined in Imai et al. (2023). See PanelEstimate() for a more complete description of the standard error types. 
 #' @param qoi.in string specifying the QOI
 #' @param data.in data.frame specifying the data
 #' @param lead See PanelMatch() documentation
@@ -489,7 +489,7 @@ handle_conditional_se <- function(qoi.in, data.in, lead,
 }
 
 #' handle_conditional_se
-#' Calculates conditional standard errors analytically, as defined in Imai et al. (2021). See PanelEstimate() for a more complete description of the standard error types. 
+#' Calculates conditional standard errors analytically, as defined in Imai et al. (2023). See PanelEstimate() for a more complete description of the standard error types. 
 #' @param qoi.in string specifying the QOI
 #' @param data.in data.frame specifying the data
 #' @param lead See PanelMatch() documentation
