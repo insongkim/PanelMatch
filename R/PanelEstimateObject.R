@@ -246,6 +246,8 @@ plot.PanelEstimate <- function(x,
   graphics::segments(1:(nrow(plot.data)), 
                      plot.data[,3], 
                      1:(nrow(plot.data)), 
-                     plot.data[,4])
-  graphics::abline(h = 0, lty = "dashed")
+                     plot.data[,4],
+                     ...)
+  graphics::abline(h = 0, lty = "dashed",
+                   ...)
 }

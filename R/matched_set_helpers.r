@@ -294,4 +294,3 @@ expand_treated_ts <- function(lag, treated.ts)
   }
   lapply(treated.ts, helper)
 }
-

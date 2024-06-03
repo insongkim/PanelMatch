@@ -178,11 +178,14 @@ plot.matched.set <- function(x, ..., border = NA, col = "grey", ylab = "Frequenc
         graphics::lines(x = c(0,0),
               y = c(0, num.empties),
               lwd = 4,
-              col = "#ffc6c4")
+              col = "#ffc6c4", ...)
       }
       else
       {
-        graphics::hist(x = lvec.nonempty, freq = freq, border = border, col = col, ylab = ylab,
+        graphics::hist(x = lvec.nonempty, 
+                       freq = freq, 
+                       border = border, 
+                       col = col, ylab = ylab,
                        xlab = xlab, main = main, ...)
       }
     }

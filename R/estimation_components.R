@@ -120,7 +120,3 @@ getDits <- function(matched_sets, data)
   dit.vect <- get_dits(refnames, nms)
   return(dit.vect)
 }
-
-
-
-

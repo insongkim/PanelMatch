@@ -308,4 +308,3 @@ equality_four_placebo <- function(x, y, z){
   res <- colSums(x * y) / sum(z)
   return(res)
 }
-
