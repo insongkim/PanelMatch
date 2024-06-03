@@ -112,7 +112,8 @@ PanelEstimate <- function(sets, data,
     } else {
       att.sets.in <- NULL
     }
-    # again, functionally treating art and att the same for moderating variable functionality. n need to create separate argument for art sets
+    # again, functionally treating art and att the same for moderating variable functionality. 
+    # no need to create separate argument for art sets
     ordered.data <- data[order(data[,unit.id], data[,time.id]), ]
     set.list <- handle_moderating_variable(ordered.data = ordered.data,
                                            att.sets = att.sets.in,
