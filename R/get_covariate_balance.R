@@ -220,7 +220,7 @@ get_covariate_balance <- function(matched.sets,
                       type = "b",
                       lty = 2, lwd = 3)
       graphics::axis(side = 1, labels = paste0("t-", start.val:stop.val), 
-                     at = 1:nrow(pointmatrix))  
+                     at = 1:nrow(pointmatrix), ...)  
     } else
     {
       
@@ -229,7 +229,7 @@ get_covariate_balance <- function(matched.sets,
                         col = 1:ncol(pointmatrix), 
                         lty = 1, ylab = ylab, xaxt = "n", ...)
       graphics::axis(side = 1, labels = paste0("t-", start.val:stop.val), 
-                     at = 1:nrow(pointmatrix))  
+                     at = 1:nrow(pointmatrix), ...)  
     }
     
     if (legend) {
