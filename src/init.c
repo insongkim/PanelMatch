@@ -13,6 +13,7 @@ extern SEXP _PanelMatch_check_missing_data_control_units(SEXP, SEXP, SEXP, SEXP,
 extern SEXP _PanelMatch_check_missing_data_treated_units(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP _PanelMatch_check_treated_units_for_treatment_reversion(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP _PanelMatch_do_exact_matching_refinement(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP _PanelMatch_enforce_caliper(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP _PanelMatch_enforce_strict_histories(SEXP, SEXP);
 extern SEXP _PanelMatch_equality_four_cpp(SEXP, SEXP, SEXP);
 extern SEXP _PanelMatch_filter_placebo_results(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
@@ -34,6 +35,7 @@ static const R_CallMethodDef CallEntries[] = {
   {"_PanelMatch_check_missing_data_treated_units",              (DL_FUNC) &_PanelMatch_check_missing_data_treated_units,              6},
   {"_PanelMatch_check_treated_units_for_treatment_reversion",   (DL_FUNC) &_PanelMatch_check_treated_units_for_treatment_reversion,   6},
   {"_PanelMatch_do_exact_matching_refinement",                  (DL_FUNC) &_PanelMatch_do_exact_matching_refinement,                  6},
+  {"_PanelMatch_enforce_caliper",                               (DL_FUNC) &_PanelMatch_enforce_caliper,                               7},
   {"_PanelMatch_enforce_strict_histories",                      (DL_FUNC) &_PanelMatch_enforce_strict_histories,                      2},
   {"_PanelMatch_equality_four_cpp",                             (DL_FUNC) &_PanelMatch_equality_four_cpp,                             3},
   {"_PanelMatch_filter_placebo_results",                        (DL_FUNC) &_PanelMatch_filter_placebo_results,                        6},

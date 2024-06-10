@@ -288,3 +288,20 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// enforce_caliper
+Rcpp::List enforce_caliper(Rcpp::NumericMatrix expanded_data, Rcpp::NumericVector unique_unit_ids, int idx_variable_to_check, Rcpp::IntegerVector treated_ids, Rcpp::IntegerVector treated_ts, double caliper_level, int lag);
+RcppExport SEXP _PanelMatch_enforce_caliper(SEXP expanded_dataSEXP, SEXP unique_unit_idsSEXP, SEXP idx_variable_to_checkSEXP, SEXP treated_idsSEXP, SEXP treated_tsSEXP, SEXP caliper_levelSEXP, SEXP lagSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type expanded_data(expanded_dataSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type unique_unit_ids(unique_unit_idsSEXP);
+    Rcpp::traits::input_parameter< int >::type idx_variable_to_check(idx_variable_to_checkSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type treated_ids(treated_idsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type treated_ts(treated_tsSEXP);
+    Rcpp::traits::input_parameter< double >::type caliper_level(caliper_levelSEXP);
+    Rcpp::traits::input_parameter< int >::type lag(lagSEXP);
+    rcpp_result_gen = Rcpp::wrap(enforce_caliper(expanded_data, unique_unit_ids, idx_variable_to_check, treated_ids, treated_ts, caliper_level, lag));
+    return rcpp_result_gen;
+END_RCPP
+}

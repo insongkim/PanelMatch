@@ -77,3 +77,7 @@ filter_placebo_results <- function(expanded_data, ordered_outcome_data, treated_
     .Call('_PanelMatch_filter_placebo_results', PACKAGE = 'PanelMatch', expanded_data, ordered_outcome_data, treated_ids, treated_ts, sets, lag)
 }
 
+enforce_caliper <- function(expanded_data, unique_unit_ids, idx_variable_to_check, treated_ids, treated_ts, caliper_level, lag) {
+    .Call('_PanelMatch_enforce_caliper', PACKAGE = 'PanelMatch', expanded_data, unique_unit_ids, idx_variable_to_check, treated_ids, treated_ts, caliper_level, lag)
+}
+

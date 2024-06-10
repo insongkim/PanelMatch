@@ -299,3 +299,143 @@ Rcpp::List filter_placebo_results(Rcpp::NumericMatrix expanded_data,
   return subsets; //then just filter empty sets when they're back.
   
 }
+
+
+// [[Rcpp::export]]
+Rcpp::List enforce_caliper(Rcpp::NumericMatrix expanded_data,
+                           Rcpp::NumericVector unique_unit_ids,
+                           int idx_variable_to_check,
+                           Rcpp::IntegerVector treated_ids,
+                           Rcpp::IntegerVector treated_ts,
+                           double caliper_level,
+                           int lag) 
+{
+  
+  //creating the mapping of key to index for easier lookups without search
+  std::unordered_map<std::string, int> indexMap;
+  for(int i = 0; i < expanded_data.nrow(); i++)
+  {
+    int id_1 = expanded_data(i,0);
+    int t_1 = expanded_data(i,1);
+    
+    std::string id = std::to_string(id_1);
+    std::string t = std::to_string(t_1);
+    std::string key = id + "." + t;
+    indexMap[key] = i;
+    
+  }
+  
+  //  we want to check against every plausible control unit, so we will exclude other treated units eventually.
+  // here, we just create the keys which we will use to filter out later
+  Rcpp::CharacterVector treated_keys(treated_ids.size());
+  for(int i = 0; i < treated_ids.size(); i++) 
+  {
+    treated_keys[i] = std::to_string(treated_ids[i]) + "." + std::to_string(treated_ts[i]);
+  }
+  Rcpp::List matched_sets(treated_ids.size());
+  for(int i = 0; i < treated_ids.size(); i++) //iterating over treated observations
+  {
+    // get treated unit history
+    int id_t = treated_ids[i];
+    std::string id = std::to_string(id_t);
+    
+    int t = treated_ts[i];
+    // bool check_controls = true;
+    // build treatment history to compare over from t-lag to t-1
+    // todo: deal with instances where there are NAs in the treatment history
+    Rcpp::NumericVector treated_history(lag);
+    for (int j = lag; j > 0; j--)
+    {
+        int new_time = t - j;
+        std::string xx = std::to_string(new_time);
+        std::string key = id + "." + xx;
+        treated_history[lag-j] = expanded_data(indexMap[key], idx_variable_to_check);
+        
+    }
+    //   //check against control units
+    //   // we need to check against every other non-treated unit (since we cannot match treated units to other treated units)
+    // Rcpp::CharacterVector unit_ids = expanded_data_, unit_id_variable];
+    // 
+    // // Find the unique values in 'unit.ids'
+    // Rcpp::CharacterVector unique_unit_ids = unique(unit_ids);
+    
+    
+    int n = unique_unit_ids.size();
+    Rcpp::CharacterVector potential_match_start_keys(n);
+    Rcpp::LogicalVector matched_control_idx(n);
+    // append the year of treatment from the treated observation. 
+    // We can use this to quickly look up potential controls
+    for(int w = 0; w < n; w++) {
+      std::string a;
+      int ap = unique_unit_ids[w];
+      a = std::to_string(ap);
+      potential_match_start_keys[w] = a + "." + std::to_string(t);
+    }
+    
+    // now we need to loop over the potential matches, extract treatment history, and compare
+    for(int z = 0; z < potential_match_start_keys.size(); z++)
+    {
+      // if the potential matched unit is one of the treated observations, filter it out before checking anything
+      bool is_viable = true;
+      // Rcpp::Rcout << treated_keys;
+      // Rcpp::Rcout << potential_match_start_keys;
+      for (int q = 0; q < treated_keys.size(); ++q) {
+        if (treated_keys[q] == potential_match_start_keys[z]) 
+        { // z is looping over potential starting points associated with potential control units. q is iterating over the treated observations. the condition is flipped if we find a treated observation that matches one of the potential controls
+          is_viable = false;
+        }
+      }
+      if (!is_viable)
+      {
+        matched_control_idx[z] = false;
+      }
+      else 
+      {
+        // at this point, the candidate is still potentially able to be matched
+        Rcpp::NumericVector control_history(lag);
+        std::string jl;
+        jl = potential_match_start_keys[z];
+        int jlx = indexMap[jl]; // this time corresponds to time t
+        int startidx =  jlx - lag; // since we want t-lag to t-1, this gives us t-lag
+        for (int j = 0; j < lag; j++) // again, deal with NAs
+        { //extracting the treatment history for a candidate control unit
+          int rowidx = (startidx + j);
+          control_history[j] = expanded_data(rowidx, idx_variable_to_check);
+        }
+        //Rcpp::NumericVector result(control_history.size());
+        bool match_control = true;
+        for (int j = 0; j < control_history.size(); j++)
+        {
+          bool cond1 = Rcpp::NumericVector::is_na(treated_history[j]);
+          bool cond2 = Rcpp::NumericVector::is_na(control_history[j]);
+          
+          if (cond1 || cond2)
+          {
+            match_control = false;
+            break;
+          } 
+          else 
+          {
+            double r = abs(treated_history[j] - control_history[j]);
+            if (r > caliper_level)
+            {
+              match_control = false;
+              break;
+            }
+          }
+          
+          
+        } 
+        if (match_control)
+        {
+          matched_control_idx[z] = true;
+        }
+      }
+        
+    }
+    matched_sets[i] = unique_unit_ids[matched_control_idx];
+    // potential match start keys and unique unit ids should be parallel vectors, but we want to return integers without the appended year data if possible
+    //matched_sets[i] = potential_match_start_keys[matched_control_idx];
+  }
+  return matched_sets;
+}

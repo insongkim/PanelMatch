@@ -48,19 +48,22 @@ perform_refinement <- function(lag, time.id, unit.id, treatment,
     warn.str <- paste0("no viable treated units for ", qoi, " specification")
     stop(warn.str)
   }
-  msets <- get.matchedsets(temp.treateds[, time.id], 
-                           temp.treateds[, unit.id], 
-                           data = ordered.data,
-                           L = lag, 
-                           t.column = time.id, 
-                           id.column = unit.id,
-                           treatedvar = treatment, 
-                           hasbeensorted = TRUE,
-                           match.on.missingness = match.missing, 
-                           matching = TRUE,
-                           qoi.in = qoi,
-                           restrict.control.period = restrict.control.period, 
-                           continuous.treatment.info = continuous.treatment.info)
+  msets <- get.matchedsets(temp.treateds[, time.id],
+                             temp.treateds[, unit.id],
+                             data = ordered.data,
+                             L = lag,
+                             t.column = time.id,
+                             id.column = unit.id,
+                             treatedvar = treatment,
+                             hasbeensorted = TRUE,
+                             match.on.missingness = match.missing,
+                             matching = TRUE,
+                             qoi.in = qoi,
+                             restrict.control.period = restrict.control.period,
+                             continuous.treatment.info = continuous.treatment.info)
+    
+
+  
   e.sets <- msets[sapply(msets, length) == 0]
   msets <- msets[sapply(msets, length) > 0 ]
   if (length(msets) == 0)
@@ -75,6 +78,37 @@ perform_refinement <- function(lag, time.id, unit.id, treatment,
     attr(msets, "match.missing") <- match.missing
     return(msets)
   }
+  
+  if (length(msets) > 0)
+  {
+    msets <- identifyDirectionalChanges(msets, ordered.data,
+                                        unit.id, time.id, treatment, qoi)
+    # add attribute to track treatment levels in treated observations at time t-1.
+    msets <- extract.baseline.treatment(matched.sets = msets,
+                                        data.in = ordered.data,
+                                        id.variable = unit.id,
+                                        time.variable = time.id,
+                                        treatment.variable = treatment)
+  }
+  if (length(e.sets) > 0)
+  {
+    e.sets <- identifyDirectionalChanges(e.sets, ordered.data,
+                                         unit.id, time.id, treatment, qoi)
+    e.sets <- extract.baseline.treatment(matched.sets = e.sets,
+                                         data.in = ordered.data,
+                                         id.variable = unit.id,
+                                         time.variable = time.id,
+                                         treatment.variable = treatment)
+  }
+  
+  if (!is.null(continuous.treatment.info))
+  {
+    setlist <- filterContinuousTreated(msets, e.sets, qoi, 
+                                       continuous.treatment.info[["control.threshold"]])
+    msets <- setlist[["sets"]]
+    e.sets <- setlist[["empty.sets"]]
+  }
+  
 
   msets <- clean_leads(msets, 
                        ordered.data, 
@@ -112,7 +146,6 @@ perform_refinement <- function(lag, time.id, unit.id, treatment,
     
   }
 
-  
   if (forbid.treatment.reversal)
   {
     msets <- enforce_lead_restrictions(msets, 
@@ -140,27 +173,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment,
 
 
   
-  if (length(msets) > 0)
-  {
-    msets <- identifyDirectionalChanges(msets, ordered.data,
-                                        unit.id, time.id, treatment, qoi)
-    # add attribute to track treatment levels in treated observations at time t-1.
-    msets <- extract.baseline.treatment(matched.sets = msets,
-                                                          data.in = ordered.data,
-                                                          id.variable = unit.id,
-                                                          time.variable = time.id,
-                                                          treatment.variable = treatment)
-  }
-  if (length(e.sets) > 0)
-  {
-    e.sets <- identifyDirectionalChanges(e.sets, ordered.data,
-                                         unit.id, time.id, treatment, qoi)
-    e.sets <- extract.baseline.treatment(matched.sets = e.sets,
-                                        data.in = ordered.data,
-                                        id.variable = unit.id,
-                                        time.variable = time.id,
-                                        treatment.variable = treatment)
-  }
+
   
   
   ####apply calipers here
@@ -171,12 +184,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment,
     
   }
   
-  if (!is.null(continuous.treatment.info))
-  {
-    setlist <- filterContinuousTreated(msets, e.sets, qoi)
-    msets <- setlist[["sets"]]
-    e.sets <- setlist[["empty.sets"]]
-  }
+
   
   if(refinement.method == "none")
   {

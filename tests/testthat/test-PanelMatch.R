@@ -984,6 +984,38 @@ test_that("Testing Continuous Matching: basic, att", {
   expect_true(all(PM.results$att[[3]] == c(1,3,5,7,8,9,10)))
 })
 
+
+test_that("Testing Continuous Matching: NA behavior", {
+  input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+  input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+  input.data[input.data$id %in% c(2,4,6) & input.data$time > 5, 'treatment'] <- 1 + .43
+  input.data[input.data[, 'treatment'] == 0, 'treatment'] <- .035
+  
+  
+  input.data[input.data$id %in% c(2) & input.data$time %in% c(4:5), 'treatment'] <- NA
+  
+  input.data[input.data$id %in% c(1) & input.data$time %in% c(4:5), 'treatment'] <- NA
+  
+  input.data$cal.data <- input.data$id
+  input.data$outcome <- rnorm(nrow(input.data))
+  
+  
+  
+  continuous.treatment.info <- list(treatment.threshold = .5, control.threshold = .5, 
+                                    units = "raw", matching.threshold = 2) #include everything 
+  
+  PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
+                           treatment = "treatment", refinement.method = "none", # should be none for all of them
+                           data = input.data, match.missing = TRUE, 
+                           size.match = 5, qoi = "att" , outcome.var = "outcome",
+                           lead = 0:4, forbid.treatment.reversal = FALSE,
+                           continuous.treatment.info = continuous.treatment.info)
+  
+  expect_true(length(PM.results$att) == 2)
+  expect_true(all(PM.results$att[[1]] == c(3,5,7, 8, 9, 10)))
+  expect_true(all(PM.results$att[[2]] == c(3,5,7, 8,9,10)))
+})
+
 test_that("Continuous Matching, att, unmatchable controls", {
   
   # making two control units too far away to be matched with anything
@@ -1012,8 +1044,37 @@ test_that("Continuous Matching, att, unmatchable controls", {
   expect_true(all(PM.results$att[[1]] == c(1,3,5,7,8)))
   expect_true(all(PM.results$att[[2]] == c(1,3,5,7,8)))
   expect_true(all(PM.results$att[[3]] == c(1,3,5,7,8)))
+  
+  ## checking that controls which move too much for the threshold are pulled out of matched sets.
+  input.data = data.frame(id = rep(1:10, 10), time = unlist(lapply(1:10, FUN = function(x) rep(x, 10))), treatment = 0)
+  input.data <- input.data[order(input.data[,'id'], input.data[,'time']), ]
+  input.data[input.data$id %in% c(2,4,6) & input.data$time > 5, 'treatment'] <- 1 + .43
+  input.data[input.data[, 'treatment'] == 0, 'treatment'] <- .035
+  
+  input.data[input.data$id %in% c(9, 10) & input.data$time < 5, 'treatment'] <- 5
+  input.data[input.data$id %in% c(1) & input.data$time > 5, 'treatment'] <- .035 + .3 # eliminate one as a viable control bc it moves too much
+  input.data[input.data$id %in% c(3) & input.data$time > 5, 'treatment'] <- .035 - .3 # eliminate 3 as a viable control bc it moves too much (negative)
+  
+  input.data$cal.data <- input.data$id
+  input.data$outcome <- rnorm(nrow(input.data))
+  
+  
+  continuous.treatment.info <- list(treatment.threshold = .5, control.threshold = .25, 
+                                    units = "raw", matching.threshold = 2) 
+  
+  PM.results <- PanelMatch(lag = 4, time.id = "time", unit.id = "id", 
+                           treatment = "treatment", refinement.method = "none", # should be none for all of them
+                           data = input.data, match.missing = TRUE, 
+                           size.match = 5, qoi = "att" , outcome.var = "outcome",
+                           lead = 0:4, forbid.treatment.reversal = FALSE,
+                           continuous.treatment.info = continuous.treatment.info)
+  
+  expect_true(length(PM.results$att) == 3)
+  expect_true(all(PM.results$att[[1]] == c(5,7,8)))
+  expect_true(all(PM.results$att[[2]] == c(5,7,8)))
+  expect_true(all(PM.results$att[[3]] == c(5,7,8)))
+  
 })
-
 
 test_that("continuous matching, att, various exceptions", {
   
