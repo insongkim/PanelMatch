@@ -10,11 +10,12 @@ findContinuousTreated(
   time.var,
   unit.var,
   qoi,
-  continuous.treatment.info
+  continuous.treatment.info,
+  lag = NULL
 )
 }
 \arguments{
-\item{dmat}{Sorted data frame or matrix containing data used to identify potential treated units. Must be specified in such a way that a combination of time and id variables will correspond to a unique row. Must also contain at least a continuous treatment variable column as well.}
+\item{dmat}{Sorted data frame or matrix containing data used to identify potential treated units. Must be specified in such a way that a combination of time and id variables will correspond to a unique row. Must also contain at least a continuous treatment variable column as well. This data should be balanced as well.}
 
 \item{treatedvar}{Character string that identifies the name of the column in \code{dmat} that provides information about the continuous treatment variable}
 

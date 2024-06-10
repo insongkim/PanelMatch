@@ -4,7 +4,7 @@
 \alias{get_set_treatment_effects}
 \title{get_set_treatment_effects}
 \usage{
-get_set_treatment_effects(pm.obj, data, lead)
+get_set_treatment_effects(pm.obj, data, lead, linear = TRUE)
 }
 \arguments{
 \item{pm.obj}{an object of class \code{PanelMatch}}
