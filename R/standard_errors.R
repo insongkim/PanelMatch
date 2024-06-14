@@ -145,9 +145,6 @@ handle_bootstrap_parallel <- function(qoi.in,
                         dependent.in = outcome.variable, 
                         qoi_in = qoi.in)
     
-    
-    
-    
     per.unit.dit.sums <- by(data.in, as.factor(data.in[, unit.id.variable]),
                             FUN = perunitSum_Dit,
                             qoi_in = qoi.in)
@@ -167,9 +164,6 @@ handle_bootstrap_parallel <- function(qoi.in,
                         lead.in = lead,
                         dependent.in = outcome.variable,
                         qoi_in = qoi.in)
-    
-    
-    
     
     per.unit.dit.sums <- by(data.in, as.factor(data.in[, unit.id.variable]),
                             FUN = perunitSum_Dit,
@@ -346,9 +340,6 @@ handle_bootstrap <- function(qoi.in,
                         dependent.in = outcome.variable, 
                         qoi_in = qoi.in)
     
-    
-    
-    
     per.unit.dit.sums <- by(data.in, as.factor(data.in[, unit.id.variable]),
                             FUN = perunitSum_Dit,
                             qoi_in = qoi.in)
@@ -368,10 +359,7 @@ handle_bootstrap <- function(qoi.in,
                         lead.in = lead,
                         dependent.in = outcome.variable,
                         qoi_in = qoi.in)
-    
-    
-    
-    
+
     per.unit.dit.sums <- by(data.in, as.factor(data.in[, unit.id.variable]),
                             FUN = perunitSum_Dit,
                             qoi_in = qoi.in)
@@ -419,9 +407,6 @@ handle_bootstrap <- function(qoi.in,
       coefs[k,] <- (att_new*sum(bdf$Dit * bdf$frequency) +
                       atc_new*sum(bdf.atc$Dit * bdf.atc$frequency)) /
         (sum(bdf$Dit * bdf$frequency) + sum(bdf.atc$Dit * bdf.atc$frequency))
-      
-      
-      
     }
     
     if (pooled)

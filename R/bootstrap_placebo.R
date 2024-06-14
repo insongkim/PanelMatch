@@ -211,7 +211,8 @@ handle_bootstrap_placebo_parallel <- function(qoi.in,
       units <- sample(clusters, size = length(clusters), replace = TRUE)
       
       while(all(!units %in% att.treated.unit.ids) || 
-            all(!units %in% atc.treated.unit.ids)) #while none of the units are treated units (att and atc), resample
+            all(!units %in% atc.treated.unit.ids)) 
+        #while none of the units are treated units (att and atc), resample
       {
         units <- sample(clusters, size = length(clusters), replace=TRUE)
       }
