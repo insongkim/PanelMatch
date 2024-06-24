@@ -78,7 +78,6 @@ perform_refinement <- function(lag, time.id, unit.id, treatment,
     attr(msets, "match.missing") <- match.missing
     return(msets)
   }
-  
   if (length(msets) > 0)
   {
     msets <- identifyDirectionalChanges(msets, ordered.data,
@@ -117,8 +116,6 @@ perform_refinement <- function(lag, time.id, unit.id, treatment,
                        unit.id, 
                        outcome.var)
 
-
-  
   if (placebo.test)
   {
     
@@ -170,11 +167,6 @@ perform_refinement <- function(lag, time.id, unit.id, treatment,
     e.sets <- c(e.sets, msets[sapply(msets, length) == 0])
     msets <- msets[sapply(msets, length) > 0 ]
   }
-
-
-  
-
-  
   
   ####apply calipers here
   if(!is.null(caliper.formula))

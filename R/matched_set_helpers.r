@@ -205,34 +205,19 @@ get.matchedsets <- function(t, id, data, L, t.column, id.column, treatedvar,
   } else #continuous
   {
     
-    # continuous.treatment.formula <- as.formula(paste0("~ I(caliper(", treatedvar,",", "'", "max", "'",
-    #                                                   ",", continuous.treatment.info[["matching.threshold"]],
-    #                                                   ",", "'","numeric","'",
-    #                                                   ",", "'", continuous.treatment.info[["units"]],"'" ,"))"))
-    # 
-    # attr(continuous.treatment.formula, ".Environment") <- environment()
-    # matched.sets <- vector("list", length(id))
-    # attr(matched.sets, "")
-    # names(matched.sets) <- paste0(id, ".", t)
-    
-    # continuous.matched.sets <- handle_calipers(plain.ordered.data = d, 
-    #                                            caliper.formula = continuous.treatment.formula,
-    #                                            matched.sets = matched.sets, 
-    #                                            lag.window = 1:L, 
-    #                                            is.continuous.matching = TRUE,
-    #                                            control.threshold = continuous.treatment.info[["control.threshold"]])
-    
-    
-    continuous.matched.sets <- enforce_caliper(expanded_data = as.matrix(d),
-                    unique_unit_ids = unique(d[, id.column]), 
-                    idx_variable_to_check = which(colnames(d) == treatedvar) - 1,
-                    treated_ids = id,
-                    treated_ts = t,
-                    caliper_level = continuous.treatment.info[["matching.threshold"]],
-                    lag = L)
+
+    continuous.matched.sets <- continuous_treatment_matching(d,id.column,
+                                  t.column,
+                                  treatedvar,
+                                  id,
+                                  t,
+                                  L, 
+                                  continuous.matching.info = continuous.treatment.info)
+
     
     named.sets <- matched_set(matchedsets = continuous.matched.sets, 
-                              id = id, t = t, L = L,
+                              id.t.pairs = names(continuous.matched.sets),
+                              L = L,
                               t.var = t.column, 
                               id.var = id.column, 
                               treatment.var = treatedvar)
@@ -279,7 +264,7 @@ extract.differences <- function(indexed.data, matched.set,
   treated.t <- as.integer(sub(".*\\.", "", names(matched.set)))
   treated.id <- as.integer(sub("\\..*", "", names(matched.set)))
   treated.tm1 <- treated.t - 1
-  
+  browser()
   
   treated.key.t <- names(matched.set)
   treated.key.tm1 <- paste0(treated.id, ".", treated.tm1)
@@ -310,21 +295,59 @@ extract.differences <- function(indexed.data, matched.set,
   
 }
 
+extractDifferences <- function(indexed.data, 
+                               data.keys,
+                               matched.sets, 
+                               id.variable,
+                                treatment.variable, 
+                               time.variable)
+{
+  # use data.table to do grouped lag variable
+  
+  indexed.data[, paste0(treatment.variable, "_l1")] <- unlist(tapply(indexed.data[, treatment.variable], 
+                                                                     indexed.data[, id.variable], 
+                                                                     function(x) c(NA, x[-length(x)])))
+  
+  diff.vec <- indexed.data[, treatment.variable] - 
+    indexed.data[, paste0(treatment.variable, "_l1")]
+
+  names(diff.vec) <- data.keys
+  
+  if (length(matched.sets) == 0)
+  {
+    stop("no matched sets")
+  }
+  for (i in 1:length(matched.sets)) {
+    
+    treated.t <- as.integer(sub(".*\\.", "", names(matched.sets)[i]))
+    attr(matched.sets[[i]], "control.change") <- diff.vec[paste0(matched.sets[[i]], 
+                                                                 ".", treated.t)]
+    attr(matched.sets[[i]], "treatment.change") <- diff.vec[names(matched.sets)[i]]
+  }
+  return(matched.sets)
+}
+
+
 identifyDirectionalChanges <- function(msets, ordered.data, id.var, time.var,
                                        treatment.var, qoi)
 {
   rownames(ordered.data) <- paste0(ordered.data[, id.var], 
                                    ".", 
                                    ordered.data[, time.var])
+  msets <- extractDifferences(ordered.data,
+                              rownames(ordered.data),
+                              msets,
+                              id.var,
+                              treatment.var,
+                              time.var)
   
-  for (i in 1:length(msets)) {
-      
-    msets[[i]] <- extract.differences(ordered.data, msets[i], 
-                                      treatment.var, qoi)
-      
-  }
+  # for (i in 1:length(msets)) {
+  #     
+  #   msets[[i]] <- extract.differences(ordered.data, msets[i], 
+  #                                     treatment.var, qoi)
+  #     
+  # }
   return(msets)
-  
 }
 
 # builds a list that contains all times in a lag window that correspond to a particular treated unit. This is structured as a list of vectors. Each vector is lag + 1 units long. The overall list will
@@ -478,4 +501,120 @@ filterContinuousTreated <- function(msets, e.sets, qoi,
   
   return(list("sets" = msets, 
               "empty.sets" = e.sets))
+}
+
+
+continuous_treatment_matching <- function(expanded_data,
+                                          unit.id.variable,
+                                          time.variable,
+                                          treatment.variable,
+                                          treated_ids,
+                                          treated_ts,
+                                          lag,
+                                          continuous.matching.info)
+{
+  
+  dt <- expanded_data[, c(unit.id.variable,
+                          time.variable,
+                          treatment.variable)]
+  
+  rownames(dt) <- paste0(expanded_data[, unit.id.variable],
+                         '.',
+                         expanded_data[, time.variable])
+  ft <- function(x)
+  {
+    as.matrix(dist(x[,treatment.variable,
+                     drop = FALSE], 
+                   method = "manhattan", 
+                   diag = TRUE, 
+                   upper = TRUE))
+  }
+  
+  dl <- by(dt, 
+           INDICES = as.factor(dt[, time.variable]), 
+           FUN = ft, 
+           simplify = FALSE)
+  
+  if (length(dl) > 0) {
+    # we should verify that rownames/colnames are identical in each
+    treated.ids <- as.integer(sub("\\..*", "", 
+                                  rownames(dl[[1]])))
+    id.row.map <- data.frame(treated.id = treated.ids,
+                             row.col.idx = 1:length(treated.ids))
+    
+  }
+  
+  year.dists <- data.frame(t.var = names(dl),
+                           idx = 1:length(dl))
+  
+  yt <- data.frame(treated.id = treated_ids,
+                   treated.t = as.character(treated_ts), # since we use this as grouping variable
+                   L = lag)
+  
+  temp1 <- merge(yt,
+                 year.dists,
+                 by.x = "treated.t",
+                 by.y = "t.var",
+                 all.x = TRUE)
+  temp2 <- merge(temp1,
+                 id.row.map,
+                 by = "treated.id",
+                 all.x= TRUE)
+  # re sort these all later
+  fl <- function(xrow)
+  {
+    #browser()
+    idx.row <- as.numeric(xrow['row.col.idx'])
+    dist.mat.idcs <- (as.numeric(xrow['idx']) - as.numeric(xrow['L'])):(as.numeric(xrow['idx']) - 1)
+    
+    get_units <- function(i, j, caliper = continuous.matching.info[["matching.threshold"]])
+    {
+      #browser()
+      ds <- dl[[i]]
+      id.t <- colnames(ds)[which(ds[j, ] <= caliper)]
+      treated.ids <- as.integer(sub("\\..*", "", id.t))
+      return(treated.ids)
+    }
+    
+    res <- lapply(dist.mat.idcs,
+           FUN = get_units, 
+           j = idx.row)
+    
+    attr(res, "treated.obs.time") <- xrow["treated.t"]
+    return(res)
+    
+  }
+
+  sdf <-apply(temp2,
+        MARGIN = 1,
+        FUN = fl,
+        simplify = FALSE)
+
+  # Function to find the intersection of numeric vectors in a sublist
+  find_intersection <- function(sublist) {
+    Reduce(intersect, sublist)
+  }
+  
+  # Apply the function to each sublist in the outer list
+  intersections <- lapply(sdf, 
+                          find_intersection)
+
+  filter_mset <- function(reduced.mset,
+                          treated.t,
+                          treated.observations)
+    
+  {
+    to.check <- paste0(reduced.mset, '.', treated.t) 
+    return(reduced.mset[!to.check %in% treated.observations])
+  }
+  treated.obs <- paste0(treated_ids, '.', treated_ts)
+  matched.sets <- mapply(filter_mset, 
+         reduced.mset = intersections,
+         treated.t = temp2$treated.t,
+         MoreArgs = list(treated.observations = treated.obs))
+  names(matched.sets) <- paste0(temp2[, "treated.id"], 
+                                '.', 
+                                temp2[, "treated.t"])
+  return(matched.sets)
+  
 }

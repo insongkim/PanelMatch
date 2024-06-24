@@ -8,6 +8,7 @@
 #' @param matchedsets a list of treated units and matched control units. Each element in the list should be a vector of control unit ids.
 #' @param id A vector containing the ids of treated units
 #' @param t A vector containing the times of treatment for treated units.
+#' @param id.t.pairs Vector containing the names of the matched sets, in the order of the matchedsets object. Must provide this or id and t arguments, but not both
 #' @param L integer specifying the length of the lag window used in matching
 #' @param t.var string specifying the time variable
 #' @param id.var string specifying the unit id variable
@@ -37,15 +38,34 @@
 #' @author Adam Rauh <amrauh@umich..edu>, In Song Kim <insong@mit.edu>, Erik Wang
 #' <haixiao@Princeton.edu>, and Kosuke Imai <imai@harvard.edu>
 #' @export
-matched_set <- function(matchedsets, id, t, L, t.var, id.var, treatment.var)
+matched_set <- function(matchedsets, id.t.pairs = NULL,
+                        id = NULL, t = NULL, 
+                        L, t.var, 
+                        id.var, treatment.var)
 {
-  if(length(matchedsets) != length(id) || 
-     length(matchedsets) != length(t) || 
-     length(id) != length(t))
+  if (!is.null(id) && !is.null(t))
   {
-    stop("Number of matched sets, length of t, length of id specifications do not match up")
+    if(length(matchedsets) != length(id) || 
+       length(matchedsets) != length(t) || 
+       length(id) != length(t))
+    {
+      stop("Number of matched sets, length of t, length of id specifications do not match up")
+    }
   }
-  names(matchedsets) <- paste0(id, ".", t)
+  
+  if (is.null(id.t.pairs))
+  {
+    if (!is.null(id) && !is.null(t))
+    {
+      names(matchedsets) <- paste0(id, ".", t)  
+    } else {
+      stop("matched set names not specified")
+    }
+    
+  } else {
+    names(matchedsets) <- id.t.pairs
+  }
+  
   class(matchedsets) <- c("matched.set", "list")
   attr(matchedsets, 'refinement.method') <- NULL
   attr(matchedsets, "lag") <- L
