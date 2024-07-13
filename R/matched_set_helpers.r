@@ -205,7 +205,7 @@ get.matchedsets <- function(t, id, data, L, t.column, id.column, treatedvar,
   } else #continuous
   {
     
-
+    
     continuous.matched.sets <- continuous_treatment_matching(d,id.column,
                                   t.column,
                                   treatedvar,
@@ -214,7 +214,6 @@ get.matchedsets <- function(t, id, data, L, t.column, id.column, treatedvar,
                                   L, 
                                   continuous.matching.info = continuous.treatment.info)
 
-    
     named.sets <- matched_set(matchedsets = continuous.matched.sets, 
                               id.t.pairs = names(continuous.matched.sets),
                               L = L,
@@ -264,7 +263,6 @@ extract.differences <- function(indexed.data, matched.set,
   treated.t <- as.integer(sub(".*\\.", "", names(matched.set)))
   treated.id <- as.integer(sub("\\..*", "", names(matched.set)))
   treated.tm1 <- treated.t - 1
-  browser()
   
   treated.key.t <- names(matched.set)
   treated.key.tm1 <- paste0(treated.id, ".", treated.tm1)
@@ -460,34 +458,54 @@ filterContinuousTreated <- function(msets, e.sets, qoi,
 {
   
   
-  if (identical(qoi, "att"))
-  {
-    idx <- sapply(msets, function(x) attr(x, "treatment.change")) >= 0
-    msets <- msets[idx]
-    if (length(e.sets) > 0) 
-    {
-      idx <- sapply(e.sets, function(x) attr(x, "treatment.change")) >= 0
-      e.sets <- e.sets[idx]  
-    }
-    
-  } else if (identical(qoi, "art"))
-  {
-    idx <- sapply(msets, function(x) attr(x, "treatment.change")) <= 0
-    msets <- msets[idx]
-    if (length(e.sets) > 0) 
-    {
-      idx <- sapply(e.sets, function(x) attr(x, "treatment.change")) <= 0
-      e.sets <- e.sets[idx]  
-    }
-  } else 
-  {
-    stop("Invalid QOI for continuous treatment!")
-  }  
+  # if (identical(qoi, "att"))
+  # {
+  #   idx <- sapply(msets, function(x) attr(x, "treatment.change")) >= 0
+  #   msets <- msets[idx]
+  #   if (length(e.sets) > 0) 
+  #   {
+  #     idx <- sapply(e.sets, function(x) attr(x, "treatment.change")) >= 0
+  #     e.sets <- e.sets[idx]  
+  #   }
+  #   
+  # } else if (identical(qoi, "art"))
+  # {
+  #   idx <- sapply(msets, function(x) attr(x, "treatment.change")) <= 0
+  #   msets <- msets[idx]
+  #   if (length(e.sets) > 0) 
+  #   {
+  #     idx <- sapply(e.sets, function(x) attr(x, "treatment.change")) <= 0
+  #     e.sets <- e.sets[idx]  
+  #   }
+  # } else 
+  # {
+  #   stop("Invalid QOI for continuous treatment!")
+  # }  
+  
   ## remove the invalid controls
   if (length(msets) > 0)
   {
     for (i in 1:length(msets)) {
-      msets[[i]] <- msets[[i]][abs(attr(msets[[i]], "control.change")) <= control.threshold]
+      idx.vector <- abs(attr(msets[[i]], "control.change")) <= control.threshold
+      
+      clean_vector <- function(vec) {
+        sapply(vec, function(x) {
+          if (is.na(x)) {
+            return(FALSE)
+          } else {
+            return(x)
+          }
+        })
+      }
+      idx.vector.cleaned <- clean_vector(idx.vector)
+      control.changes <- attr(msets[[i]], "control.change")[idx.vector.cleaned]
+      treatment.baseline <- attr(msets[[i]], "treatment.baseline") 
+      treatment.change <- attr(msets[[i]], "treatment.change") 
+      msets[[i]] <- msets[[i]][idx.vector.cleaned]
+      attr(msets[[i]], "control.change") <- control.changes
+      attr(msets[[i]], "treatment.baseline") <- treatment.baseline
+      attr(msets[[i]], "treatment.change") <- treatment.change
+      
     }  
   }
   
@@ -497,7 +515,8 @@ filterContinuousTreated <- function(msets, e.sets, qoi,
   #     e.sets[[i]][abs(attr(e.sets[[i]], "control.change")) <= control.threshold]
   #   }
   # }
-  
+  e.sets <- msets[sapply(msets, length) == 0]
+  msets <- msets[sapply(msets, length) > 0 ]
   
   return(list("sets" = msets, 
               "empty.sets" = e.sets))

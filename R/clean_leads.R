@@ -68,7 +68,12 @@ clean_leads <- function(matched_sets,
     
     create_new_sets <- function(set, index)
     {
-      return(set[index])
+      control.change <- attr(set, "control.change")[index]
+      set.mod <- set[index]
+      attr(set.mod, "control.change") <- control.change
+      attr(set.mod, "treatment.baseline") <- attr(set, "treatment.baseline")
+      attr(set.mod, "treatment.change") <- attr(set, "treatment.change")
+      return(set.mod)
     }
     sub_sets <- mapply(FUN = create_new_sets, 
                        matched_sets, 

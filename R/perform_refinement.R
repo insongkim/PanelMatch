@@ -63,7 +63,6 @@ perform_refinement <- function(lag, time.id, unit.id, treatment,
                              continuous.treatment.info = continuous.treatment.info)
     
 
-  
   e.sets <- msets[sapply(msets, length) == 0]
   msets <- msets[sapply(msets, length) > 0 ]
   if (length(msets) == 0)
@@ -108,7 +107,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment,
     e.sets <- setlist[["empty.sets"]]
   }
   
-
+  
   msets <- clean_leads(msets, 
                        ordered.data, 
                        max(lead), 
