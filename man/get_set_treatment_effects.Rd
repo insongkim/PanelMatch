@@ -4,12 +4,12 @@
 \alias{get_set_treatment_effects}
 \title{get_set_treatment_effects}
 \usage{
-get_set_treatment_effects(pm.obj, data, lead)
+get_set_treatment_effects(pm.obj, panel.data, lead)
 }
 \arguments{
 \item{pm.obj}{an object of class \code{PanelMatch}}
 
-\item{data}{data.frame with the time series cross sectional data used for matching, refinement, and estimation}
+\item{panel.data}{PanelData object with the time series cross sectional data used for matching, refinement, and estimation}
 
 \item{lead}{integer (or integer vector) indicating the time period(s) in the future for which the treatment effect size will be calculated. Calculations will be made for the period t + lead, where t is the time of treatment. If more than one lead value is provided, then calculations will be performed for each value.}
 }
@@ -24,15 +24,16 @@ Calculate the size of treatment effects for each matched set.
 }
 \examples{
 dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
+dem.sub.panel <- PanelData(dem.sub, 'wbcode2', 'year', 'dem', 'y')
 # create subset of data for simplicity
-PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
-                         treatment = "dem", refinement.method = "ps.match",
-                         data = dem.sub, match.missing = TRUE,
-                         covs.formula = ~ I(lag(tradewb, 1:4)),
+PM.results <- PanelMatch(panel.data = dem.sub.panel, lag = 4, 
+                         refinement.method = "ps.match", 
+                         match.missing = TRUE, 
+                         covs.formula = ~ tradewb,
                          size.match = 5, qoi = "att",
-                         outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE,
-                         placebo.test = FALSE)
-set.effects <- get_set_treatment_effects(pm.obj = PM.results, data = dem.sub, lead = 0)
+                         lead = 0:4, 
+                         forbid.treatment.reversal = FALSE)
+set.effects <- get_set_treatment_effects(pm.obj = PM.results, data = dem.sub.panel, lead = 0)
 
 
 }

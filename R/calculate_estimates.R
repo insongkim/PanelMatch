@@ -84,7 +84,7 @@ calculate_estimates <- function(qoi.in, data.in, lead,
     }
     if (identical(qoi.in, "ate"))
     {
-      z <- list("estimates" = pt.estimates,
+      z <- list("estimate" = pt.estimates,
                 "bootstrapped.estimates" = coefs, 
                 "bootstrap.iterations" = number.iterations, 
                 "standard.error" = ses,
@@ -95,7 +95,7 @@ calculate_estimates <- function(qoi.in, data.in, lead,
                 "pooled" = pooled)
     } else {
       z <- list(
-        "estimates" = pt.estimates,
+        "estimate" = pt.estimates,
         "bootstrapped.estimates" = coefs,
         "bootstrap.iterations" = number.iterations,
         "standard.error" = ses,
@@ -129,7 +129,7 @@ calculate_estimates <- function(qoi.in, data.in, lead,
     } else {
       stop("missing sets")
     }
-    z <- list("estimates" = pt.estimates,
+    z <- list("estimate" = pt.estimates,
               "standard.error" = se.s,
               "lag" = lag,
               "lead" = lead,
@@ -156,7 +156,7 @@ calculate_estimates <- function(qoi.in, data.in, lead,
     } else {
       stop("missing sets")
     }
-    z <- list("estimates" = pt.estimates,
+    z <- list("estimate" = pt.estimates,
               "standard.error" = se.s,
               "lag" = lag,
               "lead" = lead,

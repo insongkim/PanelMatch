@@ -212,7 +212,58 @@ perform_refinement <- function(lag, time.id, unit.id, treatment,
     ordered.data <- as.matrix(handle_missing_data(ordered.data, 
                                                   4:ncol(ordered.data)))
   }
-
+  if(refinement.method == "ps.msm.weight" | refinement.method == "CBPS.msm.weight")
+  {
+    store.msm.data <- list()
+    for(i in 1:length(lead))
+    {
+      f <- lead[i]
+      tf <- expand_treated_ts(lag, treated.ts = treated.ts + f)
+      tf.index <- get_yearly_dmats(ordered.data, treated.ids, tf, matched_sets = msets, lag)
+      expanded.sets.tf <- build_ps_data(tf.index, ordered.data, lag)
+      #pre.pooled <- ordered.data[ordered.data[, time.id] %in% (treated.ts + f), ]
+      pre.pooled <- rbindlist(expanded.sets.tf)
+      pooled <- pre.pooled[complete.cases(pre.pooled), ]
+      pooled <- unique(as.data.frame(pooled))
+      #do the column removal thing
+      cols.to.remove <- which(unlist(lapply(pooled, function(x){all(x[1] == x)}))) #checking for columns that only have one value
+      cols.to.remove <- unique(c(cols.to.remove, which(!colnames(pooled) %in% colnames(t(unique(t(pooled))))))) #removing columns that are identical to another column
+      cols.to.remove <- cols.to.remove[cols.to.remove > 3] #leave the first three columns alone
+      if(length(cols.to.remove) > 0)
+      {
+        class(pooled) <- c("data.frame")
+        pooled <- pooled[, -cols.to.remove]
+        rmv <- function(x, cols.to.remove_)
+        {
+          return(x[, -cols.to.remove_])
+        }
+        expanded.sets.tf <- lapply(expanded.sets.tf, rmv, cols.to.remove_ = cols.to.remove)
+      }
+      if(qr(pooled)$rank != ncol(pooled))
+      {
+        
+        stop("Error: Provided data is not linearly independent so calculations cannot be completed. Please check the data set for any redundant, unnecessary, or problematic information.")
+        
+        
+      }
+      if (refinement.method == "CBPS.msm.weight") 
+      {
+        dummy <- capture.output(fit.tf <- (CBPS::CBPS(reformulate(response = treatment, termlabels = colnames(pooled)[-c(1:3)]),
+                                                      family = binomial(link = "logit"), data = pooled)))
+      }
+      if(refinement.method == "ps.msm.weight")
+      {
+        fit.tf <- glm(reformulate(response = treatment, termlabels = colnames(pooled)[-c(1:3)]),
+                      family = binomial(link = "logit"), data = pooled)
+      }
+      store.msm.data[[i]] <- find_ps(expanded.sets.tf, fit.tf)
+      
+    }
+    
+    msm.sets <- gather_msm_sets(store.msm.data)
+    #can only have weighting in these situations
+    msets <- handle_ps_weighted(msm.sets, msets, refinement.method)
+  }
   if (refinement.method == "mahalanobis")
   {
 

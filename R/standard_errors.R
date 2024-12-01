@@ -6,6 +6,7 @@
 #' @param qoi_in string specifying the QOI
 #'
 #' @return Named vector containing the per-unit sums. 
+#' @keywords internal
 perunitSum <- function(udf,
                        lead.in,
                        dependent.in,
@@ -27,6 +28,7 @@ perunitSum <- function(udf,
 #' @param qoi_in string specifying the QOI
 #'
 #' @return Named vector containing the per-unit sums.
+#' @keywords internal
 perunitSum_Dit <- function(udf, qoi_in) {
   
   d.it <- udf[, paste0("dits_",qoi_in)] #should always return a vector
@@ -487,7 +489,7 @@ handle_unconditional_se <- function(qoi.in, data.in, lead,
                                  outcome.variable,
                                  unit.id.variable) 
 {
-  
+  if (identical(qoi.in, "ate")) stop("analytical standard errors not available for ATE")
   Ais <- by(data.in, as.factor(data.in[, unit.id.variable]),
             FUN = perunitSum,
             lead.in = lead,

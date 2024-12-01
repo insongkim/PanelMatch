@@ -4,28 +4,14 @@
 \alias{get_covariate_balance}
 \title{Calculate covariate balance}
 \usage{
-get_covariate_balance(
-  matched.sets,
-  data,
-  covariates,
-  use.equal.weights = FALSE,
-  plot = FALSE,
-  reference.line = TRUE,
-  legend = TRUE,
-  ylab = "SD",
-  include.treatment.period = TRUE,
-  legend.position = "topleft",
-  ...
-)
+get_covariate_balance(..., panel.data, covariates, include.unrefined = TRUE)
 }
 \arguments{
-\item{matched.sets}{A \code{matched.set} object}
+\item{...}{one or more PanelMatch objects}
 
-\item{data}{The time series cross sectional data set (as a \code{data.frame} object) used to produce the \code{matched.set} object. This data set should be identical to the one passed to \code{PanelMatch()} and \code{PanelEstimate()} to ensure consistent results.}
+\item{panel.data}{PanelData object}
 
 \item{covariates}{a character vector, specifying the names of the covariates for which the user is interested in calculating balance.}
-
-\item{use.equal.weights}{logical. If set to TRUE, then equal weights will be assigned to control units, rather than using whatever calculated weights have been assigned. This is helpful for assessing the improvement in covariate balance as a result of refining the matched sets.}
 
 \item{plot}{logical. When TRUE, a plot showing the covariate balance calculation results will be shown. When FALSE, no plot is made, but the results of the calculations are returned. default is FALSE}
 
@@ -35,11 +21,11 @@ get_covariate_balance(
 
 \item{ylab}{Label for y axis. Default is "SD". This is the same as the ylab argument to \code{plot()}.}
 
+\item{use.equal.weights}{logical. If set to TRUE, then equal weights will be assigned to control units, rather than using whatever calculated weights have been assigned. This is helpful for assessing the improvement in covariate balance as a result of refining the matched sets.}
+
 \item{include.treatment.period}{logical. Default is TRUE. When TRUE, covariate balance measures for the period during which treatment occurs is included. These calculations are not included when FALSE. Users may wish to leave this period off in some circumstances. For instance, one would expect covariate balance to be poor during this period when treatment is continuous and a lagged outcome is included in the refinement formula.}
 
 \item{legend.position}{position of legend. See documentation for graphics::legend. Default is "topleft"}
-
-\item{...}{Additional graphical parameters to be passed to the \code{plot} function in base R.}
 }
 \description{
 Calculate covariate balance for user specified covariates across matched sets. Balance is assessed by taking the average
@@ -52,12 +38,15 @@ dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
 # create subset of data for simplicity
 #add some additional data to data set for demonstration purposes
 dem.sub$rdata <- runif(runif(nrow(dem.sub)))
-pm.obj <- PanelMatch(lead = 0:3, lag = 4, time.id = "year", unit.id = "wbcode2", treatment = "dem",
-                    outcome.var ="y", refinement.method = "ps.match",
-                    data = dem.sub, match.missing = TRUE,
-                    covs.formula = ~ tradewb + rdata + I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
-                    size.match = 5, qoi = "att")
-get_covariate_balance(pm.obj$att, dem.sub, covariates = c("tradewb", "rdata"),
+dem.sub.panel <- PanelData(dem.sub, 'wbcode2', 'year', 'dem', 'y')
+PM.results <- PanelMatch(panel.data = dem.sub.panel, lag = 4, 
+                         refinement.method = "ps.match", 
+                         match.missing = TRUE, 
+                         covs.formula = ~ tradewb + rdata,
+                         size.match = 5, qoi = "att",
+                         lead = 0:4, 
+                         forbid.treatment.reversal = FALSE)
+get_covariate_balance(PM.results, dem.sub.panel, covariates = c("tradewb", "rdata"),
                          ylim = c(-2,2))
 
 }

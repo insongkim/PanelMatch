@@ -34,3 +34,4 @@ matched.set object with the matched sets that meet the conditions
 enforce_lead_restrictions
 check treatment and control units for treatment reversion in the lead window. Treated units must stay treated and control units must stay in control (according to the specified qoi)
 }
+\keyword{internal}

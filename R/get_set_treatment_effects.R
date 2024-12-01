@@ -5,28 +5,30 @@
 #'
 #' Calculate the size of treatment effects for each matched set.
 #' @param pm.obj an object of class \code{PanelMatch}
-#' @param data data.frame with the time series cross sectional data used for matching, refinement, and estimation
+#' @param panel.data PanelData object with the time series cross sectional data used for matching, refinement, and estimation
 #' @param lead integer (or integer vector) indicating the time period(s) in the future for which the treatment effect size will be calculated. Calculations will be made for the period t + lead, where t is the time of treatment. If more than one lead value is provided, then calculations will be performed for each value.
 #' @return a list equal in length to the number of lead periods specified to the \code{lead} argument. Each element in the list is a vector of the matched set level effects.
 #' @examples
 #' dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
+#' dem.sub.panel <- PanelData(dem.sub, 'wbcode2', 'year', 'dem', 'y')
 #' # create subset of data for simplicity
-#' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
-#'                          treatment = "dem", refinement.method = "ps.match",
-#'                          data = dem.sub, match.missing = TRUE,
-#'                          covs.formula = ~ I(lag(tradewb, 1:4)),
+#' PM.results <- PanelMatch(panel.data = dem.sub.panel, lag = 4, 
+#'                          refinement.method = "ps.match", 
+#'                          match.missing = TRUE, 
+#'                          covs.formula = ~ tradewb,
 #'                          size.match = 5, qoi = "att",
-#'                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE,
-#'                          placebo.test = FALSE)
-#' set.effects <- get_set_treatment_effects(pm.obj = PM.results, data = dem.sub, lead = 0)
+#'                          lead = 0:4, 
+#'                          forbid.treatment.reversal = FALSE)
+#' set.effects <- get_set_treatment_effects(pm.obj = PM.results, data = dem.sub.panel, lead = 0)
 #'
 #'
 #' @export
 
-get_set_treatment_effects <- function(pm.obj, data, lead)
+get_set_treatment_effects <- function(pm.obj, panel.data, lead)
 {
+  if (!inherits(panel.data, "PanelData")) stop("Please provide a PanelData object.")
   return(lapply(lead, calculate_set_effects, 
-                pm.obj = pm.obj, data.in = data))
+                pm.obj = pm.obj, data.in = panel.data))
   
 }
 

@@ -9,6 +9,7 @@
 #' @param treatment.var string specifying the treatment variable.
 #'
 #' @return matched.set object with the matched sets that meet the conditions
+#' @keywords internal
 enforce_lead_restrictions <- function(matched_sets, 
                                       ordered.data, 
                                       max.lead, 

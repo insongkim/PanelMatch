@@ -88,7 +88,7 @@ calculate_placebo_estimates <- function(qoi.in, data.in, lead,
       
       names(o.coefs) <- paste0("t-", placebo.lead)
       
-      z <- list("estimates" = o.coefs,
+      z <- list("estimate" = o.coefs,
                 "bootstrapped.estimates" = coefs,
                 "bootstrap.iterations" = number.iterations,
                 "standard.error" = apply(coefs, 2, sd, na.rm = T),
@@ -191,7 +191,7 @@ calculate_placebo_estimates <- function(qoi.in, data.in, lead,
       names(o.coefs_ate) <- paste0("t-", placebo.lead)
       
       colnames(coefs) <- names(o.coefs_ate)
-      z <- list("estimates" = o.coefs_ate,
+      z <- list("estimate" = o.coefs_ate,
                 "bootstrapped.estimates" = coefs,
                 "bootstrap.iterations" = number.iterations,
                 "standard.error" = apply(coefs, 2, sd, na.rm = T),
@@ -282,7 +282,7 @@ calculate_placebo_estimates <- function(qoi.in, data.in, lead,
     
     names(o.coefs) <- paste0("t-", placebo.lead)
     
-    z <- list("estimates" = o.coefs,
+    z <- list("estimate" = o.coefs,
               "standard.error" = ses,
               "lag" = lag,
               "lead" = lead,

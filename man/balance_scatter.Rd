@@ -6,6 +6,7 @@
 \usage{
 balance_scatter(
   matched_set_list,
+  panel.data,
   xlim = c(0, 0.8),
   ylim = c(0, 0.8),
   main = "Standardized Mean Difference of Covariates",
@@ -20,6 +21,8 @@ balance_scatter(
 \arguments{
 \item{matched_set_list}{a list of one or more \code{matched.set} objects}
 
+\item{panel.data}{the same time series cross sectional data set used to create the matched sets. This is a PanelData object.}
+
 \item{xlim}{xlim of the scatter plot. This is the same as the \code{xlim} argument in \code{plot()}}
 
 \item{ylim}{ylim of the scatter plot. This is the same as the \code{ylim} argument in \code{plot()}}
@@ -29,8 +32,6 @@ balance_scatter(
 \item{pchs}{one or more pch indicators for the symbols on the scatter plot. You should specify a pch symbol for each matched.set you specify in matched_set_list. See \code{plot()} for more information}
 
 \item{covariates}{variables for which balance is displayed}
-
-\item{data}{the same time series cross sectional data set used to create the matched sets.}
 
 \item{x.axis.label}{x axis label}
 
@@ -49,12 +50,14 @@ refers to balance after refinement. Users can utilize parameters powered by \cod
 in base R to further customize the figure.
 }
 \examples{
+THIS IS GETTING DEPRECATED, NO NEED TO UPDATE THE EXAMPLES HERE FOR NOW. EVENTUALLY REMOVE.
 dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
 # create subset of data for simplicity
+dem.sub.panel <- PanelData(dem.sub, 'wbcode2', 'year', 'dem', 'y')
 # get a matched set without refinement
 sets0 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                     treatment = "dem", refinement.method = "none",
-                    data = dem.sub, match.missing = FALSE,
+                    data = dem.sub.panel, match.missing = FALSE,
                     size.match = 5, qoi = "att",
                     outcome.var = "y",
                     lead = 0:4, forbid.treatment.reversal = FALSE)
@@ -63,7 +66,7 @@ sets0 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
 # size of matched set to 5
 sets1 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                     treatment = "dem", refinement.method = "ps.match",
-                    data = dem.sub, match.missing = FALSE,
+                    data = dem.sub.panel, match.missing = FALSE,
                     covs.formula = ~ tradewb,
                     size.match = 5, qoi = "att",
                     outcome.var = "y",
@@ -72,7 +75,7 @@ sets1 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
 # get another matched set with refinement using propensity score weighting
 sets2 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                     treatment = "dem", refinement.method = "ps.weight",
-                    data = dem.sub, match.missing = FALSE,
+                    data = dem.sub.panel, match.missing = FALSE,
                     covs.formula = ~ tradewb,
                     size.match = 10, qoi = "att",
                     outcome.var = "y",
@@ -81,7 +84,7 @@ sets2 <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
 
 # use the function to produce the scatter plot
 balance_scatter(matched_set_list = list(sets0$att, sets1$att, sets2$att),
-              data = dem.sub,
+              data = dem.sub.panel,
               covariates = c("y", "tradewb"))
 # add legend
 legend(x = 0, y = 0.8,
@@ -100,3 +103,4 @@ bty = "n", ncol = 1, cex = 1, bg = "white")
 In Song Kim <insong@mit.edu>, Erik Wang
 <haixiao@Princeton.edu>, Adam Rauh <amrauh@umich.edu>, and Kosuke Imai <imai@harvard.edu>
 }
+\keyword{internal}

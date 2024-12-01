@@ -3,10 +3,7 @@
 #' \code{DisplayTreatment} visualizes the treatment distribution
 #' across units and time in a panel data set
 #'
-#' @param unit.id Name of the unit identifier variable as a character string
-#' @param time.id Name of the time identifier variable as a character string
-#' @param treatment Name of the treatment variable as a character string
-#' @param data data.frame that contains the time series cross sectional data used for matching and estimation. Unit and time data must be integers. Time data must also be formatted as sequential integers that increase by one.
+#' @param panel.data PanelData object
 #' @param color.of.treated Color of the treated observations provided as a character string (this includes hex values). Default is red.
 #' @param color.of.untreated Color of the untreated observations provided as a character string (this includes hex values). Default is blue.
 #' @param title Title of the plot provided as character string
@@ -35,43 +32,41 @@
 #' <haixiao@Princeton.edu>, Adam Rauh <amrauh@umich.edu>, and Kosuke Imai <imai@harvard.edu>
 #'
 #' @examples 
-#' 
-#' DisplayTreatment(unit.id = "wbcode2",
-#'                  time.id = "year", legend.position = "none",
-#'                  xlab = "year", ylab = "Country Code",
-#'                  treatment = "dem", data = dem)
+#' dem.sub.panel <- PanelData(dem.sub, 'wbcode2', 'year', 'dem', 'y')
+#' DisplayTreatment(panel.data = dem.sub.panel,
+#'                  legend.position = "none",
+#'                  xlab = "year", ylab = "Country Code")
 #' 
 #'
 #' @export
-DisplayTreatment <- function(unit.id, time.id, treatment, data, 
-                              color.of.treated = "red",
-                              color.of.untreated = "blue", 
-                              title = "Treatment Distribution \n Across Units and Time",
-                              xlab = "Time", ylab = "Unit",
-                              x.size = NULL, y.size = NULL,
-                              legend.position= "none",
-                              x.angle = NULL,
-                              y.angle = NULL,
-                              legend.labels = c("not treated", "treated"),
-                              decreasing = FALSE,
-                              matched.set = NULL,
-                              show.set.only = FALSE,
-                              hide.x.tick.label = FALSE,
-                              hide.y.tick.label = FALSE,
-                              gradient.weights = FALSE,
-                              dense.plot = FALSE)
-
+DisplayTreatment <- function(panel.data,
+                             color.of.treated = "red",
+                             color.of.untreated = "blue", 
+                             title = "Treatment Distribution \n Across Units and Time",
+                             xlab = "Time", ylab = "Unit",
+                             x.size = NULL, y.size = NULL,
+                             legend.position= "none",
+                             x.angle = NULL,
+                             y.angle = NULL,
+                             legend.labels = c("not treated", "treated"),
+                             decreasing = FALSE,
+                             matched.set = NULL,
+                             show.set.only = FALSE,
+                             hide.x.tick.label = FALSE,
+                             hide.y.tick.label = FALSE,
+                             gradient.weights = FALSE,
+                             dense.plot = FALSE) 
 {
+  
+  if (!inherits(panel.data, "PanelData")) stop("Please provide a PanelData object.")
+  
+  
+  attr(panel.data, "unit.id") -> unit.id
+  attr(panel.data, "time.id") -> time.id
+  attr(panel.data, "treatment") -> treatment
   
   alphaweight <- NULL #--as-cran checks need this
   
-  
-  if (any(class(data) != "data.frame")) stop("please convert data to data.frame class")
-  
-  if (any(is.na(data[, unit.id]))) stop("Cannot have NA unit ids")
-  
-  data <- data[order(data[,unit.id], data[,time.id]), ]
-  data <- check_time_data(data, time.id)
   
   
   if (gradient.weights && is.null(matched.set)) stop("gradient.weights cannot be TRUE without a provided matched set")
@@ -80,7 +75,7 @@ DisplayTreatment <- function(unit.id, time.id, treatment, data,
     matched.set <- NULL
   }
   
-  data <- na.omit(data[c(unit.id, time.id, treatment)])
+  data <- na.omit(panel.data[c(unit.id, time.id, treatment)])
   # rename variables to match with the object names in the loop below
   colnames(data) <- c("unit.id", "time.id", "treatment")  
   

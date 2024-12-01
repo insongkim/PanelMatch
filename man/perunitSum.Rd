@@ -23,3 +23,4 @@ Named vector containing the per-unit sums.
 perunitSum
 This is a low level function that is used to calculate a value associated with each unit. This value is a weighted summation of the dependent variable, based on the Wit values discussed in Imai et al. (2023)
 }
+\keyword{internal}

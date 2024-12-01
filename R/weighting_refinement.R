@@ -38,3 +38,43 @@ handle_ps_weighted <- function(just.ps.sets,
   attr(msets, "refinement.method") <- refinement.method
   return(msets)
 }
+
+
+gather_msm_sets <- function(lead.data.list)
+{
+  number.of.sets <- sapply(lead.data.list, length)
+  if (length(unique(number.of.sets)) != 1) stop("error with matched sets in msm calculations")
+  number.of.sets <- unique(number.of.sets)
+  long.data.lead.list <- unlist(lead.data.list, recursive = FALSE)
+  
+  long.weights.list <- lapply(long.data.lead.list, function(x){return(as.vector(x[, 4]))})
+  multiplied.weights <-  multiply_weights_msm(long.weights.list, number.of.sets)
+  reassembled.sets <- long.data.lead.list[1:number.of.sets]
+  reassemble.weights <- function(set, weights)
+  {
+    set[, "ps"] <- weights #again this ps is misleading but for consistency with the other functions lets go with it
+    return(set)
+  }
+  reassembled.sets <- mapply(FUN = reassemble.weights, set = reassembled.sets,
+                             weights = multiplied.weights, SIMPLIFY = FALSE)
+  
+  return(reassembled.sets)
+}
+
+#check old Rcpp code if this does not work
+multiply_weights_msm <- function(weights, number_of_sets) {
+  final_weights <- vector("list", number_of_sets)
+  
+  for (i in seq_len(number_of_sets)) {
+    base_mult <- weights[[i]]
+    for (j in seq(i, length(weights), by = number_of_sets)) {
+      if (j != i) {
+        temp <- weights[[j]]
+        base_mult <- base_mult * temp
+      }
+    }
+    final_weights[[i]] <- base_mult
+  }
+  
+  return(final_weights)
+}

@@ -5,13 +5,10 @@
 \title{PanelMatch}
 \usage{
 PanelMatch(
+  panel.data,
+  data = NULL,
   lag,
-  time.id,
-  unit.id,
-  treatment,
-  outcome.var,
   refinement.method,
-  data,
   qoi,
   size.match = 10,
   match.missing = TRUE,
@@ -28,22 +25,12 @@ PanelMatch(
 )
 }
 \arguments{
+\item{panel.data}{A PanelData object containing time series cross sectional data. 
+Time data must be sequential integers that increase by 1. Unit identifiers must be integers. Treatment data must be binary.}
+
 \item{lag}{An integer value indicating the length of treatment history periods to be matched on}
 
-\item{time.id}{A character string indicating the name of the time 
-variable in the \code{data}. This data currently must be formatted as sequential integers.}
-
-\item{unit.id}{A character string indicating the name of unit identifier in the data. This data must be integer.}
-
-\item{treatment}{A character string indicating the name of the treatment variable in the \code{data}. 
-The treatment must be a binary indicator variable (integer with 0 for the control group and 1 for the treatment group).}
-
-\item{outcome.var}{A character string identifying the outcome variable.}
-
 \item{refinement.method}{A character string specifying the matching or weighting method to be used for refining the matched sets. The user can choose "mahalanobis", "ps.match", "CBPS.match", "ps.weight", "CBPS.weight", or "none". The first three methods will use the \code{size.match} argument to create sets of at most \code{size.match} closest control units. Choosing "none" will assign equal weights to all control units in each matched set.}
-
-\item{data}{A \code{data.frame} object containing time series cross sectional data. 
-Time data must be sequential integers that increase by 1. Unit identifiers must be integers. Treatment data must be binary.}
 
 \item{qoi}{quantity of interest, provided as a string: \code{att} (average treatment effect on treated units), \code{atc} (average treatment effect of treatment on the control units) \code{art} (average effect of treatment reversal for units that experience treatment reversal), or \code{ate} (average treatment effect).}
 
@@ -90,6 +77,16 @@ high correlation between variables. Default is FALSE. This argument is only nece
 \item{restrict.control.period}{(optional) integer specifying the number of pre-treatment periods that treated units and potentially matched control units should be non-NULL and in the control state. For instance, specifying 4 would mean that the treatment history cannot contain any missing data or treatment from t-4 to t.}
 
 \item{placebo.test}{logical TRUE/FALSE. indicates whether or not you want to be able to run a placebo test. This will add additional requirements on the data -- specifically, it requires that no unit included in the matching/refinement process can having missing outcome data over the lag window. Additionally, you should not use the outcome variable in refinement when \code{placebo.test = TRUE}.}
+
+\item{time.id}{A character string indicating the name of the time 
+variable in the \code{data}. This data currently must be formatted as sequential integers.}
+
+\item{unit.id}{A character string indicating the name of unit identifier in the data. This data must be integer.}
+
+\item{treatment}{A character string indicating the name of the treatment variable in the \code{data}. 
+The treatment must be a binary indicator variable (integer with 0 for the control group and 1 for the treatment group).}
+
+\item{outcome.var}{A character string identifying the outcome variable.}
 }
 \value{
 \code{PanelMatch()} returns an object of class "PanelMatch". This is a list that contains a few specific elements: 
@@ -120,13 +117,15 @@ via the \code{covs.formula} and \code{refinement.method} arguments, respectively
 }
 \examples{
 dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
+dem.sub.panel <- PanelData(dem.sub, 'wbcode2', 'year', 'dem', 'y')
 # create subset of data for simplicity
-PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
-                         treatment = "dem", refinement.method = "ps.match", 
-                         data = dem.sub, match.missing = TRUE, 
+PM.results <- PanelMatch(panel.data = dem.sub.panel, lag = 4, 
+                         refinement.method = "ps.match", 
+                         match.missing = TRUE, 
                          covs.formula = ~ tradewb,
                          size.match = 5, qoi = "att",
-                         outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
+                         lead = 0:4, 
+                         forbid.treatment.reversal = FALSE)
 
 
 }

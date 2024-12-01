@@ -19,3 +19,4 @@ Named vector containing the per-unit sums.
 perunitSum_Dit
 Similar to perunitSum, this is a low level helper function for calculating specific values defined in Imai et al. (2023). This focuses on Dit rather than Wit
 }
+\keyword{internal}

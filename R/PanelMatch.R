@@ -21,7 +21,7 @@
 #' @param outcome.var A character string identifying the outcome variable.
 #' @param refinement.method A character string specifying the matching or weighting method to be used for refining the matched sets. The user can choose "mahalanobis", "ps.match", "CBPS.match", "ps.weight", "CBPS.weight", or "none". The first three methods will use the \code{size.match} argument to create sets of at most \code{size.match} closest control units. Choosing "none" will assign equal weights to all control units in each matched set.
 #' @param match.missing Logical variable indicating whether or not units should be matched on the patterns of missingness in their treatment histories. Default is TRUE. When FALSE, neither treated nor control units are allowed to have missing treatment data in the lag window.
-#' @param data A \code{data.frame} object containing time series cross sectional data. 
+#' @param panel.data A PanelData object containing time series cross sectional data. 
 #' Time data must be sequential integers that increase by 1. Unit identifiers must be integers. Treatment data must be binary.
 #' @param size.match An integer dictating the number of permitted closest control units in a matched set after refinement. 
 #' This argument only affects results when using a matching method ("mahalanobis" or any of the refinement methods that end in ".match").
@@ -72,19 +72,23 @@
 #'
 #' @examples
 #' dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
+#' dem.sub.panel <- PanelData(dem.sub, 'wbcode2', 'year', 'dem', 'y')
 #' # create subset of data for simplicity
-#' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2", 
-#'                          treatment = "dem", refinement.method = "ps.match", 
-#'                          data = dem.sub, match.missing = TRUE, 
+#' PM.results <- PanelMatch(panel.data = dem.sub.panel, lag = 4, 
+#'                          refinement.method = "ps.match", 
+#'                          match.missing = TRUE, 
 #'                          covs.formula = ~ tradewb,
 #'                          size.match = 5, qoi = "att",
-#'                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
+#'                          lead = 0:4, 
+#'                          forbid.treatment.reversal = FALSE)
 #'
 #'
 #' @export
-PanelMatch <- function(lag, time.id, unit.id, 
-                       treatment, outcome.var,
-                       refinement.method, data,qoi,
+PanelMatch <- function(panel.data, 
+                       data = NULL,
+                       lag, 
+                       refinement.method,
+                       qoi,
                        size.match = 10,
                        match.missing = TRUE,
                        covs.formula = NULL,
@@ -99,11 +103,53 @@ PanelMatch <- function(lag, time.id, unit.id,
                        placebo.test = FALSE) 
 {
 
+  if (!inherits(panel.data, "PanelData")) 
+  {
+    stop("Please provide a PanelData object.")
+  } else { #TODO: improve handling here
+    ordered.data <- panel.data  
+  }
+  
+  attr(ordered.data, "unit.id") -> unit.id
+  attr(ordered.data, "time.id") -> time.id
+  attr(ordered.data, "outcome") -> outcome.var
+  attr(ordered.data, "treatment") -> treatment
+  
+  if (!matching && match.missing)
+  {
+    old.lag <- lag
+    lag <- 1
+  }
+  if (listwise.delete & match.missing) stop("set match.missing = FALSE when listwise.delete = TRUE")
+  if (lag < 1) stop("please specify a lag value >= 1")
+  
+  
+  if (!all(refinement.method %in% c("mahalanobis", "ps.weight", "ps.match", "ps.msm.weight", "CBPS.msm.weight",
+                                    "CBPS.weight", "CBPS.match", "none"))) stop("please choose a valid refinement method")
+  
+  if (forbid.treatment.reversal)
+  {
+    if (isFALSE(qoi %in% c("att", "art")))
+      stop("forbid.treatment.reversal = TRUE only valid for qoi = att or qoi = art")
+  }
+  
+  if(!is.null(restrict.control.period))
+  {
+    if(restrict.control.period < 1) stop("restricted control period specification must be >=1")
+    if(restrict.control.period > lag) stop("restricted control period specification cannot be greater than lag")
+  }
+  if (any(lead < 0)) stop("Please provide positive lead values. Please see the placebo_test function for more.")
+  if (!all(qoi %in% c("att", "atc", "ate", "art"))) stop("please choose a valid qoi")
+  if(any(is.na(data[, unit.id]))) stop("Cannot have NA unit ids")
+  if (!forbid.treatment.reversal & all(refinement.method %in% c("CBPS.msm.weight", "ps.msm.weight")))
+  {
+    stop("please set forbid.treatment.reversal to TRUE for msm methods")
+  }
   
   res <- panel_match(lag, time.id, unit.id, treatment,
                 refinement.method,
                 size.match,
-                data,
+                ordered.data,
                 match.missing,
                 covs.formula,
                 verbose,
@@ -116,15 +162,19 @@ PanelMatch <- function(lag, time.id, unit.id,
                 listwise.delete,
                 use.diagonal.variance.matrix,
                 restrict.control.period,
-                placebo.test)
-  
+                placebo.test, 
+                old.lag)
+  attr(res, "unit.id") <- unit.id
+  attr(res, "time.id") <- time.id
+  attr(res, "outcome") <- outcome.var
+  attr(res, "treatment") <- treatment
   return(res)
 }
 
 panel_match <- function(lag, time.id, unit.id, treatment,
                         refinement.method,
                         size.match,
-                        data,
+                        ordered.data,
                         match.missing,
                         covs.formula,
                         verbose,
@@ -137,66 +187,11 @@ panel_match <- function(lag, time.id, unit.id, treatment,
                         listwise.delete,
                         use.diagonal.variance.matrix,
                         restrict.control.period,
-                        placebo.test)
+                        placebo.test, 
+                        old.lag = NULL)
 {
-  if (!matching && match.missing)
-  {
-    old.lag <- lag
-    lag <- 1
-  }
-  ##############################error checking
-  if (listwise.delete & match.missing) stop("set match.missing = FALSE when listwise.delete = TRUE")
-  if (lag < 1) stop("please specify a lag value >= 1")
-  if (any(class(data) != "data.frame")) stop("please convert data to data.frame class")
   
-  if (!all(refinement.method %in% c("mahalanobis", "ps.weight", "ps.match", "CBPS.weight", "CBPS.match", "none"))) stop("please choose a valid refinement method")
-  if (any(duplicated(data[, c(unit.id, time.id)]))) stop("Time, unit combinations should uniquely identify rows. Please remove duplicates")
-  if (!inherits(data[, unit.id], "integer") && !inherits(data[, unit.id], "numeric")) stop("please convert unit id column to integer or numeric")
-  if ( !all(c(time.id, unit.id, treatment, outcome.var)  %in% colnames(data)) ) stop("time id, unit id, outcome, or treatment column name invalid")
-  if (forbid.treatment.reversal)
-  {
-    if (isFALSE(qoi %in% c("att", "art")))
-    stop("forbid.treatment.reversal = TRUE only valid for qoi = att or qoi = art")
-  }
   
-  if(!is.null(restrict.control.period))
-  {
-    if(restrict.control.period < 1) stop("restricted control period specification must be >=1")
-    if(restrict.control.period > lag) stop("restricted control period specification cannot be greater than lag")
-  }
-  if (any(lead < 0)) stop("Please provide positive lead values. Please see the placebo_test function for more.")
-  if (!all(qoi %in% c("att", "atc", "ate", "art"))) stop("please choose a valid qoi")
-  if(any(is.na(data[, unit.id]))) stop("Cannot have NA unit ids")
-  
-  ##############################error checking
-  
-  ## balance the panel 
-  if (any(table(data[, unit.id]) != max(table(data[, unit.id]))))
-  {
-    testmat <- data.table::dcast(data.table::as.data.table(data), 
-                                 formula = paste0(unit.id, "~", time.id),
-                                 value.var = treatment)
-    d <- data.table::melt(data.table(testmat), 
-                          id = unit.id, 
-                          variable = time.id, 
-                          value = treatment,
-                          variable.factor = FALSE, value.name = treatment)
-    d <- data.frame(d)[,c(1,2)]
-    class(d[, 2]) <- "integer"
-    data <- merge(data.table::data.table(d), 
-                  data.table::data.table(data), 
-                  all.x = TRUE, 
-                  by = c(unit.id, time.id))
-    data <- as.data.frame(data)
-    
-  }
-  
-
-  ordered.data <- data[order(data[,unit.id], data[,time.id]), ]
-  ordered.data <- check_time_data(ordered.data, time.id)
-  
-  othercols <- colnames(ordered.data)[!colnames(ordered.data) %in% c(time.id, unit.id, treatment)]
-  ordered.data <- ordered.data[, c(unit.id, time.id, treatment, othercols)] #reorder columns 
   if(!is.null(exact.match.variables))
   {
     for(variable in exact.match.variables)

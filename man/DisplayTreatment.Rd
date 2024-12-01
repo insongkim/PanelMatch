@@ -5,10 +5,7 @@
 \title{DisplayTreatment}
 \usage{
 DisplayTreatment(
-  unit.id,
-  time.id,
-  treatment,
-  data,
+  panel.data,
   color.of.treated = "red",
   color.of.untreated = "blue",
   title = "Treatment Distribution \\n Across Units and Time",
@@ -30,13 +27,7 @@ DisplayTreatment(
 )
 }
 \arguments{
-\item{unit.id}{Name of the unit identifier variable as a character string}
-
-\item{time.id}{Name of the time identifier variable as a character string}
-
-\item{treatment}{Name of the treatment variable as a character string}
-
-\item{data}{data.frame that contains the time series cross sectional data used for matching and estimation. Unit and time data must be integers. Time data must also be formatted as sequential integers that increase by one.}
+\item{panel.data}{PanelData object}
 
 \item{color.of.treated}{Color of the treated observations provided as a character string (this includes hex values). Default is red.}
 
@@ -87,11 +78,10 @@ which visualizes the variation of treatment across unit and time.
 across units and time in a panel data set
 }
 \examples{
-
-DisplayTreatment(unit.id = "wbcode2",
-                 time.id = "year", legend.position = "none",
-                 xlab = "year", ylab = "Country Code",
-                 treatment = "dem", data = dem)
+dem.sub.panel <- PanelData(dem.sub, 'wbcode2', 'year', 'dem', 'y')
+DisplayTreatment(panel.data = dem.sub.panel,
+                 legend.position = "none",
+                 xlab = "year", ylab = "Country Code")
 
 
 }

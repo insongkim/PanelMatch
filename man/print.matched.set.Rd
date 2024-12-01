@@ -9,7 +9,7 @@
 \arguments{
 \item{x}{a \code{matched.set} object}
 
-\item{...}{additional arguments to be passed to \code{print}}
+\item{...}{Not used. additional arguments to be passed to \code{print}}
 
 \item{verbose}{logical indicating whether or not output should be printed in expanded/raw list form.
 The verbose form is not recommended unless the data set is small. Default is FALSE}
@@ -20,6 +20,7 @@ Print \code{matched.set} objects.
 \examples{
 dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
 # create subset of data for simplicity
+dem.sub.panel <- PanelData(dem.sub, 'wbcode2', 'year', 'dem', 'y')
 PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                          treatment = "dem", refinement.method = "ps.match",
                          data = dem, match.missing = TRUE,

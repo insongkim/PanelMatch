@@ -8,10 +8,16 @@
 #' @keywords internal
 check_time_data <- function(data, time.id)
 {
-  if (!class(data[, time.id]) %in% c("numeric", "integer"))
-  { # if data is not numeric or integer, just throw an error. too hard to convert
+  # if (!class(data[, time.id]) %in% c("numeric", "integer"))
+  # { # if data is not numeric or integer, just throw an error. too hard to convert
+  #   stop("Time data not consecutive integer")
+  # }
+  
+  if (!inherits(data[[time.id]], c("numeric", "integer"))) {
+    # if data is not numeric or integer, just throw an error. too hard to convert
     stop("Time data not consecutive integer")
   }
+  
   is.not.int <- (!inherits(data[, time.id], "integer")) 
   u.times <- unique(data[, time.id])
   increase.by.one <- all(seq(min(u.times), max(u.times), by = 1) %in% u.times)
@@ -19,14 +25,24 @@ check_time_data <- function(data, time.id)
   { # if we can reasonably perform some kind of conversion (e.g. numeric data), do so
     warning("Data is not consecutive integer: Attempting automatic conversion, which may cause undefined behavior")
     # Assuming sorted data here
+    old.time.data <- data[,time.id]
     data[, time.id] <- as.integer(as.factor(data[,time.id]))
+    time.data.map <- unique(data.frame(old.time.data = old.time.data,
+                                new.time.data = data[, time.id]))
+    attr(data, "time.data.map") <- time.data.map
     return(data)
   }
   
-  if ("numeric" %in% class(data[, time.id]))
-  {
+  # if ("numeric" %in% class(data[, time.id]))
+  # {
+  #   warning("time data is numeric: attempting to convert to integer")
+  #   data[, time.id] <- as.integer(data[,time.id])
+  #   return(data)
+  # }
+  
+  if (inherits(data[[time.id]], "numeric")) {
     warning("time data is numeric: attempting to convert to integer")
-    data[, time.id] <- as.integer(data[,time.id])
+    data[[time.id]] <- as.integer(data[[time.id]])
     return(data)
   }
   

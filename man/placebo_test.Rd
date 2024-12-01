@@ -6,7 +6,7 @@
 \usage{
 placebo_test(
   pm.obj,
-  data,
+  panel.data,
   lag.in = NULL,
   number.iterations = 1000,
   confidence.level = 0.95,
@@ -20,7 +20,7 @@ placebo_test(
 \arguments{
 \item{pm.obj}{an object of class \code{PanelMatch}}
 
-\item{data}{data.frame with the original data}
+\item{panel.data}{PanelData object}
 
 \item{lag.in}{integer indicating earliest the time period(s) in the future for which the placebo test change in outcome will be calculated. Calculations will be made over the period t - max(lag) to t-2, where t is the time of treatment. The results are similar to those returned by PanelEstimate(), except t-1 is used as the period of comparison, rather than the lead window. If not specified, the placebo test is conducted for periods from t - max(lag) to t-2.}
 
@@ -39,7 +39,7 @@ placebo_test(
 \item{...}{extra arguments to be passed to plot()}
 }
 \value{
-list with 2 or 3 elements: "estimates", which contains the point estimates for the test, "standard.errors" which has the standard errors for each period and optionally "bootstrapped.estimates", containing the bootstrapped point estimates for the test for each specified lag window period.
+list with 2 or 3 elements: "estimate", which contains the point estimates for the test, "standard.errors" which has the standard errors for each period and optionally "bootstrapped.estimates", containing the bootstrapped point estimates for the test for each specified lag window period.
 }
 \description{
 Calculates results for a placebo test
@@ -49,15 +49,16 @@ Calculate the results of a placebo test, looking at the change in outcome at tim
 }
 \examples{
 dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
+dem.sub.panel <- PanelData(dem.sub, 'wbcode2', 'year', 'dem', 'y')
 # create subset of data for simplicity
-PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
-                         treatment = "dem", refinement.method = "mahalanobis",
-                         data = dem.sub, match.missing = TRUE,
+PM.results <- PanelMatch(panel.data = dem.sub.panel, lag = 4, 
+                         refinement.method = "ps.match", 
+                         match.missing = TRUE, 
                          covs.formula = ~ tradewb,
                          size.match = 5, qoi = "att",
-                         outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE,
-                         placebo.test = TRUE)
-placebo_test(PM.results, data = dem.sub, se.method = "unconditional", plot = FALSE)
+                         lead = 0:4, 
+                         forbid.treatment.reversal = FALSE, placebo.test = TRUE)
+placebo_test(PM.results, data = dem.sub.panel, se.method = "unconditional", plot = FALSE)
 
 
 }

@@ -2,8 +2,7 @@
 % Please edit documentation in R/handle_moderating_variable.R
 \name{handle_moderating_variable}
 \alias{handle_moderating_variable}
-\title{handle_moderating_variable
-handles moderating variable calculations: In practice, this just involves slicing the data up according to the moderator, calling PanelEstimate() and putting everything back together This function creates the sets of objects on which PanelEstimate() will be called. It identifies the set of valid values the moderating variable can take on.}
+\title{handle_moderating_variable}
 \usage{
 handle_moderating_variable(
   ordered.data,
@@ -37,6 +36,6 @@ handle_moderating_variable(
 Character vector of valid moderating variable values
 }
 \description{
-handle_moderating_variable
 handles moderating variable calculations: In practice, this just involves slicing the data up according to the moderator, calling PanelEstimate() and putting everything back together This function creates the sets of objects on which PanelEstimate() will be called. It identifies the set of valid values the moderating variable can take on.
 }
+\keyword{internal}

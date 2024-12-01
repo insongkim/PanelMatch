@@ -300,7 +300,7 @@ PE.results <- PanelEstimate(sets = PM.results.ps.weight, data = dem,
                             confidence.level = .95)
 
 # View the point estimates
-PE.results[["estimates"]]
+PE.results[["estimate"]]
 # View standard errors
 PE.results[["standard.error"]]
 
@@ -310,7 +310,7 @@ PE.results <- PanelEstimate(sets = PM.results.ps.weight, data = dem,
                             confidence.level = .95)
 
 # View the point estimates
-PE.results[["estimates"]]
+PE.results[["estimate"]]
 # View standard errors
 PE.results[["standard.error"]]
 
