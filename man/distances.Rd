@@ -2,7 +2,8 @@
 % Please edit documentation in R/matched_set_obj.R
 \name{distances}
 \alias{distances}
-\title{Get distances}
+\title{Get distances
+See distances.mathced.set method}
 \usage{
 distances(object)
 }
@@ -11,4 +12,5 @@ distances(object)
 }
 \description{
 Get distances
+See distances.mathced.set method
 }

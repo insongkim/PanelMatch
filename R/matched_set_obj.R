@@ -317,6 +317,8 @@ handle_pm_qoi <- function(pm.in, qoi.in)
 }
 
 #' Get weights
+#' See weights.matched.set method
+#' 
 #' @param object \code{Matched.set object} 
 #'
 #' @export
@@ -350,6 +352,7 @@ weights.matched.set <- function(object)
 }
 
 #' Get distances
+#' See distances.mathced.set method
 #' @param object \code{matched.set} object
 #'
 #' @export

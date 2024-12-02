@@ -2,7 +2,8 @@
 % Please edit documentation in R/matched_set_obj.R
 \name{weights}
 \alias{weights}
-\title{Get weights}
+\title{Get weights
+See weights.matched.set method}
 \usage{
 weights(object)
 }
@@ -11,4 +12,5 @@ weights(object)
 }
 \description{
 Get weights
+See weights.matched.set method
 }
