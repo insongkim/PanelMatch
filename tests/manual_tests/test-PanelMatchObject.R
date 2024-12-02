@@ -1,6 +1,6 @@
 test_that("test matched set getter function", {
   dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
-  dem.sub.panel <- PanelData(dem.sub, 'wbcode2', 'year', 'dem', 'y')
+  dem.sub.panel <- PanelData(dem.sub, "wbcode2", "year", "dem", "y")
   # create subset of data for simplicity
   PM.results <- PanelMatch(panel.data = dem.sub.panel, lag = 4,
                            refinement.method = "ps.match",
@@ -101,8 +101,8 @@ test_that("PanelMatch summary method", {
                            covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
                            size.match = 5, qoi = "att",
                            lead = 0:4, forbid.treatment.reversal = FALSE)
-  l1 <- summary(PM.results)
-  l2 <- summary(PM.results, verbose = FALSE)
+  l1 <- summary(PM.results, verbose = TRUE)
+  l2 <- summary(PM.results)
   expect_true(length(l1) == 1)
   expect_true(length(l2) == 1)
   expect_true(length(l1[["att"]]) == 5)
@@ -116,8 +116,8 @@ test_that("PanelMatch summary method", {
                            covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
                            size.match = 5, qoi = "art",
                            lead = 0:4, forbid.treatment.reversal = FALSE)
-  l1 <- summary(PM.results)
-  l2 <- summary(PM.results, verbose = FALSE)
+  l1 <- summary(PM.results, verbose = TRUE)
+  l2 <- summary(PM.results)
   expect_true(length(l1) == 1)
   expect_true(length(l2) == 1)
   expect_true(length(l1[["art"]]) == 5)
@@ -131,8 +131,8 @@ test_that("PanelMatch summary method", {
                            covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
                            size.match = 5, qoi = "ate",
                            lead = 0:4, forbid.treatment.reversal = FALSE)
-  l1 <- summary(PM.results)
-  l2 <- summary(PM.results, verbose = FALSE)
+  l1 <- summary(PM.results, verbose = TRUE)
+  l2 <- summary(PM.results)
   expect_true(length(l1) == 2)
   expect_true(length(l2) == 2)
   expect_true(length(l1[["att"]]) == 5)

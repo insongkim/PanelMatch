@@ -1,6 +1,6 @@
 test_that("test weights function", {
   
-  dem.panel <- PanelData(dem, 'wbcode2', 'year', 'dem', 'y')
+  dem.panel <- PanelData(dem, "wbcode2", "year", "dem", "y")
   PM.results <- PanelMatch(panel.data = dem.panel, lag = 4,
                            refinement.method = "ps.match",
                            match.missing = TRUE,

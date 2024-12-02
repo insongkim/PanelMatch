@@ -95,3 +95,13 @@ test_that("testing PanelData Error Checking", {
   expect_false(is.null(attr(d.convert, 
                             "time.data.map")))
 })
+
+# Run this one manually
+# test_that("testing PanelData methods", {
+#   dem$rdata <- rnorm(nrow(dem))
+#   d <- PanelData(dem, "wbcode2", "year", "dem", "y")
+#   expect_output(print(d))
+#   summary(d)
+#   plot(d)
+#   plot(d, plotting.variable = "rdata")
+# })
