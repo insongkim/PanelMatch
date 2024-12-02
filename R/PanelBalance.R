@@ -91,7 +91,7 @@ plot.PanelBalance <- function(x,
            ...)
     }
   } else { # should be scatter
-    process_scatter_balance(x, ...)
+    process_scatter_balance(x, ylab = ylab, ...)
   }
   
 }
@@ -246,10 +246,10 @@ process_scatter_balance <- function(PanelBalance,
                                     xlim = c(0, .8),
                                     ylim = c(0, .8),
                                     main = "Standardized Mean Difference of Covariates",
-                                    pchs = c(2,3),
-                                    covariates, data,
-                                    x.axis.label = "Before refinement",
-                                    y.axis.label = "After refinement", 
+                                    #pchs = c(2,3),
+                                    #covariates, data,
+                                    xlab = "Before refinement",
+                                    ylab = "After refinement", 
                                     ...)
 {
   unrefined.balance <- attr(PanelBalance, "unrefined.balance.results")
@@ -275,8 +275,8 @@ process_scatter_balance <- function(PanelBalance,
       graphics::plot(abs(as.numeric(unrefined.pm.vector)),
                      abs(as.numeric(refined.pm.vector)),
                      pch = 1,
-                     xlab = x.axis.label,
-                     ylab = y.axis.label,
+                     xlab = xlab,
+                     ylab = ylab,
                      xlim = xlim,
                      ylim = ylim,
                      main = main,
