@@ -1,4 +1,4 @@
-#' Calculate covariate balance
+#' Calculate covariate balance measures for refined and unrefined matched sets
 #'
 #'
 #' Calculate covariate balance for user specified covariates across matched sets. Balance is assessed by taking the average
@@ -6,21 +6,17 @@
 #' the control units across all matched sets. Results are standardized and are expressed in standard deviations.
 #' Balance is calculated for each period in the specified lag window.
 #' @param ... one or more PanelMatch objects
-#' @param panel.data PanelData object
-#' @param plot logical. When TRUE, a plot showing the covariate balance calculation results will be shown. When FALSE, no plot is made, but the results of the calculations are returned. default is FALSE
+#' @param panel.data \code{PanelData} object
 #' @param covariates a character vector, specifying the names of the covariates for which the user is interested in calculating balance.
-#' @param reference.line logical indicating whether or not a horizontal line should be present on the plot at y = 0. Default is TRUE.
-#' @param legend logical indicating whether or not a legend identifying the variables should be included on the plot. Default is TRUE.
-#' @param ylab Label for y axis. Default is "SD". This is the same as the ylab argument to \code{plot()}.
-#' @param use.equal.weights logical. If set to TRUE, then equal weights will be assigned to control units, rather than using whatever calculated weights have been assigned. This is helpful for assessing the improvement in covariate balance as a result of refining the matched sets.
-#' @param include.treatment.period logical. Default is TRUE. When TRUE, covariate balance measures for the period during which treatment occurs is included. These calculations are not included when FALSE. Users may wish to leave this period off in some circumstances. For instance, one would expect covariate balance to be poor during this period when treatment is continuous and a lagged outcome is included in the refinement formula.
-#' @param legend.position position of legend. See documentation for graphics::legend. Default is "topleft"
+#' @param include.unrefined logical. Indicates whether or not covariate balance measures for unrefined matched sets should be included. If TRUE, the function will return covariate balance results for the PanelMatch configurations provided, as well as a set of balance results that assume all matched controls have equal weight (i.e., the matched sets are unrefined). These results are included in addition to whatever PanelMatch configurations are specified to the function. Note that if you provide a PanelMatch object where no refinement is applied (that is, where \code{refinement.method = "none"}) and set this option to TRUE, then both sets of covariate balance results will be identical. If FALSE, then only balance calculations for the provided PanelMatch specifications are performed and returned. 
+#' @returns A list of matrices, or a list of lists (if the QOI is ATE). The matrices contain the calculated covariate balance levels for each specified covariate for each period. Each element in the list (whether that be a matrix or a sublist) corresponds to a \code{PanelMatch} configuration specified to the function. Results are returned in the order they were provided. Unrefined results are stored as a parallel list object in an attribute called "unrefined.balance.results". 
+#' 
 #' @examples
 #' dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
 #' # create subset of data for simplicity
 #' #add some additional data to data set for demonstration purposes
 #' dem.sub$rdata <- runif(runif(nrow(dem.sub)))
-#' dem.sub.panel <- PanelData(dem.sub, 'wbcode2', 'year', 'dem', 'y')
+#' dem.sub.panel <- PanelData(dem.sub, "wbcode2", "year", "dem", "y")
 #' PM.results <- PanelMatch(panel.data = dem.sub.panel, lag = 4, 
 #'                          refinement.method = "ps.match", 
 #'                          match.missing = TRUE, 
@@ -28,8 +24,7 @@
 #'                          size.match = 5, qoi = "att",
 #'                          lead = 0:4, 
 #'                          forbid.treatment.reversal = FALSE)
-#' get_covariate_balance(PM.results, dem.sub.panel, covariates = c("tradewb", "rdata"),
-#'                          ylim = c(-2,2))
+#' get_covariate_balance(PM.results, panel.data = dem.sub.panel, covariates = c("tradewb", "rdata"))
 #'
 #' @export
 get_covariate_balance <- function(..., 
@@ -38,19 +33,6 @@ get_covariate_balance <- function(...,
                                   include.unrefined = TRUE)
 {
   if (!inherits(panel.data, "PanelData")) stop("Please provide a PanelData object.")
-  
-
-  
-  # if (use.equal.weights)
-  # {
-  #   include.unrefined <- FALSE
-  # } else {
-  #   include.unrefined <- TRUE
-  # }
-  # if (use.equal.weights && include.unrefined)
-  # {
-  #   warning("use.equal.weights and include.urefined are both TRUE... This is redundant")
-  # }
   
   if(is.null(covariates))
   {

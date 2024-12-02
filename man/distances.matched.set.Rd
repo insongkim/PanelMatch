@@ -2,7 +2,7 @@
 % Please edit documentation in R/matched_set_obj.R
 \name{distances.matched.set}
 \alias{distances.matched.set}
-\title{Extract distances of matched sets}
+\title{Extract the distances of matched control units}
 \usage{
 \method{distances}{matched.set}(object)
 }
@@ -13,5 +13,18 @@
 A named list of named vectors. Each element corresponds to a matched set and will be a named vector, where the names of each element will identify a matched control unit and its distance from the treated observation within a particular matched set. These correspond to the "distances" attribute, which are calculated and included when the \code{verbose} option is set to TRUE in \code{PanelMatch}.
 }
 \description{
-Extract distances of matched sets
+Extract the distances of matched control units
+}
+\examples{
+dem.panel <- PanelData(dem, "wbcode2", "year", "dem", "y")
+PM.results <- PanelMatch(panel.data = dem.panel, lag = 4,
+                         refinement.method = "mahalanobis",
+                         verbose = TRUE,
+                         match.missing = TRUE,
+                         covs.formula = ~ tradewb,
+                         size.match = 5, qoi = "att",
+                         lead = 0:4,
+                         forbid.treatment.reversal = FALSE)
+r1 <- extract(PM.results, qoi = "att")
+lt <- distances(r1)
 }

@@ -1,6 +1,6 @@
-#' PanelEstimate
-#'
-#' \code{PanelEstimate} estimates a causal quantity of interest, including the average treatment effect for
+#' Estimate a causal quantity of interest
+#' 
+#' Estimate a causal quantity of interest, including the average treatment effect for
 #' treated or control units (att and atc, respectively), the average effect of treatment reversal on reversed units (art), or average treatment effect (ate), as specified in \code{PanelMatch()}.
 #' This is done by estimating the counterfactual outcomes for each treated unit using
 #' matched sets. Users will provide matched sets that were obtained by the
@@ -48,7 +48,7 @@
 #'
 #' @examples
 #' dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
-#' dem.sub.panel <- PanelData(dem.sub, 'wbcode2', 'year', 'dem', 'y')
+#' dem.sub.panel <- PanelData(dem.sub, "wbcode2", "year", "dem", "y")
 #' # create subset of data for simplicity
 #' PM.results <- PanelMatch(panel.data = dem.sub.panel, lag = 4, 
 #'                          refinement.method = "ps.match", 
@@ -57,7 +57,9 @@
 #'                          size.match = 5, qoi = "att",
 #'                          lead = 0:4, 
 #'                          forbid.treatment.reversal = FALSE)
-#' PE.results <- PanelEstimate(sets = PM.results, data = dem.sub.panel, se.method = "unconditional")
+#' PE.results <- PanelEstimate(sets = PM.results, 
+#'                panel.data = dem.sub.panel, 
+#'                se.method = "unconditional")
 #'
 #' @export
 PanelEstimate <- function(sets, panel.data,

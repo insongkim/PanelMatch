@@ -78,11 +78,19 @@ PanelData <- function(panel.data,
 
 #' Create basic plots of PanelData objects
 #' @param x PanelData object
-#' @param ...  
+#' @param ... Not used
 #' @param plotting.variable character string specifying which variable to plot in the resulting figure. The values of this variable will be used to fill in cells on the resulting heatmap. Defaults to whatever is specified as the treatment variable. See below for more.
 #' @return Returns a ggplot2 object created by \code{geom_tile()}. The basic figure shows units along the y-axis and time along the x-axis. The figure takes the form of a heatmap. The value of the plotting.variable argument is used to fill in the color of the cells. 
 #'
 #' @export
+#' @examples
+#' dem$rdata <- rnorm(nrow(dem))
+#' d <- PanelData(dem, "wbcode2", "year", "dem", "y")
+#' print(d)
+#' summary(d)
+#' plot(d)
+#' plot(d, plotting.variable = "rdata")
+
 plot.PanelData <- function(x, ..., plotting.variable = NA)
 {
   if (!inherits(x, "PanelData")) {
@@ -120,6 +128,10 @@ plot.PanelData <- function(x, ..., plotting.variable = NA)
 #' @param ... additional arguments to be passed to \code{print.data.frame()}
 #'
 #' @export
+#' @examples
+#' d <- PanelData(dem, "wbcode2", "year", "dem", "y")
+#' print(d)
+#' 
 print.PanelData <- function(x, ...)
 {
   if (!inherits(x, "PanelData")) {
@@ -140,9 +152,13 @@ print.PanelData <- function(x, ...)
 #' Summarize the number of unique units and time periods in a PanelData object
 #' @param object PanelData object
 #'
-#' @param ... 
+#' @param ... Not used
 #' @return Returns a \code{data.frame} object, with columns "num.units" and "num.periods." These specify the number of unique units and time periods that appear in the balanced panel data. 
 #' @export
+#' @examples
+#' d <- PanelData(dem, "wbcode2", "year", "dem", "y")
+#' print(d)
+#' 
 summary.PanelData <- function(object, ...)
 {
   attr(object, "unit.id") -> unit.id

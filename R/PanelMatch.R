@@ -1,6 +1,4 @@
-#' PanelMatch
-#' 
-#' Create refined/weighted sets of treated and control units
+#' Create refined/weighted sets of matched treated and control units
 #' 
 #' \code{PanelMatch} identifies a matched set for each treated
 #' observation. Specifically, for a given treated unit, the matched
@@ -13,15 +11,9 @@
 #' similar control units and a method for defining similarity/distance between units. This is done 
 #' via the \code{covs.formula} and \code{refinement.method} arguments, respectively, which are explained in more detail below.
 #' @param lag An integer value indicating the length of treatment history periods to be matched on
-#' @param time.id A character string indicating the name of the time 
-#' variable in the \code{data}. This data currently must be formatted as sequential integers. 
-#' @param unit.id A character string indicating the name of unit identifier in the data. This data must be integer.
-#' @param treatment A character string indicating the name of the treatment variable in the \code{data}. 
-#' The treatment must be a binary indicator variable (integer with 0 for the control group and 1 for the treatment group).
-#' @param outcome.var A character string identifying the outcome variable.
-#' @param refinement.method A character string specifying the matching or weighting method to be used for refining the matched sets. The user can choose "mahalanobis", "ps.match", "CBPS.match", "ps.weight", "CBPS.weight", or "none". The first three methods will use the \code{size.match} argument to create sets of at most \code{size.match} closest control units. Choosing "none" will assign equal weights to all control units in each matched set.
+#' @param refinement.method A character string specifying the matching or weighting method to be used for refining the matched sets. The user can choose "mahalanobis", "ps.match", "CBPS.match", "ps.weight", "CBPS.weight", "ps.msm.weight", "CBPS.msm.weight", or "none". The first three methods will use the \code{size.match} argument to create sets of at most \code{size.match} closest control units. Choosing "none" will assign equal weights to all control units in each matched set.
 #' @param match.missing Logical variable indicating whether or not units should be matched on the patterns of missingness in their treatment histories. Default is TRUE. When FALSE, neither treated nor control units are allowed to have missing treatment data in the lag window.
-#' @param panel.data A PanelData object containing time series cross sectional data. 
+#' @param panel.data A \code{PanelData} object containing time series cross sectional data. 
 #' Time data must be sequential integers that increase by 1. Unit identifiers must be integers. Treatment data must be binary.
 #' @param size.match An integer dictating the number of permitted closest control units in a matched set after refinement. 
 #' This argument only affects results when using a matching method ("mahalanobis" or any of the refinement methods that end in ".match").
@@ -72,7 +64,7 @@
 #'
 #' @examples
 #' dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
-#' dem.sub.panel <- PanelData(dem.sub, 'wbcode2', 'year', 'dem', 'y')
+#' dem.sub.panel <- PanelData(dem.sub, "wbcode2", "year", "dem", "y")
 #' # create subset of data for simplicity
 #' PM.results <- PanelMatch(panel.data = dem.sub.panel, lag = 4, 
 #'                          refinement.method = "ps.match", 
@@ -85,7 +77,6 @@
 #'
 #' @export
 PanelMatch <- function(panel.data, 
-                       data = NULL,
                        lag, 
                        refinement.method,
                        qoi,
@@ -106,7 +97,7 @@ PanelMatch <- function(panel.data,
   if (!inherits(panel.data, "PanelData")) 
   {
     stop("Please provide a PanelData object.")
-  } else { #TODO: improve handling here
+  } else { 
     ordered.data <- panel.data  
   }
   
@@ -140,7 +131,7 @@ PanelMatch <- function(panel.data,
   }
   if (any(lead < 0)) stop("Please provide positive lead values. Please see the placebo_test function for more.")
   if (!all(qoi %in% c("att", "atc", "ate", "art"))) stop("please choose a valid qoi")
-  if(any(is.na(data[, unit.id]))) stop("Cannot have NA unit ids")
+  if(any(is.na(ordered.data[, unit.id]))) stop("Cannot have NA unit ids")
   if (!forbid.treatment.reversal & all(refinement.method %in% c("CBPS.msm.weight", "ps.msm.weight")))
   {
     stop("please set forbid.treatment.reversal to TRUE for msm methods")

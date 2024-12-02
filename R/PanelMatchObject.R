@@ -1,17 +1,21 @@
+#' Extract matched.set objects from PanelMatch results
+#' @param pm.object \code{PanelMatch} obect
+#' @param qoi character, specifying the qoi. Valid inputs include "att", "atc", "art", and NUL
+#'
 #' @export
-extract <- function(pm.object, ...) {
+extract <- function(pm.object, qoi) {
   UseMethod("extract", pm.object)
 }
 
-#' Extract and/or filter matched.set objects
+#' Extract matched.set objects from PanelMatch results
 #'
-#' @param x PanelMatch obect
+#' @param pm.object \code{PanelMatch} obect
 #' @param qoi character, specifying the qoi. Valid inputs include "att", "atc", "art", and NULL
 #' @return a \code{matched.set} object
 #'
 #' @examples
 #' dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
-#' dem.sub.panel <- PanelData(dem.sub, 'wbcode2', 'year', 'dem', 'y')
+#' dem.sub.panel <- PanelData(dem.sub, "wbcode2", "year", "dem", "y")
 #' # create subset of data for simplicity
 #' PM.results <- PanelMatch(panel.data = dem.sub.panel,
 #'                          lag = 4, 
@@ -23,6 +27,7 @@ extract <- function(pm.object, ...) {
 #' extract(PM.results, qoi = "att")
 #' @method extract PanelMatch
 #' @export
+#' 
 extract.PanelMatch <- function(pm.object, 
                            qoi = NULL)
 {
@@ -30,7 +35,7 @@ extract.PanelMatch <- function(pm.object,
   
   if(is.null(qoi) && identical(attr(pm.object, "qoi"), "ate"))
   {
-    stop("Please specify qoi = NULL (if the qoi is not ate), att, art, or atc. ATE is not a valid specification.")
+    stop("Please specify qoi = NULL (if the qoi is not ate), att, art, or atc. ATE is not a valid specification for extraction.")
   }
   
   if (!is.null(qoi) && identical(qoi, "ate"))
@@ -61,7 +66,7 @@ extract.PanelMatch <- function(pm.object,
 #'
 #' @examples
 #' dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
-#' dem.sub.panel <- PanelData(dem.sub, 'wbcode2', 'year', 'dem', 'y')
+#' dem.sub.panel <- PanelData(dem.sub, "wbcode2", "year", "dem", "y")
 #' PM.results <- PanelMatch(panel.data = dem.sub.panel,
 #'                          lag = 4, 
 #'                          refinement.method = "mahalanobis",
@@ -118,7 +123,7 @@ summary.PanelMatch <- function(object, ..., verbose = FALSE)
 #'
 #' @examples
 #' dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
-#' dem.sub.panel <- PanelData(dem.sub, 'wbcode2', 'year', 'dem', 'y')
+#' dem.sub.panel <- PanelData(dem.sub, "wbcode2", "year", "dem", "y")
 #' PM.results <- PanelMatch(panel.data = dem.sub.panel,
 #'                          lag = 4, 
 #'                          refinement.method = "mahalanobis",
@@ -213,8 +218,6 @@ print.PanelMatch <- function(x, ..., verbose)
 #' @param main default is "Distribution of Matched Set Sizes". This is the same argument as the standard argument for \code{hist}
 #' @param freq default is TRUE. See \code{freq} argument in \code{hist()} function for more.
 #' @param include.empty.sets logical value indicating whether or not empty sets should be included in the histogram. default is FALSE. If FALSE, then empty sets will be noted as a separate vertical bar at x = 0. If TRUE, empty sets will be included as normal sets.
-#'
-#' @method plot matched.set
 #' @keywords internal
 plot_matched_set <- function(x, border = NA, col = "grey", ylab = "Frequency of Size",
                              xlab ="Matched Set Size" , lwd = NULL,

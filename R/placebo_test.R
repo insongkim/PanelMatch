@@ -1,6 +1,4 @@
-#' placebo_test
-#'
-#' Calculates results for a placebo test
+#' Conduct a placebo test
 #'
 #'
 #' Calculate the results of a placebo test, looking at the change in outcome at time = t-1, compared to other pre-treatment periods in the lag window.
@@ -19,7 +17,7 @@
 #'
 #' @examples
 #' dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
-#' dem.sub.panel <- PanelData(dem.sub, 'wbcode2', 'year', 'dem', 'y')
+#' dem.sub.panel <- PanelData(dem.sub, "wbcode2", "year", "dem", "y")
 #' # create subset of data for simplicity
 #' PM.results <- PanelMatch(panel.data = dem.sub.panel, lag = 4, 
 #'                          refinement.method = "ps.match", 

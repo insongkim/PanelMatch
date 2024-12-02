@@ -9,7 +9,7 @@
 \arguments{
 \item{x}{PanelData object}
 
-\item{...}{}
+\item{...}{Not used}
 
 \item{plotting.variable}{character string specifying which variable to plot in the resulting figure. The values of this variable will be used to fill in cells on the resulting heatmap. Defaults to whatever is specified as the treatment variable. See below for more.}
 }
@@ -18,4 +18,12 @@ Returns a ggplot2 object created by \code{geom_tile()}. The basic figure shows u
 }
 \description{
 Create basic plots of PanelData objects
+}
+\examples{
+dem$rdata <- rnorm(nrow(dem))
+d <- PanelData(dem, "wbcode2", "year", "dem", "y")
+print(d)
+summary(d)
+plot(d)
+plot(d, plotting.variable = "rdata")
 }

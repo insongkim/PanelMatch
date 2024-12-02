@@ -2,7 +2,7 @@
 % Please edit documentation in R/DisplayTreatment.R
 \name{DisplayTreatment}
 \alias{DisplayTreatment}
-\title{DisplayTreatment}
+\title{Visualize the treatment distribution across units and time in a panel data set}
 \usage{
 DisplayTreatment(
   panel.data,
@@ -27,7 +27,7 @@ DisplayTreatment(
 )
 }
 \arguments{
-\item{panel.data}{PanelData object}
+\item{panel.data}{\code{PanelData} object}
 
 \item{color.of.treated}{Color of the treated observations provided as a character string (this includes hex values). Default is red.}
 
@@ -74,12 +74,15 @@ Default is FALSE. If no \code{matched.set} is provided, then this argument will 
 which visualizes the variation of treatment across unit and time.
 }
 \description{
-\code{DisplayTreatment} visualizes the treatment distribution
-across units and time in a panel data set
+Visualize the treatment distribution across units and time in a panel data set
 }
 \examples{
-dem.sub.panel <- PanelData(dem.sub, 'wbcode2', 'year', 'dem', 'y')
-DisplayTreatment(panel.data = dem.sub.panel,
+dem.panel <- PanelData(panel.data = dem, 
+              unit.id = "wbcode2", 
+              time.id = "year", 
+              treatment = "dem", 
+              outcome = "y")
+DisplayTreatment(panel.data = dem.panel,
                  legend.position = "none",
                  xlab = "year", ylab = "Country Code")
 

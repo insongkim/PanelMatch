@@ -9,11 +9,16 @@
 \arguments{
 \item{object}{PanelData object}
 
-\item{...}{}
+\item{...}{Not used}
 }
 \value{
 Returns a \code{data.frame} object, with columns "num.units" and "num.periods." These specify the number of unique units and time periods that appear in the balanced panel data.
 }
 \description{
 Summarize the number of unique units and time periods in a PanelData object
+}
+\examples{
+d <- PanelData(dem, "wbcode2", "year", "dem", "y")
+print(d)
+
 }

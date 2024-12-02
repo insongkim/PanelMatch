@@ -15,6 +15,8 @@
 \arguments{
 \item{object}{A PanelEstimate object}
 
+\item{confidence.level}{Confidence level to be used for confidence interval calculations. Must be numeric between 0 and 1. If NULL, confidence level from \code{PanelEstimate()} specification is used.}
+
 \item{verbose}{logical indicating whether or not output should be printed in an expanded form. Default is TRUE}
 
 \item{bias.corrected}{logical indicating whether or not bias corrected estimates should be provided. Default is FALSE. This argument only applies for standard errors calculated with the bootstrap.}
@@ -28,7 +30,7 @@ estimates and confidence intervals
 }
 \examples{
 dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
-dem.sub.panel <- PanelData(dem.sub, 'wbcode2', 'year', 'dem', 'y')
+dem.sub.panel <- PanelData(dem.sub, "wbcode2", "year", "dem", "y")
 # create subset of data for simplicity
 PM.results <- PanelMatch(panel.data = dem.sub.panel, lag = 4, 
                          refinement.method = "ps.match", 

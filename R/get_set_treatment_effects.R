@@ -1,16 +1,14 @@
-#' get_set_treatment_effects
-#'
-#' Calculates the treatment effect size at the matched set level
+#' Calculate the treatment effect size at the matched set level
 #'
 #'
 #' Calculate the size of treatment effects for each matched set.
 #' @param pm.obj an object of class \code{PanelMatch}
-#' @param panel.data PanelData object with the time series cross sectional data used for matching, refinement, and estimation
+#' @param panel.data \code{PanelData} object with the time series cross sectional data used for matching, refinement, and estimation
 #' @param lead integer (or integer vector) indicating the time period(s) in the future for which the treatment effect size will be calculated. Calculations will be made for the period t + lead, where t is the time of treatment. If more than one lead value is provided, then calculations will be performed for each value.
 #' @return a list equal in length to the number of lead periods specified to the \code{lead} argument. Each element in the list is a vector of the matched set level effects.
 #' @examples
 #' dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
-#' dem.sub.panel <- PanelData(dem.sub, 'wbcode2', 'year', 'dem', 'y')
+#' dem.sub.panel <- PanelData(dem.sub, "wbcode2", "year", "dem", "y")
 #' # create subset of data for simplicity
 #' PM.results <- PanelMatch(panel.data = dem.sub.panel, lag = 4, 
 #'                          refinement.method = "ps.match", 
@@ -19,7 +17,8 @@
 #'                          size.match = 5, qoi = "att",
 #'                          lead = 0:4, 
 #'                          forbid.treatment.reversal = FALSE)
-#' set.effects <- get_set_treatment_effects(pm.obj = PM.results, data = dem.sub.panel, lead = 0)
+#' set.effects <- get_set_treatment_effects(pm.obj = PM.results, 
+#'                 panel.data = dem.sub.panel, lead = 0)
 #'
 #'
 #' @export

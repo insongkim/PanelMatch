@@ -2,7 +2,7 @@
 % Please edit documentation in R/PanelBalance.R
 \name{summary.PanelBalance}
 \alias{summary.PanelBalance}
-\title{Summarize covariate balance over time (placeholder for now)}
+\title{Summarize covariate balance over time}
 \usage{
 \method{summary}{PanelBalance}(
   object,
@@ -13,14 +13,28 @@
 )
 }
 \arguments{
-\item{qoi}{Character string "att", "art", or "atc" -- specifying which qoi to extract.}
+\item{object}{\code{PanelBalance} object}
+
+\item{qoi}{Character. Valid values include "att", "art", or "atc". Specifying which QOI information to extract and summarize.}
+
+\item{include.unrefined}{logical. Indicates whether or not unrefined balance results should be included in the summary.}
+
+\item{unrefined.only}{logical. Indicates whether or not only unrefined balance results should be included in the summary.}
 
 \item{...}{Not used}
-
-\item{PanelBalance}{object}
-
-\item{refined}{logical. return refined or unrefined balance results. Default is TRUE.}
+}
+\value{
+returns a list of matrices with covariate balance results calculated. Each element in the list corresponds to a \code{PanelMatch} configuration given to \code{get_covariate_balance()} and are returned in order. Note that if a configuration has \code{qoi = "ate"}, the corresponding element in the returned list will also be a list, containing balance results corresponding to the ATT and ATC. Otherwise, each element in the returned list will be a matrix. Each matrix entry corresponds to balance results for a particular covariate in a particular period. When unrefined balance results are included, users will see additional columns with "_unrefined" appended to covariate names. These correspond to the unrefined balance results for a particular covariate-period.
 }
 \description{
-Summarize covariate balance over time (placeholder for now)
+Summarize covariate balance over time
+}
+\examples{
+dem$rdata <- runif(runif(nrow(dem)))
+dem.panel <- PanelData(dem, "wbcode2", "year", "dem", "y")
+pm.obj <- PanelMatch(lead = 0:3, lag = 4, refinement.method = "mahalanobis", 
+                     panel.data = dem.panel, match.missing = TRUE,
+                     covs.formula = ~ tradewb + rdata + I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
+                     size.match = 5, qoi = "att")
+summary(pm.obj)
 }

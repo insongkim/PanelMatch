@@ -2,7 +2,7 @@
 % Please edit documentation in R/matched_set_obj.R
 \name{weights.matched.set}
 \alias{weights.matched.set}
-\title{Extract the weights of matched.set objects}
+\title{Extract the weights of matched control units}
 \usage{
 \method{weights}{matched.set}(object)
 }
@@ -13,5 +13,17 @@
 list of named vectors. Each list element corresponds to a particular treated observation and contains the matched control units, along with their weights.
 }
 \description{
-Extract the weights of matched.set objects
+Extract the weights of matched control units
+}
+\examples{
+dem.panel <- PanelData(dem, "wbcode2", "year", "dem", "y")
+PM.results <- PanelMatch(panel.data = dem.panel, lag = 4,
+                        refinement.method = "ps.match",
+                        match.missing = TRUE,
+                        covs.formula = ~ tradewb,
+                        size.match = 5, qoi = "att",
+                        lead = 0:4,
+                        forbid.treatment.reversal = FALSE)
+r1 <- extract(PM.results, qoi = "att")
+lt <- weights(r1)
 }

@@ -28,7 +28,7 @@ accepts all standard \code{summary} arguments.
 }
 \examples{
 dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
-dem.sub.panel <- PanelData(dem.sub, 'wbcode2', 'year', 'dem', 'y')
+dem.sub.panel <- PanelData(dem.sub, "wbcode2", "year", "dem", "y")
 # create subset of data for simplicity
 PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                          treatment = "dem", refinement.method = "ps.match",
@@ -36,7 +36,7 @@ PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
                          covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
                          size.match = 5, qoi = "att",
                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
-summary(PM.results$att)
+summary(extract(PM.results, qoi = "att"))
 
 
 

@@ -4,7 +4,7 @@
 \alias{plot_matched_set}
 \title{Helper function for plotting the distribution of matched set sizes}
 \usage{
-\method{plot}{matched.set}(
+plot_matched_set(
   x,
   border = NA,
   col = "grey",

@@ -1,6 +1,4 @@
-#' matched_set
-#'
-#' \code{matched_set} is a constructor for the \code{matched.set} class.
+#' A constructor for the \code{matched.set} class.
 #'
 #'
 #' Users should never need to use this function by itself. See below for more about \code{matched.set} objects.
@@ -75,7 +73,7 @@ matched_set <- function(matchedsets, id, t, L, t.var, id.var, treatment.var)
 #'
 #' @examples
 #' dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
-#' dem.sub.panel <- PanelData(dem.sub, 'wbcode2', 'year', 'dem', 'y')
+#' dem.sub.panel <- PanelData(dem.sub, "wbcode2", "year", "dem", "y")
 #' # create subset of data for simplicity
 #' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
 #'                          treatment = "dem", refinement.method = "ps.match",
@@ -83,7 +81,7 @@ matched_set <- function(matchedsets, id, t, L, t.var, id.var, treatment.var)
 #'                          covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
 #'                          size.match = 5, qoi = "att",
 #'                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
-#' summary(PM.results$att)
+#' summary(extract(PM.results, qoi = "att"))
 #'
 #'
 #'
@@ -117,25 +115,40 @@ summary.matched.set <- function(object, ..., verbose = TRUE)
   }
 }
 
-#' Plot the distribution of the sizes of matched sets.
-#'
-#'
+
+#' Plot the distribution of control unit weights
+#' 
+#' The method creates a heatmap with the following characteristics. The heatmap grid is m x n, where m is the number of treated observations (as identified by i,t pairs) and n is the number of units. Treated observations represent the rows, and every unit in the data set form the columns. The figure then shows the calculated weights or distances (as specified) for each control unit within the matched set as identified by the row. Weights/distances that are missing or zero are not considered in the shading scheme and are both treated as NA for all practical purposes. Note that not all refinement methods will return a distance. Those that do also require \code{verbose = TRUE} in the \code{PanelMatch} specification. 
+
+#' For example say (2, 5) is a treated observation and units 1, 4, 8 are matched as controls. Row i will represent (2,5) in the matrix, M. The columns indexed by w, x, and y, correspond to units 1, 4, and 8. M[i, w], M[i, x],  M[i, y] then contain the weights or pairwise distances of units 1, 4, and 8 within that matched set. 
 #'
 #' @param x a \code{matched.set} object
-#' @param ... optional arguments to be passed to \code{hist()}
-#' @param border default is NA. This is the same argument as the standard argument for \code{hist()}
-#' @param col default is "grey". This is the same argument as the standard argument for \code{hist()}
-#' @param ylab default is "Frequency of Size". This is the same argument as the standard argument for \code{hist()}
-#' @param xlab default is "Matched Set Size". This is the same argument as the standard argument for \code{hist()}
-#' @param lwd default is NULL. This is the same argument as the standard argument for \code{hist()}
-#' @param main default is "Distribution of Matched Set Sizes". This is the same argument as the standard argument for \code{hist}
-#' @param freq default is TRUE. See \code{freq} argument in \code{hist()} function for more.
-#' @param include.empty.sets logical value indicating whether or not empty sets should be included in the histogram. default is FALSE. If FALSE, then empty sets will be noted as a separate vertical bar at x = 0. If TRUE, empty sets will be included as normal sets.
+#' @param ... Not used
+#' @param panel.data a \code{PanelData} object
+#' @param type character indicating whether or not weights or distances should be plotted
+#' @param include.missing logical. When TRUE, all units appear as columns, including those that are never included in any matched sets. When FALSE, only units that appear in at least one matched set are included. 
+#' @param low.color option passed to \code{ggplot2::scale_fill_gradientn()}. The color representing the low weight/distance values.
+#' @param mid.color option passed to \code{ggplot2::scale_fill_gradientn()}. The color representing the medium weight/distance values.
+#' @param high.color option passed to \code{ggplot2::scale_fill_gradientn()}. The color representing the high weight/distance values.
+#' @param missing.color option passed to \code{ggplot2::scale_fill_gradientn()}. The color representing the missing/zero weight/distance values.
+#'
+#' @return returns a \code{ggplot2:geom_tile()} object
+#' @export
 #'
 #' @examples
+#'   dem.panel <- PanelData(dem, "wbcode2", "year", "dem", "y")
+#'   PM.results <- PanelMatch(panel.data = dem.panel, lag = 4,
+#'                         refinement.method = "ps.match",
+#'                         match.missing = TRUE,
+#'                         covs.formula = ~ tradewb,
+#'                         size.match = 5, qoi = "att",
+#'                         lead = 0:4,
+#'                         forbid.treatment.reversal = FALSE)
 #'
-#' @method plot matched.set
-#' @export
+#'   mso <- extract(PM.results)
+#'   plot(mso, panel.data = dem.panel)
+#'
+#'
 plot.matched.set <- function(x, ..., panel.data, type = "weights", 
                              include.missing = TRUE,
                              low.color = "blue", 
@@ -182,7 +195,7 @@ plot.matched.set <- function(x, ..., panel.data, type = "weights",
                               variable.name = "Units", 
                               value.name = "Weight")
   
-  p <- ggplot2::ggplot(df_long, aes(x = Units, y = Row, fill = Weight)) +
+  p <- ggplot2::ggplot(df_long, aes(x = .data$Units, y = .data$Row, fill = .data$Weight)) +
     ggplot2::geom_tile(color = "white") +
     ggplot2::scale_fill_gradientn(colors = c(low.color, mid.color, high.color), 
                          na.value = missing.color) +
@@ -220,20 +233,21 @@ combine_named_vectors <- function(list_of_vectors) {
 #'
 #' @param x a \code{matched.set} object
 #' @param verbose logical indicating whether or not output should be printed in expanded/raw list form.
-#' The verbose form is not recommended unless the data set is small. Default is FALSE
+#' The verbose form is not recommended unless the data set is small. Default is FALSE, which prints an overview of matched set sizes. 
 #' @param ... Not used. additional arguments to be passed to \code{print}
 #'
 #' @examples
 #' dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
 #' # create subset of data for simplicity
-#' dem.sub.panel <- PanelData(dem.sub, 'wbcode2', 'year', 'dem', 'y')
-#' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
-#'                          treatment = "dem", refinement.method = "ps.match",
-#'                          data = dem, match.missing = TRUE,
-#'                          covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
-#'                          size.match = 5, qoi = "att",
-#'                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
-#' print(PM.results$att)
+#' dem.sub.panel <- PanelData(dem.sub, "wbcode2", "year", "dem", "y")
+#' PM.results <- PanelMatch(panel.data = dem.panel, lag = 4,
+#'                         refinement.method = "ps.match",
+#'                         match.missing = TRUE,
+#'                         covs.formula = ~ tradewb,
+#'                         size.match = 5, qoi = "att",
+#'                         lead = 0:4,
+#'                         forbid.treatment.reversal = FALSE)
+#' print(extract(PM.results, qoi = "att"))
 #'
 #'
 #'
@@ -253,6 +267,16 @@ print.matched.set <- function(x, ..., verbose = FALSE)
   }
 }
 
+#' Subset \code{matched.set} object
+#' 
+#' Subsets \code{matched.set} objects while preserving attributes.
+#' 
+#' @param x \code{matched.set} object
+#'
+#' @param i numeric. specifies the index of which element to extract.
+#' @param j NULL
+#' @param drop NULL
+#'
 #' @export
 `[.matched.set` <- function(x, i, j = NULL, drop = NULL)
 {
@@ -292,12 +316,15 @@ handle_pm_qoi <- function(pm.in, qoi.in)
   return(msets)
 }
 
+#' Get weights
+#' @param object \code{Matched.set object} 
+#'
 #' @export
 weights <- function(object) {
   UseMethod("weights")
 }
 
-#' Extract the weights of matched.set objects
+#' Extract the weights of matched control units
 #'
 #' @param object matched.set object, extracted using the \code{get.PanelMatch()} method
 #'
@@ -305,6 +332,16 @@ weights <- function(object) {
 #' @export
 #'
 #' @examples
+#' dem.panel <- PanelData(dem, "wbcode2", "year", "dem", "y")
+#' PM.results <- PanelMatch(panel.data = dem.panel, lag = 4,
+#'                         refinement.method = "ps.match",
+#'                         match.missing = TRUE,
+#'                         covs.formula = ~ tradewb,
+#'                         size.match = 5, qoi = "att",
+#'                         lead = 0:4,
+#'                         forbid.treatment.reversal = FALSE)
+#' r1 <- extract(PM.results, qoi = "att")
+#' lt <- weights(r1)
 weights.matched.set <- function(object)
 {
   weight.list <- lapply(object, function(x) attr(x, "weights"))
@@ -312,18 +349,34 @@ weights.matched.set <- function(object)
   return(weight.list)
 }
 
+#' Get distances
+#' @param object \code{matched.set} object
+#'
 #' @export
 distances <- function(object)
 {
   UseMethod("distances")
 }
 
-#' Extract distances of matched sets
+#' Extract the distances of matched control units
 #'
 #' @param object a matched.set object
 #'
 #' @return A named list of named vectors. Each element corresponds to a matched set and will be a named vector, where the names of each element will identify a matched control unit and its distance from the treated observation within a particular matched set. These correspond to the "distances" attribute, which are calculated and included when the \code{verbose} option is set to TRUE in \code{PanelMatch}.
 #' @export
+#' 
+#' @examples 
+#' dem.panel <- PanelData(dem, "wbcode2", "year", "dem", "y")
+#' PM.results <- PanelMatch(panel.data = dem.panel, lag = 4,
+#'                          refinement.method = "mahalanobis",
+#'                          verbose = TRUE,
+#'                          match.missing = TRUE,
+#'                          covs.formula = ~ tradewb,
+#'                          size.match = 5, qoi = "att",
+#'                          lead = 0:4,
+#'                          forbid.treatment.reversal = FALSE)
+#' r1 <- extract(PM.results, qoi = "att")
+#' lt <- distances(r1)
 distances.matched.set <- function(object)
 {
   distance.list <- lapply(object, function(x) attr(x, "distances"))

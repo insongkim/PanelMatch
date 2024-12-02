@@ -13,7 +13,6 @@
 #'
 #' @keywords internal
 #'
-
 findBinaryTreated <- function(dmat, qoi.in,
                               treatedvar, 
                               time.var, 

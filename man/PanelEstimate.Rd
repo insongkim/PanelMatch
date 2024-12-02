@@ -2,7 +2,7 @@
 % Please edit documentation in R/PanelEstimate.R
 \name{PanelEstimate}
 \alias{PanelEstimate}
-\title{PanelEstimate}
+\title{Estimate a causal quantity of interest}
 \usage{
 PanelEstimate(
   sets,
@@ -63,7 +63,7 @@ estimates for statistical inference. The default is .95.}
 \item{placebo.test}{if \code{include.placebo.test = TRUE}, a placebo test is conducted using \code{placebo_test()} and returned as a list. See documentation for \code{placebo_test()} for more about each individual item.}
 }
 \description{
-\code{PanelEstimate} estimates a causal quantity of interest, including the average treatment effect for
+Estimate a causal quantity of interest, including the average treatment effect for
 treated or control units (att and atc, respectively), the average effect of treatment reversal on reversed units (art), or average treatment effect (ate), as specified in \code{PanelMatch()}.
 This is done by estimating the counterfactual outcomes for each treated unit using
 matched sets. Users will provide matched sets that were obtained by the
@@ -76,7 +76,7 @@ and must adhere to the same data types/structures outlined below.
 }
 \examples{
 dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
-dem.sub.panel <- PanelData(dem.sub, 'wbcode2', 'year', 'dem', 'y')
+dem.sub.panel <- PanelData(dem.sub, "wbcode2", "year", "dem", "y")
 # create subset of data for simplicity
 PM.results <- PanelMatch(panel.data = dem.sub.panel, lag = 4, 
                          refinement.method = "ps.match", 
@@ -85,7 +85,9 @@ PM.results <- PanelMatch(panel.data = dem.sub.panel, lag = 4,
                          size.match = 5, qoi = "att",
                          lead = 0:4, 
                          forbid.treatment.reversal = FALSE)
-PE.results <- PanelEstimate(sets = PM.results, data = dem.sub.panel, se.method = "unconditional")
+PE.results <- PanelEstimate(sets = PM.results, 
+               panel.data = dem.sub.panel, 
+               se.method = "unconditional")
 
 }
 \references{

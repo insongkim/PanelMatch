@@ -7,11 +7,12 @@
 #'
 #' @param object A PanelEstimate object
 #' @param verbose logical indicating whether or not output should be printed in an expanded form. Default is TRUE
+#' @param confidence.level Confidence level to be used for confidence interval calculations. Must be numeric between 0 and 1. If NULL, confidence level from \code{PanelEstimate()} specification is used. 
 #' @param bias.corrected logical indicating whether or not bias corrected estimates should be provided. Default is FALSE. This argument only applies for standard errors calculated with the bootstrap. 
 #' @param ... optional additional arguments. Currently, no additional arguments are supported. 
 #' @examples
 #' dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
-#' dem.sub.panel <- PanelData(dem.sub, 'wbcode2', 'year', 'dem', 'y')
+#' dem.sub.panel <- PanelData(dem.sub, "wbcode2", "year", "dem", "y")
 #' # create subset of data for simplicity
 #' PM.results <- PanelMatch(panel.data = dem.sub.panel, lag = 4, 
 #'                          refinement.method = "ps.match", 
@@ -210,7 +211,7 @@ summary.PanelEstimate <- function(object,
 #' @param ... Additional optional arguments to be passed to \code{plot()}.
 #' @examples
 #' dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
-#' dem.sub.panel <- PanelData(dem.sub, 'wbcode2', 'year', 'dem', 'y')
+#' dem.sub.panel <- PanelData(dem.sub, "wbcode2", "year", "dem", "y")
 #' # create subset of data for simplicity
 #' PM.results <- PanelMatch(panel.data = dem.sub.panel, lag = 4, 
 #'                          refinement.method = "ps.match", 
@@ -219,7 +220,9 @@ summary.PanelEstimate <- function(object,
 #'                          size.match = 5, qoi = "att",
 #'                          lead = 0:4, 
 #'                          forbid.treatment.reversal = FALSE)
-#' PE.results <- PanelEstimate(sets = PM.results, panel.data = dem.sub.panel, se.method = "unconditional")
+#' PE.results <- PanelEstimate(sets = PM.results, 
+#'               panel.data = dem.sub.panel, 
+#'               se.method = "unconditional")
 #' plot(PE.results)
 #'
 #' @method plot PanelEstimate
@@ -268,7 +271,7 @@ plot.PanelEstimate <- function(x,
                    ...)
 }
 
-#' Print PanelEstimate objects with information about estimation
+#' Print PanelEstimate objects with information about estimates
 #' @param x PanelEstimate object
 #' @param ... additional arguments to be passed to \code{print.data.frame()}
 #' @param verbose logical indicating whether or not more information about the results should be printed

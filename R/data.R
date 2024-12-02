@@ -1,4 +1,4 @@
-#' Country-level Democracy indicator
+#' Country-year level democratization data
 #'
 #' A dataset containing the democracy indicator for 184 countries from
 #' 1960 to 2010

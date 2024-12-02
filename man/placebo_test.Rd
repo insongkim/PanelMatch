@@ -2,7 +2,7 @@
 % Please edit documentation in R/placebo_test.R
 \name{placebo_test}
 \alias{placebo_test}
-\title{placebo_test}
+\title{Conduct a placebo test}
 \usage{
 placebo_test(
   pm.obj,
@@ -42,14 +42,11 @@ placebo_test(
 list with 2 or 3 elements: "estimate", which contains the point estimates for the test, "standard.errors" which has the standard errors for each period and optionally "bootstrapped.estimates", containing the bootstrapped point estimates for the test for each specified lag window period.
 }
 \description{
-Calculates results for a placebo test
-}
-\details{
 Calculate the results of a placebo test, looking at the change in outcome at time = t-1, compared to other pre-treatment periods in the lag window.
 }
 \examples{
 dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
-dem.sub.panel <- PanelData(dem.sub, 'wbcode2', 'year', 'dem', 'y')
+dem.sub.panel <- PanelData(dem.sub, "wbcode2", "year", "dem", "y")
 # create subset of data for simplicity
 PM.results <- PanelMatch(panel.data = dem.sub.panel, lag = 4, 
                          refinement.method = "ps.match", 

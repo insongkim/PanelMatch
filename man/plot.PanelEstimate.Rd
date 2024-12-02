@@ -42,7 +42,7 @@ The only mandatory argument is an object of the \code{PanelEstimate} class.
 }
 \examples{
 dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
-dem.sub.panel <- PanelData(dem.sub, 'wbcode2', 'year', 'dem', 'y')
+dem.sub.panel <- PanelData(dem.sub, "wbcode2", "year", "dem", "y")
 # create subset of data for simplicity
 PM.results <- PanelMatch(panel.data = dem.sub.panel, lag = 4, 
                          refinement.method = "ps.match", 
@@ -51,7 +51,9 @@ PM.results <- PanelMatch(panel.data = dem.sub.panel, lag = 4,
                          size.match = 5, qoi = "att",
                          lead = 0:4, 
                          forbid.treatment.reversal = FALSE)
-PE.results <- PanelEstimate(sets = PM.results, panel.data = dem.sub.panel, se.method = "unconditional")
+PE.results <- PanelEstimate(sets = PM.results, 
+              panel.data = dem.sub.panel, 
+              se.method = "unconditional")
 plot(PE.results)
 
 }

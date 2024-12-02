@@ -2,17 +2,20 @@
 % Please edit documentation in R/PanelBalance.R
 \name{[.PanelBalance}
 \alias{[.PanelBalance}
-\title{Title}
+\title{Subset PanelBalance objects}
 \usage{
 \method{[}{PanelBalance}(x, i, ...)
 }
 \arguments{
-\item{x}{}
+\item{x}{\code{PanelBalance} object}
 
-\item{i}{}
+\item{i}{numeric. Specifies which element to extract. Substantively, it specifies which \code{PanelMatch} configuration data to extract.}
 
-\item{...}{}
+\item{...}{Not used}
+}
+\value{
+Returns balance information for specified \code{PanelMatch} configuration. Note that results are still returned as a \code{PanelBalance} object.
 }
 \description{
-Title
+Subset PanelBalance objects
 }

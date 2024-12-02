@@ -27,7 +27,7 @@ accepts all standard \code{summary} arguments. If the quantity of interest is at
 }
 \examples{
 dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
-dem.sub.panel <- PanelData(dem.sub, 'wbcode2', 'year', 'dem', 'y')
+dem.sub.panel <- PanelData(dem.sub, "wbcode2", "year", "dem", "y")
 PM.results <- PanelMatch(panel.data = dem.sub.panel,
                          lag = 4, 
                          refinement.method = "mahalanobis",

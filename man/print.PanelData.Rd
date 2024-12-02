@@ -14,3 +14,8 @@
 \description{
 Print PanelData objects and basic metadata
 }
+\examples{
+d <- PanelData(dem, "wbcode2", "year", "dem", "y")
+print(d)
+
+}

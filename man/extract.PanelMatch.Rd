@@ -2,24 +2,24 @@
 % Please edit documentation in R/PanelMatchObject.R
 \name{extract.PanelMatch}
 \alias{extract.PanelMatch}
-\title{Extract and/or filter matched.set objects}
+\title{Extract matched.set objects from PanelMatch results}
 \usage{
 \method{extract}{PanelMatch}(pm.object, qoi = NULL)
 }
 \arguments{
-\item{qoi}{character, specifying the qoi. Valid inputs include "att", "atc", "art", and NULL}
+\item{pm.object}{\code{PanelMatch} obect}
 
-\item{x}{PanelMatch obect}
+\item{qoi}{character, specifying the qoi. Valid inputs include "att", "atc", "art", and NULL}
 }
 \value{
 a \code{matched.set} object
 }
 \description{
-Extract and/or filter matched.set objects
+Extract matched.set objects from PanelMatch results
 }
 \examples{
 dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
-dem.sub.panel <- PanelData(dem.sub, 'wbcode2', 'year', 'dem', 'y')
+dem.sub.panel <- PanelData(dem.sub, "wbcode2", "year", "dem", "y")
 # create subset of data for simplicity
 PM.results <- PanelMatch(panel.data = dem.sub.panel,
                          lag = 4, 

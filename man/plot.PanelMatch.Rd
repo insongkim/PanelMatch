@@ -47,7 +47,7 @@ regular histogram. See the \code{include.empty.sets} argument for more informati
 }
 \examples{
 dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
-dem.sub.panel <- PanelData(dem.sub, 'wbcode2', 'year', 'dem', 'y')
+dem.sub.panel <- PanelData(dem.sub, "wbcode2", "year", "dem", "y")
 PM.results <- PanelMatch(panel.data = dem.sub.panel,
                          lag = 4, 
                          refinement.method = "mahalanobis",

@@ -1,9 +1,6 @@
-#' DisplayTreatment
-#' 
-#' \code{DisplayTreatment} visualizes the treatment distribution
-#' across units and time in a panel data set
+#' Visualize the treatment distribution across units and time in a panel data set
 #'
-#' @param panel.data PanelData object
+#' @param panel.data \code{PanelData} object
 #' @param color.of.treated Color of the treated observations provided as a character string (this includes hex values). Default is red.
 #' @param color.of.untreated Color of the untreated observations provided as a character string (this includes hex values). Default is blue.
 #' @param title Title of the plot provided as character string
@@ -32,8 +29,12 @@
 #' <haixiao@Princeton.edu>, Adam Rauh <amrauh@umich.edu>, and Kosuke Imai <imai@harvard.edu>
 #'
 #' @examples 
-#' dem.sub.panel <- PanelData(dem.sub, 'wbcode2', 'year', 'dem', 'y')
-#' DisplayTreatment(panel.data = dem.sub.panel,
+#' dem.panel <- PanelData(panel.data = dem, 
+#'               unit.id = "wbcode2", 
+#'               time.id = "year", 
+#'               treatment = "dem", 
+#'               outcome = "y")
+#' DisplayTreatment(panel.data = dem.panel,
 #'                  legend.position = "none",
 #'                  xlab = "year", ylab = "Country Code")
 #' 

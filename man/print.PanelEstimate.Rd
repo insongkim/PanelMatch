@@ -2,7 +2,7 @@
 % Please edit documentation in R/PanelEstimateObject.R
 \name{print.PanelEstimate}
 \alias{print.PanelEstimate}
-\title{Print PanelEstimate objects with information about estimation}
+\title{Print PanelEstimate objects with information about estimates}
 \usage{
 \method{print}{PanelEstimate}(x, ..., verbose = FALSE)
 }
@@ -14,5 +14,5 @@
 \item{verbose}{logical indicating whether or not more information about the results should be printed}
 }
 \description{
-Print PanelEstimate objects with information about estimation
+Print PanelEstimate objects with information about estimates
 }

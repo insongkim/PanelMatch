@@ -7,10 +7,22 @@
 \method{print}{PanelBalance}(x, ...)
 }
 \arguments{
-\item{x}{PanelBalance object}
+\item{x}{\code{PanelBalance} object}
 
 \item{...}{Not used}
 }
+\value{
+Nothing
+}
 \description{
 Print basic information about PanelBalance objects
+}
+\examples{
+dem$rdata <- runif(runif(nrow(dem)))
+dem.panel <- PanelData(dem, "wbcode2", "year", "dem", "y")
+pm.obj <- PanelMatch(lead = 0:3, lag = 4, refinement.method = "mahalanobis", 
+                     panel.data = dem.panel, match.missing = TRUE,
+                     covs.formula = ~ tradewb + rdata + I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
+                     size.match = 5, qoi = "att")
+print(pm.obj)
 }

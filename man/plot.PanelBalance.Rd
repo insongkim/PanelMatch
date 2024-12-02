@@ -2,7 +2,8 @@
 % Please edit documentation in R/PanelBalance.R
 \name{plot.PanelBalance}
 \alias{plot.PanelBalance}
-\title{plot covariate balance results}
+\title{Plot covariate balance results
+Create figures displaying covariate balance results for one or more \code{PanelMatch} configurations. Users can customize these visualizations.}
 \usage{
 \method{plot}{PanelBalance}(
   x,
@@ -10,19 +11,58 @@
   type = "panel",
   reference.line = TRUE,
   legend = TRUE,
-  ylab = "SD",
+  ylab = NULL,
   include.treatment.period = TRUE,
   include.unrefined.panel = TRUE,
   legend.position = "topleft"
 )
 }
 \arguments{
-\item{x}{PanelBalance object}
+\item{x}{\code{PanelBalance} object}
 
 \item{...}{additional parameters to be passed to \code{base::plot()}}
 
-\item{include.unrefined.panel}{logical indicating whether or not unrefined balance plots should be returned for panel plot. NEEDS TO BE IMPLEMENTED.}
+\item{type}{character specifying which type of plot to produce. Can be either "panel" or "scatter". When "panel," covariate balance results for covariates are shown over the lag period. When "scatter," the figure has the following characteristics. Each point on the plot represents a specific covariate at a particular time period in the lag window from t-L to t-1. The horizontal axis represents the covariate balance for this particular variable and time period before refinement is applied, while the vertical axis represents the post-refinement balance value.}
+
+\item{reference.line}{logical. Include a reference line at y = 0? Only applicable to the panel plot.}
+
+\item{legend}{logical. Describes whether or not to include a legend.}
+
+\item{ylab}{character. Y-axis label.}
+
+\item{include.treatment.period}{Logical. Describes whether or not the treatment period should be included on the panel plot. Default is TRUE.}
+
+\item{include.unrefined.panel}{logical indicating whether or not unrefined balance plots should be returned for panel plot. Only applicable to panel plot. Default is TRUE.}
+
+\item{legend.position}{character. Describes where the legend should be placed on the figure. Uses base R syntax.}
+}
+\value{
+returns a set of base R plots, depending on the specification of "panel" or "scatter" above. When \code{type = "panel"} and \code{include.unrefined.panel = TRUE}, two sets of plots are returned. The first set shows covariate balance levels for the specified \code{PanelMatch} configurations. The second set shows covariate balance levels for the same \code{PanelMatch} configurations, but with all control units receiving equal weight (i.e., balance levels prior to refinement). If \code{include.unrefined.panel = FALSE}, only the first set of figures are returned. The sets of figures are both returned in the same order as the \code{PanelMatch} configurations specified to \code{get_covariate_balance()} that compose the \code{PanelBalance} object. When \code{type = "scatter"}, the visualization described above is produced, with all configurations shown on the same plot with different symbols.
 }
 \description{
-plot covariate balance results
+Plot covariate balance results
+Create figures displaying covariate balance results for one or more \code{PanelMatch} configurations. Users can customize these visualizations.
+}
+\examples{
+dem$rdata <- runif(runif(nrow(dem)))
+dem.panel <- PanelData(dem, "wbcode2", "year", "dem", "y")
+pm.obj <- PanelMatch(lead = 0:3, lag = 4, refinement.method = "mahalanobis", 
+                     panel.data = dem.panel, match.missing = TRUE,
+                     covs.formula = ~ tradewb + rdata + I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
+                     size.match = 5, qoi = "att")
+
+# create multiple configurations to compare
+pm2 <- PanelMatch(lead = 0:3, lag = 4, refinement.method = "ps.match", 
+                  panel.data = dem.panel, match.missing = TRUE,
+                  covs.formula = ~ tradewb + rdata + I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
+                  size.match = 5, qoi = "att")
+
+pb <- get_covariate_balance(pm.obj, pm2,
+                            include.unrefined = TRUE,
+                            panel.data = dem.panel, 
+                            covariates = c("tradewb", "rdata"))
+plot(pb, type = "panel", include.unrefined.panel = TRUE)
+plot(pb, type = "scatter")
+# only show refined balance figures
+plot(pb, type = "panel", include.unrefined.panel = FALSE)
 }
