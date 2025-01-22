@@ -240,6 +240,25 @@ print.PanelBalance <- function(x, ...)
   return(subset)
 }
 
+#' Extract just the unrefined covariate balance results, if they exist
+#' @param pb.object \code{PanelMatch} object
+#' 
+#' @export
+get_unrefined_balance <- function(pb.object) {
+  UseMethod("get_unrefined_balance", pb.object)
+}
+
+#' Extract unrefined covariate balance results, if they exist
+#'
+#' @param pb.object PanelBalance object
+#'
+#' @return A PanelBalance object, with just the unrefined balance results
+#' @export
+get_unrefined_balance.PanelBalance <- function(pb.object) {
+  return(attr(pb.object, "unrefined.balance.results"))
+}
+
+
 # Helper functions for plotting
 
 process_scatter_balance <- function(PanelBalance, 

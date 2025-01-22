@@ -1,5 +1,5 @@
 #' Extract matched.set objects from PanelMatch results
-#' @param pm.object \code{PanelMatch} obect
+#' @param pm.object \code{PanelMatch} object
 #' @param qoi character, specifying the qoi. Valid inputs include "att", "atc", "art", and NUL
 #'
 #' @export
