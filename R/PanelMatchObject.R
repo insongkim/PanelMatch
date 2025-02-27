@@ -47,7 +47,7 @@ extract.PanelMatch <- function(pm.object,
   
 }
 
-#' Summarize information about a \code{PanelMatch} object and the matched sets contained within them.
+#' Summarize information about a PanelMatch object and the matched sets contained within them.
 #'
 #'
 #' A method for viewing summary data about the sizes of matched sets and metadata about how they were created. This method

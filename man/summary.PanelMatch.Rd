@@ -2,7 +2,7 @@
 % Please edit documentation in R/PanelMatchObject.R
 \name{summary.PanelMatch}
 \alias{summary.PanelMatch}
-\title{Summarize information about a \code{PanelMatch} object and the matched sets contained within them.}
+\title{Summarize information about a PanelMatch object and the matched sets contained within them.}
 \usage{
 \method{summary}{PanelMatch}(object, ..., verbose = FALSE)
 }
