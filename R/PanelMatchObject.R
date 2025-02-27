@@ -155,7 +155,7 @@ plot.PanelMatch <- function(x, ..., border = NA, col = "grey", ylab = "Frequency
   
 }
 
-#' Print \code{PanelMatch} objects.
+#' Print PanelMatch objects.
 #'
 #' @param x a \code{PanelMatch} object
 #' @param verbose logical indicating whether or not underlying data should be printed in expanded/raw list form.

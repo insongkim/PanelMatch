@@ -2,7 +2,7 @@
 % Please edit documentation in R/matched_set_obj.R
 \name{print.matched.set}
 \alias{print.matched.set}
-\title{Print \code{matched.set} objects.}
+\title{Print matched.set objects.}
 \usage{
 \method{print}{matched.set}(x, ..., verbose = FALSE)
 }
@@ -15,7 +15,7 @@
 The verbose form is not recommended unless the data set is small. Default is FALSE, which prints an overview of matched set sizes.}
 }
 \description{
-Print \code{matched.set} objects.
+Print matched.set objects.
 }
 \examples{
 dem.sub <- dem[dem[, "wbcode2"] <= 100, ]

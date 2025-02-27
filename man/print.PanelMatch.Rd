@@ -2,7 +2,7 @@
 % Please edit documentation in R/PanelMatchObject.R
 \name{print.PanelMatch}
 \alias{print.PanelMatch}
-\title{Print \code{PanelMatch} objects.}
+\title{Print PanelMatch objects.}
 \usage{
 \method{print}{PanelMatch}(x, ..., verbose)
 }
@@ -15,7 +15,7 @@
 The verbose form is not recommended unless the data set is small. Default is FALSE}
 }
 \description{
-Print \code{PanelMatch} objects.
+Print PanelMatch objects.
 }
 \examples{
 dem.sub <- dem[dem[, "wbcode2"] <= 100, ]

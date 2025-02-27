@@ -2,7 +2,7 @@
 % Please edit documentation in R/matched_set_obj.R
 \name{[.matched.set}
 \alias{[.matched.set}
-\title{Subset \code{matched.set} object}
+\title{Subset matched.set object}
 \usage{
 \method{[}{matched.set}(x, i, j = NULL, drop = NULL)
 }

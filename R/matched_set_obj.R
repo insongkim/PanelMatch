@@ -228,7 +228,7 @@ combine_named_vectors <- function(list_of_vectors) {
   return(combined_df)
 }
 
-#' Print \code{matched.set} objects.
+#' Print matched.set objects.
 #'
 #' @param x a \code{matched.set} object
 #' @param verbose logical indicating whether or not output should be printed in expanded/raw list form.
@@ -266,7 +266,7 @@ print.matched.set <- function(x, ..., verbose = FALSE)
   }
 }
 
-#' Subset \code{matched.set} object
+#' Subset matched.set object
 #' 
 #' Subsets \code{matched.set} objects while preserving attributes.
 #' 
