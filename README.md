@@ -8,4 +8,4 @@ PanelMatch is an R package implementing a set of methodological tools proposed b
 
 Installation Instructions
 
-Please see the instructions [here](https://github.com/insongkim/PanelMatch/tree/version3) for updated installation instructions
+Please see [here](https://github.com/insongkim/PanelMatch/tree/version3) for updated installation instructions.
