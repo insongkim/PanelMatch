@@ -7,7 +7,7 @@
 get_unrefined_balance(pb.object)
 }
 \arguments{
-\item{pb.object}{\code{PanelMatch} object}
+\item{pb.object}{\code{PanelBalance} object}
 }
 \description{
 Extract just the unrefined covariate balance results, if they exist

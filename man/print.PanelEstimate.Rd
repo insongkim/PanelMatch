@@ -2,17 +2,31 @@
 % Please edit documentation in R/PanelEstimateObject.R
 \name{print.PanelEstimate}
 \alias{print.PanelEstimate}
-\title{Print PanelEstimate objects with information about estimates}
+\title{Print point estimates and standard errors}
 \usage{
-\method{print}{PanelEstimate}(x, ..., verbose = FALSE)
+\method{print}{PanelEstimate}(x, ...)
 }
 \arguments{
-\item{x}{PanelEstimate object}
+\item{x}{\code{PanelEstimate} object}
 
 \item{...}{additional arguments to be passed to \code{print.data.frame()}}
-
-\item{verbose}{logical indicating whether or not more information about the results should be printed}
 }
 \description{
-Print PanelEstimate objects with information about estimates
+Print point estimates and standard errors
+}
+\examples{
+dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
+dem.sub.panel <- PanelData(dem.sub, "wbcode2", "year", "dem", "y")
+# create subset of data for simplicity
+PM.results <- PanelMatch(panel.data = dem.sub.panel, lag = 4, 
+                         refinement.method = "ps.match", 
+                         match.missing = TRUE, 
+                         covs.formula = ~ tradewb,
+                         size.match = 5, qoi = "att",
+                         lead = 0:4, 
+                         forbid.treatment.reversal = FALSE)
+PE.results <- PanelEstimate(sets = PM.results, 
+              panel.data = dem.sub.panel, 
+              se.method = "unconditional")
+print(PE.results)
 }

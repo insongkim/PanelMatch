@@ -22,7 +22,7 @@ PanelEstimate(
 \item{sets}{A \code{PanelMatch} object attained via the
 \code{PanelMatch()} function.}
 
-\item{panel.data}{The same time series cross sectional data set provided to the \code{PanelMatch()} function used to produce the matched sets. This should be a PanelData object.}
+\item{panel.data}{The same time series cross sectional data set provided to the \code{PanelMatch()} function used to produce the matched sets. This should be a \code{PanelData} object.}
 
 \item{number.iterations}{If using bootstrapping for calculating standard errors, this is the number of bootstrap iterations. Provide as integer. If \code{se.method} is not equal to "bootstrap", this argument has no effect.}
 
@@ -39,7 +39,7 @@ estimates for statistical inference. The default is .95.}
 
 \item{pooled}{Logical. If TRUE, estimates and standard errors are returned for treatment effects pooled across the entire lead window. Only available for \code{se.method = ``bootstrap''}}
 
-\item{include.placebo.test}{Logical. If TRUE, a placebo test is run and returned in the results. The placebo test uses the same specifications for calculating standard errors as the main results. That is, standard errors are calculated according to the user provided \code{se.method} and \code{confidence.level} arguments (and, if applicable, parallelization specifications). If these are invalid for some reason, an error will be thrown.}
+\item{include.placebo.test}{Logical. If TRUE, a placebo test is run and returned in the results. The placebo test uses the same specifications for calculating standard errors as the main results. That is, standard errors are calculated according to the user provided \code{se.method} and \code{confidence.level} arguments (and, if applicable, parallelization specifications).}
 
 \item{parallel}{Logical. If TRUE and \code{se.method = ``bootstrap''}, bootstrap procedure will be parallelized. Default is FALSE. If \code{se.method} is not set to \code{bootstrap}, this option does nothing.}
 
@@ -47,7 +47,7 @@ estimates for statistical inference. The default is .95.}
 }
 \value{
 \code{PanelEstimate} returns a list of class
-`PanelEstimate' containing the following components:
+\code{PanelEstimate} containing the following components:
 \item{estimates}{the point estimates of the quantity of interest for the lead periods specified}
 \item{se.method}{The method used to calculate standard errors. This is the same as the argument provided to the function.}
 \item{bootstrapped.estimates}{the bootstrapped point estimate values, when applicable}
@@ -67,12 +67,7 @@ Estimate a causal quantity of interest, including the average treatment effect f
 treated or control units (att and atc, respectively), the average effect of treatment reversal on reversed units (art), or average treatment effect (ate), as specified in \code{PanelMatch()}.
 This is done by estimating the counterfactual outcomes for each treated unit using
 matched sets. Users will provide matched sets that were obtained by the
-\code{PanelMatch} function and obtain point estimates via a
-weighted average computation with weighted bootstrap standard errors. Point estimates and standard errors will be
-produced for each period in the lead window specified by the \code{lead} argument from \code{PanelMatch()}.
-Users may run multiple estimations by providing lists of each argument to the function.
-However, in this format, every argument must be explicitly specified in each configuration
-and must adhere to the same data types/structures outlined below.
+\code{PanelMatch} function and obtain point estimates and standard errors.
 }
 \examples{
 dem.sub <- dem[dem[, "wbcode2"] <= 100, ]

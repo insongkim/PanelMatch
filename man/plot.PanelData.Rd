@@ -7,11 +7,11 @@
 \method{plot}{PanelData}(x, ..., plotting.variable = NA)
 }
 \arguments{
-\item{x}{PanelData object}
+\item{x}{\code{PanelData} object}
 
 \item{...}{Not used}
 
-\item{plotting.variable}{character string specifying which variable to plot in the resulting figure. The values of this variable will be used to fill in cells on the resulting heatmap. Defaults to whatever is specified as the treatment variable. See below for more.}
+\item{plotting.variable}{character string specifying which variable to plot in the resulting figure. The values of this variable will be used to fill in cells on the resulting heatmap. Defaults to whatever is specified as the treatment variable.}
 }
 \value{
 Returns a ggplot2 object created by \code{geom_tile()}. The basic figure shows units along the y-axis and time along the x-axis. The figure takes the form of a heatmap. The value of the plotting.variable argument is used to fill in the color of the cells.
@@ -22,8 +22,6 @@ Create basic plots of PanelData objects
 \examples{
 dem$rdata <- rnorm(nrow(dem))
 d <- PanelData(dem, "wbcode2", "year", "dem", "y")
-print(d)
-summary(d)
 plot(d)
 plot(d, plotting.variable = "rdata")
 }

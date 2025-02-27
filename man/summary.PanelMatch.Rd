@@ -11,10 +11,10 @@
 
 \item{...}{Optional additional arguments to be passed to the \code{summary} function}
 
-\item{verbose}{Logical value specifying whether or not a longer, more verbose summary should be calculated and returned. Default is \code{TRUE}.}
+\item{verbose}{Logical value specifying whether or not a longer, more verbose summary should be calculated and returned. Default is \code{FALSE}.}
 }
 \value{
-A list of lists contained a summary of the matched sets associated with the specified qoi. Each sublist object will either have 5 or 1 element(s), depending on whether or not \code{verbose} is set to \code{TRUE} or not.
+A list of lists containing a summary of the matched sets associated with the specified qoi. Each sublist object will either have 5 or 1 element(s), depending on whether or not \code{verbose} is set to \code{TRUE} or not.
 \item{overview}{A \code{data.frame} object containing information about the treated units (unit id, time of treatment), and the number of matched control units with weights zero and above.}
 \item{set.size.summary}{a \code{summary} object summarizing the minimum, maximum, and IQR of matched set sizes}
 \item{number.of.treated.units}{The number of unit, time pairs that are considered to be "treated" units}
@@ -36,7 +36,5 @@ PM.results <- PanelMatch(panel.data = dem.sub.panel,
                          size.match = 5, qoi = "att",
                          lead = 0:4, forbid.treatment.reversal = FALSE)
 summary(PM.results)
-
-
 
 }

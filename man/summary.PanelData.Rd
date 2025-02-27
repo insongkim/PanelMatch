@@ -19,6 +19,6 @@ Summarize the number of unique units and time periods in a PanelData object
 }
 \examples{
 d <- PanelData(dem, "wbcode2", "year", "dem", "y")
-print(d)
+summary(d)
 
 }

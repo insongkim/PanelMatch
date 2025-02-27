@@ -9,7 +9,7 @@
 \arguments{
 \item{pm.object}{\code{PanelMatch} obect}
 
-\item{qoi}{character, specifying the qoi. Valid inputs include "att", "atc", "art", and NULL}
+\item{qoi}{character, specifying the qoi. Valid inputs include "att", "atc", "art", and NULL. If NULL, function extracts att, art, or atc results if possible. Otherwise, throws an error if ate is specified.}
 }
 \value{
 a \code{matched.set} object
@@ -29,4 +29,5 @@ PM.results <- PanelMatch(panel.data = dem.sub.panel,
                          size.match = 5, qoi = "att",
                          lead = 0:4, forbid.treatment.reversal = FALSE)
 extract(PM.results, qoi = "att")
+extract(PM.results) # valid since att is specified
 }

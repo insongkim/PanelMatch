@@ -21,7 +21,7 @@ Print \code{matched.set} objects.
 dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
 # create subset of data for simplicity
 dem.sub.panel <- PanelData(dem.sub, "wbcode2", "year", "dem", "y")
-PM.results <- PanelMatch(panel.data = dem.panel, lag = 4,
+PM.results <- PanelMatch(panel.data = dem.sub.panel, lag = 4,
                         refinement.method = "ps.match",
                         match.missing = TRUE,
                         covs.formula = ~ tradewb,

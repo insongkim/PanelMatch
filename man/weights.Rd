@@ -2,7 +2,7 @@
 % Please edit documentation in R/matched_set_obj.R
 \name{weights}
 \alias{weights}
-\title{Get weights
+\title{Get weights of matched control units
 See weights.matched.set method}
 \usage{
 weights(object)
@@ -11,6 +11,6 @@ weights(object)
 \item{object}{\code{Matched.set object}}
 }
 \description{
-Get weights
+Get weights of matched control units
 See weights.matched.set method
 }

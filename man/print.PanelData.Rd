@@ -7,7 +7,7 @@
 \method{print}{PanelData}(x, ...)
 }
 \arguments{
-\item{x}{PanelData object}
+\item{x}{\code{PanelData} object}
 
 \item{...}{additional arguments to be passed to \code{print.data.frame()}}
 }

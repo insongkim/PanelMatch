@@ -36,15 +36,15 @@
 \item{missing.color}{option passed to \code{ggplot2::scale_fill_gradientn()}. The color representing the missing/zero weight/distance values.}
 }
 \value{
-returns a \code{ggplot2:geom_tile()} object
+returns a \code{ggplot2::geom_tile()} object producing a plot in alignment with the description above
 }
 \description{
 The method creates a heatmap with the following characteristics. The heatmap grid is m x n, where m is the number of treated observations (as identified by i,t pairs) and n is the number of units. Treated observations represent the rows, and every unit in the data set form the columns. The figure then shows the calculated weights or distances (as specified) for each control unit within the matched set as identified by the row. Weights/distances that are missing or zero are not considered in the shading scheme and are both treated as NA for all practical purposes. Note that not all refinement methods will return a distance. Those that do also require \code{verbose = TRUE} in the \code{PanelMatch} specification. 
 For example say (2, 5) is a treated observation and units 1, 4, 8 are matched as controls. Row i will represent (2,5) in the matrix, M. The columns indexed by w, x, and y, correspond to units 1, 4, and 8. M[i, w], M[i, x],  M[i, y] then contain the weights or pairwise distances of units 1, 4, and 8 within that matched set.
 }
 \examples{
-  dem.panel <- PanelData(dem, "wbcode2", "year", "dem", "y")
-  PM.results <- PanelMatch(panel.data = dem.panel, lag = 4,
+ dem.panel <- PanelData(dem, "wbcode2", "year", "dem", "y")
+ PM.results <- PanelMatch(panel.data = dem.panel, lag = 4,
                         refinement.method = "ps.match",
                         match.missing = TRUE,
                         covs.formula = ~ tradewb,
@@ -52,8 +52,8 @@ For example say (2, 5) is a treated observation and units 1, 4, 8 are matched as
                         lead = 0:4,
                         forbid.treatment.reversal = FALSE)
 
-  mso <- extract(PM.results)
-  plot(mso, panel.data = dem.panel)
+ mso <- extract(PM.results)
+ plot(mso, panel.data = dem.panel)
 
 
 }

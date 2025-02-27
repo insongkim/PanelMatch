@@ -9,7 +9,7 @@ extract(pm.object, qoi)
 \arguments{
 \item{pm.object}{\code{PanelMatch} object}
 
-\item{qoi}{character, specifying the qoi. Valid inputs include "att", "atc", "art", and NUL}
+\item{qoi}{character, specifying the qoi. Valid inputs include "att", "atc", "art", and NULL. If NULL, function extracts att, art, or atc results if possible. Otherwise, throws an error if ate is specified.}
 }
 \description{
 Extract matched.set objects from PanelMatch results

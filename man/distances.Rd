@@ -3,7 +3,7 @@
 \name{distances}
 \alias{distances}
 \title{Get distances
-See distances.mathced.set method}
+See distances.matched.set method}
 \usage{
 distances(object)
 }
@@ -12,5 +12,5 @@ distances(object)
 }
 \description{
 Get distances
-See distances.mathced.set method
+See distances.matched.set method
 }

@@ -36,5 +36,9 @@ pm.obj <- PanelMatch(lead = 0:3, lag = 4, refinement.method = "mahalanobis",
                      panel.data = dem.panel, match.missing = TRUE,
                      covs.formula = ~ tradewb + rdata + I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
                      size.match = 5, qoi = "att")
-summary(pm.obj)
+pb <- get_covariate_balance(pm.obj,
+                            include.unrefined = TRUE,
+                            panel.data = dem.panel, 
+                            covariates = c("tradewb", "rdata"))
+summary(pb)
 }

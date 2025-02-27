@@ -2,7 +2,7 @@
 % Please edit documentation in R/PanelMatch.R
 \name{PanelMatch}
 \alias{PanelMatch}
-\title{Create refined/weighted sets of matched treated and control units}
+\title{Create and refine sets of matched treated and control observations}
 \usage{
 PanelMatch(
   panel.data,
@@ -78,28 +78,19 @@ high correlation between variables. Default is FALSE. This argument is only nece
 \item{placebo.test}{logical TRUE/FALSE. indicates whether or not you want to be able to run a placebo test. This will add additional requirements on the data -- specifically, it requires that no unit included in the matching/refinement process can having missing outcome data over the lag window. Additionally, you should not use the outcome variable in refinement when \code{placebo.test = TRUE}.}
 }
 \value{
-\code{PanelMatch()} returns an object of class "PanelMatch". This is a list that contains a few specific elements: 
+\code{PanelMatch()} returns an object of class \code{PanelMatch}. This is a list that contains a few specific elements: 
 First, a \code{matched.set} object(s) that has the same name as the provided qoi if the qoi is "att", "art", or "atc". 
 If qoi = "ate" then two \code{matched.set} objects will be attached, named "att" and "atc." Please consult the documentation for
-\code{matched_set()} to read more about the structure and usage of \code{matched.set} objects. Also, see the vignette page about matched.set objects for 
-more information about these objects: \code{vignette("matched_set_objects", package = "PanelMatch")}.
-The \code{PanelMatch} object also has some additional attributes:
-\item{qoi}{The qoi specified in the original function call}
-\item{lead}{the lead window specified in the original function call}
-\item{forbid.treatment.reversal}{logial value matching the forbid.treatment.reversal parameter provided in the function call.}
-\item{outcome.var}{character string matching the outcome variable provided in the original function call.}
+\code{matched_set()} to read more about the structure and usage of \code{matched.set} objects. 
+The \code{PanelMatch} object also has some additional attributes that track metadata about the specification, like the names of the unit and time identifier variables.
 }
 \description{
-\code{PanelMatch} identifies a matched set for each treated
+\code{PanelMatch} identifies treated observations and a matched set for each treated
 observation. Specifically, for a given treated unit, the matched
 set consists of control observations that have an identical
 treatment history up to a number of \code{lag}
-time periods. Researchers must specify \code{lag}. A further refinement of
-the matched set may be performed by setting a maximum size of each matched
-set, \code{size.match} (the maximum number of control units that can be matched to a treated unit). Users can 
-also specify covariates that should be used to identify
-similar control units and a method for defining similarity/distance between units. This is done 
-via the \code{covs.formula} and \code{refinement.method} arguments, respectively, which are explained in more detail below.
+time periods. A further refinement of
+the matched set using matching or weighting techniques, described below.
 }
 \examples{
 dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
@@ -112,7 +103,14 @@ PM.results <- PanelMatch(panel.data = dem.sub.panel, lag = 4,
                          size.match = 5, qoi = "att",
                          lead = 0:4, 
                          forbid.treatment.reversal = FALSE)
-
+# include lagged variables
+PM.results <- PanelMatch(panel.data = dem.sub.panel, lag = 4, 
+                         refinement.method = "ps.weight", 
+                         match.missing = TRUE, 
+                         covs.formula = ~ tradewb + I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
+                         size.match = 5, qoi = "att",
+                         lead = 0:4, 
+                         forbid.treatment.reversal = FALSE)
 
 }
 \references{

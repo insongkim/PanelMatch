@@ -12,6 +12,7 @@
   ylim = NULL,
   pch = NULL,
   cex = NULL,
+  confidence.level = NULL,
   bias.corrected = FALSE,
   ...
 )
@@ -30,6 +31,8 @@
 \item{pch}{default is NULL. This is the same argument as the standard argument for \code{plot()}}
 
 \item{cex}{default is NULL. This is the same argument as the standard argument for \code{plot()}}
+
+\item{confidence.level}{confidence.level Confidence level to be used for confidence interval calculations. Must be numeric between 0 and 1. If NULL, confidence level from \code{PanelEstimate()} specification is used.}
 
 \item{bias.corrected}{logical indicating whether or not bias corrected estimates should be plotted Default is FALSE. This argument only applies for standard errors calculated with the bootstrap.}
 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/PanelEstimateObject.R
 \name{summary.PanelEstimate}
 \alias{summary.PanelEstimate}
-\title{Get summaries of PanelEstimate objects/calculations}
+\title{Get summaries of PanelEstimate objects and calculations}
 \usage{
 \method{summary}{PanelEstimate}(
   object,
@@ -13,11 +13,11 @@
 )
 }
 \arguments{
-\item{object}{A PanelEstimate object}
+\item{object}{A \code{PanelEstimate} object}
 
 \item{confidence.level}{Confidence level to be used for confidence interval calculations. Must be numeric between 0 and 1. If NULL, confidence level from \code{PanelEstimate()} specification is used.}
 
-\item{verbose}{logical indicating whether or not output should be printed in an expanded form. Default is TRUE}
+\item{verbose}{logical indicating whether or not output should be printed in an expanded form. Default is FALSE}
 
 \item{bias.corrected}{logical indicating whether or not bias corrected estimates should be provided. Default is FALSE. This argument only applies for standard errors calculated with the bootstrap.}
 
@@ -39,9 +39,10 @@ PM.results <- PanelMatch(panel.data = dem.sub.panel, lag = 4,
                          size.match = 5, qoi = "att",
                          lead = 0:4, 
                          forbid.treatment.reversal = FALSE)
-PE.results <- PanelEstimate(sets = PM.results, data = dem.sub.panel, se.method = "unconditional")
+PE.results <- PanelEstimate(sets = PM.results, 
+                            panel.data = dem.sub.panel, 
+                            se.method = "unconditional")
 summary(PE.results)
-
-
+summary(PE.results, confidence.level = .9)
 
 }

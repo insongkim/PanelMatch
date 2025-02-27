@@ -20,23 +20,23 @@ placebo_test(
 \arguments{
 \item{pm.obj}{an object of class \code{PanelMatch}}
 
-\item{panel.data}{PanelData object}
+\item{panel.data}{\code{PanelData} object}
 
-\item{lag.in}{integer indicating earliest the time period(s) in the future for which the placebo test change in outcome will be calculated. Calculations will be made over the period t - max(lag) to t-2, where t is the time of treatment. The results are similar to those returned by PanelEstimate(), except t-1 is used as the period of comparison, rather than the lead window. If not specified, the placebo test is conducted for periods from t - max(lag) to t-2.}
+\item{lag.in}{integer indicating earliest the time period(s) in the future for which the placebo test change in outcome will be calculated. Calculations will be made over the period t - max(lag) to t-2, where t is the time of treatment. The results are similar to those returned by \code{PanelEstimate()}, except t-1 is used as the period of comparison, rather than the lead window. If not specified, the placebo test is conducted for periods from t - max(lag) to t-2.}
 
-\item{number.iterations}{integer specifying the number of bootstrap iterations}
+\item{number.iterations}{integer specifying the number of bootstrap iterations. This argument only has an effect if standard errors are calculated with the bootstrap.}
 
-\item{confidence.level}{confidence level for the calculated standard error intervals}
+\item{confidence.level}{confidence level for the calculated standard error intervals. Should be specified as a numeric between 0 and 1.}
 
 \item{plot}{logical indicating whether or not a plot should be generated, or just return the raw data from the calculations}
 
-\item{se.method}{character string describing the type of standard error to be used. Valid inputs include "bootstrap", "conditional" and "unconditional". When the QOI is ATE, only bootstrap can be used.}
+\item{se.method}{character string describing the type of standard error to be used. Valid inputs include "bootstrap", "conditional" and "unconditional". When the QOI is ATE, only bootstrap can be used. See the documentation of this argument in \code{PanelEstimate()} for more.}
 
-\item{parallel}{Logical. If TRUE and \code{se.method = ``bootstrap''}, bootstrap procedure will be parallelized. Default is FALSE. If \code{se.method} is not set to \code{bootstrap}, this option does nothing.}
+\item{parallel}{Logical. If TRUE and \code{se.method = "bootstrap"}, bootstrap procedure will be parallelized. Default is FALSE. If \code{se.method} is not set to \code{bootstrap}, this option does nothing."}
 
-\item{num.cores}{Integer. Specifies the number of cores to use for parallelization. If \code{se.method = ``bootstrap''} and \code{parallel = TRUE}, then this option will take effect. Otherwise, it will do nothing.}
+\item{num.cores}{Integer. Specifies the number of cores to use for parallelization. If \code{se.method = "bootstrap"} and \code{parallel = TRUE}, then this option will take effect. Otherwise, it will do nothing.}
 
-\item{...}{extra arguments to be passed to plot()}
+\item{...}{extra arguments to be passed to \code{plot()}}
 }
 \value{
 list with 2 or 3 elements: "estimate", which contains the point estimates for the test, "standard.errors" which has the standard errors for each period and optionally "bootstrapped.estimates", containing the bootstrapped point estimates for the test for each specified lag window period.
@@ -55,7 +55,7 @@ PM.results <- PanelMatch(panel.data = dem.sub.panel, lag = 4,
                          size.match = 5, qoi = "att",
                          lead = 0:4, 
                          forbid.treatment.reversal = FALSE, placebo.test = TRUE)
-placebo_test(PM.results, data = dem.sub.panel, se.method = "unconditional", plot = FALSE)
+placebo_test(PM.results, panel.data = dem.sub.panel, se.method = "unconditional", plot = FALSE)
 
 
 }

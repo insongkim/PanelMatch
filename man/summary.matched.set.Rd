@@ -11,11 +11,10 @@
 
 \item{...}{Optional additional arguments to be passed to the \code{summary} function}
 
-\item{verbose}{Logical value specifying whether or not a longer, more verbose summary should be calculated and returned. Default is
-\code{TRUE}.}
+\item{verbose}{Logical value specifying whether or not a longer, more verbose summary should be calculated and returned. Default is TRUE.}
 }
 \value{
-list object with either 5 or 1 element(s), depending on whether or not \code{verbose} is set to \code{TRUE} or not.
+list object with either 5 or 1 element(s), depending on whether or not \code{verbose} is set to TRUE or not.
 \item{overview}{A \code{data.frame} object containing information about the treated units (unit id, time of treatment), and the number of matched control units with weights zero and above.}
 \item{set.size.summary}{a \code{summary} object summarizing the minimum, maximum, and IQR of matched set sizes}
 \item{number.of.treated.units}{The number of unit, time pairs that are considered to be "treated" units}
@@ -23,19 +22,17 @@ list object with either 5 or 1 element(s), depending on whether or not \code{ver
 \item{lag}{The size of the lag window used for matching on treatment history. This affects which treated and control units are matched.}
 }
 \description{
-A method for viewing summary data about the sizes of matched sets and metadata about how they were created. This method
-accepts all standard \code{summary} arguments.
+A method for viewing summary data about the sizes of matched sets and metadata about how they were created. This method accepts all standard \code{summary} arguments.
 }
 \examples{
 dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
 dem.sub.panel <- PanelData(dem.sub, "wbcode2", "year", "dem", "y")
 # create subset of data for simplicity
-PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
-                         treatment = "dem", refinement.method = "ps.match",
-                         data = dem.sub.panel, match.missing = TRUE,
+PM.results <- PanelMatch(lag = 4, refinement.method = "ps.match",
+                         panel.data = dem.sub.panel, match.missing = TRUE,
                          covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
                          size.match = 5, qoi = "att",
-                         outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
+                         lead = 0:4, forbid.treatment.reversal = FALSE)
 summary(extract(PM.results, qoi = "att"))
 
 

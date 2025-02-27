@@ -2,7 +2,7 @@
 % Please edit documentation in R/get_set_treatment_effects.R
 \name{get_set_treatment_effects}
 \alias{get_set_treatment_effects}
-\title{Calculate the treatment effect size at the matched set level}
+\title{Calculate matched set level treatment effects}
 \usage{
 get_set_treatment_effects(pm.obj, panel.data, lead)
 }
@@ -14,7 +14,7 @@ get_set_treatment_effects(pm.obj, panel.data, lead)
 \item{lead}{integer (or integer vector) indicating the time period(s) in the future for which the treatment effect size will be calculated. Calculations will be made for the period t + lead, where t is the time of treatment. If more than one lead value is provided, then calculations will be performed for each value.}
 }
 \value{
-a list equal in length to the number of lead periods specified to the \code{lead} argument. Each element in the list is a vector of the matched set level effects.
+a list equal in length to the number of lead periods specified to the \code{lead} argument. Each element in the list is a vector of the matched set level effect estimates.
 }
 \description{
 Calculate the size of treatment effects for each matched set.

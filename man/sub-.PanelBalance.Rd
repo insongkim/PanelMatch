@@ -14,8 +14,29 @@
 \item{...}{Not used}
 }
 \value{
-Returns balance information for specified \code{PanelMatch} configuration. Note that results are still returned as a \code{PanelBalance} object.
+Returns balance information for specified \code{PanelMatch} configuration. Note that results are still returned as a \code{PanelBalance} object. In order to return a list, use the [[ operator
 }
 \description{
 Subset PanelBalance objects
+}
+\examples{
+dem$rdata <- runif(runif(nrow(dem)))
+dem.panel <- PanelData(dem, "wbcode2", "year", "dem", "y")
+pm.obj <- PanelMatch(lead = 0:3, lag = 4, refinement.method = "mahalanobis", 
+                     panel.data = dem.panel, match.missing = TRUE,
+                     covs.formula = ~ tradewb + rdata + I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
+                     size.match = 5, qoi = "att")
+
+# create multiple configurations to compare
+pm2 <- PanelMatch(lead = 0:3, lag = 4, refinement.method = "ps.match", 
+                  panel.data = dem.panel, match.missing = TRUE,
+                  covs.formula = ~ tradewb + rdata + I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
+                  size.match = 5, qoi = "att")
+
+pb <- get_covariate_balance(pm.obj, pm2,
+                            include.unrefined = TRUE,
+                            panel.data = dem.panel, 
+                            covariates = c("tradewb", "rdata"))
+bal.maha <- pb[1]
+bal.ps <- pb[2]                             
 }

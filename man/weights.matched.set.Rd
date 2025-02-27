@@ -10,7 +10,7 @@
 \item{object}{matched.set object, extracted using the \code{get.PanelMatch()} method}
 }
 \value{
-list of named vectors. Each list element corresponds to a particular treated observation and contains the matched control units, along with their weights.
+list of named vectors. Each list element corresponds to a particular treated observation and contains the matched control units, along with their weights. These correspond to the "weights" attribute, which are calculated in the \code{PanelMatch} refinement process.
 }
 \description{
 Extract the weights of matched control units
