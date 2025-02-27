@@ -2,7 +2,7 @@
 % Please edit documentation in R/matched_set_obj.R
 \name{summary.matched.set}
 \alias{summary.matched.set}
-\title{Summarize information about a \code{matched.set} object and the matched sets contained within them.}
+\title{Summarize information about a matched.set object and the matched sets contained within them.}
 \usage{
 \method{summary}{matched.set}(object, ..., verbose = TRUE)
 }

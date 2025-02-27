@@ -1,4 +1,4 @@
-#' A constructor for the \code{matched.set} class.
+#' A constructor for the matched.set class.
 #'
 #'
 #' Users should never need to use this function by itself. See below for more about \code{matched.set} objects.
@@ -53,7 +53,7 @@ matched_set <- function(matchedsets, id, t, L, t.var, id.var, treatment.var)
   return(matchedsets)
 }
 
-#' Summarize information about a \code{matched.set} object and the matched sets contained within them.
+#' Summarize information about a matched.set object and the matched sets contained within them.
 #'
 #'
 #' A method for viewing summary data about the sizes of matched sets and metadata about how they were created. This method accepts all standard \code{summary} arguments.

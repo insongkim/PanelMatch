@@ -2,7 +2,7 @@
 % Please edit documentation in R/matched_set_obj.R
 \name{matched_set}
 \alias{matched_set}
-\title{A constructor for the \code{matched.set} class.}
+\title{A constructor for the matched.set class.}
 \usage{
 matched_set(matchedsets, id, t, L, t.var, id.var, treatment.var)
 }
