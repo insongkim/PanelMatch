@@ -346,7 +346,6 @@ test_that("unrefined parameters", {
                                   covariates = c("tradewb", "rdata"))
   expect_false(is.null(attr(balmat, "unrefined.balance.results")))
   balmat <- get_covariate_balance(pm.obj,
-                                  #use.equal.weights = FALSE,
                                   include.unrefined = FALSE,
                                   panel.data = dem.panel, 
                                   covariates = c("tradewb", "rdata"))
@@ -379,7 +378,23 @@ test_that("print.PanelBalance", {
 
 
 test_that("plot.PanelBalance", {
+
+  dem$rdata <- runif(runif(nrow(dem)))
+  dem.panel <- PanelData(dem, 'wbcode2', 'year', 'dem', 'y')
+  pm.obj <- PanelMatch(lead = 0:3, lag = 4, refinement.method = "mahalanobis", 
+                       panel.data = dem.panel, match.missing = TRUE,
+                       covs.formula = ~ tradewb + rdata + I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
+                       size.match = 5, qoi = "att")
   
+  pb <- get_covariate_balance(pm.obj,
+                              include.unrefined = TRUE,
+                              panel.data = dem.panel, 
+                              covariates = c("tradewb", "rdata"))
+  plot(pb, type = "panel")
+  plot(pb, type = "panel", include.unrefined.panel = FALSE)
+  plot(pb, type = "scatter")
+  
+    
   dem$rdata <- runif(runif(nrow(dem)))
   dem.panel <- PanelData(dem, 'wbcode2', 'year', 'dem', 'y')
   pm.obj <- PanelMatch(lead = 0:3, lag = 4, refinement.method = "mahalanobis", 
@@ -444,5 +459,58 @@ test_that("plot.PanelBalance", {
                               covariates = c("tradewb", "rdata"))
   plot(pb, type = "panel")
   plot(pb, type = "scatter")
+  
+})
+
+
+test_that("Subsetting works", {
+  dem$rdata <- runif(runif(nrow(dem)))
+  dem.panel <- PanelData(dem, 'wbcode2', 'year', 'dem', 'y')
+  pm.obj <- PanelMatch(lead = 0:3, lag = 4, refinement.method = "mahalanobis", 
+                       panel.data = dem.panel, match.missing = TRUE,
+                       covs.formula = ~ tradewb + rdata + I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
+                       size.match = 5, qoi = "att")
+  
+  pm.obj1 <- PanelMatch(lead = 0:3, lag = 4, refinement.method = "ps.match", 
+                        panel.data = dem.panel, match.missing = TRUE,
+                        covs.formula = ~ tradewb + rdata + I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
+                        size.match = 5, qoi = "att")
+  
+  
+  pm.obj.art <- PanelMatch(lead = 0:3, lag = 4, refinement.method = "mahalanobis", 
+                           panel.data = dem.panel, match.missing = TRUE,
+                           covs.formula = ~ tradewb + rdata + I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
+                           size.match = 5, qoi = "art")
+  
+  
+  pm.obj.ate <- PanelMatch(lead = 0:3, lag = 4, refinement.method = "mahalanobis", 
+                           panel.data = dem.panel, match.missing = TRUE,
+                           covs.formula = ~ tradewb + rdata + I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
+                           size.match = 5, qoi = "ate")
+  
+  balmat <- get_covariate_balance(pm.obj, pm.obj1, pm.obj.art, pm.obj.ate,
+                                  include.unrefined = FALSE,
+                                  panel.data = dem.panel, 
+                                  covariates = c("tradewb", "rdata"))
+  expect_true(length(balmat) == 4)
+  expect_true(length(balmat[1]) == 1)
+  expect_true(length(balmat[4]) == 1)
+  expect_true(all(class(balmat[1]) == c("PanelBalance", "list")))
+  expect_true(class(balmat[[1]]) == c("list"))
+  expect_true(1 == length(balmat[[1]]))
+  expect_true(all(dim(balmat[[1]][[1]]) == c(5, 2)))
+  expect_true(all(class(balmat[[1]][[1]]) == c("matrix", "array")))
+  
+  expect_true(all(class(balmat[4]) == c("PanelBalance", "list")))
+  expect_true(class(balmat[[4]]) == c("list"))
+  expect_true(2 == length(balmat[[4]]))
+  expect_true(all(dim(balmat[[4]][[1]]) == c(5, 2)))
+  expect_true(all(dim(balmat[[4]][[2]]) == c(5, 2)))
+  expect_true(all(class(balmat[[4]][[1]]) == c("matrix", "array")))
+  expect_true(all(class(balmat[[4]][[2]]) == c("matrix", "array")))
+  
+  summary(balmat[1], include.unrefined = FALSE)
+  summary(balmat[4], qoi = "att", include.unrefined = FALSE)
+  summary(balmat[4], qoi = "atc", include.unrefined = FALSE)
   
 })

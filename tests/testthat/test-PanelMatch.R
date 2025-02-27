@@ -1,5 +1,5 @@
 # This file contains only a bare bones set of tests.
-# Please add future tests to manual_tests/test-PanelMatch.R
+# Please add future tests to manual_tests/test-*.R
 # Similarly, please test package against that set of tests before submitting.
 # For this, use testthat::test_dir()
 

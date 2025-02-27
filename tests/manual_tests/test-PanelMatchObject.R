@@ -9,6 +9,7 @@ test_that("test matched set getter function", {
                            size.match = 5, qoi = "att",
                            lead = 0:4,
                            forbid.treatment.reversal = FALSE)
+  expect_true(inherits(PM.results, "PanelMatch"))
   att.set <- extract(PM.results, qoi = "att")
   expect_true(inherits(att.set, "matched.set"))
   att.set2 <- extract(PM.results)
@@ -22,6 +23,7 @@ test_that("test matched set getter function", {
                            size.match = 5, qoi = "ate",
                            lead = 0:4,
                            forbid.treatment.reversal = FALSE)
+  expect_true(inherits(PM.results, "PanelMatch"))
   att.set <- extract(PM.results, qoi = "att")
   att.set2 <- extract(PM.results, qoi = "atc")
   expect_true(inherits(att.set, "matched.set"))
@@ -36,6 +38,7 @@ test_that("test matched set getter function", {
                            size.match = 5, qoi = "art",
                            lead = 0:4,
                            forbid.treatment.reversal = FALSE)
+  expect_true(inherits(PM.results, "PanelMatch"))
   att.set <- extract(PM.results, qoi = "art")
   expect_true(inherits(att.set, "matched.set"))
   
@@ -165,4 +168,17 @@ test_that("print.PanelMatch", {
   expect_output(print(PM.results))  
 })
 
-## plot tests pass the eye test.
+
+test_that("plot.PanelMatch", {
+  dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
+  dem.sub.panel <- PanelData(dem.sub, "wbcode2", "year", "dem", "y")
+  PM.results <- PanelMatch(panel.data = dem.sub.panel,
+                           lag = 4, 
+                           refinement.method = "mahalanobis",
+                           match.missing = TRUE,
+                           covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
+                           size.match = 5, qoi = "att",
+                           lead = 0:4, forbid.treatment.reversal = FALSE)
+  plot(PM.results)
+  plot(PM.results, include.empty.sets = TRUE)
+})

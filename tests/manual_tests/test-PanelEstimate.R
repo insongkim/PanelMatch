@@ -140,6 +140,67 @@ test_that("(ATE) bootstrap SEs", {
 })
 
 
+test_that("bootstrap SEs - Pooled ", {
+  dem.panel <- PanelData(dem, 'wbcode2', 'year', 'dem', 'y')
+  qoi_ <- "att"
+  set.seed(1)
+  pm1 <- PanelMatch(lag = 4, 
+                    refinement.method = "mahalanobis",
+                    panel.data = dem.panel, 
+                    match.missing = FALSE, covs.formula = ~ I(lag(y, 1:4)) + I(lag(tradewb, 1:4)),
+                    size.match = 5, qoi = qoi_,
+                    lead = 0:3, forbid.treatment.reversal = FALSE)
+  
+  pe.results <- PanelEstimate(sets = pm1, panel.data = dem.panel, number.iterations = 100, pooled = TRUE)
+  
+  expect_equal(pe.results$estimate, 0.3183682, tolerance = .000001)
+  expect_equal(pe.results$standard.error, 1.404445, tolerance = .000001)
+  
+  
+  qoi_ <- "atc"
+  
+  pm1 <- PanelMatch(lag = 4, 
+                    refinement.method = "mahalanobis",
+                    panel.data = dem.panel, 
+                    match.missing = FALSE, covs.formula = ~ I(lag(y, 1:4)) + I(lag(tradewb, 1:4)),
+                    size.match = 5, qoi = qoi_,
+                    lead = 0:3, forbid.treatment.reversal = FALSE)
+  set.seed(1)
+  pe.results <- PanelEstimate(sets = pm1, panel.data = dem.panel, number.iterations = 100, pooled = TRUE)
+  expect_equal(pe.results$estimate, -0.3789102, tolerance = .000001)
+  expect_equal(pe.results$standard.error, 1.40745, tolerance = .000001)
+  
+  
+  qoi_ <- "art"
+  
+  pm1 <- PanelMatch(lag = 4, 
+                    refinement.method = "mahalanobis",
+                    panel.data = dem.panel, 
+                    match.missing = FALSE, covs.formula = ~ I(lag(y, 1:4)) + I(lag(tradewb, 1:4)),
+                    size.match = 5, qoi = qoi_,
+                    lead = 0:3, forbid.treatment.reversal = FALSE)
+  set.seed(1)
+  pe.results <- PanelEstimate(sets = pm1, panel.data = dem.panel, number.iterations = 100, pooled = TRUE)
+  expect_equal(pe.results$estimate, -7.529892, tolerance = .000001)
+  expect_equal(pe.results$standard.error, 2.341633, tolerance = .000001)
+  
+  
+  
+  qoi_ <- "ate"
+  
+  pm1 <- PanelMatch(lag = 4, 
+                    refinement.method = "mahalanobis",
+                    panel.data = dem.panel, 
+                    match.missing = FALSE, covs.formula = ~ I(lag(y, 1:4)) + I(lag(tradewb, 1:4)),
+                    size.match = 5, qoi = qoi_,
+                    lead = 0:3, forbid.treatment.reversal = FALSE)
+  set.seed(1)
+  pe.results <- PanelEstimate(sets = pm1, panel.data = dem.panel, number.iterations = 100, pooled = TRUE)
+  expect_equal(pe.results$estimate, -0.3504439, tolerance = .000001)
+  expect_equal(pe.results$standard.error, 1.381604, tolerance = .000001)
+})
+
+
 
 test_that("(ATT) PanelEstimate Runs: analytical SEs", {
   dem.panel <- PanelData(dem, 'wbcode2', 'year', 'dem', 'y')

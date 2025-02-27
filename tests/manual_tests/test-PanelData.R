@@ -59,6 +59,31 @@ test_that("test balancing of PanelData", {
   expect_true(nrow(d2) == 100)
 })
 
+
+test_that("test sorting", {
+  # Create the panel data
+  set.seed(123)  # For reproducibility
+  unit_id <- rep(1:5, each = 4)  # 5 units, each observed 4 times
+  time_id <- rep(1:4, times = 5)  # 4 time periods for each unit
+  value <- rnorm(20)  # Random values for the observed variable
+  
+  # Create the treatment column (0 or 1, assigned randomly to each unit)
+  treatment <- rep(sample(c(0, 1), 5, replace = TRUE), each = 4)
+  
+  # Create the outcome column with random data
+  outcome <- rnorm(20)
+  
+  # Combine into a data frame
+  panel_data <- data.frame(unit_id, time_id, value, treatment, outcome)
+  
+  # Shuffle the rows to make the data out of order
+  panel_data <- panel_data[sample(nrow(panel_data)), ]
+  pd <- PanelData(panel.data = panel_data, unit.id = "unit_id", time.id = "time_id", treatment = "treatment", outcome = "outcome")
+  sorted_panel_data <- panel_data[order(panel_data$unit_id, panel_data$time_id), ]
+  
+  expect_true(all(pd[,1:2] == sorted_panel_data[, 1:2]))
+})
+
 test_that("testing PanelData Error Checking", {
   
   dem$trash <- sample(letters, nrow(dem), replace = TRUE)
@@ -96,12 +121,14 @@ test_that("testing PanelData Error Checking", {
                             "time.data.map")))
 })
 
-# Run this one manually
-# test_that("testing PanelData methods", {
-#   dem$rdata <- rnorm(nrow(dem))
-#   d <- PanelData(dem, "wbcode2", "year", "dem", "y")
-#   expect_output(print(d))
-#   summary(d)
-#   plot(d)
-#   plot(d, plotting.variable = "rdata")
-# })
+
+test_that("testing PanelData methods", {
+  dem$rdata <- rnorm(nrow(dem))
+  d <- PanelData(dem, "wbcode2", "year", "dem", "y")
+  expect_output(print(d))
+  dt <- summary(d)
+  expect_true(all(dim(dt) == c(1,2)))
+  expect_true(all(colnames(dt) == c("num.units", "num.periods")))
+  plot(d)
+  plot(d, plotting.variable = "rdata")
+})

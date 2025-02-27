@@ -279,4 +279,18 @@ test_that("test plot method (manual)", {
   mso <- extract(PM.results)
   plot(mso, panel.data = dem.panel)
   plot(mso, panel.data = dem.panel, include.missing = FALSE)
+  
+  dem.panel <- PanelData(dem, 'wbcode2', 'year', 'dem', 'y')
+  PM.results <- PanelMatch(panel.data = dem.panel, lag = 4,
+                           refinement.method = "ps.weight",
+                           match.missing = TRUE,
+                           covs.formula = ~ tradewb,
+                           size.match = 5, qoi = "att",
+                           lead = 0:4,
+                           forbid.treatment.reversal = FALSE)
+  
+  mso <- extract(PM.results)
+  plot(mso, panel.data = dem.panel)
+  plot(mso, panel.data = dem.panel, include.missing = FALSE)
+  
 })
