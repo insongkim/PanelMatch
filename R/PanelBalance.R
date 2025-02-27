@@ -34,7 +34,6 @@
 #' plot(pb, type = "scatter")
 #' # only show refined balance figures
 #' plot(pb, type = "panel", include.unrefined.panel = FALSE)
-
 plot.PanelBalance <- function(x, 
                               ..., 
                               type = "panel",
@@ -114,7 +113,11 @@ plot.PanelBalance <- function(x,
 #'                      panel.data = dem.panel, match.missing = TRUE,
 #'                      covs.formula = ~ tradewb + rdata + I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
 #'                      size.match = 5, qoi = "att")
-#' summary(pm.obj)
+#' pb <- get_covariate_balance(pm.obj,
+#'                             include.unrefined = TRUE,
+#'                             panel.data = dem.panel, 
+#'                             covariates = c("tradewb", "rdata"))
+#' summary(pb)
 summary.PanelBalance <- function(object, qoi = NULL, 
                                  include.unrefined = TRUE, 
                                  unrefined.only = FALSE,
@@ -190,8 +193,6 @@ summary.PanelBalance <- function(object, qoi = NULL,
                          refined = ret.list, SIMPLIFY = FALSE)
     }
   }
-  
-  
   return(ret.list)
 }
 
@@ -211,7 +212,11 @@ summary.PanelBalance <- function(object, qoi = NULL,
 #'                      panel.data = dem.panel, match.missing = TRUE,
 #'                      covs.formula = ~ tradewb + rdata + I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
 #'                      size.match = 5, qoi = "att")
-#' print(pm.obj)
+#' pb <- get_covariate_balance(pm.obj,
+#'                             include.unrefined = TRUE,
+#'                             panel.data = dem.panel, 
+#'                             covariates = c("tradewb", "rdata"))
+#' print(pb)
 print.PanelBalance <- function(x, ...)
 {
 
@@ -228,20 +233,48 @@ print.PanelBalance <- function(x, ...)
 #' @param i numeric. Specifies which element to extract. Substantively, it specifies which \code{PanelMatch} configuration data to extract.
 #' @param ... Not used
 #'
-#' @return Returns balance information for specified \code{PanelMatch} configuration. Note that results are still returned as a \code{PanelBalance} object. 
+#' @return Returns balance information for specified \code{PanelMatch} configuration. Note that results are still returned as a \code{PanelBalance} object. In order to return a list, use the [[ operator
 #' @export
+#' @examples
+#' dem$rdata <- runif(runif(nrow(dem)))
+#' dem.panel <- PanelData(dem, "wbcode2", "year", "dem", "y")
+#' pm.obj <- PanelMatch(lead = 0:3, lag = 4, refinement.method = "mahalanobis", 
+#'                      panel.data = dem.panel, match.missing = TRUE,
+#'                      covs.formula = ~ tradewb + rdata + I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
+#'                      size.match = 5, qoi = "att")
+#' 
+#' # create multiple configurations to compare
+#' pm2 <- PanelMatch(lead = 0:3, lag = 4, refinement.method = "ps.match", 
+#'                   panel.data = dem.panel, match.missing = TRUE,
+#'                   covs.formula = ~ tradewb + rdata + I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
+#'                   size.match = 5, qoi = "att")
+#' 
+#' pb <- get_covariate_balance(pm.obj, pm2,
+#'                             include.unrefined = TRUE,
+#'                             panel.data = dem.panel, 
+#'                             covariates = c("tradewb", "rdata"))
+#' bal.maha <- pb[1]
+#' bal.ps <- pb[2]                             
 `[.PanelBalance` <- function(x, i, ...) {
   # Subset the list while keeping the class and attributes
   tmp <- x
+  tru <- attr(x, "unrefined.balance.results")
+  if (!is.null(tru))
+  {
+    ubr <- tru[i]  
+  } else {
+    ubr <- NULL
+  }
   class(tmp) <- "list"
   subset <- tmp[i]
   attributes(subset) <- attributes(x)
+  attr(subset, "unrefined.balance.results") <- ubr
   class(subset) <- class(x)
   return(subset)
 }
 
 #' Extract just the unrefined covariate balance results, if they exist
-#' @param pb.object \code{PanelMatch} object
+#' @param pb.object \code{PanelBalance} object
 #' 
 #' @export
 get_unrefined_balance <- function(pb.object) {
@@ -250,10 +283,29 @@ get_unrefined_balance <- function(pb.object) {
 
 #' Extract unrefined covariate balance results, if they exist
 #'
-#' @param pb.object PanelBalance object
+#' @param pb.object \code{PanelBalance} object
 #'
-#' @return A PanelBalance object, with just the unrefined balance results
+#' @return A \code{PanelBalance} object, with just the unrefined balance results
 #' @export
+#' @examples
+#' dem$rdata <- runif(runif(nrow(dem)))
+#' dem.panel <- PanelData(dem, "wbcode2", "year", "dem", "y")
+#' pm.obj <- PanelMatch(lead = 0:3, lag = 4, refinement.method = "mahalanobis", 
+#'                      panel.data = dem.panel, match.missing = TRUE,
+#'                      covs.formula = ~ tradewb + rdata + I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
+#'                      size.match = 5, qoi = "att")
+#' 
+#' # create multiple configurations to compare
+#' pm2 <- PanelMatch(lead = 0:3, lag = 4, refinement.method = "ps.match", 
+#'                   panel.data = dem.panel, match.missing = TRUE,
+#'                   covs.formula = ~ tradewb + rdata + I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
+#'                   size.match = 5, qoi = "att")
+#' 
+#' pb <- get_covariate_balance(pm.obj, pm2,
+#'                             include.unrefined = TRUE,
+#'                             panel.data = dem.panel, 
+#'                             covariates = c("tradewb", "rdata"))
+#' get_unrefined_balance(pb)
 get_unrefined_balance.PanelBalance <- function(pb.object) {
   return(attr(pb.object, "unrefined.balance.results"))
 }

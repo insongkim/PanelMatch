@@ -4,16 +4,10 @@
 #' treated or control units (att and atc, respectively), the average effect of treatment reversal on reversed units (art), or average treatment effect (ate), as specified in \code{PanelMatch()}.
 #' This is done by estimating the counterfactual outcomes for each treated unit using
 #' matched sets. Users will provide matched sets that were obtained by the
-#' \code{PanelMatch} function and obtain point estimates via a
-#' weighted average computation with weighted bootstrap standard errors. Point estimates and standard errors will be
-#' produced for each period in the lead window specified by the \code{lead} argument from \code{PanelMatch()}.
-#' Users may run multiple estimations by providing lists of each argument to the function.
-#' However, in this format, every argument must be explicitly specified in each configuration
-#' and must adhere to the same data types/structures outlined below. 
-#'
+#' \code{PanelMatch} function and obtain point estimates and standard errors.
 #' @param sets A \code{PanelMatch} object attained via the
 #' \code{PanelMatch()} function.
-#' @param panel.data The same time series cross sectional data set provided to the \code{PanelMatch()} function used to produce the matched sets. This should be a PanelData object.
+#' @param panel.data The same time series cross sectional data set provided to the \code{PanelMatch()} function used to produce the matched sets. This should be a \code{PanelData} object.
 #' @param se.method Method used for calculating standard errors, provided as a character string. Users must choose between "bootstrap", "conditional", and "unconditional" methods. Default is "bootstrap". "bootstrap" uses a block bootstrapping procedure to calculate standard errors. The conditional method calculates the variance of the estimator, assuming independence across units but not across time. The unconditional method also calculates the variance of the estimator analytically, but makes no such assumptions about independence across units. When the quantity of interest is "att", "atc", or "art", all methods are available. Only "bootstrap" is available for the ate. If \code{pooled} argument is TRUE, then only bootstrap is available. 
 #' @param number.iterations If using bootstrapping for calculating standard errors, this is the number of bootstrap iterations. Provide as integer. If \code{se.method} is not equal to "bootstrap", this argument has no effect.
 #' @param df.adjustment A logical value indicating whether or not a
@@ -23,12 +17,12 @@
 #' estimates for statistical inference. The default is .95.
 #' @param moderator The name of a moderating variable, provided as a character string. If a moderating variable is provided,the returned object will be a list of \code{PanelEstimate} objects. The names of the list will reflect the different values of the moderating variable. More specifically, the moderating variable values will be converted to syntactically proper names using \code{make.names()}.
 #' @param pooled Logical. If TRUE, estimates and standard errors are returned for treatment effects pooled across the entire lead window. Only available for \code{se.method = ``bootstrap''}
-#' @param include.placebo.test Logical. If TRUE, a placebo test is run and returned in the results. The placebo test uses the same specifications for calculating standard errors as the main results. That is, standard errors are calculated according to the user provided \code{se.method} and \code{confidence.level} arguments (and, if applicable, parallelization specifications). If these are invalid for some reason, an error will be thrown. 
+#' @param include.placebo.test Logical. If TRUE, a placebo test is run and returned in the results. The placebo test uses the same specifications for calculating standard errors as the main results. That is, standard errors are calculated according to the user provided \code{se.method} and \code{confidence.level} arguments (and, if applicable, parallelization specifications). 
 #' @param parallel Logical. If TRUE and \code{se.method = ``bootstrap''}, bootstrap procedure will be parallelized. Default is FALSE. If \code{se.method} is not set to \code{bootstrap}, this option does nothing.
 #' @param num.cores Integer. Specifies the number of cores to use for parallelization. If \code{se.method = ``bootstrap''} and \code{parallel = TRUE}, then this option will take effect. Otherwise, it will do nothing. 
 #' 
 #' @return \code{PanelEstimate} returns a list of class
-#' `PanelEstimate' containing the following components:
+#' \code{PanelEstimate} containing the following components:
 #' \item{estimates}{the point estimates of the quantity of interest for the lead periods specified}
 #' \item{se.method}{The method used to calculate standard errors. This is the same as the argument provided to the function.}
 #' \item{bootstrapped.estimates}{the bootstrapped point estimate values, when applicable}
@@ -118,9 +112,6 @@ PanelEstimate <- function(sets, panel.data,
     }
     # again, functionally treating art and att the same for moderating variable functionality. 
     # no need to create separate argument for art sets
-    
-    
-    
     attr(panel.data, "unit.id") -> unit.id
     attr(panel.data, "time.id") -> time.id
     attr(panel.data, "treatment") -> treatment

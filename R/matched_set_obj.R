@@ -12,7 +12,7 @@
 #' @param treatment.var string specifying the treatment variable.
 #'
 #' The constructor function returns a \code{matched.set} object.
-#' \code{matched.set} objects are a modified lists. Each element in the list is a vector of ids
+#' \code{matched.set} objects are a modified list. Each element in the list is a vector of ids
 #' corresponding to the control unit ids in a matched set.
 #' Additionally, these vectors might have additional attributes -- "weights". These correspond to the
 #' weights assigned to each control unit,
@@ -56,15 +56,13 @@ matched_set <- function(matchedsets, id, t, L, t.var, id.var, treatment.var)
 #' Summarize information about a \code{matched.set} object and the matched sets contained within them.
 #'
 #'
-#' A method for viewing summary data about the sizes of matched sets and metadata about how they were created. This method
-#' accepts all standard \code{summary} arguments.
+#' A method for viewing summary data about the sizes of matched sets and metadata about how they were created. This method accepts all standard \code{summary} arguments.
 #'
 #' @param object a \code{matched.set} object
 #' @param ... Optional additional arguments to be passed to the \code{summary} function
-#' @param verbose Logical value specifying whether or not a longer, more verbose summary should be calculated and returned. Default is
-#' \code{TRUE}.
+#' @param verbose Logical value specifying whether or not a longer, more verbose summary should be calculated and returned. Default is TRUE. 
 #'
-#' @return list object with either 5 or 1 element(s), depending on whether or not \code{verbose} is set to \code{TRUE} or not.
+#' @return list object with either 5 or 1 element(s), depending on whether or not \code{verbose} is set to TRUE or not.
 #' \item{overview}{A \code{data.frame} object containing information about the treated units (unit id, time of treatment), and the number of matched control units with weights zero and above.}
 #' \item{set.size.summary}{a \code{summary} object summarizing the minimum, maximum, and IQR of matched set sizes}
 #' \item{number.of.treated.units}{The number of unit, time pairs that are considered to be "treated" units}
@@ -75,12 +73,11 @@ matched_set <- function(matchedsets, id, t, L, t.var, id.var, treatment.var)
 #' dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
 #' dem.sub.panel <- PanelData(dem.sub, "wbcode2", "year", "dem", "y")
 #' # create subset of data for simplicity
-#' PM.results <- PanelMatch(lag = 4, time.id = "year", unit.id = "wbcode2",
-#'                          treatment = "dem", refinement.method = "ps.match",
-#'                          data = dem.sub.panel, match.missing = TRUE,
+#' PM.results <- PanelMatch(lag = 4, refinement.method = "ps.match",
+#'                          panel.data = dem.sub.panel, match.missing = TRUE,
 #'                          covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
 #'                          size.match = 5, qoi = "att",
-#'                          outcome.var = "y", lead = 0:4, forbid.treatment.reversal = FALSE)
+#'                          lead = 0:4, forbid.treatment.reversal = FALSE)
 #' summary(extract(PM.results, qoi = "att"))
 #'
 #'
@@ -132,12 +129,12 @@ summary.matched.set <- function(object, ..., verbose = TRUE)
 #' @param high.color option passed to \code{ggplot2::scale_fill_gradientn()}. The color representing the high weight/distance values.
 #' @param missing.color option passed to \code{ggplot2::scale_fill_gradientn()}. The color representing the missing/zero weight/distance values.
 #'
-#' @return returns a \code{ggplot2:geom_tile()} object
+#' @return returns a \code{ggplot2::geom_tile()} object producing a plot in alignment with the description above
 #' @export
 #'
 #' @examples
-#'   dem.panel <- PanelData(dem, "wbcode2", "year", "dem", "y")
-#'   PM.results <- PanelMatch(panel.data = dem.panel, lag = 4,
+#'  dem.panel <- PanelData(dem, "wbcode2", "year", "dem", "y")
+#'  PM.results <- PanelMatch(panel.data = dem.panel, lag = 4,
 #'                         refinement.method = "ps.match",
 #'                         match.missing = TRUE,
 #'                         covs.formula = ~ tradewb,
@@ -145,8 +142,8 @@ summary.matched.set <- function(object, ..., verbose = TRUE)
 #'                         lead = 0:4,
 #'                         forbid.treatment.reversal = FALSE)
 #'
-#'   mso <- extract(PM.results)
-#'   plot(mso, panel.data = dem.panel)
+#'  mso <- extract(PM.results)
+#'  plot(mso, panel.data = dem.panel)
 #'
 #'
 plot.matched.set <- function(x, ..., panel.data, type = "weights", 
@@ -195,7 +192,9 @@ plot.matched.set <- function(x, ..., panel.data, type = "weights",
                               variable.name = "Units", 
                               value.name = "Weight")
   
-  p <- ggplot2::ggplot(df_long, aes(x = .data$Units, y = .data$Row, fill = .data$Weight)) +
+  p <- ggplot2::ggplot(df_long, aes(x = .data$Units, 
+                                    y = .data$Row, 
+                                    fill = .data$Weight)) +
     ggplot2::geom_tile(color = "white") +
     ggplot2::scale_fill_gradientn(colors = c(low.color, mid.color, high.color), 
                          na.value = missing.color) +
@@ -240,7 +239,7 @@ combine_named_vectors <- function(list_of_vectors) {
 #' dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
 #' # create subset of data for simplicity
 #' dem.sub.panel <- PanelData(dem.sub, "wbcode2", "year", "dem", "y")
-#' PM.results <- PanelMatch(panel.data = dem.panel, lag = 4,
+#' PM.results <- PanelMatch(panel.data = dem.sub.panel, lag = 4,
 #'                         refinement.method = "ps.match",
 #'                         match.missing = TRUE,
 #'                         covs.formula = ~ tradewb,
@@ -272,7 +271,6 @@ print.matched.set <- function(x, ..., verbose = FALSE)
 #' Subsets \code{matched.set} objects while preserving attributes.
 #' 
 #' @param x \code{matched.set} object
-#'
 #' @param i numeric. specifies the index of which element to extract.
 #' @param j NULL
 #' @param drop NULL
@@ -316,7 +314,7 @@ handle_pm_qoi <- function(pm.in, qoi.in)
   return(msets)
 }
 
-#' Get weights
+#' Get weights of matched control units
 #' See weights.matched.set method
 #' 
 #' @param object \code{Matched.set object} 
@@ -330,7 +328,7 @@ weights <- function(object) {
 #'
 #' @param object matched.set object, extracted using the \code{get.PanelMatch()} method
 #'
-#' @return list of named vectors. Each list element corresponds to a particular treated observation and contains the matched control units, along with their weights.
+#' @return list of named vectors. Each list element corresponds to a particular treated observation and contains the matched control units, along with their weights. These correspond to the "weights" attribute, which are calculated in the \code{PanelMatch} refinement process. 
 #' @export
 #'
 #' @examples
@@ -352,7 +350,7 @@ weights.matched.set <- function(object)
 }
 
 #' Get distances
-#' See distances.mathced.set method
+#' See distances.matched.set method
 #' @param object \code{matched.set} object
 #'
 #' @export

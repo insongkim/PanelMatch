@@ -1,12 +1,12 @@
-#' Get summaries of PanelEstimate objects/calculations
+#' Get summaries of PanelEstimate objects and calculations
 #' 
 #' 
 #' \code{summary.PanelEstimate} takes an object returned by
 #' \code{PanelEstimate}, and returns a summary table of point
 #' estimates and confidence intervals
 #'
-#' @param object A PanelEstimate object
-#' @param verbose logical indicating whether or not output should be printed in an expanded form. Default is TRUE
+#' @param object A \code{PanelEstimate} object
+#' @param verbose logical indicating whether or not output should be printed in an expanded form. Default is FALSE
 #' @param confidence.level Confidence level to be used for confidence interval calculations. Must be numeric between 0 and 1. If NULL, confidence level from \code{PanelEstimate()} specification is used. 
 #' @param bias.corrected logical indicating whether or not bias corrected estimates should be provided. Default is FALSE. This argument only applies for standard errors calculated with the bootstrap. 
 #' @param ... optional additional arguments. Currently, no additional arguments are supported. 
@@ -21,11 +21,12 @@
 #'                          size.match = 5, qoi = "att",
 #'                          lead = 0:4, 
 #'                          forbid.treatment.reversal = FALSE)
-#' PE.results <- PanelEstimate(sets = PM.results, data = dem.sub.panel, se.method = "unconditional")
+#' PE.results <- PanelEstimate(sets = PM.results, 
+#'                             panel.data = dem.sub.panel, 
+#'                             se.method = "unconditional")
 #' summary(PE.results)
-#' 
+#' summary(PE.results, confidence.level = .9)
 #'
-#' 
 #' @method summary PanelEstimate
 #' @export
 summary.PanelEstimate <- function(object, 
@@ -207,6 +208,7 @@ summary.PanelEstimate <- function(object,
 #' @param ylim default is NULL. This is the same argument as the standard argument for \code{plot()}
 #' @param pch default is NULL. This is the same argument as the standard argument for \code{plot()}
 #' @param cex default is NULL. This is the same argument as the standard argument for \code{plot()}
+#' @param confidence.level confidence.level Confidence level to be used for confidence interval calculations. Must be numeric between 0 and 1. If NULL, confidence level from \code{PanelEstimate()} specification is used. 
 #' @param bias.corrected logical indicating whether or not bias corrected estimates should be plotted Default is FALSE. This argument only applies for standard errors calculated with the bootstrap. 
 #' @param ... Additional optional arguments to be passed to \code{plot()}.
 #' @examples
@@ -234,12 +236,15 @@ plot.PanelEstimate <- function(x,
                                ylim = NULL, 
                                pch = NULL,
                                cex = NULL,
+                               confidence.level = NULL,
                                bias.corrected = FALSE,
                                ...)
 {
   pe.object <- x
   plot.data <- summary(pe.object, 
-                       verbose = FALSE, bias.corrected = bias.corrected)
+                       verbose = FALSE, 
+                       bias.corrected = bias.corrected, 
+                       confidence.level = confidence.level)
   
   if (is.null(ylim))
   {
@@ -271,18 +276,31 @@ plot.PanelEstimate <- function(x,
                    ...)
 }
 
-#' Print PanelEstimate objects with information about estimates
-#' @param x PanelEstimate object
+#' Print point estimates and standard errors 
+#' @param x \code{PanelEstimate} object
 #' @param ... additional arguments to be passed to \code{print.data.frame()}
-#' @param verbose logical indicating whether or not more information about the results should be printed
+#' @examples
+#' dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
+#' dem.sub.panel <- PanelData(dem.sub, "wbcode2", "year", "dem", "y")
+#' # create subset of data for simplicity
+#' PM.results <- PanelMatch(panel.data = dem.sub.panel, lag = 4, 
+#'                          refinement.method = "ps.match", 
+#'                          match.missing = TRUE, 
+#'                          covs.formula = ~ tradewb,
+#'                          size.match = 5, qoi = "att",
+#'                          lead = 0:4, 
+#'                          forbid.treatment.reversal = FALSE)
+#' PE.results <- PanelEstimate(sets = PM.results, 
+#'               panel.data = dem.sub.panel, 
+#'               se.method = "unconditional")
+#' print(PE.results)
+#' @method print PanelEstimate
 #' @export
-print.PanelEstimate <- function(x, ..., verbose = FALSE)
+print.PanelEstimate <- function(x, ...)
 {
-  if (!verbose)
-  {
-    cat("Point estimates:\n")
-    print(x[["estimate"]])
-    cat("Standard errors:\n")
-    print(x[["standard.error"]])
-  }
+  
+  cat("Point estimates:\n")
+  print(x[["estimate"]])
+  cat("Standard errors:\n")
+  print(x[["standard.error"]])
 }

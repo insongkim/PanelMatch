@@ -14,10 +14,9 @@
 #' standard matching methods based on propensity score and
 #' Mahalanobis distance, as well as weighting methods. Once 
 #' matching is done, both short-term and long-term average 
-#' treatment effects for the treated can be estimated with 
-#' standard errors. The package also offers a visualization 
-#' technique that allows researchers to assess the quality 
-#' of matches by examining the resulting covariate balance.
+#' treatment effects for the treated observations can be estimated with 
+#' standard errors. The package also offers a variety of diagnostic
+#' and visualization functions to assess the credibility of results.
 #'
 #'
 #' @name PanelMatch-package

@@ -8,10 +8,6 @@
 #' @keywords internal
 check_time_data <- function(data, time.id)
 {
-  # if (!class(data[, time.id]) %in% c("numeric", "integer"))
-  # { # if data is not numeric or integer, just throw an error. too hard to convert
-  #   stop("Time data not consecutive integer")
-  # }
   
   if (!inherits(data[[time.id]], c("numeric", "integer"))) {
     # if data is not numeric or integer, just throw an error. too hard to convert
@@ -32,13 +28,6 @@ check_time_data <- function(data, time.id)
     attr(data, "time.data.map") <- time.data.map
     return(data)
   }
-  
-  # if ("numeric" %in% class(data[, time.id]))
-  # {
-  #   warning("time data is numeric: attempting to convert to integer")
-  #   data[, time.id] <- as.integer(data[,time.id])
-  #   return(data)
-  # }
   
   if (inherits(data[[time.id]], "numeric")) {
     warning("time data is numeric: attempting to convert to integer")

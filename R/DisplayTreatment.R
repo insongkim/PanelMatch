@@ -16,15 +16,15 @@
 #' @param legend.labels Character vector of length two describing the
 #' labels of the legend to be shown in the plot. ggplot2 standards are used.
 #' @param decreasing Logical. Determines if display order should be increasing or decreasing by the amount of treatment received. Default is \code{decreasing} = FALSE.
-#' @param matched.set a matched.set object (optional) containing a single treated unit and a set of matched controls. If provided, this set will be highlighted on the resulting plot.
-#' @param show.set.only logical. If TRUE, only the treated unit and control units contained in the provided \code{matched.set} object will be shown on the plot. 
+#' @param matched.set (optional) a \code{matched.set} object containing a single treated unit and a set of matched controls. If provided, this set will be highlighted on the resulting plot.
+#' @param show.set.only (optional) logical. If TRUE, only the treated unit and control units contained in the provided \code{matched.set} object will be shown on the plot. 
 #' Default is FALSE. If no \code{matched.set} is provided, then this argument will have no effect.
-#' @param gradient.weights logical. If TRUE, the "darkness"/shade of units in the provided \code{matched.set} object will be displayed according to their weight. Control units with higher weights will appear darker on the resulting plot. Control units with lower weights will appear lighter. This argument has no effect unless a \code{matched.set} is provided.
+#' @param gradient.weights (optional) logical. If TRUE, the "darkness"/shade of units in the provided \code{matched.set} object will be displayed according to their weight. Control units with higher weights will appear darker on the resulting plot. Control units with lower weights will appear lighter. This argument has no effect unless a \code{matched.set} is provided.
 #' @param hide.x.tick.label logical. If TRUE, x axis tick labels are not shown. Default is FALSE. 
 #' @param hide.y.tick.label logical. If TRUE, y axis tick labels are not shown. Default is FALSE.
 #' @param dense.plot logical. if TRUE, lines between tiles are removed on resulting plot. This is useful for producing more readable plots in situations where the number of units and/or time periods is very high.
-#' @return \code{DisplayTreatment} returns a treatment variation plot (using ggplot2 geom_tile() or geom_raster()),
-#' which visualizes the variation of treatment across unit and time.
+#' @return \code{DisplayTreatment} returns a treatment variation plot (generated via ggplot2 geom_tile() or geom_raster()),
+#' which visualizes the variation of treatment across units and time. The results can be customized using ggplot2 syntax.
 #' @author In Song Kim <insong@mit.edu>, Erik Wang
 #' <haixiao@Princeton.edu>, Adam Rauh <amrauh@umich.edu>, and Kosuke Imai <imai@harvard.edu>
 #'

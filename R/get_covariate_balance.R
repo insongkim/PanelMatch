@@ -228,7 +228,6 @@ get_set_covariate_balance <- function(matched.sets,
   
 }
 
-#helper function 
 build_balance_mats <- function(idx, ordered_expanded_data, msets)
 {
   subset.per.matchedset <- function(sub.idx, set)

@@ -1,15 +1,21 @@
 #' Pre-process and balance panel data
 #'
 #' @param panel.data A \code{data.frame} object containing time series cross sectional data. 
-#' Time data should be sequential integers that increase by 1. Unit identifiers must be integers. Treatment data must be binary. If time data is non-integer, the package will attempt to sensibly convert it by converting the data to factor, then to integer. If a conversion is performed, a mapping will be returned as an attribute. See 
+#' Time data should be sequential integers that increase by 1. Unit identifiers must be integers. Treatment data must be binary. If time data is non-integer, the package will attempt to sensibly convert it by converting the data to factor, then to integer. If a conversion is performed, a mapping will be returned as an attribute called "time.data.map"
 #' @param unit.id A character string indicating the name of unit identifier in the data. This data must be integer.
 #' @param time.id A character string indicating the name of the time variable in the data. 
 #' @param treatment A character string indicating the name of the treatment variable.
 #' The treatment must be a binary indicator variable (integer with 0 for the control group and 1 for the treatment group).
 #' @param outcome A character string identifying the outcome variable
-#' @return \code{PanelData()} returns an object of class "PanelData". This takes the form of a \code{data.frame} object with the following properties and attributes. First, the data has been balanced and sorted. These properties are noted in the "is.balanced" and "is.sorted" attributes, respectively. So, each unit appears the same number of times in the resulting PanelData object, with NAs filling out missing data. Second, the data has been sorted to appear in order for each unit. Next, the PanelData object has the following attributes: "unit.id", "time.id", "treatment", and "outcome" reflecting the variables provided in the specification. If the function attempts to automatically convert time data to be consecutive integers, the mapping between the original time data and the "new" converted time data is provided as a data.frame object and stored as the "time.data.map" attribute. 
+#' @return \code{PanelData()} returns an object of class \code{PanelData}. This takes the form of a \code{data.frame} object with the following properties and attributes. First, the data has been balanced and sorted. These properties are noted in the "is.balanced" and "is.sorted" attributes, respectively. So, each unit appears the same number of times in the resulting \code{PanelData} object, with NAs filling out missing data. Second, the data has been sorted to appear in order for each unit. Next, the \code{PanelData} object has the following attributes: "unit.id", "time.id", "treatment", and "outcome" reflecting the variables provided in the specification. If the function attempts to automatically convert time data to be consecutive integers, the mapping between the original time data and the "new" converted time data is provided as a \code{data.frame} object and stored as the "time.data.map" attribute. 
 #'
 #' @export
+#' @examples
+#' d <- PanelData(panel.data = dem, 
+#'                unit.id = "wbcode2", 
+#'                time.id = "year", 
+#'                treatment = "dem", 
+#'                outcome = "y")
 PanelData <- function(panel.data,
                       unit.id,
                       time.id,
@@ -77,20 +83,17 @@ PanelData <- function(panel.data,
 }
 
 #' Create basic plots of PanelData objects
-#' @param x PanelData object
+#' @param x \code{PanelData} object
 #' @param ... Not used
-#' @param plotting.variable character string specifying which variable to plot in the resulting figure. The values of this variable will be used to fill in cells on the resulting heatmap. Defaults to whatever is specified as the treatment variable. See below for more.
+#' @param plotting.variable character string specifying which variable to plot in the resulting figure. The values of this variable will be used to fill in cells on the resulting heatmap. Defaults to whatever is specified as the treatment variable. 
 #' @return Returns a ggplot2 object created by \code{geom_tile()}. The basic figure shows units along the y-axis and time along the x-axis. The figure takes the form of a heatmap. The value of the plotting.variable argument is used to fill in the color of the cells. 
 #'
 #' @export
 #' @examples
 #' dem$rdata <- rnorm(nrow(dem))
 #' d <- PanelData(dem, "wbcode2", "year", "dem", "y")
-#' print(d)
-#' summary(d)
 #' plot(d)
 #' plot(d, plotting.variable = "rdata")
-
 plot.PanelData <- function(x, ..., plotting.variable = NA)
 {
   if (!inherits(x, "PanelData")) {
@@ -123,8 +126,7 @@ plot.PanelData <- function(x, ..., plotting.variable = NA)
 }
 
 #' Print PanelData objects and basic metadata
-#' @param x PanelData object
-#'
+#' @param x \code{PanelData} object
 #' @param ... additional arguments to be passed to \code{print.data.frame()}
 #'
 #' @export
@@ -151,13 +153,12 @@ print.PanelData <- function(x, ...)
 
 #' Summarize the number of unique units and time periods in a PanelData object
 #' @param object PanelData object
-#'
 #' @param ... Not used
 #' @return Returns a \code{data.frame} object, with columns "num.units" and "num.periods." These specify the number of unique units and time periods that appear in the balanced panel data. 
 #' @export
 #' @examples
 #' d <- PanelData(dem, "wbcode2", "year", "dem", "y")
-#' print(d)
+#' summary(d)
 #' 
 summary.PanelData <- function(object, ...)
 {

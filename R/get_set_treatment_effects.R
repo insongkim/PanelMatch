@@ -1,11 +1,11 @@
-#' Calculate the treatment effect size at the matched set level
+#' Calculate matched set level treatment effects
 #'
 #'
 #' Calculate the size of treatment effects for each matched set.
 #' @param pm.obj an object of class \code{PanelMatch}
 #' @param panel.data \code{PanelData} object with the time series cross sectional data used for matching, refinement, and estimation
 #' @param lead integer (or integer vector) indicating the time period(s) in the future for which the treatment effect size will be calculated. Calculations will be made for the period t + lead, where t is the time of treatment. If more than one lead value is provided, then calculations will be performed for each value.
-#' @return a list equal in length to the number of lead periods specified to the \code{lead} argument. Each element in the list is a vector of the matched set level effects.
+#' @return a list equal in length to the number of lead periods specified to the \code{lead} argument. Each element in the list is a vector of the matched set level effect estimates.
 #' @examples
 #' dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
 #' dem.sub.panel <- PanelData(dem.sub, "wbcode2", "year", "dem", "y")

@@ -1,6 +1,6 @@
 #' Extract matched.set objects from PanelMatch results
 #' @param pm.object \code{PanelMatch} object
-#' @param qoi character, specifying the qoi. Valid inputs include "att", "atc", "art", and NUL
+#' @param qoi character, specifying the qoi. Valid inputs include "att", "atc", "art", and NULL. If NULL, function extracts att, art, or atc results if possible. Otherwise, throws an error if ate is specified.
 #'
 #' @export
 extract <- function(pm.object, qoi) {
@@ -10,7 +10,7 @@ extract <- function(pm.object, qoi) {
 #' Extract matched.set objects from PanelMatch results
 #'
 #' @param pm.object \code{PanelMatch} obect
-#' @param qoi character, specifying the qoi. Valid inputs include "att", "atc", "art", and NULL
+#' @param qoi character, specifying the qoi. Valid inputs include "att", "atc", "art", and NULL. If NULL, function extracts att, art, or atc results if possible. Otherwise, throws an error if ate is specified.
 #' @return a \code{matched.set} object
 #'
 #' @examples
@@ -25,9 +25,9 @@ extract <- function(pm.object, qoi) {
 #'                          size.match = 5, qoi = "att",
 #'                          lead = 0:4, forbid.treatment.reversal = FALSE)
 #' extract(PM.results, qoi = "att")
+#' extract(PM.results) # valid since att is specified
 #' @method extract PanelMatch
 #' @export
-#' 
 extract.PanelMatch <- function(pm.object, 
                            qoi = NULL)
 {
@@ -55,9 +55,9 @@ extract.PanelMatch <- function(pm.object,
 #'
 #' @param object a \code{PanelMatch} object
 #' @param ... Optional additional arguments to be passed to the \code{summary} function
-#' @param verbose Logical value specifying whether or not a longer, more verbose summary should be calculated and returned. Default is \code{TRUE}.
+#' @param verbose Logical value specifying whether or not a longer, more verbose summary should be calculated and returned. Default is \code{FALSE}.
 #'
-#' @return A list of lists contained a summary of the matched sets associated with the specified qoi. Each sublist object will either have 5 or 1 element(s), depending on whether or not \code{verbose} is set to \code{TRUE} or not.
+#' @return A list of lists containing a summary of the matched sets associated with the specified qoi. Each sublist object will either have 5 or 1 element(s), depending on whether or not \code{verbose} is set to \code{TRUE} or not.
 #' \item{overview}{A \code{data.frame} object containing information about the treated units (unit id, time of treatment), and the number of matched control units with weights zero and above.}
 #' \item{set.size.summary}{a \code{summary} object summarizing the minimum, maximum, and IQR of matched set sizes}
 #' \item{number.of.treated.units}{The number of unit, time pairs that are considered to be "treated" units}
@@ -75,8 +75,6 @@ extract.PanelMatch <- function(pm.object,
 #'                          size.match = 5, qoi = "att",
 #'                          lead = 0:4, forbid.treatment.reversal = FALSE)
 #' summary(PM.results)
-#'
-#'
 #'
 #' @method summary PanelMatch
 #' @export
