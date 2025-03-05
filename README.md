@@ -6,6 +6,11 @@ Authors: In Song Kim (insong@mit.edu), Adam Rauh (amrauh@umich.edu), Erik Wang (
 
 PanelMatch is an R package implementing a set of methodological tools proposed by Imai, Kim, and Wang (2023) that enables researchers to apply matching methods for causal inference on time-series cross-sectional data with binary treatments. The package includes implementations of matching methods based on propensity scores and Mahalanobis distance, as well as weighting methods. PanelMatch enables users to easily calculate a variety of possible quantities of interest, along with standard errors. The software is flexible, allowing users to tune the matching, refinement, and estimation procedures with a large number of parameters. The package also offers a variety of visualization and diagnostic tools for researchers to better understand their data and assess their results.
 
+# Package Overview
+
+The most detailed and complete overview of the package can be found [here](https://arxiv.org/abs/2503.02073). Please see the remainder of this README for a much shorter introduction.
+
+
 Installation Instructions
 -------------------------
 
