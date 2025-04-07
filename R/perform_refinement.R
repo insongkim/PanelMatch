@@ -102,6 +102,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment,
     rownames(ordered.data) <- paste0(ordered.data[, unit.id],
                                      ".",
                                      ordered.data[, time.id])
+    
     msets2 <- filter_placebo_results(expanded_data = as.matrix(ordered.data[, c(unit.id, time.id)]),
                                      ordered_outcome_data = ordered.data[, outcome.var],
                                      treated_ids = treated.ids,
@@ -109,15 +110,19 @@ perform_refinement <- function(lag, time.id, unit.id, treatment,
                                      sets = msets,
                                      lag = lag)
     
-    
-    msets2 <- msets2[sapply(msets2, length) > 0 ]
-    
+    idx <- sapply(msets2, length) > 0
+    if (sum(!idx, na.rm = TRUE) == length(msets2)) # if there are no matched sets that are usable...
+    {
+      stop("Calculations cannot proceed. Too much missing data for placebo test.")
+    }
+    msets2 <- msets2[idx]
+    names(msets2) <- names(msets)[idx]
     attr(msets2, "lag") <- lag
     attr(msets2, "t.var") <- time.id
     attr(msets2, "id.var" ) <- unit.id
     attr(msets2, "treatment.var") <- treatment
     class(msets2) <- "matched.set"
-    
+    msets <- msets2
   }
 
   

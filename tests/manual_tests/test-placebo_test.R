@@ -16,15 +16,16 @@ test_that("test placebo test", {
                          se.method = "bootstrap",
                          plot = FALSE)
   
-  est.comps <- c(20.438656,
-                 4.110167,
-                 -21.562320)
+  est.comps <- c(-3.740490,
+                 -2.136306,
+                 -1.702141)
   
-  st.comps <- c(28.54986,
-                23.67567,
-                17.30092)
+  st.comps <- c(2.1743547, 1.5384570, 0.7407867)
+  
   expect_equivalent(pt.res$estimate, est.comps, tolerance = .00001)
   expect_equivalent(pt.res$standard.errors, st.comps, tolerance = .00001)
+  
+  
   PM.results <- PanelMatch(lag = 4, 
                            refinement.method = "mahalanobis",
                            panel.data = dem.panel,
@@ -41,13 +42,9 @@ test_that("test placebo test", {
                          se.method = "bootstrap",
                          plot = FALSE)
   
-  est.comps <- c(20.490151,
-                 8.484286,  
-                 8.649806)
+  est.comps <- c(-7.378622, -5.835059, -2.673118)
   
-  st.comps <- c(18.33094, 
-                17.76234,
-                13.37736)
+  st.comps <- c(2.0099124, 1.3899878, 0.9683683)
   
   expect_equivalent(pt.res$estimate, est.comps, tolerance = .00001)
   expect_equivalent(pt.res$standard.errors, st.comps, tolerance = .00001)
@@ -58,13 +55,9 @@ test_that("test placebo test", {
                          se.method = "conditional",
                          plot = FALSE)
   
-  est.comps <- c(20.490151,
-                 8.484286,  
-                 8.649806)
+  est.comps <- c(-7.378622, -5.835059, -2.673118)
   
-  st.comps <- c(16.30824,
-                15.11819,
-                11.29278)
+  st.comps <- c(1.6581540, 1.2276371, 0.8310945)
   
   expect_equivalent(pt.res$estimate, est.comps, tolerance = .00001)
   expect_equivalent(pt.res$standard.errors, st.comps, tolerance = .00001)
@@ -74,12 +67,9 @@ test_that("test placebo test", {
                          se.method = "unconditional",
                          plot = FALSE)
   
-  est.comps <- c(20.490151,
-                 8.484286,  
-                 8.649806)
-  st.comps <- c(19.87698,
-                18.35898,
-                13.72441)
+  est.comps <- c(-7.378622, -5.835059, -2.673118)
+  st.comps <- c(2.187916, 1.632308, 1.066801)
+  
   expect_equivalent(pt.res$estimate, est.comps, tolerance = .00001)
   expect_equivalent(pt.res$standard.errors, st.comps, tolerance = .00001)
   

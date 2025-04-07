@@ -177,7 +177,7 @@ plot.PanelMatch <- function(x, ..., border = NA, col = "grey", ylab = "Frequency
 #'
 #' @method print PanelMatch
 #' @export
-print.PanelMatch <- function(x, ..., verbose)
+print.PanelMatch <- function(x, ..., verbose = FALSE)
 {
   qoi.in <- attr(x, "qoi")
   unit.id <- attr(x, "unit.id") 
@@ -197,7 +197,7 @@ print.PanelMatch <- function(x, ..., verbose)
   for (q.in in qoi.in) {
     mset <- x[[q.in]]
     cat(paste0("QOI: ", q.in), "\n")
-    print(mset, ..., verbose)
+    print(mset, ..., verbose = verbose)
   }
   
 }
