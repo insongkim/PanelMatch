@@ -267,7 +267,7 @@ print.matched.set <- function(x, ..., verbose = FALSE, n = 5, show.all = FALSE)
     if (show.all || total.rows <= n) {
       print(set.sum)
     } else {
-      abbv.sum <- head(set.sum, n = n)
+      abbv.sum <- utils::head(set.sum, n = n)
       print(abbv.sum)
       cat(paste0("... [", total.rows - n, " more matched set(s) not printed]\n"))
     }

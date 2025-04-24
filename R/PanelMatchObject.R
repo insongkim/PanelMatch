@@ -328,7 +328,7 @@ plot_matched_set <- function(x, border = NA, col = "grey", ylab = "Frequency of 
 
 #' Return the refinement formula used in a PanelMatch specification
 #'
-#' @param A PanelMatch Object 
+#' @param x A PanelMatch Object 
 #' @param ... not used
 #'
 #' @return One sided formula object containing the variables/specification used in refinement. This corresponds to what was provided to the \code{covs.formula} argument.

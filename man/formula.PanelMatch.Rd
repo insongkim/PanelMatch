@@ -7,9 +7,9 @@
 \method{formula}{PanelMatch}(x, ...)
 }
 \arguments{
-\item{...}{not used}
+\item{x}{A PanelMatch Object}
 
-\item{A}{PanelMatch Object}
+\item{...}{not used}
 }
 \value{
 One sided formula object containing the variables/specification used in refinement. This corresponds to what was provided to the \code{covs.formula} argument.

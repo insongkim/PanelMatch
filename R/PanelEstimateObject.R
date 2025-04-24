@@ -384,8 +384,8 @@ confint.PanelEstimate <- function(object, parm = NULL, level = NULL, ..., bias.c
 
 #' Extract QOI estimates
 #' See documentation for `estimates.PanelEstimate()`
-#' @param object 
-#' @param ... 
+#' @param object PanelEstimate object
+#' @param ... other arguments. Not used. 
 #'
 #' @export
 estimates <- function(object, ...) {

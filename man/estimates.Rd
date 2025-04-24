@@ -8,9 +8,9 @@ See documentation for `estimates.PanelEstimate()`}
 estimates(object, ...)
 }
 \arguments{
-\item{object}{}
+\item{object}{PanelEstimate object}
 
-\item{...}{}
+\item{...}{other arguments. Not used.}
 }
 \description{
 Extract QOI estimates

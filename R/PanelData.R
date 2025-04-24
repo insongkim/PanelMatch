@@ -163,7 +163,7 @@ print.PanelData <- function(x, ..., n = 5, verbose = FALSE)
   } else {
     string.out <- paste0(total.rows, " x ", ncol(x))
     cat(paste0("Dimensions: ", string.out, "\n"))
-    print.data.frame(head(x, n = n))
+    print.data.frame(utils::head(x, n = n))
     
     if (n < total.rows) {
       cat(paste0("... [", total.rows - n, " more row(s) not printed]\n"))
