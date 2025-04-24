@@ -2,20 +2,20 @@
 % Please edit documentation in R/PanelData.R
 \name{summary.PanelData}
 \alias{summary.PanelData}
-\title{Summarize the number of unique units and time periods in a PanelData object}
+\title{Summarize information about variable names, and unit, time, and treatment data in a PanelData object}
 \usage{
 \method{summary}{PanelData}(object, ...)
 }
 \arguments{
-\item{object}{PanelData object}
+\item{object}{\code{PanelData} object}
 
 \item{...}{Not used}
 }
 \value{
-Returns a \code{data.frame} object, with columns "num.units" and "num.periods." These specify the number of unique units and time periods that appear in the balanced panel data.
+Returns a \code{data.frame} object, with columns "quantity" and "value." Within the data frame the following information is returned: The name of the unit id variable, the name of the time id variable, the name of the treatment variable, the name of the outcome variable, the number of unique units found in the data, the number of unique time periods found in the data and the percentage of treated periods that are missing treatment data.
 }
 \description{
-Summarize the number of unique units and time periods in a PanelData object
+Summarize information about variable names, and unit, time, and treatment data in a PanelData object
 }
 \examples{
 d <- PanelData(dem, "wbcode2", "year", "dem", "y")

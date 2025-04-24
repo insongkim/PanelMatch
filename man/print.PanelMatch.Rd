@@ -4,15 +4,19 @@
 \alias{print.PanelMatch}
 \title{Print PanelMatch objects.}
 \usage{
-\method{print}{PanelMatch}(x, ..., verbose)
+\method{print}{PanelMatch}(x, ..., verbose = FALSE, n = 5, show.all = FALSE)
 }
 \arguments{
 \item{x}{a \code{PanelMatch} object}
 
-\item{...}{additional arguments to be passed to \code{print}}
+\item{...}{additional arguments to be passed to \code{print.matched.set}}
 
 \item{verbose}{logical indicating whether or not underlying data should be printed in expanded/raw list form.
 The verbose form is not recommended unless the data set is small. Default is FALSE}
+
+\item{n}{Integer. Number of matched sets to display information about as a preview. Default is 5.}
+
+\item{show.all}{Logical. By default (`show.all = FALSE`), the print method only shows a small preview of the sizes of matched sets. When set to TRUE, a full summary description of matched set sizes is shown.}
 }
 \description{
 Print PanelMatch objects.

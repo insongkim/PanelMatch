@@ -15,7 +15,7 @@
 Nothing
 }
 \description{
-Print basic information about PanelBalance objects
+This function prints out covariate balance information for all of the PanelMatch configurations specified within a PanelBalance object. Specifically it prints out the name of the PanelMatch object(s), and covariate balance measures over the specified time period after refinement. If no refinement was applied, then these unrefined results will be shown.
 }
 \examples{
 dem$rdata <- runif(runif(nrow(dem)))

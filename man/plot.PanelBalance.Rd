@@ -14,7 +14,9 @@ Create figures displaying covariate balance results for one or more \code{PanelM
   ylab = NULL,
   include.treatment.period = TRUE,
   include.unrefined.panel = TRUE,
-  legend.position = "topleft"
+  legend.position = "topleft",
+  main = NULL,
+  main.unrefined = NULL
 )
 }
 \arguments{
@@ -35,6 +37,10 @@ Create figures displaying covariate balance results for one or more \code{PanelM
 \item{include.unrefined.panel}{logical indicating whether or not unrefined balance plots should be returned for panel plot. Only applicable to panel plot. Default is TRUE.}
 
 \item{legend.position}{character. Describes where the legend should be placed on the figure. Uses base R syntax.}
+
+\item{main}{character. Either a single title to be used for all plots or a character vector providing a name for each figure, which should be the same length as the number of `PanelMatch` configurations in the `PanelBalance` object. By default, main is set to NULL and figures are titled the same as the `PanelMatch` objects the figures are based on.}
+
+\item{main.unrefined}{character. This argument is the same as main, but applies to the set of figures corresponding to the unrefined covariate balance results. This is only used when applicable -- otherwise it has no effect.}
 }
 \value{
 returns a set of base R plots, depending on the specification of "panel" or "scatter" above. When \code{type = "panel"} and \code{include.unrefined.panel = TRUE}, two sets of plots are returned. The first set shows covariate balance levels for the specified \code{PanelMatch} configurations. The second set shows covariate balance levels for the same \code{PanelMatch} configurations, but with all control units receiving equal weight (i.e., balance levels prior to refinement). If \code{include.unrefined.panel = FALSE}, only the first set of figures are returned. The sets of figures are both returned in the same order as the \code{PanelMatch} configurations specified to \code{get_covariate_balance()} that compose the \code{PanelBalance} object. When \code{type = "scatter"}, the visualization described above is produced, with all configurations shown on the same plot with different symbols.

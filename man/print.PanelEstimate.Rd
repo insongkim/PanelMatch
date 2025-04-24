@@ -9,7 +9,7 @@
 \arguments{
 \item{x}{\code{PanelEstimate} object}
 
-\item{...}{additional arguments to be passed to \code{print.data.frame()}}
+\item{...}{Not used}
 }
 \description{
 Print point estimates and standard errors

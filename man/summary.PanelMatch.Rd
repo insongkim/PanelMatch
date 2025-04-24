@@ -4,26 +4,18 @@
 \alias{summary.PanelMatch}
 \title{Summarize information about a PanelMatch object and the matched sets contained within them.}
 \usage{
-\method{summary}{PanelMatch}(object, ..., verbose = FALSE)
+\method{summary}{PanelMatch}(object, ...)
 }
 \arguments{
 \item{object}{a \code{PanelMatch} object}
 
-\item{...}{Optional additional arguments to be passed to the \code{summary} function}
-
-\item{verbose}{Logical value specifying whether or not a longer, more verbose summary should be calculated and returned. Default is \code{FALSE}.}
+\item{...}{Not used}
 }
 \value{
-A list of lists containing a summary of the matched sets associated with the specified qoi. Each sublist object will either have 5 or 1 element(s), depending on whether or not \code{verbose} is set to \code{TRUE} or not.
-\item{overview}{A \code{data.frame} object containing information about the treated units (unit id, time of treatment), and the number of matched control units with weights zero and above.}
-\item{set.size.summary}{a \code{summary} object summarizing the minimum, maximum, and IQR of matched set sizes}
-\item{number.of.treated.units}{The number of unit, time pairs that are considered to be "treated" units}
-\item{num.units.empty.set}{The number of units treated at a particular time that were not able to be matched to any control units}
-\item{lag}{The size of the lag window used for matching on treatment history. This affects which treated and control units are matched.}
+A list of data frame(s) containing information about matched sets associated with the specified qoi. If the qoi is "att", "art", or "atc", then the returned list contains one data frame and the element is named for the specified qoi. If the qoi is "ate", then a list of two elements is returned, with one data frame corresponding to the "att" and the other to the "atc". The data frame contains summary information about the sizes of matched sets, along with information about the number of treated observations and the number of empty sets. Specifically, it contains the minimum, 1st quartile, median, mean, 3rd quartile, and maximum matched set size. It also contains the number of treated units total and the number of empty matched sets.
 }
 \description{
-A method for viewing summary data about the sizes of matched sets and metadata about how they were created. This method
-accepts all standard \code{summary} arguments. If the quantity of interest is ate, then a summary will be provided for the matched sets associated with the att and the atc.
+A method for viewing summary data about the sizes of matched sets, the number of treated units, and the number of empty matched sets. If the quantity of interest is ate, then a summary will be provided for the matched sets associated with the att and the atc.
 }
 \examples{
 dem.sub <- dem[dem[, "wbcode2"] <= 100, ]

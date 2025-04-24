@@ -4,15 +4,21 @@
 \alias{print.matched.set}
 \title{Print matched.set objects.}
 \usage{
-\method{print}{matched.set}(x, ..., verbose = FALSE)
+\method{print}{matched.set}(x, ..., verbose = FALSE, n = 5, show.all = FALSE)
 }
 \arguments{
 \item{x}{a \code{matched.set} object}
 
 \item{...}{Not used. additional arguments to be passed to \code{print}}
 
-\item{verbose}{logical indicating whether or not output should be printed in expanded/raw list form.
-The verbose form is not recommended unless the data set is small. Default is FALSE, which prints an overview of matched set sizes.}
+\item{verbose}{logical indicating whether or not output should be printed in expanded/raw list form. The verbose form is not recommended unless the data set is small. Default is FALSE, which prints an overview of matched set sizes.}
+
+\item{n}{Integer. Integer. Number of matched sets to display information about as a preview. Default is 5.}
+
+\item{show.all}{Logical. By default (`show.all = FALSE`), the print method only shows a small preview of the sizes of matched sets. When set to TRUE, a full summary description of matched set sizes is shown.}
+}
+\value{
+Returns nothing, but prints information about matched sets: treated observation IDs, the time of treatment, and the size of matched sets.
 }
 \description{
 Print matched.set objects.

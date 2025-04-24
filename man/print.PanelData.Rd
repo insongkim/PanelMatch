@@ -4,12 +4,19 @@
 \alias{print.PanelData}
 \title{Print PanelData objects and basic metadata}
 \usage{
-\method{print}{PanelData}(x, ...)
+\method{print}{PanelData}(x, ..., n = 5, verbose = FALSE)
 }
 \arguments{
 \item{x}{\code{PanelData} object}
 
 \item{...}{additional arguments to be passed to \code{print.data.frame()}}
+
+\item{n}{Integer. Number of rows to print by default for previewing data. Default is 5.}
+
+\item{verbose}{Logical. Print the entire data frame, rather than just a preview. Default is FALSE.}
+}
+\value{
+Returns nothing but prints \code{PanelData} object. This is a data frame that has been balanced, sorted, and tagged with important metadata to facilitate the use of other functions.
 }
 \description{
 Print PanelData objects and basic metadata

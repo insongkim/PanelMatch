@@ -24,7 +24,7 @@
 \item{...}{Not used}
 }
 \value{
-returns a list of matrices with covariate balance results calculated. Each element in the list corresponds to a \code{PanelMatch} configuration given to \code{get_covariate_balance()} and are returned in order. Note that if a configuration has \code{qoi = "ate"}, the corresponding element in the returned list will also be a list, containing balance results corresponding to the ATT and ATC. Otherwise, each element in the returned list will be a matrix. Each matrix entry corresponds to balance results for a particular covariate in a particular period. When unrefined balance results are included, users will see additional columns with "_unrefined" appended to covariate names. These correspond to the unrefined balance results for a particular covariate-period.
+returns a list of matrices with covariate balance results calculated. Each element in the list corresponds to a \code{PanelMatch} configuration given to \code{get_covariate_balance()} and are returned in order. These elements should also have names that correspond to the names of the \code{PanelMatch} variables provided to the function. Note that if a configuration has \code{qoi = "ate"}, the corresponding element in the returned list will also be a list, containing balance results corresponding to the ATT and ATC. Otherwise, each element in the returned list will be a matrix. Each matrix entry corresponds to balance results for a particular covariate in a particular period. When unrefined balance results are included, users will see additional columns with "_unrefined" appended to covariate names. These correspond to the unrefined balance results for a particular covariate-period. If `unrefined.only = TRUE`, then the names of the elements will have "_unrefined" appended to them.
 }
 \description{
 Summarize covariate balance over time
@@ -41,4 +41,5 @@ pb <- get_covariate_balance(pm.obj,
                             panel.data = dem.panel, 
                             covariates = c("tradewb", "rdata"))
 summary(pb)
+
 }
