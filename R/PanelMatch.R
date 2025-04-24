@@ -157,6 +157,9 @@ PanelMatch <- function(panel.data,
   attr(res, "time.id") <- time.id
   attr(res, "outcome") <- outcome.var
   attr(res, "treatment") <- treatment
+  attr(res, "lag") <- lag
+  attr(res, "refinement.method") <- refinement.method
+  attr(res, "covs.formula") <- covs.formula
   return(res)
 }
 

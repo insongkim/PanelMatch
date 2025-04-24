@@ -128,33 +128,53 @@ plot.PanelData <- function(x, ..., plotting.variable = NA)
 #' Print PanelData objects and basic metadata
 #' @param x \code{PanelData} object
 #' @param ... additional arguments to be passed to \code{print.data.frame()}
+#' @param n Integer. Number of rows to print by default for previewing data. Default is 5.
+#' @param verbose Logical. Print the entire data frame, rather than just a preview. Default is FALSE.
 #'
+#' @return Returns nothing but prints \code{PanelData} object. This is a data frame that has been balanced, sorted, and tagged with important metadata to facilitate the use of other functions.
 #' @export
 #' @examples
 #' d <- PanelData(dem, "wbcode2", "year", "dem", "y")
 #' print(d)
 #' 
-print.PanelData <- function(x, ...)
+print.PanelData <- function(x, ..., n = 5, verbose = FALSE)
 {
   if (!inherits(x, "PanelData")) {
     stop("Please provide a PanelData object")
   }
-  attr(x, "unit.id") -> unit.id
-  attr(x, "time.id") -> time.id
-  attr(x, "treatment") -> treatment
-  attr(x, "outcome") -> outcome
-  print.str <- paste0("Unit identifier: ", unit.id, "\n",
-                      "Time identifier: ", time.id, "\n",
-                      "Treatment variable: ", treatment, "\n",
-                      "Outcome variable: ", outcome, "\n")
-  cat(print.str, ...)
-  print.data.frame(x, ...)
+  
+  unit.id <- attr(x, "unit.id")
+  time.id <- attr(x, "time.id")
+  treatment <- attr(x, "treatment")
+  outcome <- attr(x, "outcome")
+  
+  print.str <- paste0(
+    "Unit identifier: ", unit.id, "\n",
+    "Time identifier: ", time.id, "\n",
+    "Treatment variable: ", treatment, "\n",
+    "Outcome variable: ", outcome, "\n"
+  )
+  cat(print.str)
+  
+  total.rows <- nrow(x)
+  
+  if (verbose) {
+    print.data.frame(x, ...)
+  } else {
+    string.out <- paste0(total.rows, " x ", ncol(x))
+    cat(paste0("Dimensions: ", string.out, "\n"))
+    print.data.frame(head(x, n = n))
+    
+    if (n < total.rows) {
+      cat(paste0("... [", total.rows - n, " more row(s) not printed]\n"))
+    }
+  }
 }
 
-#' Summarize the number of unique units and time periods in a PanelData object
-#' @param object PanelData object
+#' Summarize information about variable names, and unit, time, and treatment data in a PanelData object
+#' @param object \code{PanelData} object
 #' @param ... Not used
-#' @return Returns a \code{data.frame} object, with columns "num.units" and "num.periods." These specify the number of unique units and time periods that appear in the balanced panel data. 
+#' @return Returns a \code{data.frame} object, with columns "quantity" and "value." Within the data frame the following information is returned: The name of the unit id variable, the name of the time id variable, the name of the treatment variable, the name of the outcome variable, the number of unique units found in the data, the number of unique time periods found in the data and the percentage of treated periods that are missing treatment data. 
 #' @export
 #' @examples
 #' d <- PanelData(dem, "wbcode2", "year", "dem", "y")
@@ -164,10 +184,17 @@ summary.PanelData <- function(object, ...)
 {
   attr(object, "unit.id") -> unit.id
   attr(object, "time.id") -> time.id
-  
+  attr(object, "treatment") -> treatment
+  attr(object, "outcome") -> outcome
   num.units <- length(unique(object[, unit.id]))
   num.periods <- length(unique(object[, time.id]))
-  
-  return(data.frame(num.units = num.units,
-             num.periods = num.periods))
+  pct.missing <- round(mean(is.na(object[, treatment])) * 100, 4)
+  quantities <- c("Unit ID", "Time ID", "Treatment", "Outcome",
+    "# Unique Units", "# Unique Time Periods",
+    "% of Treatment Periods Missing Data")
+  values <- c(unit.id, time.id, treatment, outcome, 
+    num.units, num.periods, pct.missing)
+  dt <- data.frame(quantity = quantities,
+             value = values)
+  return(dt)
 }

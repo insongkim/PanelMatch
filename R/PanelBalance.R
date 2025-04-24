@@ -9,6 +9,8 @@
 #' @param include.treatment.period Logical. Describes whether or not the treatment period should be included on the panel plot. Default is TRUE.
 #' @param include.unrefined.panel logical indicating whether or not unrefined balance plots should be returned for panel plot. Only applicable to panel plot. Default is TRUE.
 #' @param legend.position character. Describes where the legend should be placed on the figure. Uses base R syntax. 
+#' @param main character. Either a single title to be used for all plots or a character vector providing a name for each figure, which should be the same length as the number of `PanelMatch` configurations in the `PanelBalance` object. By default, main is set to NULL and figures are titled the same as the `PanelMatch` objects the figures are based on.
+#' @param main.unrefined character. This argument is the same as main, but applies to the set of figures corresponding to the unrefined covariate balance results. This is only used when applicable -- otherwise it has no effect. 
 #' @return returns a set of base R plots, depending on the specification of "panel" or "scatter" above. When \code{type = "panel"} and \code{include.unrefined.panel = TRUE}, two sets of plots are returned. The first set shows covariate balance levels for the specified \code{PanelMatch} configurations. The second set shows covariate balance levels for the same \code{PanelMatch} configurations, but with all control units receiving equal weight (i.e., balance levels prior to refinement). If \code{include.unrefined.panel = FALSE}, only the first set of figures are returned. The sets of figures are both returned in the same order as the \code{PanelMatch} configurations specified to \code{get_covariate_balance()} that compose the \code{PanelBalance} object. When \code{type = "scatter"}, the visualization described above is produced, with all configurations shown on the same plot with different symbols.
 #' @export
 #'
@@ -42,12 +44,30 @@ plot.PanelBalance <- function(x,
                               ylab = NULL,
                               include.treatment.period = TRUE,
                               include.unrefined.panel = TRUE,
-                              legend.position = "topleft")
+                              legend.position = "topleft",
+                              main = NULL,
+                              main.unrefined = NULL)
 {
   if (!type %in% c("panel", "scatter"))
   {
     stop("type must be 'panel' or 'scatter'")
   }
+  
+  if (is.null(main))
+  {
+    main.in <- names(x)
+  } 
+  if (!is.null(main))
+  {
+    if (length(main) == 1)
+    {
+      main.in <- rep(main, length(x))
+    } else {
+      main.in <- main
+    }
+  }
+  main.i <- 1
+  
   attr(x, 'treatment') -> treatment
   if (type == "panel")
   {
@@ -63,7 +83,9 @@ plot.PanelBalance <- function(x,
                     ylab,
                     include.treatment.period,
                     legend.position,
+                    main = main.in[main.i],
                     ...)
+        main.i <- main.i + 1
         
       }
     }
@@ -87,10 +109,11 @@ plot.PanelBalance <- function(x,
            include.treatment.period = include.treatment.period,
            include.unrefined.panel = FALSE,
            legend.position = legend.position, 
+           main = main.unrefined,
            ...)
     }
   } else { # should be scatter
-    process_scatter_balance(x, ylab = ylab, ...)
+    process_scatter_balance(x, ylab = ylab, main = main, ...)
   }
   
 }
@@ -103,7 +126,7 @@ plot.PanelBalance <- function(x,
 #' @param unrefined.only logical. Indicates whether or not only unrefined balance results should be included in the summary.
 #' @param ... Not used
 #'
-#' @return returns a list of matrices with covariate balance results calculated. Each element in the list corresponds to a \code{PanelMatch} configuration given to \code{get_covariate_balance()} and are returned in order. Note that if a configuration has \code{qoi = "ate"}, the corresponding element in the returned list will also be a list, containing balance results corresponding to the ATT and ATC. Otherwise, each element in the returned list will be a matrix. Each matrix entry corresponds to balance results for a particular covariate in a particular period. When unrefined balance results are included, users will see additional columns with "_unrefined" appended to covariate names. These correspond to the unrefined balance results for a particular covariate-period. 
+#' @return returns a list of matrices with covariate balance results calculated. Each element in the list corresponds to a \code{PanelMatch} configuration given to \code{get_covariate_balance()} and are returned in order. These elements should also have names that correspond to the names of the \code{PanelMatch} variables provided to the function. Note that if a configuration has \code{qoi = "ate"}, the corresponding element in the returned list will also be a list, containing balance results corresponding to the ATT and ATC. Otherwise, each element in the returned list will be a matrix. Each matrix entry corresponds to balance results for a particular covariate in a particular period. When unrefined balance results are included, users will see additional columns with "_unrefined" appended to covariate names. These correspond to the unrefined balance results for a particular covariate-period. If `unrefined.only = TRUE`, then the names of the elements will have "_unrefined" appended to them.
 #' @export
 #'
 #' @examples
@@ -118,6 +141,8 @@ plot.PanelBalance <- function(x,
 #'                             panel.data = dem.panel, 
 #'                             covariates = c("tradewb", "rdata"))
 #' summary(pb)
+#' 
+
 summary.PanelBalance <- function(object, qoi = NULL, 
                                  include.unrefined = TRUE, 
                                  unrefined.only = FALSE,
@@ -126,7 +151,7 @@ summary.PanelBalance <- function(object, qoi = NULL,
   
   if (is.null(qoi))
   {
-    qois <- unique(names(unlist(object, recursive = FALSE)))
+    qois <- unique(unlist(lapply(object, names)))
     if (length(qois) > 1) 
     {
       stop("More than one QOI present in PanelBalance object. Please specify a QOI.")
@@ -188,9 +213,12 @@ summary.PanelBalance <- function(object, qoi = NULL,
         res <- cbind(unrefined, refined)
         return(res)
       }
+      orig.names <- names(ret.list)
       ret.list <- mapply(cbind_refined_results, 
                          unrefined = u.list, 
                          refined = ret.list, SIMPLIFY = FALSE)
+      
+      names(ret.list) <- orig.names
     }
   }
   return(ret.list)
@@ -199,6 +227,7 @@ summary.PanelBalance <- function(object, qoi = NULL,
 
 #' Print basic information about PanelBalance objects
 #'
+#' This function prints out covariate balance information for all of the PanelMatch configurations specified within a PanelBalance object. Specifically it prints out the name of the PanelMatch object(s), and covariate balance measures over the specified time period after refinement. If no refinement was applied, then these unrefined results will be shown. 
 #' @param x \code{PanelBalance} object 
 #' @param ... Not used
 #'
@@ -217,15 +246,38 @@ summary.PanelBalance <- function(object, qoi = NULL,
 #'                             panel.data = dem.panel, 
 #'                             covariates = c("tradewb", "rdata"))
 #' print(pb)
-print.PanelBalance <- function(x, ...)
-{
-
-  for (j in x) {
-    k <- as.list(j)
-    print(k)
+print.PanelBalance <- function(x, ...) {
+  if (!inherits(x, "PanelBalance")) {
+    stop("Object is not of class 'PanelBalance'")
   }
-  
+  top_names <- names(x)
+  for (i in seq_along(x)) {
+    obj_name <- top_names[i]
+    cat("\n==============================\n")
+    cat(obj_name, "\n")
+    cat("==============================\n")
+    
+    qoi_list <- x[[i]]
+    qoi_names <- names(qoi_list)
+    
+    for (qoi in qoi_names) {
+      cat("\n--- QOI:", qoi, "---\n")
+      print(qoi_list[[qoi]])
+    }
+  }
+  invisible(x)
 }
+
+
+# print.PanelBalance <- function(x, ...)
+# {
+# 
+#   for (j in x) {
+#     k <- as.list(j)
+#     print(k)
+#   }
+#   
+# }
 
 #' Subset PanelBalance objects
 #'
@@ -267,7 +319,17 @@ print.PanelBalance <- function(x, ...)
   }
   class(tmp) <- "list"
   subset <- tmp[i]
-  attributes(subset) <- attributes(x)
+  #attributes(subset) <- attributes(x)
+  # Save the names
+  subset_names <- names(subset)
+  
+  # Copy attributes from x, excluding 'names'
+  attrs <- attributes(x)
+  attrs$names <- NULL
+  attributes(subset) <- attrs
+  
+  # Restore the original names
+  names(subset) <- subset_names
   attr(subset, "unrefined.balance.results") <- ubr
   class(subset) <- class(x)
   return(subset)
@@ -314,13 +376,16 @@ get_unrefined_balance.PanelBalance <- function(pb.object) {
 # Helper functions for plotting
 
 process_scatter_balance <- function(PanelBalance, 
-                                    xlim = c(0, .8),
-                                    ylim = c(0, .8),
-                                    main = "Standardized Mean Difference of Covariates",
+                                    #xlim = c(0, .8),
+                                    #ylim = c(0, .8),
+                                    main = NULL,
+                                    #main = "Standardized Mean Difference of Covariates",
                                     #pchs = c(2,3),
                                     #covariates, data,
-                                    xlab = "Before refinement",
-                                    ylab = "After refinement", 
+                                    xlab = NULL,
+                                    ylab = NULL,
+                                    #xlab = "Before refinement",
+                                    #ylab = "After refinement", 
                                     ...)
 {
   unrefined.balance <- attr(PanelBalance, "unrefined.balance.results")
@@ -328,7 +393,18 @@ process_scatter_balance <- function(PanelBalance,
   {
     stop("Unrefined balance results required. Please re-run covariate balance calculations with include.unrefined argument = TRUE")  
   }
-
+  if (is.null(main))
+  {
+    main = "Standardized Mean Difference of Covariates"
+  }
+  if (is.null(ylab))
+  {
+    ylab = "After refinement"
+  }
+  if (is.null(xlab))
+  {
+    xlab = "Before refinement"
+  }
   
   unrefined.vectors <- unlist(lapply(unrefined.balance, 
                                      function(x) lapply(x, as.vector)), recursive = FALSE)
@@ -348,8 +424,8 @@ process_scatter_balance <- function(PanelBalance,
                      pch = 1,
                      xlab = xlab,
                      ylab = ylab,
-                     xlim = xlim,
-                     ylim = ylim,
+                     #xlim = xlim,
+                     #ylim = ylim,
                      main = main,
                      font.main = 1,
                      ...)
@@ -375,6 +451,7 @@ panel_plot_helper <- function(treatment,
                               ylab,
                               include.treatment.period,
                               legend.position,
+                              main,
                               ...)
 {
   
@@ -397,7 +474,9 @@ panel_plot_helper <- function(treatment,
     graphics::matplot(pointmatrix, pch = 19,
                       type = "b", 
                       col = 1:ncol(pointmatrix), 
-                      lty = 1, ylab = ylab, xaxt = "n", ...)
+                      lty = 1, ylab = ylab, xaxt = "n", 
+                      main = main,
+                      ...)
     graphics::lines(x = 1:nrow(pointmatrix), 
                     y = as.numeric(treated.data), 
                     type = "b",
@@ -410,7 +489,8 @@ panel_plot_helper <- function(treatment,
     graphics::matplot(pointmatrix, type = "b",
                       pch = 19,
                       col = 1:ncol(pointmatrix), 
-                      lty = 1, ylab = ylab, xaxt = "n", ...)
+                      lty = 1, ylab = ylab, xaxt = "n", main = main,
+                      ...)
     graphics::axis(side = 1, labels = paste0("t-", start.val:stop.val), 
                    at = 1:nrow(pointmatrix), ...)  
   }

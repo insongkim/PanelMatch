@@ -188,9 +188,7 @@ summary.PanelEstimate <- function(object,
     } else {
       stop("se.method not specified correctly")
     }
-    
   }
-  
 }
 
 
@@ -278,7 +276,7 @@ plot.PanelEstimate <- function(x,
 
 #' Print point estimates and standard errors 
 #' @param x \code{PanelEstimate} object
-#' @param ... additional arguments to be passed to \code{print.data.frame()}
+#' @param ... Not used
 #' @examples
 #' dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
 #' dem.sub.panel <- PanelData(dem.sub, "wbcode2", "year", "dem", "y")
@@ -301,6 +299,107 @@ print.PanelEstimate <- function(x, ...)
   
   cat("Point estimates:\n")
   print(x[["estimate"]])
-  cat("Standard errors:\n")
+  cat("\nStandard errors:\n")
   print(x[["standard.error"]])
+  n.obs <- length(x[["matched.sets"]])
+  print.str <- paste0("\nEstimates produced with ", n.obs, " observations (non-empty matched sets)\n")
+  cat(print.str)
+}
+
+
+#' Produce confidence intervals for PanelEstimate objects
+#'
+#' @param object \code{PanelEstimate} results
+#' @param parm Not used. 
+#' @param level Confidence level to be used for confidence interval calculations. Must be numeric between 0 and 1. If NULL, confidence level from \code{PanelEstimate()} specification is used. 
+#' @param ... not used
+#' @param bias.corrected logical indicating whether or not bias corrected estimates should be provided. Default is FALSE. This argument only applies for standard errors calculated with the bootstrap. 
+#' @return Matrix with two columns and `length(lead)` rows. Contains the upper and lower boundaries of the confidence interval for each time period's point estimate.
+#' @export
+confint.PanelEstimate <- function(object, parm = NULL, level = NULL, ..., bias.corrected = FALSE) {
+  if (is.null(level)) {
+    level <- object$confidence.level
+  }
+  
+  if (!is.numeric(level) || level <= 0 || level >= 1) {
+    stop("Confidence level must be a number between 0 and 1.")
+  }
+  
+  alpha <- (1 - level)
+  lower.prob <- alpha / 2
+  upper.prob <- 1 - alpha / 2
+  
+  if (object$se.method == "bootstrap") {
+    if (bias.corrected) {
+      # Bias-corrected estimate: 2 * observed - mean of bootstrapped
+      bc_est <- 2 * object$estimate - colMeans(object$bootstrapped.estimates, na.rm = TRUE)
+      
+      # Bias-corrected CIs: apply correction to percentiles
+      corrected_samples <- sweep(
+        2 * matrix(object$estimate, 
+                   nrow = object$bootstrap.iterations, 
+                   ncol = length(object$estimate), 
+                   byrow = TRUE) - object$bootstrapped.estimates,
+        MARGIN = 2,
+        STATS = 0,
+        FUN = "+"
+      )
+      
+      ci <- apply(corrected_samples, 2, quantile,
+                  probs = c(lower.prob, upper.prob),
+                  na.rm = TRUE)
+      
+      ci <- t(ci)
+      rownames(ci) <- names(object$estimate)
+      colnames(ci) <- paste0(round(c(lower.prob, upper.prob) * 100, 1), " %")
+      return(ci)
+      
+    } else {
+      # Regular bootstrap percentile CIs
+      ci <- apply(object$bootstrapped.estimates, 2, quantile,
+                  probs = c(lower.prob, upper.prob),
+                  na.rm = TRUE)
+      ci <- t(ci)
+      rownames(ci) <- names(object$estimate)
+      colnames(ci) <- paste0(round(c(lower.prob, upper.prob) * 100, 1), " %")
+      return(ci)
+    }
+    
+  } else if (object$se.method %in% c("conditional", "unconditional")) {
+    est <- object$estimate
+    se <- object$standard.error
+    z <- qnorm(c(lower.prob, upper.prob))
+    ci <- mapply(function(e, s) e + z * s, e = est, s = se)
+    ci <- t(ci)
+    rownames(ci) <- names(est)
+    colnames(ci) <- paste0(round(c(lower.prob, upper.prob) * 100, 1), " %")
+    return(ci)
+    
+  } else {
+    stop("Unsupported standard error method for confidence interval calculation.")
+  }
+}
+
+
+
+#' Extract QOI estimates
+#' See documentation for `estimates.PanelEstimate()`
+#' @param object 
+#' @param ... 
+#'
+#' @export
+estimates <- function(object, ...) {
+  UseMethod("estimates")
+}
+
+#' Extract QOI estimates
+#'
+#' This is a method for extracting point estimates for the QOI from \code{PanelEstimate} objects. This function is analogous to the `coef()` method used elsewhere.
+#' @param object \code{PanelEstimate} object
+#' @param ... not used
+#'
+#' @return Named vector with the QOI point estimates and the time periods to which they correspond
+#' @export
+estimates.PanelEstimate <- function(object, ...) {
+  object$estimate
 }

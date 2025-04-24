@@ -34,76 +34,86 @@ get_covariate_balance <- function(...,
 {
   if (!inherits(panel.data, "PanelData")) stop("Please provide a PanelData object.")
   
-  if(is.null(covariates))
-  {
-    stop("Please specify covariates")
-  }
-  if(!all(covariates %in% colnames(panel.data)))
-  {
+  if (is.null(covariates)) stop("Please specify covariates")
+  
+  if (!all(covariates %in% colnames(panel.data))) {
     stop("Some of the specified covariates are not columns in the data set.")
   }
   
+  # Capture the list of objects and their names
   pm.objs <- list(...)
+  call <- match.call()
+  obj.names <- as.character(call)[2:(1 + length(pm.objs))]
+  names(pm.objs) <- obj.names
   
   get_qois <- function(pm.obj) {
-  
     if (inherits(pm.obj, "PanelMatch")) {
-      if (attr(pm.obj, "qoi") %in% c("att", "art", "atc"))
-      {
-        qoi <- attr(pm.obj, "qoi")
-      } else if (attr(pm.obj, "qoi") == "ate") {
-        qoi <- c("att", "atc")
+      qoi <- attr(pm.obj, "qoi")
+      if (qoi %in% c("att", "art", "atc")) {
+        return(qoi)
+      } else if (qoi == "ate") {
+        return(c("att", "atc"))
       } else {
         stop("Error extracting QOI from provided PanelMatch object")
       }
     } else {
       stop("invalid object: not a PanelMatch object")
     }  
-    return(qoi)
   }
   
-  qoi.sets <- lapply(pm.objs,
-                     get_qois)  
-  
+  qoi.sets <- lapply(pm.objs, get_qois)  
   
   balance.results <- list()
   unrefined.balance.results <- list()
-  for (i in 1:length(pm.objs)) { # for each PM object
+  
+  for (i in seq_along(pm.objs)) {
     sub.list <- list()
     unrefined.sub.list <- list()
-    for (q in qoi.sets[[i]]) { # get the qoi to extract the matched set object. unless qoi = ate, this will just be either att, art, atc. In case of ate, we need to loop over both att and atc
-      pm.obj <- pm.objs[[i]]
+    pm.obj <- pm.objs[[i]]
+    obj.name <- names(pm.objs)[i]
+    
+    for (q in qoi.sets[[i]]) {
       matched.set <- pm.obj[[q]]
-      sub.list[[q]] <- get_set_covariate_balance(matched.set, 
-                                                 panel.data,
-                                                 covariates,
-                                                 use.equal.weights = FALSE)
-      balance.results[[i]] <- sub.list
-      if (include.unrefined)
-      {
-        unrefined.sub.list[[q]] <- get_set_covariate_balance(matched.set, 
-                                                   panel.data,
-                                                   covariates,
-                                                   use.equal.weights = TRUE)
-        unrefined.balance.results[[i]] <- unrefined.sub.list
+      sub.list[[q]] <- get_set_covariate_balance(
+        matched.set, 
+        panel.data,
+        covariates,
+        use.equal.weights = FALSE
+      )
+      
+      if (include.unrefined) {
+        unrefined.sub.list[[q]] <- get_set_covariate_balance(
+          matched.set, 
+          panel.data,
+          covariates,
+          use.equal.weights = TRUE
+        )
       }
+    }
+    
+    balance.results[[obj.name]] <- sub.list
+    
+    if (include.unrefined) {
+      unrefined.name <- paste0(obj.name, "_unrefined")
+      unrefined.balance.results[[unrefined.name]] <- unrefined.sub.list
     }
   }
   
   class(balance.results) <- c("PanelBalance", "list")
-  attr(balance.results, "treatment") <- attr(panel.data, 'treatment')
-  if(length(unrefined.balance.results) == 0)  unrefined.balance.results <- NULL;
-  if (!is.null(unrefined.balance.results))
-  {
+  attr(balance.results, "treatment") <- attr(panel.data, "treatment")
+  
+  if (length(unrefined.balance.results) == 0) {
+    unrefined.balance.results <- NULL
+  } else {
     class(unrefined.balance.results) <- c("PanelBalance", "list")
     attr(unrefined.balance.results, "treatment") <- attr(balance.results, "treatment")
   }
+  
   attr(balance.results, "unrefined.balance.results") <- unrefined.balance.results
   attr(balance.results, "covariates") <- covariates
+  
   return(balance.results)
 }
-
-
 
 
 get_set_covariate_balance <- function(matched.sets, 

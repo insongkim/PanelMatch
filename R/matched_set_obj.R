@@ -231,10 +231,12 @@ combine_named_vectors <- function(list_of_vectors) {
 #' Print matched.set objects.
 #'
 #' @param x a \code{matched.set} object
-#' @param verbose logical indicating whether or not output should be printed in expanded/raw list form.
-#' The verbose form is not recommended unless the data set is small. Default is FALSE, which prints an overview of matched set sizes. 
 #' @param ... Not used. additional arguments to be passed to \code{print}
-#'
+#' @param verbose logical indicating whether or not output should be printed in expanded/raw list form. The verbose form is not recommended unless the data set is small. Default is FALSE, which prints an overview of matched set sizes. 
+#' @param n Integer. Integer. Number of matched sets to display information about as a preview. Default is 5.
+#' @param show.all Logical. By default (`show.all = FALSE`), the print method only shows a small preview of the sizes of matched sets. When set to TRUE, a full summary description of matched set sizes is shown. 
+#' @return Returns nothing, but prints information about matched sets: treated observation IDs, the time of treatment, and the size of matched sets. 
+#' 
 #' @examples
 #' dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
 #' # create subset of data for simplicity
@@ -252,17 +254,23 @@ combine_named_vectors <- function(list_of_vectors) {
 #'
 #' @method print matched.set
 #' @export
-print.matched.set <- function(x, ..., verbose = FALSE)
+print.matched.set <- function(x, ..., verbose = FALSE, n = 5, show.all = FALSE)
 {
   set <- x
-  if(verbose)
-  {
+  if (verbose) {
     class(set) <- "list"
     print(set)
-  }
-
-  else {
-    print(summary(set, verbose = FALSE))
+  } else {
+    set.sum <- summary(set, verbose = FALSE)
+    total.rows <- nrow(set.sum)
+    
+    if (show.all || total.rows <= n) {
+      print(set.sum)
+    } else {
+      abbv.sum <- head(set.sum, n = n)
+      print(abbv.sum)
+      cat(paste0("... [", total.rows - n, " more matched set(s) not printed]\n"))
+    }
   }
 }
 
