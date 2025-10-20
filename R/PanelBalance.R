@@ -124,6 +124,7 @@ plot.PanelBalance <- function(x,
 #' @param qoi Character. Valid values include "att", "art", or "atc". Specifying which QOI information to extract and summarize.
 #' @param include.unrefined logical. Indicates whether or not unrefined balance results should be included in the summary.
 #' @param unrefined.only logical. Indicates whether or not only unrefined balance results should be included in the summary.
+#' @param include.treatment.period logical. Indicates whether or not the treatment period should be included in the summary. Default is TRUE. This is recommended to be set to TRUE unless there are strong substantive reasons to do otherwise. 
 #' @param ... Not used
 #'
 #' @return returns a list of matrices with covariate balance results calculated. Each element in the list corresponds to a \code{PanelMatch} configuration given to \code{get_covariate_balance()} and are returned in order. These elements should also have names that correspond to the names of the \code{PanelMatch} variables provided to the function. Note that if a configuration has \code{qoi = "ate"}, the corresponding element in the returned list will also be a list, containing balance results corresponding to the ATT and ATC. Otherwise, each element in the returned list will be a matrix. Each matrix entry corresponds to balance results for a particular covariate in a particular period. When unrefined balance results are included, users will see additional columns with "_unrefined" appended to covariate names. These correspond to the unrefined balance results for a particular covariate-period. If `unrefined.only = TRUE`, then the names of the elements will have "_unrefined" appended to them.
@@ -146,9 +147,9 @@ plot.PanelBalance <- function(x,
 summary.PanelBalance <- function(object, qoi = NULL, 
                                  include.unrefined = TRUE, 
                                  unrefined.only = FALSE,
+                                 include.treatment.period = TRUE,
                                  ...)
 {
-  
   if (is.null(qoi))
   {
     qois <- unique(unlist(lapply(object, names)))
@@ -220,6 +221,19 @@ summary.PanelBalance <- function(object, qoi = NULL,
       
       names(ret.list) <- orig.names
     }
+  }
+  if (!include.treatment.period)
+  {
+    trim_last_row <- function(in.list) {
+      lapply(in.list, function(m) {
+        if (is.matrix(m) && nrow(m) > 1) {
+          m[-nrow(m), , drop = FALSE]
+        } else {
+          m[integer(0), , drop = FALSE]  # return empty if single-row or not matrix
+        }
+      })
+    }
+    ret.list <- trim_last_row(ret.list)
   }
   return(ret.list)
 }

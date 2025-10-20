@@ -27,25 +27,25 @@
 #' get_covariate_balance(PM.results, panel.data = dem.sub.panel, covariates = c("tradewb", "rdata"))
 #'
 #' @export
-get_covariate_balance <- function(..., 
-                                  panel.data, 
+get_covariate_balance <- function(...,
+                                  panel.data,
                                   covariates,
                                   include.unrefined = TRUE)
 {
   if (!inherits(panel.data, "PanelData")) stop("Please provide a PanelData object.")
-  
+
   if (is.null(covariates)) stop("Please specify covariates")
-  
+
   if (!all(covariates %in% colnames(panel.data))) {
     stop("Some of the specified covariates are not columns in the data set.")
   }
-  
+
   # Capture the list of objects and their names
   pm.objs <- list(...)
   call <- match.call()
   obj.names <- as.character(call)[2:(1 + length(pm.objs))]
   names(pm.objs) <- obj.names
-  
+
   get_qois <- function(pm.obj) {
     if (inherits(pm.obj, "PanelMatch")) {
       qoi <- attr(pm.obj, "qoi")
@@ -58,62 +58,63 @@ get_covariate_balance <- function(...,
       }
     } else {
       stop("invalid object: not a PanelMatch object")
-    }  
+    }
   }
-  
-  qoi.sets <- lapply(pm.objs, get_qois)  
-  
+
+  qoi.sets <- lapply(pm.objs, get_qois)
+
   balance.results <- list()
   unrefined.balance.results <- list()
-  
+
   for (i in seq_along(pm.objs)) {
     sub.list <- list()
     unrefined.sub.list <- list()
     pm.obj <- pm.objs[[i]]
     obj.name <- names(pm.objs)[i]
-    
+
     for (q in qoi.sets[[i]]) {
       matched.set <- pm.obj[[q]]
       sub.list[[q]] <- get_set_covariate_balance(
-        matched.set, 
+        matched.set,
         panel.data,
         covariates,
         use.equal.weights = FALSE
       )
-      
+
       if (include.unrefined) {
         unrefined.sub.list[[q]] <- get_set_covariate_balance(
-          matched.set, 
+          matched.set,
           panel.data,
           covariates,
           use.equal.weights = TRUE
         )
       }
     }
-    
+
     balance.results[[obj.name]] <- sub.list
-    
+
     if (include.unrefined) {
       unrefined.name <- paste0(obj.name, "_unrefined")
       unrefined.balance.results[[unrefined.name]] <- unrefined.sub.list
     }
   }
-  
+
   class(balance.results) <- c("PanelBalance", "list")
   attr(balance.results, "treatment") <- attr(panel.data, "treatment")
-  
+
   if (length(unrefined.balance.results) == 0) {
     unrefined.balance.results <- NULL
   } else {
     class(unrefined.balance.results) <- c("PanelBalance", "list")
     attr(unrefined.balance.results, "treatment") <- attr(balance.results, "treatment")
   }
-  
+
   attr(balance.results, "unrefined.balance.results") <- unrefined.balance.results
   attr(balance.results, "covariates") <- covariates
-  
+
   return(balance.results)
 }
+
 
 
 get_set_covariate_balance <- function(matched.sets, 

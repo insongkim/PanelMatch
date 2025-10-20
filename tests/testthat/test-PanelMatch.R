@@ -1,7 +1,7 @@
 # This file contains only a bare bones set of tests.
 # Please add future tests to manual_tests/test-*.R
 # Similarly, please test package against that set of tests before submitting.
-# For this, use testthat::test_dir()
+# For this, use testthat::test_dir("/Users/adamrauh/Code/PanelMatch/PanelMatch/tests/manual_tests")
 
 test_that("(ATT) PanelEstimate Runs", {
   dem.panel <- PanelData(dem, 'wbcode2', 'year', 'dem', 'y')

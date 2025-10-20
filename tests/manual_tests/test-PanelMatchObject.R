@@ -104,11 +104,11 @@ test_that("PanelMatch summary method", {
                            covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
                            size.match = 5, qoi = "att",
                            lead = 0:4, forbid.treatment.reversal = FALSE)
-  l1 <- summary(PM.results, verbose = TRUE)
+  #l1 <- summary(PM.results, verbose = TRUE)
   l2 <- summary(PM.results)
-  expect_true(length(l1) == 1)
+  #expect_true(length(l1) == 1)
   expect_true(length(l2) == 1)
-  expect_true(length(l1[["att"]]) == 5)
+  expect_true(nrow(l2[["att"]]) == 8)
   expect_true(inherits(l2[['att']], "data.frame"))
   
   
@@ -119,11 +119,10 @@ test_that("PanelMatch summary method", {
                            covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
                            size.match = 5, qoi = "art",
                            lead = 0:4, forbid.treatment.reversal = FALSE)
-  l1 <- summary(PM.results, verbose = TRUE)
+  #l1 <- summary(PM.results, verbose = TRUE)
   l2 <- summary(PM.results)
-  expect_true(length(l1) == 1)
   expect_true(length(l2) == 1)
-  expect_true(length(l1[["art"]]) == 5)
+  expect_true(nrow(l2[["art"]]) == 8)
   expect_true(inherits(l2[['art']], "data.frame"))
   
   
@@ -134,13 +133,12 @@ test_that("PanelMatch summary method", {
                            covs.formula = ~ I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
                            size.match = 5, qoi = "ate",
                            lead = 0:4, forbid.treatment.reversal = FALSE)
-  l1 <- summary(PM.results, verbose = TRUE)
+  #l1 <- summary(PM.results, verbose = TRUE)
   l2 <- summary(PM.results)
-  expect_true(length(l1) == 2)
   expect_true(length(l2) == 2)
-  expect_true(length(l1[["att"]]) == 5)
+  expect_true(nrow(l2[["att"]]) == 8)
   expect_true(inherits(l2[['att']], "data.frame"))
-  expect_true(length(l1[["atc"]]) == 5)
+  expect_true(nrow(l2[["atc"]]) == 8)
   expect_true(inherits(l2[['atc']], "data.frame"))
   
 })

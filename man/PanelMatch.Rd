@@ -65,7 +65,7 @@ applied continuously in the lead window are included in the results. Default is 
 \item{matching}{logical indicating whether or not any matching on treatment history should be performed. 
 This is primarily used for diagnostic purposes, and most users will never need to set this to FALSE. Default is TRUE.}
 
-\item{listwise.delete}{TRUE/FALSE indicating whether or not missing data should be handled using listwise deletion or the package's default missing data handling procedures. Default is FALSE.}
+\item{listwise.delete}{TRUE/FALSE indicating whether or not missing data should be handled using listwise deletion or the package's default missing data handling procedures. Default is FALSE. The default procedures function as follows. For every variable to be used in refinement, a new column/variable is added. These are indicator variables which are equal to 1 if the data in the corresponding cell is present and 0 otherwise. If these columns do not contain any variation (e.g. all data is present), then these columns are removed before proceeding with refinement.}
 
 \item{use.diagonal.variance.matrix}{TRUE/FALSE indicating whether or not a regular covariance matrix should be used in mahalanobis distance calculations during refinement, 
 or if a diagonal matrix with only covariate variances should be used instead. 

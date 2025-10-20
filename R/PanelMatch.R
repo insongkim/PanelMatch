@@ -35,7 +35,7 @@
 #' applied continuously in the lead window are included in the results. Default is FALSE.
 #' @param exact.match.variables character vector giving the names of variables to be exactly matched on. These should be time invariant variables. 
 #' Exact matching for time varying covariates is not currently supported. 
-#' @param listwise.delete TRUE/FALSE indicating whether or not missing data should be handled using listwise deletion or the package's default missing data handling procedures. Default is FALSE.
+#' @param listwise.delete TRUE/FALSE indicating whether or not missing data should be handled using listwise deletion or the package's default missing data handling procedures. Default is FALSE. The default procedures function as follows. For every variable to be used in refinement, a new column/variable is added. These are indicator variables which are equal to 1 if the data in the corresponding cell is present and 0 otherwise. If these columns do not contain any variation (e.g. all data is present), then these columns are removed before proceeding with refinement. 
 #' @param use.diagonal.variance.matrix TRUE/FALSE indicating whether or not a regular covariance matrix should be used in mahalanobis distance calculations during refinement, 
 #' or if a diagonal matrix with only covariate variances should be used instead. 
 #' In many cases, setting this to TRUE can lead to better covariate balance, especially when there is 

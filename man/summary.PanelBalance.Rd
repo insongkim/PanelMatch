@@ -9,6 +9,7 @@
   qoi = NULL,
   include.unrefined = TRUE,
   unrefined.only = FALSE,
+  include.treatment.period = TRUE,
   ...
 )
 }
@@ -20,6 +21,8 @@
 \item{include.unrefined}{logical. Indicates whether or not unrefined balance results should be included in the summary.}
 
 \item{unrefined.only}{logical. Indicates whether or not only unrefined balance results should be included in the summary.}
+
+\item{include.treatment.period}{logical. Indicates whether or not the treatment period should be included in the summary. Default is TRUE. This is recommended to be set to TRUE unless there are strong substantive reasons to do otherwise.}
 
 \item{...}{Not used}
 }
