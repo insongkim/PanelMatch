@@ -13,10 +13,9 @@ test_that("(ATT) PanelEstimate Runs", {
                     lead = 0:3, forbid.treatment.reversal = FALSE)
   
   pe.results <- PanelEstimate(pm1, panel.data = dem.panel, se.method = "conditional")
-  comp.results <-  c(-0.593399771464233,-0.321260212377162,0.456311286847623,1.73182162255356)
-  expect_equivalent(pe.results$estimate, comp.results)
+  comp.results <-  c(-0.9036306, -0.3174628,  0.5733430,  1.6002885)
+  expect_equivalent(pe.results$estimate, comp.results, tolerance = .000001)
 })
-
 
 
 test_that("(ATC) PanelEstimate Runs", {
@@ -29,7 +28,7 @@ test_that("(ATC) PanelEstimate Runs", {
                     lead = 0:3, forbid.treatment.reversal = FALSE)
   
   pe.results <- PanelEstimate(pm1, panel.data = dem.panel, se.method = "conditional")
-  comp.results <-  c(-0.7399887, -0.1418777, -0.4914594, -0.1423150)
+  comp.results <-  c(-0.7690320, -0.2760459, -0.6871066, -0.3738689)
   expect_equivalent(pe.results$estimate, comp.results, tolerance = .000001)
   
 })
@@ -44,8 +43,8 @@ test_that("(ART) PanelEstimate Runs", {
                     lead = 0:3, forbid.treatment.reversal = FALSE)
   
   pe.results <- PanelEstimate(pm1, panel.data = dem.panel, se.method = "conditional")
-  comp.results <-  -c(5.2177188648897,8.02138564165901,8.75646876914828,8.12399471507353)
-  expect_equivalent(pe.results$estimate, comp.results)
+  comp.results <-  c(-5.171761, -7.860783, -8.448983, -7.820888)
+  expect_equivalent(pe.results$estimate, comp.results, tolerance = .000001)
   
 })
 
@@ -60,7 +59,7 @@ test_that("(ATE) PanelEstimate Runs", {
                     lead = 0:3, forbid.treatment.reversal = FALSE)
   
   pe.results <- PanelEstimate(pm1, panel.data = dem.panel, se.method = "bootstrap", number.iterations = 300)
-  comp.results <-  c(-0.73400424, -0.14920097, -0.45276678, -0.06580353)
+  comp.results <-  c(-0.7745270, -0.2777368, -0.6356488, -0.2932741)
   expect_equivalent(pe.results$estimate, comp.results, tolerance = .0000001)
   
 })

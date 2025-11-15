@@ -186,8 +186,8 @@ set_lwd_refinement <- function(mset, local.data, time, id,
   msets <- mset
   if(refinement.method == "mahalanobis")
   {
-    old.lag <- lag
-    lag <- 0
+    #old.lag <- lag
+    #lag <- 0
     tlist <- expand_treated_ts(lag, treated.ts)
     idxlist <- get_yearly_dmats(ordered.data, 
                                 treated.ids, 
@@ -201,7 +201,7 @@ set_lwd_refinement <- function(mset, local.data, time, id,
                                              size.match, 
                                              verbose, 
                                              use.diag.covmat)
-    lag <- old.lag
+    #lag <- old.lag
   }
   if(refinement.method == "ps.msm.weight" | refinement.method == "CBPS.msm.weight")
   {

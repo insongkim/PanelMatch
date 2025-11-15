@@ -272,8 +272,9 @@ perform_refinement <- function(lag, time.id, unit.id, treatment,
   if (refinement.method == "mahalanobis")
   {
 
-    old.lag <- lag
-    lag <- 0
+    #old.lag <- lag
+    #lag <- 0
+    #browser()
     tlist <- expand_treated_ts(lag, treated.ts)
 
     idxlist <- get_yearly_dmats(ordered.data, 
@@ -281,7 +282,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment,
                                 tlist, 
                                 msets, 
                                 lag)
-
+    
     mahalmats <- build_maha_mats(ordered_expanded_data = ordered.data, 
                                  idx =  idxlist)
 
@@ -289,7 +290,7 @@ perform_refinement <- function(lag, time.id, unit.id, treatment,
                                              size.match, verbose, 
                                              use.diag.covmat)
 
-    lag <- old.lag
+    #lag <- old.lag
   }
   if(all(refinement.method %in% c("CBPS.weight", "CBPS.match", 
                                   "ps.weight", "ps.match")))

@@ -85,8 +85,14 @@ handle_mahalanobis_calculations <- function(mahal.nested.list,
     }, finally = {
     })
     
-    return(result)
-    
+    mahal_dist <- tryCatch(
+      sqrt(result),
+      error = function(e) {
+        stop("Issue calculating the square root of the Mahalanobis distance: ", e$message)
+      }
+    )
+    return(mahal_dist)
+    #return(result)
     
   }
   handle_set <- function(sub.list, max.set.size, idx)
@@ -95,6 +101,7 @@ handle_mahalanobis_calculations <- function(mahal.nested.list,
     results.temp <- lapply(sub.list, do.calcs)
     tmat <- do.call(rbind, results.temp)
     colnames(tmat) <- NULL
+   # browser()
     dists <- colMeans(tmat)
     
     n.dists <- dists

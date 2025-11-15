@@ -1,30 +1,59 @@
 test_that("balance checking functions are sensible", {
   set.seed(1)
-  dem$rdata <- runif(runif(nrow(dem)))
-  dem.panel <- PanelData(dem, 'wbcode2', 'year', 'dem', 'y')
-  pm.obj <- PanelMatch(lead = 0:3, lag = 4, refinement.method = "mahalanobis", 
-                       panel.data = dem.panel, match.missing = TRUE,
-                       covs.formula = ~ tradewb + rdata + I(lag(tradewb, 1:4)) + I(lag(y, 1:4)), 
-                       size.match = 5, qoi = "att")
   
-  balmat <- get_covariate_balance(pm.obj, 
-                                  panel.data = dem.panel, 
-                                  covariates = c("tradewb", "rdata"))
-  compmat <- matrix(data = c(0.0601621099966881,-0.00601042376056592,
-                             0.00212772294115459,0.104946475743932, 0.133482367739366,
-                             0.0252020903167403,0.051861118295163,-0.125475177405918,
-                             0.0268787670968836,-0.0117184403355875), 
-                    ncol = 2, nrow = 5)
-  just.mat <- summary(balmat, qoi = 'att', include.unrefined = F)[[1]]
-  expect_equal(nrow(just.mat), 5)
-  expect_equal(ncol(just.mat), 2)
-  expect_equivalent(just.mat, compmat)
+  # Simulated covariate
+  dem$rdata <- runif(nrow(dem))
   
-
-  expect_warning(just.mat <- summary(balmat, qoi = 'att', unrefined.only = TRUE)[[1]])
+  dem.panel <- PanelData(dem, "wbcode2", "year", "dem", "y")
   
-  expect_false(isTRUE(all.equal(balmat, compmat, check.attributes = FALSE)))
+  pm.obj <- PanelMatch(
+    lead              = 0:3,
+    lag               = 4,
+    refinement.method = "mahalanobis",
+    panel.data        = dem.panel,
+    match.missing     = TRUE,
+    covs.formula      = ~ tradewb + rdata +
+      I(lag(tradewb, 1:4)) + I(lag(y, 1:4)),
+    size.match        = 5,
+    qoi               = "att"
+  )
   
+  balmat <- get_covariate_balance(
+    pm.obj,
+    panel.data  = dem.panel,
+    covariates  = c("tradewb", "rdata")
+  )
+  
+  # Hard-coded expected balance matrix (ATT, refined only)
+  expected_mat <- rbind(
+    t_4 = c(tradewb = 0.13814348, rdata =  0.02763007),
+    t_3 = c(tradewb = 0.08094976, rdata =  0.11956122),
+    t_2 = c(tradewb = 0.11630555, rdata = -0.07127517),
+    t_1 = c(tradewb = 0.21621439, rdata = -0.12897025),
+    t_0 = c(tradewb = 0.21529390, rdata =  0.11317944)
+  )
+  
+  just.mat <- summary(
+    balmat,
+    qoi               = "att",
+    include.unrefined = FALSE
+  )[[1]]
+  
+  ## Structural checks
+  expect_true(is.matrix(just.mat))
+  expect_identical(dim(just.mat), dim(expected_mat))
+  expect_identical(dimnames(just.mat), dimnames(expected_mat))
+  
+  ## Numeric comparison (allowing for tiny floating-point differences)
+  expect_equal(just.mat, expected_mat, tolerance = 1e-6)
+  
+  ## Still test warning for deprecated / unrefined usage
+  expect_warning(
+    summary(balmat, qoi = "att", unrefined.only = TRUE)[[1]]
+  )
+  
+  ## Sanity check: the full balance object is not just this matrix
+  expect_false(identical(balmat, just.mat))
 })
 
 

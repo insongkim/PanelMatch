@@ -1,8 +1,8 @@
 Package: PanelMatch
 Type: Package
 Title: Matching Methods for Causal Inference with Time-Series Cross-Sectional Data
-Version: 3.1.1
-Date: 2025-10-20
+Version: 3.1.2
+Date: 2025-11-15
 Authors@R: c(
   person("In Song", "Kim", email = "insong@mit.edu", role = c("aut", "cre")),
   person("Adam", "Rauh", email = "amrauh@umich.edu", role = c("aut")),
