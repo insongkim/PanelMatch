@@ -101,7 +101,6 @@ handle_mahalanobis_calculations <- function(mahal.nested.list,
     results.temp <- lapply(sub.list, do.calcs)
     tmat <- do.call(rbind, results.temp)
     colnames(tmat) <- NULL
-   # browser()
     dists <- colMeans(tmat)
     
     n.dists <- dists

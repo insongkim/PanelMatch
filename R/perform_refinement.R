@@ -271,10 +271,10 @@ perform_refinement <- function(lag, time.id, unit.id, treatment,
   }
   if (refinement.method == "mahalanobis")
   {
-
+    # Note that this is where the mahalanobis distance calculation bug was introduced. If there's a reason to revert back, look here.
     #old.lag <- lag
     #lag <- 0
-    #browser()
+    
     tlist <- expand_treated_ts(lag, treated.ts)
 
     idxlist <- get_yearly_dmats(ordered.data, 
