@@ -1,3 +1,4 @@
+# To run full test suite, use testthat::test_dir("/Users/adamrauh/Code/PanelMatch/PanelMatch/tests/manual_tests")
 test_that("Checking that non-PanelData objects return errors at various levels", {
   
   d2 <- as.matrix(dem)

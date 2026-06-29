@@ -34,7 +34,7 @@
 #' @importFrom Rcpp sourceCpp
 #' @importFrom CBPS CBPS
 #' @importFrom utils capture.output
-#' @importFrom Matrix cBind rBind tcrossprod crossprod Diagonal Matrix drop0
+#' @importFrom Matrix tcrossprod crossprod Diagonal Matrix drop0
 #' @importFrom methods as
 #' @importFrom utils flush.console tail object.size
 NULL

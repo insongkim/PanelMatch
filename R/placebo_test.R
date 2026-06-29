@@ -1,7 +1,7 @@
 #' Conduct a placebo test
 #'
 #'
-#' Calculate the results of a placebo test, looking at the change in outcome at time = t-1, compared to other pre-treatment periods in the lag window.
+#' Calculate the results of a placebo test, looking at the change in outcome at time = t-1, compared to other pre-treatment periods in the lag window. Users may notice small differences in results returned by \code{PanelMatch()} when \code{placebo.test = TRUE} versus when \code{placebo.test = FALSE}, even if the specifications are otherwise identical. This is because placebo tests require the presence of outcome data for units over the lag window, which is not a default requirement. As a result, when \code{placebo.test = TRUE}, the size and number of matched sets might be reduced.
 #' @param pm.obj an object of class \code{PanelMatch}
 #' @param panel.data \code{PanelData} object
 #' @param lag.in integer indicating earliest the time period(s) in the future for which the placebo test change in outcome will be calculated. Calculations will be made over the period t - max(lag) to t-2, where t is the time of treatment. The results are similar to those returned by \code{PanelEstimate()}, except t-1 is used as the period of comparison, rather than the lead window. If not specified, the placebo test is conducted for periods from t - max(lag) to t-2.
@@ -46,6 +46,8 @@ placebo_test <- function(pm.obj,
   {
     stop("Placebo test cannot be executed. Please ensure placebo.test = TRUE in PanelMatch()")
   }
+  
+  warning("Note: Placebo test requires presence of outcome data over lag window.")
   
   df.adjustment <- FALSE
   qoi.in <- attr(pm.obj, "qoi")
