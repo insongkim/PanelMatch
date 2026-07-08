@@ -132,6 +132,9 @@ summary.PanelMatch <- function(object, ...)
   return(ll)  
 }
 
+
+
+
 #' Plot the distribution of the sizes of matched sets.
 #'
 #'
