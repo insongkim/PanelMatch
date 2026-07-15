@@ -39,10 +39,10 @@ placebo_test(
 \item{...}{extra arguments to be passed to \code{plot()}}
 }
 \value{
-list with 2 or 3 elements: "estimate", which contains the point estimates for the test, "standard.errors" which has the standard errors for each period and optionally "bootstrapped.estimates", containing the bootstrapped point estimates for the test for each specified lag window period.
+list with 3 or 4 elements: "estimates", which contains the point estimates for the test, "standard.errors" which has the standard errors for each period, "conf.intervals", a matrix giving the confidence interval bounds for each period (calculated via \code{confint.PanelEstimate()} at the \code{confidence.level} specified), and optionally "bootstrapped.estimates", containing the bootstrapped point estimates for the test for each specified lag window period.
 }
 \description{
-Calculate the results of a placebo test, looking at the change in outcome at time = t-1, compared to other pre-treatment periods in the lag window.
+Calculate the results of a placebo test, looking at the change in outcome at time = t-1, compared to other pre-treatment periods in the lag window. Users may notice small differences in results returned by \code{PanelMatch()} when \code{placebo.test = TRUE} versus when \code{placebo.test = FALSE}, even if the specifications are otherwise identical. This is because placebo tests require the presence of outcome data for units over the lag window, which is not a default requirement. As a result, when \code{placebo.test = TRUE}, the size and number of matched sets might be reduced.
 }
 \examples{
 dem.sub <- dem[dem[, "wbcode2"] <= 100, ]
