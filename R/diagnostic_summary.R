@@ -104,28 +104,31 @@ diagnostic_summary <- function(pm.object,
                                digits = 3,
                                ...) {
   
-  # captured before pm.object is otherwise touched -- this is how pb.object
+  # Captured before pm.object is otherwise touched. This is how pb.object
   # (which may contain balance results for several PanelMatch configurations,
   # since get_covariate_balance() accepts multiple objects via ...) gets
   # matched back to this specific pm.object. get_covariate_balance() names
-  # each config using the deparsed argument name at ITS call site (e.g.
-  # get_covariate_balance(pm.obj, ...) produces a config named "pm.obj"), so
-  # pm.object must be passed to diagnostic_summary() using that same variable
-  # name for the match to succeed.
+  # each config using the deparsed argument name at its call site.
   pm.name <- deparse(substitute(pm.object))
   
   if (!inherits(pm.object, "PanelMatch")) {
     stop("pm.object must be a PanelMatch object.")
   }
+  
   if (!is.null(covariates) && is.null(panel.data)) {
     stop("panel.data must be supplied when covariates is specified.")
   }
+  
   if (!is.null(pb.object) && !inherits(pb.object, "PanelBalance")) {
     stop("pb.object must be a PanelBalance object.")
   }
-  if (!is.numeric(empty.set.threshold) || empty.set.threshold < 0 || empty.set.threshold > 1) {
+  
+  if (!is.numeric(empty.set.threshold) ||
+      empty.set.threshold < 0 ||
+      empty.set.threshold > 1) {
     stop("empty.set.threshold must be numeric, between 0 and 1.")
   }
+  
   if (!is.numeric(min.matched.sets) || min.matched.sets < 0) {
     stop("min.matched.sets must be a non-negative number.")
   }
@@ -134,29 +137,42 @@ diagnostic_summary <- function(pm.object,
   is.ate <- identical(qoi.in, "ate")
   
   # ============================================================
-  # 1. Compute all pieces (no new estimation/matching -- these
-  #    functions just reformat what the user already computed)
+  # 1. Compute all pieces
   # ============================================================
   
-  # --- matched set sizes: reuse summary.PanelMatch() as-is ---
+  # --- matched set sizes ---
   matched.set.summary <- summary(pm.object, ...)
   
   # --- empty matched set proportions and absolute counts ---
-  # a low proportion of empty sets can still leave very few usable matched
-  # sets in absolute terms (e.g. 3 of 5 treated units matched looks fine as
-  # a proportion, but 3 matched sets is thin) -- hence both checks.
   empty.set.props <- lapply(matched.set.summary, function(df) {
-    empty.row   <- df[df$quantity == "Number of empty matched sets", "value"]
-    treated.row <- df[df$quantity == "Number of treated units", "value"]
-    if (length(empty.row) == 1 && length(treated.row) == 1 && treated.row > 0) {
+    empty.row <- df[
+      df$quantity == "Number of empty matched sets",
+      "value"
+    ]
+    treated.row <- df[
+      df$quantity == "Number of treated units",
+      "value"
+    ]
+    
+    if (length(empty.row) == 1 &&
+        length(treated.row) == 1 &&
+        treated.row > 0) {
       empty.row / treated.row
     } else {
       NA_real_
     }
   })
+  
   n.matched.sets <- lapply(matched.set.summary, function(df) {
-    empty.row   <- df[df$quantity == "Number of empty matched sets", "value"]
-    treated.row <- df[df$quantity == "Number of treated units", "value"]
+    empty.row <- df[
+      df$quantity == "Number of empty matched sets",
+      "value"
+    ]
+    treated.row <- df[
+      df$quantity == "Number of treated units",
+      "value"
+    ]
+    
     if (length(empty.row) == 1 && length(treated.row) == 1) {
       treated.row - empty.row
     } else {
@@ -164,238 +180,538 @@ diagnostic_summary <- function(pm.object,
     }
   })
   
-  # --- matched vs. unmatched treated comparison: reuse compare_treated_observations() as-is ---
-  # compare_treated_observations() reads attr(pm.object, "qoi") to select
-  # which matched sets to use (pm.object[[qoi]]). For qoi = "ate" objects
-  # there is no pm.object[["ate"]] element (only "att"/"atc"), so for that
-  # case we run it once per QOI, each time pointing at a version of
-  # pm.object with its qoi attribute overridden -- this doesn't compute
-  # anything new, it just directs compare_treated_observations() at the
-  # correct existing subset.
+  # --- matched vs. unmatched treated comparison ---
   matched.treated.summary <- NULL
+  
   if (!is.null(covariates)) {
     if (is.ate) {
       matched.treated.summary <- lapply(c("att", "atc"), function(q) {
         pm.sub <- pm.object
         attr(pm.sub, "qoi") <- q
-        compare_treated_observations(pm.sub, panel.data, covariates)
+        
+        compare_treated_observations(
+          pm.sub,
+          panel.data,
+          covariates
+        )
       })
+      
       names(matched.treated.summary) <- c("att", "atc")
     } else {
-      matched.treated.summary <- compare_treated_observations(pm.object, panel.data, covariates)
+      matched.treated.summary <- compare_treated_observations(
+        pm.object,
+        panel.data,
+        covariates
+      )
     }
   }
   
-  # --- covariate balance: reuse summary.PanelBalance() as-is, then just count/flag ---
-  # only refined balance is considered -- summary.PanelBalance(include.unrefined = FALSE)
-  # never returns the "_unrefined" columns, so there's nothing to filter out here.
+  # --- covariate balance ---
   flag.balance <- function(mat) {
     list(
-      n.exceed = sum(abs(mat) > balance.threshold, na.rm = TRUE),
-      n.total  = sum(!is.na(mat))
+      n.exceed = sum(
+        abs(mat) > balance.threshold,
+        na.rm = TRUE
+      ),
+      n.total = sum(!is.na(mat))
     )
   }
   
   balance.summary <- NULL
   balance.flags <- NULL
+  
   if (!is.null(pb.object)) {
     # pb.object may contain balance results for several PanelMatch
-    # configurations (get_covariate_balance(pm1, pm2, ...)) -- only show the
-    # one that corresponds to pm.object. Subsetting by integer position
-    # (rather than by name) matters here: [.PanelBalance subsets its parallel
-    # unrefined.balance.results attribute using the same index, and that
-    # attribute's names carry a "_unrefined" suffix, so a name-based index
-    # would fail to line the two up correctly.
+    # configurations. Only show the configuration corresponding to
+    # pm.object.
     pos <- match(pm.name, names(pb.object))
+    
     if (is.na(pos)) {
-      stop(sprintf(
-        paste0(
-          "pb.object does not contain a configuration named '%s'. diagnostic_summary() ",
-          "matches entries in pb.object to pm.object by variable name, which must match ",
-          "the name used when pm.object was passed to get_covariate_balance() (e.g. ",
-          "get_covariate_balance(%s, panel.data = ..., covariates = ...)). Configurations ",
-          "found in pb.object: %s."
-        ),
-        pm.name, pm.name, paste(names(pb.object), collapse = ", ")
-      ))
+      stop(
+        sprintf(
+          paste0(
+            "pb.object does not contain a configuration named '%s'. ",
+            "diagnostic_summary() matches entries in pb.object to ",
+            "pm.object by variable name, which must match the name used ",
+            "when pm.object was passed to get_covariate_balance() ",
+            "(e.g. get_covariate_balance(%s, panel.data = ..., ",
+            "covariates = ...)). Configurations found in pb.object: %s."
+          ),
+          pm.name,
+          pm.name,
+          paste(names(pb.object), collapse = ", ")
+        )
+      )
     }
+    
     pb.sub <- pb.object[pos]
     
     if (is.ate) {
-      balance.summary <- lapply(c("att", "atc"), function(q) summary(pb.sub, qoi = q, include.unrefined = FALSE))
+      balance.summary <- lapply(c("att", "atc"), function(q) {
+        summary(
+          pb.sub,
+          qoi = q,
+          include.unrefined = FALSE
+        )
+      })
+      
       names(balance.summary) <- c("att", "atc")
-      balance.flags <- lapply(balance.summary, function(qoi.list) lapply(qoi.list, flag.balance))
+      
+      balance.flags <- lapply(
+        balance.summary,
+        function(qoi.list) {
+          lapply(qoi.list, flag.balance)
+        }
+      )
     } else {
-      balance.summary <- summary(pb.sub, include.unrefined = FALSE)
-      balance.flags <- lapply(balance.summary, flag.balance)
+      balance.summary <- summary(
+        pb.sub,
+        include.unrefined = FALSE
+      )
+      
+      balance.flags <- lapply(
+        balance.summary,
+        flag.balance
+      )
     }
   }
   
-  # --- placebo test: pull pass/fail directly from the CI already computed by placebo_test() ---
+  # --- placebo test ---
   placebo.summary <- NULL
+  
   if (!is.null(placebo.results)) {
     est <- placebo.results$estimates
-    ci  <- placebo.results$conf.intervals
+    ci <- placebo.results$conf.intervals
+    
     if (is.null(est) || is.null(ci)) {
-      stop("placebo.results must contain 'estimates' and 'conf.intervals'. Update placebo_test() to retain conf.intervals, then re-run placebo_test(..., plot = FALSE).")
+      stop(
+        paste(
+          "placebo.results must contain 'estimates' and",
+          "'conf.intervals'. Update placebo_test() to retain",
+          "conf.intervals, then re-run",
+          "placebo_test(..., plot = FALSE)."
+        )
+      )
     }
     
-    # a placebo estimate "fails" if its confidence interval excludes 0
+    # A placebo estimate "fails" if its confidence interval excludes 0.
     significant <- !(ci[, 1] <= 0 & ci[, 2] >= 0)
     
     placebo.table <- data.frame(
-      period      = rownames(ci),
-      estimate    = as.numeric(est),
-      ci.lower    = ci[, 1],
-      ci.upper    = ci[, 2],
+      period = rownames(ci),
+      estimate = as.numeric(est),
+      ci.lower = ci[, 1],
+      ci.upper = ci[, 2],
       significant = ifelse(significant, "Yes", "No"),
-      row.names   = NULL
+      row.names = NULL
     )
     
     placebo.summary <- list(
-      table            = placebo.table,
-      ci.colnames      = colnames(ci),
-      n.significant    = sum(significant, na.rm = TRUE),
-      n.total          = sum(!is.na(significant)),
+      table = placebo.table,
+      ci.colnames = colnames(ci),
+      n.significant = sum(significant, na.rm = TRUE),
+      n.total = sum(!is.na(significant)),
       prop.significant = mean(significant, na.rm = TRUE)
     )
   }
   
   # ============================================================
-  # 2. Build the checks table (single source of truth for both
-  #    the warnings below and the printed NOTE lines)
+  # 2. Build checks table
   # ============================================================
   
   rows <- list()
   
   for (nm in names(matched.set.summary)) {
-    prop   <- empty.set.props[[nm]]
+    prop <- empty.set.props[[nm]]
     n.sets <- n.matched.sets[[nm]]
     
     rows[[length(rows) + 1]] <- data.frame(
-      qoi = nm, config = NA_character_, metric = "empty_set_proportion",
-      label = sprintf("%s: %.1f%% of treated units unmatched (threshold: %.1f%%)",
-                      toupper(nm), 100 * prop, 100 * empty.set.threshold),
-      value = prop, threshold = empty.set.threshold, direction = "above",
-      flagged = isTRUE(!is.na(prop) && prop > empty.set.threshold),
+      qoi = nm,
+      config = NA_character_,
+      metric = "empty_set_proportion",
+      label = sprintf(
+        "%s: %.1f%% of treated units unmatched (threshold: %.1f%%)",
+        toupper(nm),
+        100 * prop,
+        100 * empty.set.threshold
+      ),
+      value = prop,
+      threshold = empty.set.threshold,
+      direction = "above",
+      flagged = isTRUE(
+        !is.na(prop) &&
+          prop > empty.set.threshold
+      ),
       stringsAsFactors = FALSE
     )
     
     rows[[length(rows) + 1]] <- data.frame(
-      qoi = nm, config = NA_character_, metric = "n_matched_sets",
-      label = sprintf("%s: %d non-empty matched sets (threshold: %d)",
-                      toupper(nm), as.integer(n.sets), as.integer(min.matched.sets)),
-      value = n.sets, threshold = min.matched.sets, direction = "below",
-      flagged = isTRUE(!is.na(n.sets) && n.sets < min.matched.sets),
+      qoi = nm,
+      config = NA_character_,
+      metric = "n_matched_sets",
+      label = sprintf(
+        "%s: %d non-empty matched sets (threshold: %d)",
+        toupper(nm),
+        as.integer(n.sets),
+        as.integer(min.matched.sets)
+      ),
+      value = n.sets,
+      threshold = min.matched.sets,
+      direction = "below",
+      flagged = isTRUE(
+        !is.na(n.sets) &&
+          n.sets < min.matched.sets
+      ),
       stringsAsFactors = FALSE
     )
   }
   
   add_balance_rows <- function(bal.flags, qoi.label) {
     out <- list()
+    
     for (cfg in names(bal.flags)) {
       fl <- bal.flags[[cfg]]
-      if (is.null(fl)) next
+      
+      if (is.null(fl)) {
+        next
+      }
+      
       out[[length(out) + 1]] <- data.frame(
-        qoi = qoi.label, config = cfg, metric = "balance",
-        label = sprintf("%s: %d of %d balance stats exceed |%.2f| SD (%s)",
-                        toupper(qoi.label), fl$n.exceed, fl$n.total, balance.threshold, cfg),
-        value = fl$n.exceed, threshold = 0, direction = "above",
+        qoi = qoi.label,
+        config = cfg,
+        metric = "balance",
+        label = sprintf(
+          "%s: %d of %d balance stats exceed |%.2f| SD (%s)",
+          toupper(qoi.label),
+          fl$n.exceed,
+          fl$n.total,
+          balance.threshold,
+          cfg
+        ),
+        value = fl$n.exceed,
+        threshold = 0,
+        direction = "above",
         flagged = fl$n.exceed > 0,
         stringsAsFactors = FALSE
       )
     }
+    
     out
   }
+  
   if (!is.null(balance.flags)) {
     if (is.ate) {
       for (q in names(balance.flags)) {
-        rows <- c(rows, add_balance_rows(balance.flags[[q]], q))
+        rows <- c(
+          rows,
+          add_balance_rows(balance.flags[[q]], q)
+        )
       }
     } else {
-      rows <- c(rows, add_balance_rows(balance.flags, qoi.in))
+      rows <- c(
+        rows,
+        add_balance_rows(balance.flags, qoi.in)
+      )
     }
   }
   
   if (!is.null(placebo.summary)) {
     ps <- placebo.summary
+    
     rows[[length(rows) + 1]] <- data.frame(
-      qoi = NA_character_, config = NA_character_, metric = "placebo",
-      label = sprintf("Placebo: %d of %d estimates have CIs excluding 0",
-                      ps$n.significant, ps$n.total),
-      value = ps$n.significant, threshold = 0, direction = "above",
+      qoi = NA_character_,
+      config = NA_character_,
+      metric = "placebo",
+      label = sprintf(
+        "Placebo: %d of %d estimates have CIs excluding 0",
+        ps$n.significant,
+        ps$n.total
+      ),
+      value = ps$n.significant,
+      threshold = 0,
+      direction = "above",
       flagged = ps$n.significant > 0,
       stringsAsFactors = FALSE
     )
   }
   
-  checks <- if (length(rows) > 0) do.call(rbind, rows) else data.frame(
-    qoi = character(0), config = character(0), metric = character(0),
-    label = character(0), value = numeric(0), threshold = numeric(0),
-    direction = character(0), flagged = logical(0), stringsAsFactors = FALSE
-  )
+  checks <- if (length(rows) > 0) {
+    do.call(rbind, rows)
+  } else {
+    data.frame(
+      qoi = character(0),
+      config = character(0),
+      metric = character(0),
+      label = character(0),
+      value = numeric(0),
+      threshold = numeric(0),
+      direction = character(0),
+      flagged = logical(0),
+      stringsAsFactors = FALSE
+    )
+  }
+  
   rownames(checks) <- NULL
   
   # ============================================================
-  # 3. Warnings (reviewer comments 2 and 3): derived directly
-  #    from the checks table above, so this can't drift out of
-  #    sync with what gets printed
+  # 3. Output-width helpers
+  # ============================================================
+  
+  # Respect the user's configured console width. This is useful for
+  # manuscript rendering, where options(width = 76), for example, ensures
+  # printed prose remains within the manuscript text area.
+  output.width <- getOption("width", 80L)
+  
+  if (length(output.width) != 1L ||
+      !is.numeric(output.width) ||
+      !is.finite(output.width)) {
+    output.width <- 80L
+  }
+  
+  output.width <- max(
+    20L,
+    as.integer(output.width)
+  )
+  
+  # Print prose while respecting the configured output width. cat() does
+  # not wrap text automatically, so strwrap() is used before printing.
+  cat_wrap <- function(text,
+                       indent = 0L,
+                       exdent = 0L,
+                       blank.before = FALSE,
+                       blank.after = FALSE) {
+    
+    if (blank.before) {
+      cat("\n")
+    }
+    
+    wrapped <- strwrap(
+      text,
+      width = output.width,
+      indent = indent,
+      exdent = exdent
+    )
+    
+    cat(wrapped, sep = "\n")
+    cat("\n")
+    
+    if (blank.after) {
+      cat("\n")
+    }
+    
+    invisible(NULL)
+  }
+  
+  # ============================================================
+  # 4. Warnings
   # ============================================================
   
   warn_group <- function(metric, prefix) {
-    sub <- checks[checks$metric == metric & checks$flagged, , drop = FALSE]
+    sub <- checks[
+      checks$metric == metric & checks$flagged,
+      ,
+      drop = FALSE
+    ]
+    
     if (nrow(sub) > 0) {
-      warning(paste0(prefix, ": ", paste(sub$label, collapse = "; ")), call. = FALSE)
+      msg <- paste0(
+        prefix,
+        ": ",
+        paste(sub$label, collapse = "; ")
+      )
+      
+      # Leave room for the "Warning: " prefix displayed by knitr.
+      warning.width <- max(
+        20L,
+        output.width - nchar("Warning: ")
+      )
+      
+      msg <- paste(
+        strwrap(
+          msg,
+          width = warning.width,
+          exdent = 2L
+        ),
+        collapse = "\n"
+      )
+      
+      warning(
+        msg,
+        call. = FALSE
+      )
     }
   }
-  warn_group("empty_set_proportion", "Empty matched set check flagged")
-  warn_group("n_matched_sets",       "Minimum matched sets check flagged")
-  warn_group("balance",              "Covariate balance check flagged")
-  warn_group("placebo",              "Placebo test check flagged")
+  
+  warn_group(
+    "empty_set_proportion",
+    "Empty matched set check flagged"
+  )
+  
+  warn_group(
+    "n_matched_sets",
+    "Minimum matched sets check flagged"
+  )
+  
+  warn_group(
+    "balance",
+    "Covariate balance check flagged"
+  )
+  
+  warn_group(
+    "placebo",
+    "Placebo test check flagged"
+  )
   
   # ============================================================
-  # 4. Print the report
+  # 5. Print report
   # ============================================================
   
   section.rule <- strrep("=", 60)
-  sub.rule     <- strrep("-", 60)
+  sub.rule <- strrep("-", 60)
   
-  check.note <- function(metric.name, qoi = NA_character_, config = NA_character_) {
-    sub <- checks[checks$metric == metric.name & checks$flagged, , drop = FALSE]
-    if (!is.na(qoi))    sub <- sub[sub$qoi == qoi, , drop = FALSE]
-    if (!is.na(config)) sub <- sub[sub$config == config, , drop = FALSE]
-    for (lbl in sub$label) cat(sprintf("NOTE: %s\n", lbl))
+  check.note <- function(metric.name,
+                         qoi = NA_character_,
+                         config = NA_character_) {
+    
+    sub <- checks[
+      checks$metric == metric.name & checks$flagged,
+      ,
+      drop = FALSE
+    ]
+    
+    if (!is.na(qoi)) {
+      sub <- sub[
+        sub$qoi == qoi,
+        ,
+        drop = FALSE
+      ]
+    }
+    
+    if (!is.na(config)) {
+      sub <- sub[
+        sub$config == config,
+        ,
+        drop = FALSE
+      ]
+    }
+    
+    for (lbl in sub$label) {
+      cat_wrap(
+        paste0("NOTE: ", lbl),
+        exdent = 2L
+      )
+    }
   }
   
   print_balance_block <- function(bal.list, qoi.label) {
     for (nm in names(bal.list)) {
-      cat(sprintf("\nConfiguration: %s\n", nm))
-      print(round(bal.list[[nm]], digits))
-      check.note("balance", qoi = qoi.label, config = nm)
+      cat("\n")
+      
+      cat_wrap(
+        paste0("Configuration: ", nm),
+        exdent = 2L
+      )
+      
+      print(
+        round(bal.list[[nm]], digits)
+      )
+      
+      check.note(
+        "balance",
+        qoi = qoi.label,
+        config = nm
+      )
     }
   }
   
-  # formats the plain list returned by compare_treated_observations() --
-  # that function returns unclassed data, so this formatting lives here
-  # rather than as a dispatched print method or standalone function.
+  # Formats the plain list returned by compare_treated_observations().
+  # Percentages are printed on separate indented lines to ensure that
+  # the report remains within narrow console/manuscript widths.
   print_matched_treated <- function(x) {
-    cat("Treated unit-times with matched controls:              ", x$n_has_match, "\n")
-    cat("Treated unit-times with no matched controls:           ", x$n_no_match,
-        sprintf(" (%s%% of treated observations)", round(x$pct_no_match, digits)), "\n")
-    cat("Unmatched treated unit-times with no viable comparison:", x$n_no_viable,
-        sprintf(" (%s%% of unmatched treated observations)", round(x$pct_no_viable, digits)), "\n")
+    pct.no.match <- format(
+      round(x$pct_no_match, digits),
+      trim = TRUE,
+      scientific = FALSE
+    )
+    
+    pct.no.viable <- format(
+      round(x$pct_no_viable, digits),
+      trim = TRUE,
+      scientific = FALSE
+    )
+    
+    cat(
+      "Treated unit-times with matched controls: ",
+      x$n_has_match,
+      "\n",
+      sep = ""
+    )
+    
+    cat(
+      "Treated unit-times with no matched controls: ",
+      x$n_no_match,
+      "\n",
+      sep = ""
+    )
+    
+    cat(
+      "  Percent of treated observations: ",
+      pct.no.match,
+      "%\n",
+      sep = ""
+    )
+    
+    cat(
+      "Unmatched treated unit-times with no viable comparison: ",
+      x$n_no_viable,
+      "\n",
+      sep = ""
+    )
+    
+    cat(
+      "  Percent of unmatched treated observations: ",
+      pct.no.viable,
+      "%\n",
+      sep = ""
+    )
     
     if (is.null(x$covariate_diffs)) {
-      cat("\nNo covariate comparison available (no cohort had both matched and unmatched treated units).\n")
+      cat_wrap(
+        paste(
+          "No covariate comparison available",
+          "(no cohort had both matched and unmatched treated units)."
+        ),
+        blank.before = TRUE
+      )
+      
       return(invisible(NULL))
     }
     
-    cat("\nAverage covariate differences (matched - unmatched), by treatment cohort:\n\n")
+    cat_wrap(
+      paste(
+        "Average covariate differences (matched - unmatched),",
+        "by treatment cohort:"
+      ),
+      blank.before = TRUE,
+      blank.after = TRUE
+    )
     
-    print_df                    <- x$covariate_diffs
-    print_df$mean_diff          <- round(print_df$mean_diff, digits)
-    print_df$weighted_mean_diff <- round(print_df$weighted_mean_diff, digits)
-    print(print_df, row.names = FALSE)
+    print_df <- x$covariate_diffs
+    
+    print_df$mean_diff <- round(
+      print_df$mean_diff,
+      digits
+    )
+    
+    print_df$weighted_mean_diff <- round(
+      print_df$weighted_mean_diff,
+      digits
+    )
+    
+    print(
+      print_df,
+      row.names = FALSE
+    )
   }
   
   cat(section.rule, "\n")
@@ -404,95 +720,254 @@ diagnostic_summary <- function(pm.object,
   
   section.num <- 0
   
-  # --- 1. Matched Set Sizes -------------------------------------------------
+  # --- 1. Matched Set Sizes -----------------------------------------------
+  
   section.num <- section.num + 1
-  cat("\n", sub.rule, "\n", sep = "")
-  cat(sprintf("[%d] MATCHED SET SIZES\n", section.num))
+  
+  cat(
+    "\n",
+    sub.rule,
+    "\n",
+    sep = ""
+  )
+  
+  cat(
+    sprintf(
+      "[%d] MATCHED SET SIZES\n",
+      section.num
+    )
+  )
+  
   cat(sub.rule, "\n")
+  
   for (nm in names(matched.set.summary)) {
-    cat(sprintf("\nQOI: %s\n", toupper(nm)))
-    print(matched.set.summary[[nm]], row.names = FALSE)
+    cat(
+      sprintf(
+        "\nQOI: %s\n",
+        toupper(nm)
+      )
+    )
+    
+    print(
+      matched.set.summary[[nm]],
+      row.names = FALSE
+    )
+    
     if (is.null(matched.treated.summary)) {
-      # only show these notes here if section [2] below (which reports the
-      # same figures in more detail) isn't present
-      check.note("empty_set_proportion", qoi = nm)
-      check.note("n_matched_sets", qoi = nm)
+      # Only show these notes here if section [2] below is absent.
+      check.note(
+        "empty_set_proportion",
+        qoi = nm
+      )
+      
+      check.note(
+        "n_matched_sets",
+        qoi = nm
+      )
     }
   }
   
-  # --- 2. Matched vs. Unmatched Treated Units --------------------------------
+  # --- 2. Matched vs. Unmatched Treated Units -----------------------------
+  
   if (!is.null(matched.treated.summary)) {
     section.num <- section.num + 1
-    cat("\n", sub.rule, "\n", sep = "")
-    cat(sprintf("[%d] MATCHED VS. UNMATCHED TREATED UNITS\n", section.num))
+    
+    cat(
+      "\n",
+      sub.rule,
+      "\n",
+      sep = ""
+    )
+    
+    cat(
+      sprintf(
+        "[%d] MATCHED VS. UNMATCHED TREATED UNITS\n",
+        section.num
+      )
+    )
+    
     cat(sub.rule, "\n")
     
     if (is.ate) {
       for (q in names(matched.treated.summary)) {
-        cat(sprintf("\nQOI: %s\n", toupper(q)))
-        print_matched_treated(matched.treated.summary[[q]])
-        check.note("empty_set_proportion", qoi = q)
-        check.note("n_matched_sets", qoi = q)
+        cat(
+          sprintf(
+            "\nQOI: %s\n",
+            toupper(q)
+          )
+        )
+        
+        print_matched_treated(
+          matched.treated.summary[[q]]
+        )
+        
+        check.note(
+          "empty_set_proportion",
+          qoi = q
+        )
+        
+        check.note(
+          "n_matched_sets",
+          qoi = q
+        )
       }
     } else {
       cat("\n")
-      print_matched_treated(matched.treated.summary)
-      check.note("empty_set_proportion", qoi = qoi.in)
-      check.note("n_matched_sets", qoi = qoi.in)
+      
+      print_matched_treated(
+        matched.treated.summary
+      )
+      
+      check.note(
+        "empty_set_proportion",
+        qoi = qoi.in
+      )
+      
+      check.note(
+        "n_matched_sets",
+        qoi = qoi.in
+      )
     }
   }
   
-  # --- 3. Covariate Balance --------------------------------------------------
+  # --- 3. Covariate Balance -----------------------------------------------
+  
   section.num <- section.num + 1
-  cat("\n", sub.rule, "\n", sep = "")
-  cat(sprintf("[%d] COVARIATE BALANCE\n", section.num))
+  
+  cat(
+    "\n",
+    sub.rule,
+    "\n",
+    sep = ""
+  )
+  
+  cat(
+    sprintf(
+      "[%d] COVARIATE BALANCE\n",
+      section.num
+    )
+  )
+  
   cat(sub.rule, "\n")
+  
   if (!is.null(balance.summary)) {
     if (is.ate) {
       for (q in names(balance.summary)) {
-        cat(sprintf("\nQOI: %s\n", toupper(q)))
-        print_balance_block(balance.summary[[q]], q)
+        cat(
+          sprintf(
+            "\nQOI: %s\n",
+            toupper(q)
+          )
+        )
+        
+        print_balance_block(
+          balance.summary[[q]],
+          q
+        )
       }
     } else {
-      print_balance_block(balance.summary, qoi.in)
+      print_balance_block(
+        balance.summary,
+        qoi.in
+      )
     }
   } else {
-    cat("\nNot provided. Pass a PanelBalance object via pb.object to include this section.\n")
+    cat_wrap(
+      paste(
+        "Not provided. Pass a PanelBalance object via pb.object",
+        "to include this section."
+      ),
+      blank.before = TRUE
+    )
   }
   
-  # --- 4. Placebo Test --------------------------------------------------------
+  # --- 4. Placebo Test -----------------------------------------------------
+  
   section.num <- section.num + 1
-  cat("\n", sub.rule, "\n", sep = "")
-  cat(sprintf("[%d] PLACEBO TEST\n", section.num))
+  
+  cat(
+    "\n",
+    sub.rule,
+    "\n",
+    sep = ""
+  )
+  
+  cat(
+    sprintf(
+      "[%d] PLACEBO TEST\n",
+      section.num
+    )
+  )
+  
   cat(sub.rule, "\n")
+  
   if (!is.null(placebo.summary)) {
     tbl <- placebo.summary$table
-    tbl$estimate <- round(tbl$estimate, digits)
-    tbl$ci.lower <- round(tbl$ci.lower, digits)
-    tbl$ci.upper <- round(tbl$ci.upper, digits)
-    names(tbl)[names(tbl) == "ci.lower"] <- placebo.summary$ci.colnames[1]
-    names(tbl)[names(tbl) == "ci.upper"] <- placebo.summary$ci.colnames[2]
+    
+    tbl$estimate <- round(
+      tbl$estimate,
+      digits
+    )
+    
+    tbl$ci.lower <- round(
+      tbl$ci.lower,
+      digits
+    )
+    
+    tbl$ci.upper <- round(
+      tbl$ci.upper,
+      digits
+    )
+    
+    names(tbl)[names(tbl) == "ci.lower"] <-
+      placebo.summary$ci.colnames[1]
+    
+    names(tbl)[names(tbl) == "ci.upper"] <-
+      placebo.summary$ci.colnames[2]
+    
     cat("\n")
-    print(tbl, row.names = FALSE)
+    
+    print(
+      tbl,
+      row.names = FALSE
+    )
+    
     cat("\n")
+    
     check.note("placebo")
   } else {
-    cat("\nNot provided. Pass the output of placebo_test(..., plot = FALSE) via placebo.results to include this section.\n")
+    cat_wrap(
+      paste(
+        "Not provided. Pass the output of",
+        "placebo_test(..., plot = FALSE) via placebo.results",
+        "to include this section."
+      ),
+      blank.before = TRUE
+    )
   }
   
-  cat("\n", section.rule, "\n", sep = "")
+  cat(
+    "\n",
+    section.rule,
+    "\n",
+    sep = ""
+  )
   
   # ============================================================
-  # 5. Return the underlying pieces invisibly, as a plain list
-  #    (no new class -- each piece already has its own methods
-  #    via its original object type)
+  # 6. Return underlying pieces invisibly
   # ============================================================
   
-  invisible(list(
-    checks                   = checks,
-    matched.set.summary      = matched.set.summary,
-    matched.treated.summary  = matched.treated.summary,
-    balance.summary          = balance.summary,
-    placebo.table            = if (!is.null(placebo.summary)) placebo.summary$table else NULL
-  ))
+  invisible(
+    list(
+      checks = checks,
+      matched.set.summary = matched.set.summary,
+      matched.treated.summary = matched.treated.summary,
+      balance.summary = balance.summary,
+      placebo.table = if (!is.null(placebo.summary)) {
+        placebo.summary$table
+      } else {
+        NULL
+      }
+    )
+  )
 }

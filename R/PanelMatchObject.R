@@ -349,3 +349,42 @@ formula.PanelMatch <- function(x, ...) {
   
   return(covs_formula)
 }
+
+
+#' Compare PanelMatch objects
+#'
+#' \code{all.equal.PanelMatch} compares two \code{PanelMatch} objects using
+#' the standard \code{all.equal()} semantics. The comparison is recursive, so
+#' the matched sets, the attributes attached to individual matched control
+#' vectors (for example, weights and distances), the attributes of the
+#' \code{matched.set} objects, and the specification metadata stored on the
+#' \code{PanelMatch} object are all compared.
+#'
+#' Comparison is order-sensitive. Thus, two \code{PanelMatch} objects that
+#' contain the same matched controls in a different order are not considered
+#' equal. Numeric values are compared using the tolerance supported by
+#' \code{all.equal()}.
+#'
+#' For a single logical result, use
+#' \code{isTRUE(all.equal(x, y))}. Use \code{identical(x, y)} instead when an
+#' exact representation-level comparison is required.
+#'
+#' @param target A \code{PanelMatch} object.
+#' @param current A \code{PanelMatch} object to compare with \code{target}.
+#' @param ... Additional arguments passed to the next \code{all.equal} method,
+#'   such as \code{tolerance}.
+#'
+#' @return \code{TRUE} if the objects are equal; otherwise, a character vector
+#' describing the differences.
+#'
+#' @method all.equal PanelMatch
+#' @export
+all.equal.PanelMatch <- function(target, current, ...)
+{
+  if (!inherits(current, "PanelMatch"))
+  {
+    return("'current' is not a PanelMatch object")
+  }
+  
+  NextMethod("all.equal")
+}

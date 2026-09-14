@@ -47,7 +47,7 @@ placebo_test <- function(pm.obj,
     stop("Placebo test cannot be executed. Please ensure placebo.test = TRUE in PanelMatch()")
   }
   
-  warning("Note: Placebo test requires presence of outcome data over lag window.\nMatched sets may differ from placebo.test = FALSE.")
+  warning("Note: Placebo test requires presence of outcome data over lag window.\nMatched sets may differ from placebo.test = FALSE.", call. = FALSE)
   
   df.adjustment <- FALSE
   qoi.in <- attr(pm.obj, "qoi")

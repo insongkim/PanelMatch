@@ -247,16 +247,34 @@ test_that("ate branch errors informatively if a non-bootstrap se.method placebo 
 # ================================================================
 
 test_that("only pm.object supplied: all optional sections are NULL/absent", {
-  out <- capture.output(diag <- diagnostic_summary(pm.object = pm.att))
+  out <- capture.output(
+    diag <- diagnostic_summary(pm.object = pm.att)
+  )
+  
   expect_null(diag$matched.treated.summary)
   expect_null(diag$balance.summary)
   expect_null(diag$placebo.table)
-  # only empty_set_proportion + n_matched_sets rows (2, since att is a single QOI)
+  
+  # only empty_set_proportion + n_matched_sets rows
+  # (2, since att is a single QOI)
   expect_equal(nrow(diag$checks), 2)
-  expect_setequal(diag$checks$metric, c("empty_set_proportion", "n_matched_sets"))
+  expect_setequal(
+    diag$checks$metric,
+    c("empty_set_proportion", "n_matched_sets")
+  )
+  
+  # Collapse wrapped console output before testing prose.
+  out_text <- paste(out, collapse = " ")
+  
   # report should say these sections weren't provided
-  expect_true(any(grepl("Not provided.*pb.object", out)))
-  expect_true(any(grepl("Not provided.*placebo.results", out)))
+  expect_match(
+    out_text,
+    "Not provided.*pb.object"
+  )
+  expect_match(
+    out_text,
+    "Not provided.*placebo.results"
+  )
 })
 
 test_that("only covariates supplied (with panel.data): matched.treated.summary present, others absent", {

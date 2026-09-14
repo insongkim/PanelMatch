@@ -2,6 +2,7 @@
 
 S3method("[",PanelBalance)
 S3method("[",matched.set)
+S3method(all.equal,PanelMatch)
 S3method(confint,PanelEstimate)
 S3method(distances,matched.set)
 S3method(estimates,PanelEstimate)
