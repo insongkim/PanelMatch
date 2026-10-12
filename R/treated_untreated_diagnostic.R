@@ -90,8 +90,8 @@ compare_treated_observations <- function(pm.object, panel.data, covariates) {
   parsed    <- do.call(rbind, strsplit(set_names, "\\."))
   
   treated_df <- data.frame(
-    unit      = type.convert(parsed[, 1], as.is = TRUE),
-    time      = type.convert(parsed[, 2], as.is = TRUE),
+    unit      = utils::type.convert(parsed[, 1], as.is = TRUE),
+    time      = utils::type.convert(parsed[, 2], as.is = TRUE),
     has_match = sapply(matched_sets, length) > 0,
     stringsAsFactors = FALSE
   )
