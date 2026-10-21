@@ -197,24 +197,22 @@ handle_ps_match <- function(just.ps.sets, msets,
       return(1)
     }
     dists <- abs(treated.ps - control.ps.set)
-    dists.to.consider <- dists[dists > 0]
-    if(length(dists.to.consider) < max.size)
+    if(length(dists) < max.size)
     {
-      dists[ dists > 0 ] <- 1 / length(dists.to.consider)
-      wts <- dists
+      wts <- rep(1 / length(dists), length(dists))
     }
     else
     {
-      dist.to.beat <- max(utils::head(sort(dists.to.consider), max.size + 1))
-      if(sum(dists < dist.to.beat & dists > 0) < max.set.size)
+      dist.to.beat <- max(utils::head(sort(dists), max.size + 1))
+      if(sum(dists < dist.to.beat) < max.set.size)
       {
-        new.denom <- sum(dists <= dist.to.beat & dists > 0)
-        wts <- ifelse(dists <= dist.to.beat & dists > 0, 1 / new.denom, 0)
+        new.denom <- sum(dists <= dist.to.beat)
+        wts <- ifelse(dists <= dist.to.beat, 1 / new.denom, 0)
         
       }
       else
       {
-        wts <- ifelse(dists < dist.to.beat & dists > 0, (1 / max.size), 0)
+        wts <- ifelse(dists < dist.to.beat, (1 / max.size), 0)
       }
     }
     return(wts)
