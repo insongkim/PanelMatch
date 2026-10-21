@@ -182,3 +182,48 @@ test_that("placebo_test returns stable estimates and SEs", {
   expect_equal(pt.res$estimate,        est_att_uncond, tolerance = 1e-6)
   expect_equal(pt.res$standard.errors, se_att_uncond,  tolerance = 1e-6)
 })
+test_that("placebo_test keeps Y[t-1] for treated observations near the end of the panel", {
+  set.seed(2)
+  n.units <- 40
+  n.periods <- 10
+  d <- data.frame(id = rep(1:n.units, each = n.periods),
+                  t = rep(1:n.periods, times = n.units))
+  d$d <- as.numeric(runif(nrow(d)) < 0.2)
+  d$x <- rnorm(nrow(d))
+  d$y <- rnorm(nrow(d)) + d$t / 10
+  d.panel <- PanelData(d, "id", "t", "d", "y")
+  
+  PM.results <- PanelMatch(
+    lag                       = 4,
+    refinement.method         = "mahalanobis",
+    panel.data                = d.panel,
+    covs.formula              = ~ x,
+    size.match                = 3,
+    qoi                       = "att",
+    lead                      = 0,
+    placebo.test              = TRUE
+  )
+  pt.res <- placebo_test(PM.results, panel.data = d.panel,
+                         se.method = "conditional", plot = FALSE)
+  
+  # difference-in-differences from t - l to t - 1, averaged over the matched sets
+  sets <- PM.results$att[sapply(PM.results$att, length) > 0]
+  ts <- as.numeric(sub(".*\\.", "", names(sets)))
+  ids <- as.numeric(sub("\\..*", "", names(sets)))
+  expect_true(any(ts + 2 > n.periods))
+  Y <- function(i, t) d$y[match(paste(i, t), paste(d$id, d$t))]
+  direct <- sapply(4:2, function(l) {
+    did <- numeric(length(sets))
+    for (k in seq_along(sets))
+    {
+      controls <- as.numeric(sets[[k]])
+      w <- attr(sets[[k]], "weights")
+      did[k] <- (Y(ids[k], ts[k] - 1) - Y(ids[k], ts[k] - l)) -
+        sum(w * (Y(controls, ts[k] - 1) - Y(controls, ts[k] - l)))
+    }
+    mean(did)
+  })
+  names(direct) <- paste0("t-", 4:2)
+  
+  expect_equal(pt.res$estimates, direct, tolerance = 1e-10)
+})

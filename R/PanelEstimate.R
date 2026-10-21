@@ -242,6 +242,21 @@ panel_estimate <- function(sets,
   
   if (placebo.test)
   {
+    # The placebo estimate for period t - l places the weight on Y[t-1] in row
+    # t + l - 2 and reads Y[t-1] there through a lagged outcome. Add empty
+    # periods after the last one, so that this row exists for treated
+    # observations near the end of the panel.
+    n.extra <- max(placebo.lead) - 2
+    if (n.extra > 0)
+    {
+      data <- as.data.frame(data)
+      last.t <- max(data[, time.id])
+      extra <- data[rep(which(data[, time.id] == last.t), each = n.extra), ]
+      extra[, time.id] <- last.t + rep(seq_len(n.extra),
+                                       times = sum(data[, time.id] == last.t))
+      extra[, !colnames(extra) %in% c(unit.id, time.id)] <- NA
+      data <- rbind(data, extra)
+    }
     data <- prepare_data(data.in = data, lead = max(placebo.lead):0,
                          sets.att = sets.att, sets.atc = sets.atc,
                          qoi.in = qoi,
