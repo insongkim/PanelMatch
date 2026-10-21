@@ -408,3 +408,45 @@ test_that("forbid treatment reversal restrictions are triggered correctly", {
                              lead = 0:3, forbid.treatment.reversal = TRUE))
   
 })
+
+test_that("forbid treatment reversal drops sets in which every control is treated in the lead window", {
+  # Unit 1 is treated at t = 5. Its only controls, units 2 and 3, are treated at t = 6.
+  # Unit 7 is treated at t = 5. Of its controls, unit 8 is treated at t = 6 and unit 9 is never treated.
+  d <- data.frame(id = rep(1:9, each = 8), t = rep(1:8, times = 9))
+  d$d <- c(0, 0, 0, 0, 1, 1, 1, 1,
+           0, 0, 0, 0, 0, 1, 1, 1,
+           0, 0, 0, 0, 0, 1, 1, 1,
+           1, 0, 0, 0, 0, 0, 0, 0,
+           1, 0, 0, 0, 0, 0, 0, 0,
+           1, 0, 0, 0, 0, 0, 0, 0,
+           0, 0, 1, 0, 1, 1, 1, 1,
+           0, 0, 1, 0, 0, 1, 1, 1,
+           0, 0, 1, 0, 0, 0, 0, 0)
+  d$y <- d$id + d$t / 10
+  d.panel <- PanelData(d, 'id', 't', 'd', 'y')
+  
+  pm.allowed <- PanelMatch(lag = 4, refinement.method = "none",
+                           panel.data = d.panel, qoi = "att",
+                           lead = 0:2, forbid.treatment.reversal = FALSE)
+  expect_equal(as.numeric(pm.allowed$att[["1.5"]]), c(2, 3))
+  expect_equal(as.numeric(pm.allowed$att[["7.5"]]), c(8, 9))
+  
+  pm.forbid <- PanelMatch(lag = 4, refinement.method = "none",
+                          panel.data = d.panel, qoi = "att",
+                          lead = 0:2, forbid.treatment.reversal = TRUE)
+  expect_equal(sort(names(pm.forbid$att)), c("2.6", "3.6", "7.5", "8.6"))
+  expect_equal(as.numeric(pm.forbid$att[["7.5"]]), 9)
+  for (key in names(pm.forbid$att))
+  {
+    t0 <- as.numeric(sub(".*\\.", "", key))
+    controls <- as.numeric(pm.forbid$att[[key]])
+    expect_true(all(d$d[d$id %in% controls & d$t %in% t0:(t0 + 2)] == 0))
+  }
+
+  # same without units 7 to 9: the only set that needs adjusting loses all of its controls
+  d.sub.panel <- PanelData(d[d$id <= 6, ], 'id', 't', 'd', 'y')
+  pm.forbid <- PanelMatch(lag = 4, refinement.method = "none",
+                          panel.data = d.sub.panel, qoi = "att",
+                          lead = 0:2, forbid.treatment.reversal = TRUE)
+  expect_equal(sort(names(pm.forbid$att)), c("2.6", "3.6"))
+})

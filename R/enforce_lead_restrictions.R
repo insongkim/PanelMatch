@@ -61,25 +61,10 @@ enforce_lead_restrictions <- function(matched_sets,
                           sub.index,
                           SIMPLIFY = FALSE)
     attributes(sub.set.new) <- attributes(sub.set)
-    all.gone.counter <- sapply(sub.set.new, function(x){sum(x)})
-    if (sum(all.gone.counter == 0) > 0) #case in which all the controls in a particular group were dropped
-    {
-      idx[all.gone.counter == 0] <- FALSE
-      sub.index <- ll[idx]
-      sub.set <- matched_sets[idx]
-      create_new_sets <- function(set, index)
-      {
-        return(set[index])
-      }
-      sub.set.new <- mapply(FUN = create_new_sets, 
-                            sub.set, 
-                            sub.index, 
-                            SIMPLIFY = FALSE)
-      attributes(sub.set.new) <- attributes(sub.set)
-    }
-    if (all(sapply(sub.set.new, length) == 0)) stop('estimation not possible: none of the matched sets have viable control units due to a lack of necessary data')
     matched_sets[idx] <- sub.set.new
+    # sets in which all of the controls were dropped are removed here
     matched_sets <- matched_sets[sapply(matched_sets, length) > 0]
+    if (length(matched_sets) == 0) stop('estimation not possible: none of the matched sets have viable control units due to a lack of necessary data')
   }
   return(matched_sets)
   
