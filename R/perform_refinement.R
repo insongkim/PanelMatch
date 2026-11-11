@@ -334,6 +334,14 @@ perform_refinement <- function(lag, time.id, unit.id, treatment,
     {
       stop("Error: Provided data is not linearly independent so calculations cannot be completed. Please check the data set for any redundant, unnecessary, or problematic information.")
     }
+    if(identical(qoi, "atc"))
+    {
+      # For the ATC, the matched observations are untreated at time t and
+      # their controls are treated. Model the probability of being untreated,
+      # so that the weights below are the odds of the matched observations'
+      # treatment status, as they are for the ATT.
+      pooled[[treatment]] <- 1 - pooled[[treatment]]
+    }
     if(refinement.method == "CBPS.weight" || 
        refinement.method == "CBPS.match")
     {
